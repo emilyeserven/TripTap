@@ -1,0 +1,7 @@
+**/dist/**
+**/node_modules/**
+**/coverage/**
+pnpm-lock.yaml
+packages/client/src/routeTree.gen.ts
+.claude/skills/fallow/**
+CHANGELOG.md

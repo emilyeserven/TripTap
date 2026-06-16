@@ -1,0 +1,40 @@
+{
+  "name": "@triptap/middleware",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.13.1",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json --resolve-full-paths",
+    "clean": "rm -rf dist tsconfig.build.tsbuildinfo",
+    "dev": "nodemon --quiet --watch src --ext ts --exec \"tsx src/index.ts\"",
+    "start": "node dist/index.js",
+    "test": "node --test --import tsx \"./src/tests/**/*.test.ts\"",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "push:dev": "dotenv -e .env -- drizzle-kit push",
+    "push:prod": "drizzle-kit push",
+    "push": "drizzle-kit push",
+    "studio": "dotenv -e .env -- drizzle-kit studio"
+  },
+  "dependencies": {
+    "@fastify/cors": "11.1.0",
+    "@fastify/swagger": "9.7.0",
+    "@fastify/swagger-ui": "5.2.5",
+    "@triptap/types": "workspace:*",
+    "dotenv": "17.2.3",
+    "dotenv-cli": "11.0.0",
+    "drizzle-kit": "0.31.10",
+    "drizzle-orm": "0.45.2",
+    "fastify": "5.8.5",
+    "pg": "8.16.3"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.1",
+    "@types/pg": "8.15.6",
+    "nodemon": "3.1.14",
+    "tsc-alias": "1.8.16",
+    "tsx": "4.20.6",
+    "typescript": "5.9.3"
+  }
+}
