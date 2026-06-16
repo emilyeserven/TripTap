@@ -74,5 +74,7 @@ root `Dockerfile` builds everything for production. Deploy via Coolify using onl
 | `POSTGRES_USER` | docker-compose | DB user (default: `postgres`) |
 | `POSTGRES_PASSWORD` | docker-compose | DB password (default: `password`) |
 | `POSTGRES_DB` | docker-compose | DB name (default: `triptap`) |
+| `POSTGRES_HOST_PORT` | docker-compose | Host port mapped to the db container's 5432 (default: `5432`). Override to avoid host port collisions on a shared host. |
+| `GATEWAY_HOST_PORT` | docker-compose | Host port mapped to the gateway's 3000 (default: `3000`). |
 
 See `packages/middleware/.env.example`.

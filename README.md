@@ -86,6 +86,20 @@ SPA fallback. Everything runs in one container.
 docker compose up --build      # gateway on http://localhost:3000, Postgres alongside
 ```
 
+#### Deploying with the Docker Compose build pack
+
+If you deploy this `docker-compose.yml` directly (instead of the Dockerfile build pack above),
+the `db` service publishes Postgres on the host. On a shared Coolify host where another stack
+already binds host port `5432` (e.g. [course-tracker](https://github.com/emilyeserven/course-tracker)),
+this fails with `Bind for 0.0.0.0:5432 failed: port is already allocated`. Set a free host port
+for this stack — the gateway still reaches Postgres internally at `db:5432`, so only the host-side
+mapping changes:
+
+```
+POSTGRES_HOST_PORT=5433
+GATEWAY_HOST_PORT=3000
+```
+
 ## Releases
 
 Versioning and `CHANGELOG.md` are automated by
