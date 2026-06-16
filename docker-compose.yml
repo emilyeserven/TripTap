@@ -19,7 +19,7 @@ services:
       context: ./
       dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      - "${GATEWAY_HOST_PORT:-3000}:3000"
     environment:
       - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@db:5432/${POSTGRES_DB:-triptap}
     depends_on:
