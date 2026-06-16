@@ -1,0 +1,36 @@
+{
+  "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
+  "entry": [
+    "packages/middleware/src/index.ts",
+    "packages/middleware/src/tests/**/*.ts",
+    "packages/gateway/server.js",
+    "packages/client/src/main.tsx",
+    "packages/client/src/routes/**/*.tsx",
+    "packages/client/src/test-utils/**/*.ts",
+    "**/vite.config.ts",
+    "**/drizzle.config.ts",
+    "scripts/*.mjs"
+  ],
+  "ignorePatterns": ["**/*.gen.ts", "**/dist/**", ".claude/**"],
+  "ignoreDependencies": ["pg"],
+  "rules": {
+    "unused-files": "error",
+    "unused-exports": "warn",
+    "unused-types": "off"
+  },
+  "duplicates": {
+    "enabled": true,
+    "threshold": 6.5,
+    "ignore": [
+      "**/routeTree.gen.ts",
+      "packages/middleware/src/routes/**",
+      "**/*.test.ts",
+      "**/*.test.tsx"
+    ]
+  },
+  "health": {
+    "maxCyclomatic": 30,
+    "maxCognitive": 25,
+    "maxCrap": 1000000
+  }
+}

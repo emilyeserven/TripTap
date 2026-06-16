@@ -1,0 +1,14 @@
+**/node_modules
+**/dist
+**/coverage
+**/.cache
+**/.git
+**/*.log
+.github
+.husky
+.claude
+.env
+.env.*
+!.env.example
+docs
+storybook-static
