@@ -79,5 +79,5 @@ COPY packages/gateway/server.js ./packages/gateway/server.js
 
 WORKDIR /app/packages/gateway
 
-EXPOSE 3001
+EXPOSE 3000
 CMD ["node", "server.js"]
