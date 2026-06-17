@@ -62,4 +62,24 @@ export default [
       "import/no-unassigned-import": "off",
     },
   },
+  {
+    // shadcn/ui primitives intentionally co-locate non-component exports (cva variant helpers,
+    // the useSidebar hook) with their components, and the sidebar composes many primitives.
+    files: ["packages/client/src/components/ui/**/*.tsx"],
+    rules: {
+      "react-refresh/only-export-components": "off",
+      "import/max-dependencies": "off",
+    },
+  },
+  {
+    // The shared config's Tailwind entry point ("./src/index.css") is resolved from the repo
+    // root, where lint runs, so it never resolves and custom @theme tokens (e.g. bg-sidebar)
+    // are flagged as unknown. Point it at the client's actual CSS entry point.
+    files: ["packages/client/src/**/*.{ts,tsx}"],
+    settings: {
+      "better-tailwindcss": {
+        entryPoint: "packages/client/src/index.css",
+      },
+    },
+  },
 ];
