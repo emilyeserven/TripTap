@@ -1,0 +1,845 @@
+{
+  "slug": "hagi-e-no-tabi",
+  "title": "萩への旅",
+  "eyebrow": "A Japanese Lesson for Western Rural Japan",
+  "subtitle": "Hagi, Yamaguchi · vocabulary, grammar & culture from a 145-year-old ryotei inn",
+  "scrollText": "萩の御厨　高大",
+  "footerText": "Study aid built from takadai.co.jp. Target level N4 — JLPT badge marks words above it.",
+  "targetLevel": "N4",
+  "sourceUrl": "https://takadai.co.jp/",
+  "videoUrl": null,
+  "sourceLabel": "From the inn",
+  "categories": [
+    {
+      "key": "lodging",
+      "jp": "宿",
+      "en": "Lodging",
+      "icon": "home"
+    },
+    {
+      "key": "dining",
+      "jp": "食事",
+      "en": "Dining",
+      "icon": "utensils"
+    },
+    {
+      "key": "culture",
+      "jp": "文化",
+      "en": "Culture",
+      "icon": "landmark"
+    },
+    {
+      "key": "transit",
+      "jp": "移動",
+      "en": "Transit",
+      "icon": "bus"
+    }
+  ],
+  "vocab": [
+    {
+      "jp": "宿",
+      "yomi": "やど",
+      "en": "inn, lodging",
+      "lvl": "N5",
+      "cat": "lodging"
+    },
+    {
+      "jp": "旅館",
+      "yomi": "りょかん",
+      "en": "traditional inn",
+      "lvl": "N4",
+      "cat": "lodging"
+    },
+    {
+      "jp": "予約",
+      "yomi": "よやく",
+      "en": "reservation",
+      "lvl": "N4",
+      "cat": "lodging"
+    },
+    {
+      "jp": "宿泊",
+      "yomi": "しゅくはく",
+      "en": "lodging, overnight stay",
+      "lvl": "N3",
+      "cat": "lodging"
+    },
+    {
+      "jp": "素泊まり",
+      "yomi": "すどまり",
+      "en": "room only (no meals)",
+      "lvl": "travel",
+      "cat": "lodging"
+    },
+    {
+      "jp": "温泉",
+      "yomi": "おんせん",
+      "en": "hot spring",
+      "lvl": "N4",
+      "cat": "lodging"
+    },
+    {
+      "jp": "大浴場",
+      "yomi": "だいよくじょう",
+      "en": "large communal bath",
+      "lvl": "N2",
+      "cat": "lodging"
+    },
+    {
+      "jp": "貸切風呂",
+      "yomi": "かしきりぶろ",
+      "en": "private / reserved bath",
+      "lvl": "inn",
+      "cat": "lodging"
+    },
+    {
+      "jp": "和室",
+      "yomi": "わしつ",
+      "en": "Japanese-style (tatami) room",
+      "lvl": "N3",
+      "cat": "lodging"
+    },
+    {
+      "jp": "料理",
+      "yomi": "りょうり",
+      "en": "cuisine, dish",
+      "lvl": "N5",
+      "cat": "dining"
+    },
+    {
+      "jp": "料亭",
+      "yomi": "りょうてい",
+      "en": "traditional fine restaurant",
+      "lvl": "N1",
+      "cat": "dining"
+    },
+    {
+      "jp": "地元",
+      "yomi": "じもと",
+      "en": "local (area)",
+      "lvl": "N3",
+      "cat": "dining"
+    },
+    {
+      "jp": "旬",
+      "yomi": "しゅん",
+      "en": "in season",
+      "lvl": "N2",
+      "cat": "dining"
+    },
+    {
+      "jp": "刺身",
+      "yomi": "さしみ",
+      "en": "sashimi",
+      "lvl": "N4",
+      "cat": "dining"
+    },
+    {
+      "jp": "見蘭牛",
+      "yomi": "けんらんぎゅう",
+      "en": "Kenran beef (Hagi brand)",
+      "lvl": "local",
+      "cat": "dining"
+    },
+    {
+      "jp": "串揚げ",
+      "yomi": "くしあげ",
+      "en": "deep-fried skewers",
+      "lvl": "food",
+      "cat": "dining"
+    },
+    {
+      "jp": "夕食",
+      "yomi": "ゆうしょく",
+      "en": "dinner",
+      "lvl": "N4",
+      "cat": "dining"
+    },
+    {
+      "jp": "朝食",
+      "yomi": "ちょうしょく",
+      "en": "breakfast",
+      "lvl": "N4",
+      "cat": "dining"
+    },
+    {
+      "jp": "歴史",
+      "yomi": "れきし",
+      "en": "history",
+      "lvl": "N4",
+      "cat": "culture"
+    },
+    {
+      "jp": "世界遺産",
+      "yomi": "せかいいさん",
+      "en": "World Heritage",
+      "lvl": "N2",
+      "cat": "culture"
+    },
+    {
+      "jp": "城",
+      "yomi": "しろ",
+      "en": "castle",
+      "lvl": "N4",
+      "cat": "culture"
+    },
+    {
+      "jp": "城下町",
+      "yomi": "じょうかまち",
+      "en": "castle town",
+      "lvl": "N2",
+      "cat": "culture"
+    },
+    {
+      "jp": "神社",
+      "yomi": "じんじゃ",
+      "en": "shrine",
+      "lvl": "N4",
+      "cat": "culture"
+    },
+    {
+      "jp": "維新",
+      "yomi": "いしん",
+      "en": "(Meiji) Restoration",
+      "lvl": "N1",
+      "cat": "culture"
+    },
+    {
+      "jp": "老舗",
+      "yomi": "しにせ",
+      "en": "long-established shop",
+      "lvl": "N1",
+      "cat": "culture"
+    },
+    {
+      "jp": "萩焼",
+      "yomi": "はぎやき",
+      "en": "Hagi ware (pottery)",
+      "lvl": "local",
+      "cat": "culture"
+    },
+    {
+      "jp": "お土産",
+      "yomi": "おみやげ",
+      "en": "souvenir",
+      "lvl": "N4",
+      "cat": "culture"
+    },
+    {
+      "jp": "駅",
+      "yomi": "えき",
+      "en": "station",
+      "lvl": "N5",
+      "cat": "transit"
+    },
+    {
+      "jp": "バスセンター",
+      "yomi": "ばすせんたー",
+      "en": "bus terminal",
+      "lvl": "travel",
+      "cat": "transit"
+    },
+    {
+      "jp": "徒歩",
+      "yomi": "とほ",
+      "en": "on foot",
+      "lvl": "N3",
+      "cat": "transit"
+    },
+    {
+      "jp": "道",
+      "yomi": "みち",
+      "en": "road, way",
+      "lvl": "N5",
+      "cat": "transit"
+    },
+    {
+      "jp": "地図",
+      "yomi": "ちず",
+      "en": "map",
+      "lvl": "N4",
+      "cat": "transit"
+    },
+    {
+      "jp": "時刻表",
+      "yomi": "じこくひょう",
+      "en": "timetable",
+      "lvl": "N3",
+      "cat": "transit"
+    }
+  ],
+  "grammar": [
+    {
+      "pat": "〜たいんですが",
+      "gloss": "I'd like to ~, ... (softened request)",
+      "note": "Verb-stem + たい means 'want to.' Adding んですが sets up context and softens the ask, inviting the listener to help — the single most useful travel opener.",
+      "ex": [
+        {
+          "jp": "萩温泉に入りたいんですが、大浴場は何時までですか。",
+          "en": "I'd like to use the Hagi hot spring — until what time is the large bath open?"
+        },
+        {
+          "jp": "見蘭牛のステーキを食べたいんですが、予約は必要ですか。",
+          "en": "I'd like to have the Kenran beef steak — do I need a reservation?"
+        },
+        {
+          "jp": "世界遺産を見に行きたいんですが、バスセンターはどこですか。",
+          "en": "I'd like to go see the World Heritage sites — where is the bus terminal?"
+        }
+      ]
+    },
+    {
+      "pat": "〜てもいいですか",
+      "gloss": "May I ~? (asking permission)",
+      "note": "て-form + もいいですか. Your key for photos, an early check-in, or using a facility.",
+      "ex": [
+        {
+          "jp": "写真を撮ってもいいですか。",
+          "en": "May I take a photo?"
+        },
+        {
+          "jp": "少し早くチェックインしてもいいですか。",
+          "en": "May I check in a little early?"
+        },
+        {
+          "jp": "貸切風呂を使ってもいいですか。",
+          "en": "May I use the private bath?"
+        }
+      ]
+    },
+    {
+      "pat": "〜ていただけますか",
+      "gloss": "Could you please ~? (polite request)",
+      "note": "て-form + いただけますか. Politer than 〜てください — ideal for asking inn or shop staff to do something for you.",
+      "ex": [
+        {
+          "jp": "この料理を説明していただけますか。",
+          "en": "Could you explain this dish?"
+        },
+        {
+          "jp": "明倫学舎までの道を教えていただけますか。",
+          "en": "Could you tell me the way to Meirin Gakusha?"
+        },
+        {
+          "jp": "おすすめの萩焼のお店を教えていただけますか。",
+          "en": "Could you recommend a Hagi-ware shop?"
+        }
+      ]
+    },
+    {
+      "pat": "〜はありますか / 〜はどこですか",
+      "gloss": "Is there ~? / Where is ~?",
+      "note": "The workhorse for checking availability and locating things.",
+      "ex": [
+        {
+          "jp": "地元の料理はありますか。",
+          "en": "Do you have any local dishes?"
+        },
+        {
+          "jp": "素泊まりプランはありますか。",
+          "en": "Do you have a room-only plan?"
+        },
+        {
+          "jp": "萩バスセンターはどこですか。",
+          "en": "Where is the Hagi Bus Center?"
+        }
+      ]
+    }
+  ],
+  "source": [
+    {
+      "jp": "萩の中心地だから便利！",
+      "en": "It's right in the middle of Hagi, so it's handy!",
+      "where": "Room page",
+      "url": "https://takadai.co.jp/room",
+      "grammar": [
+        {
+          "p": "〜だから",
+          "d": "Means 'because / so.' The plain copula だ (= です) + から gives a reason. Attaches to a noun: 中心地 + だ + から = 'because it is the central area.' だから is the punchy, casual version for headlines; in polite speech use 中心地ですから."
+        }
+      ],
+      "vocab": [
+        {
+          "w": "中心地",
+          "y": "ちゅうしんち",
+          "m": "central area, heart of town",
+          "lvl": "N3"
+        },
+        {
+          "w": "だから",
+          "y": "だから",
+          "m": "so, therefore, because",
+          "lvl": "N4"
+        },
+        {
+          "w": "便利",
+          "y": "べんり",
+          "m": "convenient, handy (na-adj)",
+          "lvl": "N5"
+        }
+      ]
+    },
+    {
+      "jp": "旅の疲れを癒す萩温泉",
+      "en": "the Hagi hot spring that soothes the fatigue of travel",
+      "where": "Spa page",
+      "url": "https://takadai.co.jp/spa",
+      "grammar": [
+        {
+          "p": "Noun-modifying clause",
+          "d": "A whole verb phrase — 旅の疲れを癒す — sits in front of 萩温泉 to describe it: 'travel-fatigue-soothing Hagi onsen.' Japanese places the modifier before the noun with no relative pronoun; the verb 癒す stays in plain form right before the noun."
+        },
+        {
+          "p": "の (linking)",
+          "d": "旅の疲れ = 'the fatigue of travel' — の links two nouns like 'of.'"
+        }
+      ],
+      "vocab": [
+        {
+          "w": "旅",
+          "y": "たび",
+          "m": "travel, journey",
+          "lvl": "N4"
+        },
+        {
+          "w": "疲れ",
+          "y": "つかれ",
+          "m": "tiredness, fatigue",
+          "lvl": "N4"
+        },
+        {
+          "w": "癒す",
+          "y": "いやす",
+          "m": "to heal, to soothe",
+          "lvl": "N2"
+        },
+        {
+          "w": "温泉",
+          "y": "おんせん",
+          "m": "hot spring",
+          "lvl": "N4"
+        }
+      ]
+    },
+    {
+      "jp": "旬の素材を生かした、繊細な味を心ゆくまでご堪能ください。",
+      "en": "Please savor to your heart's content the delicate flavors that make the most of seasonal ingredients.",
+      "where": "Cuisine page",
+      "url": "https://takadai.co.jp/cuisine",
+      "grammar": [
+        {
+          "p": "〜を生かした + noun",
+          "d": "A noun-modifying clause in the た-form: 旬の素材を生かした味 = 'flavors that have made the most of seasonal ingredients.' This た is a resultant-state descriptor, not past tense."
+        },
+        {
+          "p": "ご〜ください",
+          "d": "Honorific request: ご + a sino-Japanese noun + ください = a polished 'please do ~.' ご堪能ください = 'please savor (fully),' more elevated than everyday 〜てください."
+        },
+        {
+          "p": "心ゆくまで",
+          "d": "Idiom: 'to one's heart's content' (lit. 心 heart + ゆく go + まで until)."
+        }
+      ],
+      "vocab": [
+        {
+          "w": "旬",
+          "y": "しゅん",
+          "m": "in season",
+          "lvl": "N2"
+        },
+        {
+          "w": "素材",
+          "y": "そざい",
+          "m": "ingredient, material",
+          "lvl": "N2"
+        },
+        {
+          "w": "生かす",
+          "y": "いかす",
+          "m": "to make the most of, to utilize",
+          "lvl": "N2"
+        },
+        {
+          "w": "繊細",
+          "y": "せんさい",
+          "m": "delicate, subtle (na-adj)",
+          "lvl": "N1"
+        },
+        {
+          "w": "味",
+          "y": "あじ",
+          "m": "flavor, taste",
+          "lvl": "N4"
+        },
+        {
+          "w": "堪能",
+          "y": "たんのう",
+          "m": "to fully enjoy / savor",
+          "lvl": "N1"
+        }
+      ]
+    },
+    {
+      "jp": "維新の故郷として多くの歴史的遺産を残す萩。",
+      "en": "Hagi — which, as the birthplace of the Restoration, preserves many historical legacies.",
+      "where": "Homepage intro",
+      "url": "https://takadai.co.jp/",
+      "grammar": [
+        {
+          "p": "〜として",
+          "d": "Means 'as / in the role of.' 維新の故郷として = 'as the birthplace of the Restoration' — frames the capacity in which Hagi acts."
+        },
+        {
+          "p": "Noun-modifying clause",
+          "d": "The entire phrase 維新の故郷として多くの歴史的遺産を残す modifies 萩: 'Hagi, which leaves behind many historical legacies.' Plain verb 残す sits directly before 萩."
+        },
+        {
+          "p": "多くの + noun",
+          "d": "Means 'many ~,' a more written/formal equivalent of たくさんの."
+        }
+      ],
+      "vocab": [
+        {
+          "w": "維新",
+          "y": "いしん",
+          "m": "(Meiji) Restoration",
+          "lvl": "N1"
+        },
+        {
+          "w": "故郷",
+          "y": "ふるさと",
+          "m": "hometown, birthplace",
+          "lvl": "N3"
+        },
+        {
+          "w": "として",
+          "y": "として",
+          "m": "as, in the capacity of",
+          "lvl": "N3"
+        },
+        {
+          "w": "歴史的",
+          "y": "れきしてき",
+          "m": "historical (歴史 + 的 suffix)",
+          "lvl": "N3"
+        },
+        {
+          "w": "遺産",
+          "y": "いさん",
+          "m": "heritage, legacy",
+          "lvl": "N2"
+        },
+        {
+          "w": "残す",
+          "y": "のこす",
+          "m": "to leave behind, to preserve",
+          "lvl": "N4"
+        }
+      ]
+    },
+    {
+      "jp": "観光にもビジネスにもお選びいただいています。",
+      "en": "Guests choose us for both sightseeing and business.",
+      "where": "Room page",
+      "url": "https://takadai.co.jp/room",
+      "grammar": [
+        {
+          "p": "〜にも〜にも",
+          "d": "Means 'for both A and B.' Repeating に + も lists two situations inclusively: 観光にもビジネスにも = 'for sightseeing and for business alike.'"
+        },
+        {
+          "p": "お〜いただく",
+          "d": "Humble honorific: お + verb-stem + いただく expresses that the business humbly receives the customer's action. お選びいただく = 'you kindly choose us.' With 〜ています it becomes an ongoing state. Classic service-industry keigo."
+        }
+      ],
+      "vocab": [
+        {
+          "w": "観光",
+          "y": "かんこう",
+          "m": "sightseeing, tourism",
+          "lvl": "N4"
+        },
+        {
+          "w": "ビジネス",
+          "y": "びじねす",
+          "m": "business (loanword)",
+          "lvl": "N5"
+        },
+        {
+          "w": "選ぶ",
+          "y": "えらぶ",
+          "m": "to choose",
+          "lvl": "N4"
+        },
+        {
+          "w": "いただく",
+          "y": "いただく",
+          "m": "humble 'to receive' (here an auxiliary)",
+          "lvl": "N3"
+        }
+      ]
+    },
+    {
+      "jp": "「基本は料理屋」の精神は明治11年の創業以来変わらず、地産地消のお料理をご提供しております。",
+      "en": "The spirit of 'fundamentally a restaurant' has not changed since our founding in Meiji 11 (1878), and we continue to serve locally sourced cuisine.",
+      "where": "Cuisine page",
+      "url": "https://takadai.co.jp/cuisine",
+      "grammar": [
+        {
+          "p": "〜以来〜ず",
+          "d": "〜以来 means 'since ~' (a past starting point continuing to now). 変わらず is the negative conjunctive of 変わる — 'without changing.' Together: 'has not changed since founding.' This ず form is classical/literary; modern speech uses 変わらないで."
+        },
+        {
+          "p": "ご〜しております",
+          "d": "The full humble form: ご + verb-stem + しております (humble progressive of する). ご提供しております = 'we humbly continue to provide.' This is the gold standard of service-industry keigo — one level more formal than ご〜しています."
+        }
+      ],
+      "vocab": [
+        {
+          "w": "精神",
+          "y": "せいしん",
+          "m": "spirit, ethos, philosophy",
+          "lvl": "N2"
+        },
+        {
+          "w": "創業",
+          "y": "そうぎょう",
+          "m": "founding (of a business)",
+          "lvl": "N2"
+        },
+        {
+          "w": "以来",
+          "y": "いらい",
+          "m": "since, ever since (a point in the past)",
+          "lvl": "N3"
+        },
+        {
+          "w": "地産地消",
+          "y": "ちさんちしょう",
+          "m": "local production for local consumption",
+          "lvl": "N1"
+        },
+        {
+          "w": "提供",
+          "y": "ていきょう",
+          "m": "to provide, to offer",
+          "lvl": "N3"
+        }
+      ]
+    },
+    {
+      "jp": "豊かな自然に育まれた萩の幸を存分にお楽しみくださいませ。",
+      "en": "Please enjoy to the full the bounty of Hagi, nurtured by its rich natural surroundings.",
+      "where": "Cuisine page",
+      "url": "https://takadai.co.jp/cuisine",
+      "grammar": [
+        {
+          "p": "〜に育まれた (passive)",
+          "d": "育む (to nurture) in its passive form 育まれる = 'to be nurtured by.' The agent is 豊かな自然に (by rich nature). Japanese passive with に marks the cause or agent. Here it modifies 萩の幸: 'the bounty of Hagi that has been nurtured by rich nature.'"
+        },
+        {
+          "p": "お〜くださいませ",
+          "d": "The most elevated form of a request: お + verb-stem + くださいませ. More formal than ご〜ください, and much more so than 〜てください. The ませ ending lifts it to written/ceremony register — typical of ryokan and traditional restaurant copy."
+        },
+        {
+          "p": "存分に",
+          "d": "Adverb: 'to the full extent, as much as one likes.' More formal/literary than たくさん. Often paired with お楽しみください in hospitality contexts."
+        }
+      ],
+      "vocab": [
+        {
+          "w": "豊か",
+          "y": "ゆたか",
+          "m": "rich, abundant (na-adj)",
+          "lvl": "N3"
+        },
+        {
+          "w": "育む",
+          "y": "はぐくむ",
+          "m": "to nurture, to foster",
+          "lvl": "N1"
+        },
+        {
+          "w": "幸",
+          "y": "さち",
+          "m": "bounty, blessing (here: seafood/produce)",
+          "lvl": "N2"
+        },
+        {
+          "w": "存分に",
+          "y": "ぞんぶんに",
+          "m": "to the full, as much as one likes",
+          "lvl": "N1"
+        }
+      ]
+    },
+    {
+      "jp": "竹と灯で作られた和やかな空間でお寛ぎください。",
+      "en": "Please relax in the serene space created with bamboo and lantern light.",
+      "where": "Facilities page",
+      "url": "https://takadai.co.jp/facilities",
+      "grammar": [
+        {
+          "p": "〜で作られた + noun (passive modifier)",
+          "d": "作られた is the passive past of 作る (to make/create). 竹と灯で作られた空間 = 'a space that was created with bamboo and lantern light.' The で marks the material/means. Passive modifiers like this are everywhere in formal descriptive writing — learn to spot them before the noun."
+        },
+        {
+          "p": "お〜ください",
+          "d": "The standard polite request: お + verb-stem + ください. お寛ぎください = 'please relax.' Verb 寛ぐ (くつろぐ) means to relax, unwind. The お prefix gives it a gentle, formal lift appropriate for hospitality."
+        }
+      ],
+      "vocab": [
+        {
+          "w": "竹",
+          "y": "たけ",
+          "m": "bamboo",
+          "lvl": "N4"
+        },
+        {
+          "w": "灯",
+          "y": "ともしび",
+          "m": "light, lantern, flame",
+          "lvl": "N2"
+        },
+        {
+          "w": "和やか",
+          "y": "なごやか",
+          "m": "peaceful, serene, harmonious (na-adj)",
+          "lvl": "N2"
+        },
+        {
+          "w": "空間",
+          "y": "くうかん",
+          "m": "space, atmosphere",
+          "lvl": "N3"
+        },
+        {
+          "w": "寛ぐ",
+          "y": "くつろぐ",
+          "m": "to relax, to unwind",
+          "lvl": "N2"
+        }
+      ]
+    },
+    {
+      "jp": "古くから御贔屓にしていただいている文人の書画があり、小さな美術館のようです。",
+      "en": "There are calligraphy works and paintings by literary figures who have long patronized us, making it feel like a small art museum.",
+      "where": "Facilities page",
+      "url": "https://takadai.co.jp/facilities",
+      "grammar": [
+        {
+          "p": "御贔屓にしていただく",
+          "d": "御贔屓 (ごひいき) means 'patronage, favour.' 御贔屓にする = 'to patronize, to be a loyal customer of.' In the form 御贔屓にしていただいている it becomes: 'who have graciously been giving us their patronage' — the business humbly receiving the customer's ongoing loyalty. A classic expression you'll see in traditional shops."
+        },
+        {
+          "p": "〜のようです",
+          "d": "Means 'it seems like / it is like ~.' A simile/inference marker. 小さな美術館のようです = 'it is like a small art museum.' Softer than 〜です alone — the inn is being modest about its own cultural richness."
+        }
+      ],
+      "vocab": [
+        {
+          "w": "古く",
+          "y": "ふるく",
+          "m": "long ago, for a long time (adv. use of 古い)",
+          "lvl": "N4"
+        },
+        {
+          "w": "御贔屓",
+          "y": "ごひいき",
+          "m": "patronage, favour, loyal custom",
+          "lvl": "N1"
+        },
+        {
+          "w": "文人",
+          "y": "ぶんじん",
+          "m": "literary figure, man of letters",
+          "lvl": "N1"
+        },
+        {
+          "w": "書画",
+          "y": "しょが",
+          "m": "calligraphy and painting",
+          "lvl": "N1"
+        },
+        {
+          "w": "美術館",
+          "y": "びじゅつかん",
+          "m": "art museum",
+          "lvl": "N4"
+        }
+      ]
+    },
+    {
+      "jp": "萩ならではの大広間でのお食事は、幕末～明治時代を体感できます。",
+      "en": "Dining in the grand banquet hall — something you can only find in Hagi — lets you feel the atmosphere of the late Edo through Meiji eras.",
+      "where": "Packages page",
+      "url": "https://takadai.co.jp/",
+      "grammar": [
+        {
+          "p": "〜ならでは",
+          "d": "A fixed expression meaning 'only possible with / unique to ~.' 萩ならでは = 'something that could only be found in Hagi / uniquely Hagi.' It always follows a noun and implies no other place or thing could offer this. You'll see 〜ならではの + noun everywhere in regional tourism copy."
+        },
+        {
+          "p": "〜を体感できます",
+          "d": "体感する = 'to experience physically, to feel in one's body' (stronger than just 感じる). With できます: 'you can physically experience ~.' This construction (noun + を + できます verb) is your standard 'you can do X here' phrasing for tourism settings."
+        }
+      ],
+      "vocab": [
+        {
+          "w": "ならでは",
+          "y": "ならでは",
+          "m": "unique to, only possible with (set expression)",
+          "lvl": "N2"
+        },
+        {
+          "w": "大広間",
+          "y": "おおひろま",
+          "m": "large banquet hall, grand room",
+          "lvl": "N2"
+        },
+        {
+          "w": "幕末",
+          "y": "ばくまつ",
+          "m": "end of the Edo shogunate period",
+          "lvl": "N1"
+        },
+        {
+          "w": "体感",
+          "y": "たいかん",
+          "m": "to feel physically, to experience firsthand",
+          "lvl": "N2"
+        }
+      ]
+    }
+  ],
+  "culture": [
+    {
+      "icon": "home",
+      "jp": "料亭・旅館の世界",
+      "en": "The ryotei & ryokan world",
+      "body": "Takadai is a 料亭 (ryōtei) — a traditional fine-dining restaurant — that also runs as an inn, founded in 1878. In the countryside, longevity is the brand: expect a founding year on the sign (創業), the word 老舗 for a long-established house, framed calligraphy from a famous past guest, and a strong sense of おもてなし (hospitality).",
+      "terms": ["料亭", "旅館", "老舗", "お土産", "宿"]
+    },
+    {
+      "icon": "utensils",
+      "jp": "地産地消の食",
+      "en": "Local land & sea on the plate",
+      "body": "The kitchen leans on 地産地消 — sourcing from the immediate region. Look for 見蘭牛 (Kenran beef), Hagi's marbled brand beef, and Sea-of-Japan seafood: お刺身, 鯛のあら炊き (simmered sea-bream collar), and 串揚げ. Meals are usually 夕朝食付き; the budget option is 素泊まり.",
+      "terms": ["見蘭牛", "刺身", "串揚げ", "素泊まり", "旬"]
+    },
+    {
+      "icon": "home",
+      "jp": "温泉のマナー",
+      "en": "Onsen etiquette",
+      "body": "Takadai opened はぎ温泉 in 2008, with a 大浴場 (large bath) and a free 貸切風呂 (private bath). Wash and rinse fully before entering the shared tub — no swimwear, small towel never touches the water. Tattoos? Ask first, or just book the 貸切風呂.",
+      "terms": ["温泉", "大浴場", "貸切風呂", "和室"]
+    },
+    {
+      "icon": "landmark",
+      "jp": "維新のふるさと",
+      "en": "Birthplace of modern Japan",
+      "body": "Hagi was the 城下町 of the Chōshū domain and the launch pad for the 明治維新. Because the capital moved away in 1863, the Edo-era streets survived intact; several sites became 世界遺産 in 2015. Look for 松下村塾, the 萩城跡 castle ruins, and the prized 萩焼 pottery — a classic souvenir.",
+      "terms": ["城下町", "維新", "世界遺産", "萩焼", "歴史"]
+    }
+  ]
+}

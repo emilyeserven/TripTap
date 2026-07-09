@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { buildApp } from "@/app";
-import { maybeSeed } from "@/db/seed";
+import { maybeSeed, maybeSeedLessons } from "@/db/seed";
 
 const port = Number(process.env.PORT ?? 3001);
 const host = process.env.HOST ?? "0.0.0.0";
@@ -9,6 +9,7 @@ const app = await buildApp();
 
 try {
   await maybeSeed();
+  await maybeSeedLessons();
 }
 catch (err) {
   app.log.warn({

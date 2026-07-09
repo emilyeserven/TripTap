@@ -18,6 +18,8 @@ export default [
       "packages/client/src/routeTree.gen.ts",
       "packages/middleware/drizzle/**",
       ".claude/skills/fallow/**",
+      // Raw single-file lesson prototypes — kept for reference, not part of the build.
+      "references/**",
     ],
   },
   ...(Array.isArray(emilyConfig) ? emilyConfig : [emilyConfig]),

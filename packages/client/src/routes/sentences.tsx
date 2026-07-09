@@ -1,9 +1,28 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
 
-import { SentenceCard } from "../components/SentenceCard";
-import { SentenceForm } from "../components/SentenceForm";
-import { useDeleteSentence, useSentences } from "../hooks/useSentences";
-import { useUiStore } from "../stores/uiStore";
+import { createFileRoute } from "@tanstack/react-router";
+import { Plus } from "lucide-react";
+
+import { FuriganaScope } from "@/components/lesson/FuriganaScope";
+import { FuriganaToggle } from "@/components/lesson/FuriganaToggle";
+import { LessonFilterChips } from "@/components/lesson/lesson-filter";
+import { uniqueLessons } from "@/components/lesson/lesson-filter-utils";
+import { matches } from "@/components/lesson/search";
+import { SourceCard } from "@/components/lesson/SourceCard";
+import { SentenceCard } from "@/components/SentenceCard";
+import { SentenceForm } from "@/components/SentenceForm";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { useLessonContent } from "@/hooks/useLessons";
+import { useDeleteSentence, useSentences } from "@/hooks/useSentences";
+import { useUiStore } from "@/stores/uiStore";
 
 export const Route = createFileRoute("/sentences")({
   component: SentencesPage,
@@ -14,45 +33,114 @@ function SentencesPage() {
     data: sentences, isLoading, error,
   } = useSentences();
   const deleteSentence = useDeleteSentence();
-  const showTranslations = useUiStore(state => state.showTranslations);
-  const toggleShowTranslations = useUiStore(state => state.toggleShowTranslations);
+  const showTranslations = useUiStore(s => s.showTranslations);
+  const toggleShowTranslations = useUiStore(s => s.toggleShowTranslations);
+
+  const {
+    data: content,
+  } = useLessonContent();
+  const lessonSentences = useMemo(() => content?.sentences ?? [], [content]);
+  const lessons = useMemo(() => uniqueLessons(lessonSentences), [lessonSentences]);
+
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState("all"); // "all" | "mine" | lesson slug
+
+  const manual = sentences ?? [];
+  const manualShown = filter === "all" || filter === "mine"
+    ? manual.filter(s => matches(search, s.text, s.translation, s.source, s.tags, s.notes))
+    : [];
+  const lessonShown = (filter === "mine"
+    ? []
+    : filter === "all" ? lessonSentences : lessonSentences.filter(s => s.lessonSlug === filter))
+    .filter(s => matches(search, s.jp, s.en, s.where));
+
+  const nothing = !isLoading && manualShown.length === 0 && lessonShown.length === 0;
 
   return (
-    <section className="space-y-8">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Sentences</h1>
-        <label className="flex items-center gap-2 text-sm text-slate-600">
-          <input
-            type="checkbox"
-            checked={showTranslations}
-            onChange={toggleShowTranslations}
-          />
-          Show translations
-        </label>
+    <section className="space-y-6">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold">Sentences</h1>
+          <p className="text-sm text-muted-foreground">Your own sentences and those mined from lessons.</p>
+        </div>
+        <div className="flex items-center gap-4">
+          <label
+            className="flex items-center gap-2 text-sm text-muted-foreground"
+          >
+            <input
+              type="checkbox"
+              checked={showTranslations}
+              onChange={toggleShowTranslations}
+            />
+            Show translations
+          </label>
+          <FuriganaToggle />
+          <Dialog
+            open={dialogOpen}
+            onOpenChange={setDialogOpen}
+          >
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="size-4" />
+                New sentence
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>New sentence</DialogTitle>
+              </DialogHeader>
+              <SentenceForm onSuccess={() => setDialogOpen(false)} />
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
-      <SentenceForm />
+      <Input
+        value={search}
+        onChange={e => setSearch(e.target.value)}
+        placeholder="Search sentences…"
+        aria-label="Search sentences"
+      />
 
-      <div className="space-y-3">
-        {isLoading ? <p className="text-slate-500">Loading sentences…</p> : null}
-        {error ? <p className="text-red-600">{error.message}</p> : null}
-        {!isLoading && (sentences ?? []).length === 0
-          ? (
-            <p
-              className="text-slate-500"
-            >No sentences yet. Add one above.
-            </p>
-          )
-          : null}
-        {(sentences ?? []).map(sentence => (
-          <SentenceCard
-            key={sentence.id}
-            sentence={sentence}
-            showTranslation={showTranslations}
-            onDelete={id => deleteSentence.mutate(id)}
-          />
-        ))}
-      </div>
+      <LessonFilterChips
+        lessons={lessons}
+        value={filter}
+        onChange={setFilter}
+        extra={manual.length > 0
+          ? [{
+            value: "mine",
+            label: "Yours",
+          }]
+          : undefined}
+      />
+
+      {error ? <p className="text-destructive">{error.message}</p> : null}
+      {isLoading ? <p className="text-muted-foreground">Loading…</p> : null}
+      {nothing ? <p className="text-muted-foreground">No matching sentences.</p> : null}
+
+      <FuriganaScope>
+        <div className="space-y-4">
+          {manualShown.map(s => (
+            <SentenceCard
+              key={s.id}
+              sentence={s}
+              showTranslation={showTranslations}
+              onDelete={id => deleteSentence.mutate(id)}
+            />
+          ))}
+          {lessonShown.map(s => (
+            <SourceCard
+              key={s.id}
+              sentence={s}
+              lesson={{
+                slug: s.lessonSlug,
+                title: s.lessonTitle,
+              }}
+            />
+          ))}
+        </div>
+      </FuriganaScope>
     </section>
   );
 }

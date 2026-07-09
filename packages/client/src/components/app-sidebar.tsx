@@ -1,7 +1,16 @@
 import type * as React from "react";
 
 import { Link, useRouterState } from "@tanstack/react-router";
-import { HomeIcon, LanguagesIcon, LibraryIcon } from "lucide-react";
+import {
+  BookOpenIcon,
+  GraduationCapIcon,
+  HomeIcon,
+  LandmarkIcon,
+  LanguagesIcon,
+  LibraryIcon,
+  ScrollTextIcon,
+  SettingsIcon,
+} from "lucide-react";
 
 import {
   Sidebar,
@@ -21,14 +30,41 @@ const navItems = [
     icon: HomeIcon,
   },
   {
+    title: "Lessons",
+    to: "/lessons",
+    icon: GraduationCapIcon,
+  },
+  {
+    title: "Culture",
+    to: "/culture",
+    icon: LandmarkIcon,
+  },
+  {
+    title: "Vocabulary",
+    to: "/vocabulary",
+    icon: BookOpenIcon,
+  },
+  {
+    title: "Grammar",
+    to: "/grammar",
+    icon: LanguagesIcon,
+  },
+  {
     title: "Sentences",
     to: "/sentences",
-    icon: LanguagesIcon,
+    icon: ScrollTextIcon,
+  },
+  {
+    title: "Settings",
+    to: "/settings",
+    icon: SettingsIcon,
   },
 ] as const;
 
 function isItemActive(pathname: string, to: string) {
-  return to === "/" ? pathname === "/" : pathname.startsWith(to);
+  if (to === "/") return pathname === "/";
+  // `/lessons` shouldn't stay active on `/lessons/new` sub-navigation beyond its own prefix.
+  return pathname === to || pathname.startsWith(`${to}/`);
 }
 
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {

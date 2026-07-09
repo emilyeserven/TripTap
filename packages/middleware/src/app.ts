@@ -3,6 +3,7 @@ import swagger from "@fastify/swagger";
 import swaggerUi from "@fastify/swagger-ui";
 import Fastify, { type FastifyInstance } from "fastify";
 import { healthRoutes } from "@/routes/health";
+import { lessonRoutes } from "@/routes/lessons";
 import { sentenceRoutes } from "@/routes/sentences";
 
 /** Build and configure the Fastify application (without starting it). */
@@ -29,6 +30,10 @@ export async function buildApp(): Promise<FastifyInstance> {
           description: "Sentence bank endpoints",
         },
         {
+          name: "lessons",
+          description: "Lesson import & viewing",
+        },
+        {
           name: "health",
           description: "Service health",
         },
@@ -41,6 +46,7 @@ export async function buildApp(): Promise<FastifyInstance> {
 
   await app.register(healthRoutes);
   await app.register(sentenceRoutes);
+  await app.register(lessonRoutes);
 
   return app;
 }

@@ -27,7 +27,7 @@ function RootComponent() {
           <SidebarTrigger className="-ml-1" />
           <span className="text-lg font-semibold">sentence-bank</span>
         </header>
-        <main className="mx-auto w-full max-w-3xl px-4 py-8">
+        <main className="mx-auto w-full max-w-6xl px-4 py-8">
           <Outlet />
         </main>
       </SidebarInset>
