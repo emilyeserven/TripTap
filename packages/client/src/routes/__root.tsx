@@ -25,7 +25,7 @@ function RootComponent() {
       <SidebarInset>
         <header className="flex h-12 shrink-0 items-center gap-2 border-b px-4">
           <SidebarTrigger className="-ml-1" />
-          <span className="text-lg font-semibold">TripTap</span>
+          <span className="text-lg font-semibold">sentence-bank</span>
         </header>
         <main className="mx-auto w-full max-w-3xl px-4 py-8">
           <Outlet />

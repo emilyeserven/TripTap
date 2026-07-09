@@ -1,38 +1,41 @@
 /**
- * Shared TripTap domain types.
+ * Shared sentence-bank domain types.
  *
- * These are consumed by both the Fastify API (`@triptap/middleware`) and the React client
- * (`@triptap/client`) so the wire contract stays in one place.
+ * These are consumed by both the Fastify API (`@sentence-bank/middleware`) and the React client
+ * (`@sentence-bank/client`) so the wire contract stays in one place.
  */
 
-/** A single trip being tracked. */
-export interface Trip {
+/** A single example sentence stored in the bank. */
+export interface Sentence {
   id: string;
-  /** Human-friendly trip name, e.g. "Summer in Lisbon". */
-  name: string;
-  /** Primary destination (city, country, region, ...). */
-  destination: string;
-  /** ISO-8601 date string (YYYY-MM-DD). */
-  startDate: string;
-  /** ISO-8601 date string (YYYY-MM-DD). */
-  endDate: string;
+  /** The sentence in the target language, e.g. "毎朝コーヒーを飲みます。". */
+  text: string;
+  /** The meaning in the user's own language. */
+  translation: string;
+  /** Target language, e.g. "Japanese". */
+  language: string;
+  /** Optional origin (book, show, lesson, ...). */
+  source: string | null;
   /** Optional free-form notes. */
   notes: string | null;
-  /** ISO-8601 timestamp of when the trip was created. */
+  /** Optional comma-separated tags. */
+  tags: string | null;
+  /** ISO-8601 timestamp of when the sentence was added. */
   createdAt: string;
 }
 
-/** Payload for creating a trip. */
-export interface CreateTripInput {
-  name: string;
-  destination: string;
-  startDate: string;
-  endDate: string;
+/** Payload for creating a sentence. */
+export interface CreateSentenceInput {
+  text: string;
+  translation: string;
+  language: string;
+  source?: string | null;
   notes?: string | null;
+  tags?: string | null;
 }
 
-/** Payload for partially updating a trip. */
-export type UpdateTripInput = Partial<CreateTripInput>;
+/** Payload for partially updating a sentence. */
+export type UpdateSentenceInput = Partial<CreateSentenceInput>;
 
 /** Standard error shape returned by the API. */
 export interface ApiError {

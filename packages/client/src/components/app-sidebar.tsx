@@ -1,7 +1,7 @@
 import type * as React from "react";
 
 import { Link, useRouterState } from "@tanstack/react-router";
-import { HomeIcon, LuggageIcon, MapIcon } from "lucide-react";
+import { HomeIcon, LanguagesIcon, LibraryIcon } from "lucide-react";
 
 import {
   Sidebar,
@@ -21,9 +21,9 @@ const navItems = [
     icon: HomeIcon,
   },
   {
-    title: "Trips",
-    to: "/trips",
-    icon: MapIcon,
+    title: "Sentences",
+    to: "/sentences",
+    icon: LanguagesIcon,
   },
 ] as const;
 
@@ -56,11 +56,11 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                     text-sidebar-primary-foreground
                   "
                 >
-                  <LuggageIcon className="size-4" />
+                  <LibraryIcon className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm/tight">
-                  <span className="truncate font-semibold">TripTap</span>
-                  <span className="truncate text-xs">Trip tracker</span>
+                  <span className="truncate font-semibold">sentence-bank</span>
+                  <span className="truncate text-xs">Sentence bank</span>
                 </div>
               </Link>
             </SidebarMenuButton>

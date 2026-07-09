@@ -1,5 +1,5 @@
 {
-  "name": "@triptap/gateway",
+  "name": "@sentence-bank/gateway",
   "version": "0.1.0",
   "private": true,
   "type": "module",

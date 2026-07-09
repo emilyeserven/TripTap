@@ -44,10 +44,10 @@ if (changed.size === 0) {
   process.exit(0);
 }
 
-const filters = [...changed].map(name => `--filter=@triptap/${name}`).join(" ");
+const filters = [...changed].map(name => `--filter=@sentence-bank/${name}`).join(" ");
 console.log(`Verifying changed packages: ${[...changed].join(", ")}`);
 
-run("pnpm --filter=@triptap/types build");
+run("pnpm --filter=@sentence-bank/types build");
 run(`pnpm -r ${filters} run typecheck`);
 run("pnpm lint");
 run(`pnpm -r ${filters} run test`);

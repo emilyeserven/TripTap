@@ -3,7 +3,7 @@ import swagger from "@fastify/swagger";
 import swaggerUi from "@fastify/swagger-ui";
 import Fastify, { type FastifyInstance } from "fastify";
 import { healthRoutes } from "@/routes/health";
-import { tripRoutes } from "@/routes/trips";
+import { sentenceRoutes } from "@/routes/sentences";
 
 /** Build and configure the Fastify application (without starting it). */
 export async function buildApp(): Promise<FastifyInstance> {
@@ -20,13 +20,13 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(swagger, {
     openapi: {
       info: {
-        title: "TripTap API",
+        title: "sentence-bank API",
         version: "0.1.0",
       },
       tags: [
         {
-          name: "trips",
-          description: "Trip tracking endpoints",
+          name: "sentences",
+          description: "Sentence bank endpoints",
         },
         {
           name: "health",
@@ -40,7 +40,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   });
 
   await app.register(healthRoutes);
-  await app.register(tripRoutes);
+  await app.register(sentenceRoutes);
 
   return app;
 }

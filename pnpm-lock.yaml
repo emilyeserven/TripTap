@@ -97,6 +97,9 @@ importers:
       '@radix-ui/react-tooltip':
         specifier: ^1.2.10
         version: 1.2.10(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      '@sentence-bank/types':
+        specifier: workspace:*
+        version: link:../types
       '@tanstack/react-form':
         specifier: ^1.25.0
         version: 1.33.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -106,9 +109,6 @@ importers:
       '@tanstack/react-router':
         specifier: ^1.167.0
         version: 1.170.15(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
-      '@triptap/types':
-        specifier: workspace:*
-        version: link:../types
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -203,7 +203,7 @@ importers:
       '@fastify/swagger-ui':
         specifier: 5.2.5
         version: 5.2.5
-      '@triptap/types':
+      '@sentence-bank/types':
         specifier: workspace:*
         version: link:../types
       dotenv:
@@ -212,9 +212,6 @@ importers:
       dotenv-cli:
         specifier: 11.0.0
         version: 11.0.0
-      drizzle-kit:
-        specifier: 0.31.10
-        version: 0.31.10
       drizzle-orm:
         specifier: 0.45.2
         version: 0.45.2(@types/pg@8.15.6)(pg@8.16.3)
@@ -231,6 +228,9 @@ importers:
       '@types/pg':
         specifier: 8.15.6
         version: 8.15.6
+      drizzle-kit:
+        specifier: 0.31.10
+        version: 0.31.10
       nodemon:
         specifier: 3.1.14
         version: 3.1.14

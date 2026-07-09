@@ -1,7 +1,7 @@
-// TripTap production gateway.
+// sentence-bank production gateway.
 //
 // A single Fastify entrypoint that:
-//   1. applies the database schema on boot (drizzle-kit push),
+//   1. applies versioned database migrations on boot (fails hard if they don't apply),
 //   2. spawns the middleware API as a child process and respawns it with backoff,
 //   3. proxies `/api/*` to the middleware,
 //   4. serves the client's static build (with SPA fallback),
@@ -59,10 +59,13 @@ function runOnce(command, args, cwd) {
 }
 
 async function applySchema() {
-  console.log("[gateway] applying database schema (drizzle-kit push)…");
-  const code = await runOnce("drizzle-kit", ["push"], middlewareDir);
+  console.log("[gateway] running database migrations…");
+  const code = await runOnce(process.execPath, [join(middlewareDir, "dist", "db", "migrate.js")], middlewareDir);
   if (code !== 0) {
-    console.error(`[gateway] drizzle-kit push exited with ${code}; continuing anyway.`);
+    // Fail hard so the orchestrator (Docker/Coolify) restarts the container and retries, rather
+    // than booting the API against an un-migrated database.
+    console.error(`[gateway] migrations failed (exit ${code}); aborting boot.`);
+    process.exit(1);
   }
 }
 

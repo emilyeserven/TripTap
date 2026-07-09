@@ -7,7 +7,7 @@ const {
 } = pg;
 
 const connectionString
-  = process.env.DATABASE_URL ?? "postgresql://postgres:password@localhost:5432/triptap";
+  = process.env.DATABASE_URL ?? "postgresql://postgres:password@localhost:5432/sentence_bank";
 
 const pool = new Pool({
   connectionString,

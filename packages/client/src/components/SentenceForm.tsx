@@ -1,44 +1,45 @@
 import { useForm } from "@tanstack/react-form";
 import { z } from "zod";
 
-import { useCreateTrip } from "../hooks/useTrips";
+import { useCreateSentence } from "../hooks/useSentences";
 
-const tripSchema = z
-  .object({
-    name: z.string().min(1, "Name is required"),
-    destination: z.string().min(1, "Destination is required"),
-    startDate: z.string().min(1, "Start date is required"),
-    endDate: z.string().min(1, "End date is required"),
-    notes: z.string(),
-  })
-  .refine(value => value.endDate >= value.startDate, {
-    message: "End date must be on or after the start date",
-    path: ["endDate"],
-  });
+const sentenceSchema = z.object({
+  text: z.string().min(1, "Sentence text is required"),
+  translation: z.string().min(1, "Translation is required"),
+  language: z.string().min(1, "Language is required"),
+  source: z.string(),
+  tags: z.string(),
+  notes: z.string(),
+});
 
 const fieldClass
   = "mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none";
 
-/** Create-trip form. Owns its own mutation so the page stays focused on the list. */
-export function TripForm() {
-  const createTrip = useCreateTrip();
+/** Create-sentence form. Owns its own mutation so the page stays focused on the list. */
+export function SentenceForm() {
+  const createSentence = useCreateSentence();
 
   const form = useForm({
     defaultValues: {
-      name: "",
-      destination: "",
-      startDate: "",
-      endDate: "",
+      text: "",
+      translation: "",
+      language: "",
+      source: "",
+      tags: "",
       notes: "",
     },
     validators: {
-      onChange: tripSchema,
+      onChange: sentenceSchema,
     },
     onSubmit: async ({
       value,
     }) => {
-      await createTrip.mutateAsync({
-        ...value,
+      await createSentence.mutateAsync({
+        text: value.text,
+        translation: value.translation,
+        language: value.language,
+        source: value.source || null,
+        tags: value.tags || null,
         notes: value.notes || null,
       });
       form.reset();
@@ -57,10 +58,10 @@ export function TripForm() {
         void form.handleSubmit();
       }}
     >
-      <form.Field name="name">
+      <form.Field name="text">
         {field => (
-          <TextField
-            label="Name"
+          <TextAreaField
+            label="Sentence"
             value={field.state.value}
             errors={field.state.meta.errors}
             onBlur={field.handleBlur}
@@ -69,10 +70,10 @@ export function TripForm() {
         )}
       </form.Field>
 
-      <form.Field name="destination">
+      <form.Field name="translation">
         {field => (
-          <TextField
-            label="Destination"
+          <TextAreaField
+            label="Translation"
             value={field.state.value}
             errors={field.state.meta.errors}
             onBlur={field.handleBlur}
@@ -81,11 +82,10 @@ export function TripForm() {
         )}
       </form.Field>
 
-      <form.Field name="startDate">
+      <form.Field name="language">
         {field => (
           <TextField
-            label="Start date"
-            type="date"
+            label="Language"
             value={field.state.value}
             errors={field.state.meta.errors}
             onBlur={field.handleBlur}
@@ -94,11 +94,22 @@ export function TripForm() {
         )}
       </form.Field>
 
-      <form.Field name="endDate">
+      <form.Field name="source">
         {field => (
           <TextField
-            label="End date"
-            type="date"
+            label="Source"
+            value={field.state.value}
+            errors={field.state.meta.errors}
+            onBlur={field.handleBlur}
+            onChange={field.handleChange}
+          />
+        )}
+      </form.Field>
+
+      <form.Field name="tags">
+        {field => (
+          <TextField
+            label="Tags (comma-separated)"
             value={field.state.value}
             errors={field.state.meta.errors}
             onBlur={field.handleBlur}
@@ -139,11 +150,11 @@ export function TripForm() {
                 disabled:opacity-50
               "
             >
-              {isSubmitting ? "Saving…" : "Add trip"}
+              {isSubmitting ? "Saving…" : "Add sentence"}
             </button>
           )}
         </form.Subscribe>
-        {createTrip.isError ? <p className="mt-2 text-sm text-red-600">{createTrip.error?.message}</p> : null}
+        {createSentence.isError ? <p className="mt-2 text-sm text-red-600">{createSentence.error?.message}</p> : null}
       </div>
     </form>
   );
@@ -158,12 +169,16 @@ interface TextFieldProps {
   onChange: (value: string) => void;
 }
 
+function fieldMessages(errors: unknown[]): string[] {
+  return errors
+    .map(error => (typeof error === "string" ? error : (error as { message?: string })?.message))
+    .filter((message): message is string => Boolean(message));
+}
+
 function TextField({
   label, value, errors, type = "text", onBlur, onChange,
 }: TextFieldProps) {
-  const messages = errors
-    .map(error => (typeof error === "string" ? error : (error as { message?: string })?.message))
-    .filter(Boolean);
+  const messages = fieldMessages(errors);
 
   return (
     <label className="block text-sm font-medium text-slate-700">
@@ -171,6 +186,34 @@ function TextField({
       <input
         type={type}
         className={fieldClass}
+        value={value}
+        onBlur={onBlur}
+        onChange={event => onChange(event.target.value)}
+      />
+      {messages.length > 0 ? <span className="mt-1 block text-xs text-red-600">{messages.join(", ")}</span> : null}
+    </label>
+  );
+}
+
+interface TextAreaFieldProps {
+  label: string;
+  value: string;
+  errors: unknown[];
+  onBlur: () => void;
+  onChange: (value: string) => void;
+}
+
+function TextAreaField({
+  label, value, errors, onBlur, onChange,
+}: TextAreaFieldProps) {
+  const messages = fieldMessages(errors);
+
+  return (
+    <label className="block text-sm font-medium text-slate-700">
+      {label}
+      <textarea
+        className={fieldClass}
+        rows={2}
         value={value}
         onBlur={onBlur}
         onChange={event => onChange(event.target.value)}

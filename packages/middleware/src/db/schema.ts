@@ -1,17 +1,18 @@
-import { date, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
-/** `trips` table — one row per tracked trip. */
-export const trips = pgTable("trips", {
+/** `sentences` table — one row per stored example sentence. */
+export const sentences = pgTable("sentences", {
   id: uuid("id").primaryKey().defaultRandom(),
-  name: text("name").notNull(),
-  destination: text("destination").notNull(),
-  startDate: date("start_date").notNull(),
-  endDate: date("end_date").notNull(),
+  text: text("text").notNull(),
+  translation: text("translation").notNull(),
+  language: text("language").notNull(),
+  source: text("source"),
   notes: text("notes"),
+  tags: text("tags"),
   createdAt: timestamp("created_at", {
     withTimezone: true,
   }).notNull().defaultNow(),
 });
 
-export type TripRow = typeof trips.$inferSelect;
-export type NewTripRow = typeof trips.$inferInsert;
+export type SentenceRow = typeof sentences.$inferSelect;
+export type NewSentenceRow = typeof sentences.$inferInsert;

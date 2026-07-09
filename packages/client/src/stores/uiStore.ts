@@ -1,14 +1,14 @@
 import { create } from "zustand";
 
 interface UiState {
-  /** Whether trips that have already ended are shown in the list. */
-  showPastTrips: boolean;
-  toggleShowPastTrips: () => void;
+  /** Whether translations are revealed on the sentence cards (turn off to self-test). */
+  showTranslations: boolean;
+  toggleShowTranslations: () => void;
 }
 
 export const useUiStore = create<UiState>(set => ({
-  showPastTrips: true,
-  toggleShowPastTrips: () => set(state => ({
-    showPastTrips: !state.showPastTrips,
+  showTranslations: true,
+  toggleShowTranslations: () => set(state => ({
+    showTranslations: !state.showTranslations,
   })),
 }));

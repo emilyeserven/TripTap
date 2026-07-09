@@ -1,5 +1,5 @@
 {
-  "name": "@triptap/middleware",
+  "name": "@sentence-bank/middleware",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -12,19 +12,17 @@
     "start": "node dist/index.js",
     "test": "node --test --import tsx \"./src/tests/**/*.test.ts\"",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "push:dev": "dotenv -e .env -- drizzle-kit push",
-    "push:prod": "drizzle-kit push",
-    "push": "drizzle-kit push",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "dotenv -e .env -- tsx src/db/migrate.ts",
     "studio": "dotenv -e .env -- drizzle-kit studio"
   },
   "dependencies": {
     "@fastify/cors": "11.1.0",
     "@fastify/swagger": "9.7.0",
     "@fastify/swagger-ui": "5.2.5",
-    "@triptap/types": "workspace:*",
+    "@sentence-bank/types": "workspace:*",
     "dotenv": "17.2.3",
     "dotenv-cli": "11.0.0",
-    "drizzle-kit": "0.31.10",
     "drizzle-orm": "0.45.2",
     "fastify": "5.8.5",
     "pg": "8.16.3"
@@ -32,6 +30,7 @@
   "devDependencies": {
     "@types/node": "24.10.1",
     "@types/pg": "8.15.6",
+    "drizzle-kit": "0.31.10",
     "nodemon": "3.1.14",
     "tsc-alias": "1.8.16",
     "tsx": "4.20.6",

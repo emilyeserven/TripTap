@@ -1,4 +1,4 @@
-import type { CreateTripInput, Trip, UpdateTripInput } from "@triptap/types";
+import type { CreateSentenceInput, Sentence, UpdateSentenceInput } from "@sentence-bank/types";
 
 const BASE = "/api";
 
@@ -19,19 +19,19 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return (await res.json()) as T;
 }
 
-export const tripsApi = {
-  list: () => request<Trip[]>("/trips"),
-  create: (input: CreateTripInput) =>
-    request<Trip>("/trips", {
+export const sentencesApi = {
+  list: () => request<Sentence[]>("/sentences"),
+  create: (input: CreateSentenceInput) =>
+    request<Sentence>("/sentences", {
       method: "POST",
       body: JSON.stringify(input),
     }),
-  update: (id: string, input: UpdateTripInput) =>
-    request<Trip>(`/trips/${id}`, {
+  update: (id: string, input: UpdateSentenceInput) =>
+    request<Sentence>(`/sentences/${id}`, {
       method: "PATCH",
       body: JSON.stringify(input),
     }),
-  remove: (id: string) => request<undefined>(`/trips/${id}`, {
+  remove: (id: string) => request<undefined>(`/sentences/${id}`, {
     method: "DELETE",
   }),
 };

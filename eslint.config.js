@@ -2,7 +2,7 @@ import emilyConfig from "@emilyeserven/eslint-config";
 import globals from "globals";
 
 /**
- * Flat ESLint config for TripTap.
+ * Flat ESLint config for sentence-bank.
  *
  * Rules come from the shared `@emilyeserven/eslint-config` (the same config used by emstack).
  * Always run `pnpm lint:fix` from the repo root — running from a package produces import
@@ -16,6 +16,7 @@ export default [
       "**/coverage/**",
       "**/*.gen.ts",
       "packages/client/src/routeTree.gen.ts",
+      "packages/middleware/drizzle/**",
       ".claude/skills/fallow/**",
     ],
   },

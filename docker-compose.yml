@@ -4,7 +4,7 @@ services:
     environment:
       - POSTGRES_USER=${POSTGRES_USER:-postgres}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-password}
-      - POSTGRES_DB=${POSTGRES_DB:-triptap}
+      - POSTGRES_DB=${POSTGRES_DB:-sentence_bank}
     volumes:
       - pgdata:/var/lib/postgresql/data
     ports:
@@ -21,7 +21,7 @@ services:
     ports:
       - "${GATEWAY_HOST_PORT:-3000}:3000"
     environment:
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@db:5432/${POSTGRES_DB:-triptap}
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@db:5432/${POSTGRES_DB:-sentence_bank}
     depends_on:
       db:
         condition: service_healthy

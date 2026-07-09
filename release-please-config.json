@@ -6,7 +6,7 @@
   "include-component-in-tag": false,
   "packages": {
     ".": {
-      "package-name": "triptap",
+      "package-name": "sentence-bank",
       "changelog-path": "CHANGELOG.md"
     }
   }

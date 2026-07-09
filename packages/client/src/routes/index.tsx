@@ -7,18 +7,19 @@ export const Route = createFileRoute("/")({
 function HomePage() {
   return (
     <section className="space-y-4">
-      <h1 className="text-2xl font-bold">Track your trips</h1>
+      <h1 className="text-2xl font-bold">Build your sentence bank</h1>
       <p className="text-slate-600">
-        TripTap is a self-deployable app for keeping tabs on your trips. Head to the
+        sentence-bank is a self-deployable app for building your personal bank of example sentences.
+        Head to the
         {" "}
         <Link
-          to="/trips"
+          to="/sentences"
           className="
             font-medium text-blue-600
             hover:underline
           "
         >
-          Trips
+          Sentences
         </Link>
         {" "}
         page to add your first one.
