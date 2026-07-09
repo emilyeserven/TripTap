@@ -31,21 +31,21 @@ COPY tsconfig.json ./
 FROM deps AS build-types
 
 COPY packages/types/ ./packages/types/
-RUN pnpm --filter @triptap/types build
+RUN pnpm --filter @sentence-bank/types build
 
 
 FROM build-types AS build-middleware
 
 COPY packages/middleware/ ./packages/middleware/
 # Transpile-only: CI owns the type gate (.github/workflows/ci.yml), so skip it here for speed.
-RUN pnpm --filter @triptap/middleware exec tsc -p tsconfig.build.json --noCheck \
- && pnpm --filter @triptap/middleware exec tsc-alias -p tsconfig.build.json --resolve-full-paths
+RUN pnpm --filter @sentence-bank/middleware exec tsc -p tsconfig.build.json --noCheck \
+ && pnpm --filter @sentence-bank/middleware exec tsc-alias -p tsconfig.build.json --resolve-full-paths
 
 
 FROM build-types AS build-client
 
 COPY packages/client/ ./packages/client/
-RUN pnpm --filter @triptap/client build
+RUN pnpm --filter @sentence-bank/client build
 
 
 # Production stage — fresh install with only production deps (client ships as static files)
@@ -57,7 +57,7 @@ COPY packages/middleware/package.json ./packages/middleware/
 COPY packages/client/package.json ./packages/client/
 COPY packages/gateway/package.json ./packages/gateway/
 
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile --prod --ignore-scripts --filter '!@triptap/client'
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile --prod --ignore-scripts --filter '!@sentence-bank/client'
 
 
 # Final stage
@@ -72,8 +72,7 @@ COPY --from=prod-deps /app /app
 COPY --from=build-types /app/packages/types/dist/ ./packages/types/dist/
 COPY --from=build-types /app/packages/types/src/ ./packages/types/src/
 COPY --from=build-middleware /app/packages/middleware/dist/ ./packages/middleware/dist/
-COPY --from=build-middleware /app/packages/middleware/src/ ./packages/middleware/src/
-COPY --from=build-middleware /app/packages/middleware/drizzle.config.ts ./packages/middleware/drizzle.config.ts
+COPY --from=build-middleware /app/packages/middleware/drizzle/ ./packages/middleware/drizzle/
 COPY --from=build-client /app/packages/client/dist/ ./packages/client/dist/
 COPY packages/gateway/server.js ./packages/gateway/server.js
 

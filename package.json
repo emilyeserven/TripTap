@@ -1,5 +1,5 @@
 {
-  "name": "triptap",
+  "name": "sentence-bank",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -7,21 +7,21 @@
   "engines": {
     "node": ">=22"
   },
-  "description": "Self-deploy app for tracking trip information",
+  "description": "Self-deploy app for building a personal bank of example sentences",
   "scripts": {
-    "build": "pnpm -r run clean && pnpm --filter=@triptap/types build && pnpm --filter=@triptap/middleware --filter=@triptap/client -r build",
-    "start": "pnpm --filter=@triptap/gateway start",
+    "build": "pnpm -r run clean && pnpm --filter=@sentence-bank/types build && pnpm --filter=@sentence-bank/middleware --filter=@sentence-bank/client -r build",
+    "start": "pnpm --filter=@sentence-bank/gateway start",
     "test": "pnpm run -r test",
-    "dev": "docker compose up --wait db && pnpm --filter=@triptap/middleware run push:dev && concurrently -n \"models,server,ui\" -c \"yellow,blue,green\" \"pnpm --filter=@triptap/types --stream run dev\" \"pnpm --filter=@triptap/middleware --stream run dev\" \"pnpm --filter=@triptap/client --stream run dev\"",
+    "dev": "docker compose up --wait db && pnpm --filter=@sentence-bank/middleware run db:migrate && concurrently -n \"models,server,ui\" -c \"yellow,blue,green\" \"pnpm --filter=@sentence-bank/types --stream run dev\" \"pnpm --filter=@sentence-bank/middleware --stream run dev\" \"pnpm --filter=@sentence-bank/client --stream run dev\"",
     "lint": "eslint . --cache --cache-location node_modules/.cache/eslint/ --cache-strategy content",
     "lint:fix": "eslint . --fix --cache --cache-location node_modules/.cache/eslint/ --cache-strategy content",
     "verify:changed": "node scripts/verify-changed.mjs",
     "fallow": "fallow",
     "fallow:sync-skill": "rm -rf .claude/skills/fallow && cp -R node_modules/fallow/skills/fallow .claude/skills/fallow",
-    "typecheck": "pnpm --filter=@triptap/types build && pnpm -r --filter=@triptap/middleware --filter=@triptap/client run typecheck",
-    "studio": "pnpm --filter=@triptap/middleware run studio",
-    "push:dev": "pnpm --filter=@triptap/middleware run push:dev",
-    "push:prod": "pnpm --filter=@triptap/middleware run push:prod",
+    "typecheck": "pnpm --filter=@sentence-bank/types build && pnpm -r --filter=@sentence-bank/middleware --filter=@sentence-bank/client run typecheck",
+    "studio": "pnpm --filter=@sentence-bank/middleware run studio",
+    "db:generate": "pnpm --filter=@sentence-bank/middleware run db:generate",
+    "db:migrate": "pnpm --filter=@sentence-bank/middleware run db:migrate",
     "prepare": "husky"
   },
   "dependencies": {

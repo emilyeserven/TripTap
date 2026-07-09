@@ -21,7 +21,7 @@ try {
     port,
     host,
   });
-  app.log.info(`TripTap API ready on http://${host}:${port} (docs at /docs)`);
+  app.log.info(`sentence-bank API ready on http://${host}:${port} (docs at /docs)`);
 }
 catch (err) {
   app.log.error(err);

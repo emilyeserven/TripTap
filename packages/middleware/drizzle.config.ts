@@ -6,6 +6,6 @@ export default defineConfig({
   out: "./drizzle",
   dialect: "postgresql",
   dbCredentials: {
-    url: process.env.DATABASE_URL ?? "postgresql://postgres:password@localhost:5432/triptap",
+    url: process.env.DATABASE_URL ?? "postgresql://postgres:password@localhost:5432/sentence_bank",
   },
 });
