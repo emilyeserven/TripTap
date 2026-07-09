@@ -9,12 +9,39 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as VocabularyRouteImport } from './routes/vocabulary'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SentencesRouteImport } from './routes/sentences'
+import { Route as GrammarRouteImport } from './routes/grammar'
+import { Route as CultureRouteImport } from './routes/culture'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as LessonsIndexRouteImport } from './routes/lessons.index'
+import { Route as LessonsNewRouteImport } from './routes/lessons.new'
+import { Route as LessonsSlugRouteImport } from './routes/lessons.$slug'
 
+const VocabularyRoute = VocabularyRouteImport.update({
+  id: '/vocabulary',
+  path: '/vocabulary',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SentencesRoute = SentencesRouteImport.update({
   id: '/sentences',
   path: '/sentences',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GrammarRoute = GrammarRouteImport.update({
+  id: '/grammar',
+  path: '/grammar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CultureRoute = CultureRouteImport.update({
+  id: '/culture',
+  path: '/culture',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -22,40 +49,139 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LessonsIndexRoute = LessonsIndexRouteImport.update({
+  id: '/lessons/',
+  path: '/lessons/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LessonsNewRoute = LessonsNewRouteImport.update({
+  id: '/lessons/new',
+  path: '/lessons/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LessonsSlugRoute = LessonsSlugRouteImport.update({
+  id: '/lessons/$slug',
+  path: '/lessons/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/culture': typeof CultureRoute
+  '/grammar': typeof GrammarRoute
   '/sentences': typeof SentencesRoute
+  '/settings': typeof SettingsRoute
+  '/vocabulary': typeof VocabularyRoute
+  '/lessons/$slug': typeof LessonsSlugRoute
+  '/lessons/new': typeof LessonsNewRoute
+  '/lessons/': typeof LessonsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/culture': typeof CultureRoute
+  '/grammar': typeof GrammarRoute
   '/sentences': typeof SentencesRoute
+  '/settings': typeof SettingsRoute
+  '/vocabulary': typeof VocabularyRoute
+  '/lessons/$slug': typeof LessonsSlugRoute
+  '/lessons/new': typeof LessonsNewRoute
+  '/lessons': typeof LessonsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/culture': typeof CultureRoute
+  '/grammar': typeof GrammarRoute
   '/sentences': typeof SentencesRoute
+  '/settings': typeof SettingsRoute
+  '/vocabulary': typeof VocabularyRoute
+  '/lessons/$slug': typeof LessonsSlugRoute
+  '/lessons/new': typeof LessonsNewRoute
+  '/lessons/': typeof LessonsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/sentences'
+  fullPaths:
+    | '/'
+    | '/culture'
+    | '/grammar'
+    | '/sentences'
+    | '/settings'
+    | '/vocabulary'
+    | '/lessons/$slug'
+    | '/lessons/new'
+    | '/lessons/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/sentences'
-  id: '__root__' | '/' | '/sentences'
+  to:
+    | '/'
+    | '/culture'
+    | '/grammar'
+    | '/sentences'
+    | '/settings'
+    | '/vocabulary'
+    | '/lessons/$slug'
+    | '/lessons/new'
+    | '/lessons'
+  id:
+    | '__root__'
+    | '/'
+    | '/culture'
+    | '/grammar'
+    | '/sentences'
+    | '/settings'
+    | '/vocabulary'
+    | '/lessons/$slug'
+    | '/lessons/new'
+    | '/lessons/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CultureRoute: typeof CultureRoute
+  GrammarRoute: typeof GrammarRoute
   SentencesRoute: typeof SentencesRoute
+  SettingsRoute: typeof SettingsRoute
+  VocabularyRoute: typeof VocabularyRoute
+  LessonsSlugRoute: typeof LessonsSlugRoute
+  LessonsNewRoute: typeof LessonsNewRoute
+  LessonsIndexRoute: typeof LessonsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/vocabulary': {
+      id: '/vocabulary'
+      path: '/vocabulary'
+      fullPath: '/vocabulary'
+      preLoaderRoute: typeof VocabularyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sentences': {
       id: '/sentences'
       path: '/sentences'
       fullPath: '/sentences'
       preLoaderRoute: typeof SentencesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/grammar': {
+      id: '/grammar'
+      path: '/grammar'
+      fullPath: '/grammar'
+      preLoaderRoute: typeof GrammarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/culture': {
+      id: '/culture'
+      path: '/culture'
+      fullPath: '/culture'
+      preLoaderRoute: typeof CultureRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -65,12 +191,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/lessons/': {
+      id: '/lessons/'
+      path: '/lessons'
+      fullPath: '/lessons/'
+      preLoaderRoute: typeof LessonsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lessons/new': {
+      id: '/lessons/new'
+      path: '/lessons/new'
+      fullPath: '/lessons/new'
+      preLoaderRoute: typeof LessonsNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lessons/$slug': {
+      id: '/lessons/$slug'
+      path: '/lessons/$slug'
+      fullPath: '/lessons/$slug'
+      preLoaderRoute: typeof LessonsSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CultureRoute: CultureRoute,
+  GrammarRoute: GrammarRoute,
   SentencesRoute: SentencesRoute,
+  SettingsRoute: SettingsRoute,
+  VocabularyRoute: VocabularyRoute,
+  LessonsSlugRoute: LessonsSlugRoute,
+  LessonsNewRoute: LessonsNewRoute,
+  LessonsIndexRoute: LessonsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -5,6 +5,8 @@
  * (`@sentence-bank/client`) so the wire contract stays in one place.
  */
 
+export * from "./lesson.js";
+
 /** A single example sentence stored in the bank. */
 export interface Sentence {
   id: string;

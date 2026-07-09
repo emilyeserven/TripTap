@@ -16,7 +16,9 @@ const fieldClass
   = "mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none";
 
 /** Create-sentence form. Owns its own mutation so the page stays focused on the list. */
-export function SentenceForm() {
+export function SentenceForm({
+  onSuccess,
+}: { onSuccess?: () => void }) {
   const createSentence = useCreateSentence();
 
   const form = useForm({
@@ -43,6 +45,7 @@ export function SentenceForm() {
         notes: value.notes || null,
       });
       form.reset();
+      onSuccess?.();
     },
   });
 

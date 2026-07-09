@@ -19,6 +19,9 @@
     "dev": "tsc -b tsconfig.build.json --watch --preserveWatchOutput",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
+  "dependencies": {
+    "zod": "^4.1.0"
+  },
   "devDependencies": {
     "typescript": "5.9.3"
   }

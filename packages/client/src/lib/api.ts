@@ -1,4 +1,14 @@
-import type { CreateSentenceInput, Sentence, UpdateSentenceInput } from "@sentence-bank/types";
+import type {
+  CreateSentenceInput,
+  LessonContent,
+  LessonDetail,
+  LessonImportInput,
+  LessonSummary,
+  Sentence,
+  UpdateSentenceInput,
+  VocabItem,
+  VocabRenshuuUpdate,
+} from "@sentence-bank/types";
 
 const BASE = "/api";
 
@@ -34,4 +44,23 @@ export const sentencesApi = {
   remove: (id: string) => request<undefined>(`/sentences/${id}`, {
     method: "DELETE",
   }),
+};
+
+export const lessonsApi = {
+  list: () => request<LessonSummary[]>("/lessons"),
+  content: () => request<LessonContent>("/lesson-content"),
+  getBySlug: (slug: string) => request<LessonDetail>(`/lessons/${slug}`),
+  import: (input: LessonImportInput) =>
+    request<LessonDetail>("/lessons/import", {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+  remove: (id: string) => request<undefined>(`/lessons/${id}`, {
+    method: "DELETE",
+  }),
+  updateVocab: (id: string, patch: VocabRenshuuUpdate) =>
+    request<VocabItem>(`/lesson-vocab/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(patch),
+    }),
 };

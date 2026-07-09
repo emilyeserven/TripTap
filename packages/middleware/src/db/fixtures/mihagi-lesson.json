@@ -1,0 +1,748 @@
+{
+  "slug": "mihagi",
+  "title": "美萩",
+  "eyebrow": "Seaside Japanese · Hagi, Yamaguchi",
+  "subtitle": "A Japanese lesson built from Resort Hotel Mihagi — sunsets, onsen, kaiseki & a castle town.",
+  "scrollText": "海が奏でる癒しの宿",
+  "footerText": "Source: リゾートホテル美萩 (resorthotel-mihagi.com). A study aid — Japanese text quoted from the hotel's public site for language learning.",
+  "targetLevel": "N4",
+  "sourceUrl": "https://resorthotel-mihagi.com/",
+  "videoUrl": null,
+  "sourceLabel": "From the inn",
+  "categories": [
+    {
+      "key": "lodging",
+      "jp": "客室",
+      "en": "Rooms",
+      "icon": "home"
+    },
+    {
+      "key": "onsen",
+      "jp": "温泉",
+      "en": "Onsen",
+      "icon": "waves"
+    },
+    {
+      "key": "dining",
+      "jp": "料理",
+      "en": "Dining",
+      "icon": "utensils"
+    },
+    {
+      "key": "scenery",
+      "jp": "景観",
+      "en": "Scenery",
+      "icon": "sun"
+    }
+  ],
+  "vocab": [
+    {
+      "jp": "絶景",
+      "yomi": "ぜっけい",
+      "en": "magnificent view",
+      "lvl": "N2",
+      "cat": "scenery"
+    },
+    {
+      "jp": "夕陽",
+      "yomi": "ゆうひ",
+      "en": "the setting sun",
+      "lvl": "N3",
+      "cat": "scenery"
+    },
+    {
+      "jp": "夕景",
+      "yomi": "ゆうけい",
+      "en": "evening scenery",
+      "lvl": "N1",
+      "cat": "scenery"
+    },
+    {
+      "jp": "夕暮れ",
+      "yomi": "ゆうぐれ",
+      "en": "dusk, twilight",
+      "lvl": "N2",
+      "cat": "scenery"
+    },
+    {
+      "jp": "菊ヶ浜",
+      "yomi": "きくがはま",
+      "en": "Kikugahama (beach name)",
+      "lvl": "local",
+      "cat": "scenery"
+    },
+    {
+      "jp": "白砂浜",
+      "yomi": "はくさはま",
+      "en": "white-sand beach",
+      "lvl": "N1",
+      "cat": "scenery"
+    },
+    {
+      "jp": "海岸",
+      "yomi": "かいがん",
+      "en": "coast, shore",
+      "lvl": "N3",
+      "cat": "scenery"
+    },
+    {
+      "jp": "日本海",
+      "yomi": "にほんかい",
+      "en": "the Sea of Japan",
+      "lvl": "N4",
+      "cat": "scenery"
+    },
+    {
+      "jp": "幻想的",
+      "yomi": "げんそうてき",
+      "en": "dreamlike, fantastical",
+      "lvl": "N1",
+      "cat": "scenery"
+    },
+    {
+      "jp": "景観",
+      "yomi": "けいかん",
+      "en": "scenery, landscape",
+      "lvl": "N1",
+      "cat": "scenery"
+    },
+    {
+      "jp": "散策",
+      "yomi": "さんさく",
+      "en": "a stroll, a ramble",
+      "lvl": "N1",
+      "cat": "scenery"
+    },
+    {
+      "jp": "城下町",
+      "yomi": "じょうかまち",
+      "en": "castle town",
+      "lvl": "N2",
+      "cat": "scenery"
+    },
+    {
+      "jp": "客室",
+      "yomi": "きゃくしつ",
+      "en": "guest room",
+      "lvl": "N2",
+      "cat": "lodging"
+    },
+    {
+      "jp": "宿",
+      "yomi": "やど",
+      "en": "inn, lodging",
+      "lvl": "N3",
+      "cat": "lodging"
+    },
+    {
+      "jp": "滞在",
+      "yomi": "たいざい",
+      "en": "a stay (at a place)",
+      "lvl": "N2",
+      "cat": "lodging"
+    },
+    {
+      "jp": "海側",
+      "yomi": "うみがわ",
+      "en": "the ocean-facing side",
+      "lvl": "N4",
+      "cat": "lodging"
+    },
+    {
+      "jp": "一望",
+      "yomi": "いちぼう",
+      "en": "a sweeping/panoramic view",
+      "lvl": "N1",
+      "cat": "lodging"
+    },
+    {
+      "jp": "寛ぎ",
+      "yomi": "くつろぎ",
+      "en": "relaxation, ease",
+      "lvl": "N2",
+      "cat": "lodging"
+    },
+    {
+      "jp": "貸切",
+      "yomi": "かしきり",
+      "en": "private / reserved use",
+      "lvl": "N1",
+      "cat": "lodging"
+    },
+    {
+      "jp": "温泉",
+      "yomi": "おんせん",
+      "en": "hot spring",
+      "lvl": "N4",
+      "cat": "onsen"
+    },
+    {
+      "jp": "露天風呂",
+      "yomi": "ろてんぶろ",
+      "en": "open-air bath",
+      "lvl": "N2",
+      "cat": "onsen"
+    },
+    {
+      "jp": "天然",
+      "yomi": "てんねん",
+      "en": "natural",
+      "lvl": "N2",
+      "cat": "onsen"
+    },
+    {
+      "jp": "源泉",
+      "yomi": "げんせん",
+      "en": "hot-spring source",
+      "lvl": "N1",
+      "cat": "onsen"
+    },
+    {
+      "jp": "入浴",
+      "yomi": "にゅうよく",
+      "en": "bathing",
+      "lvl": "N2",
+      "cat": "onsen"
+    },
+    {
+      "jp": "癒し",
+      "yomi": "いやし",
+      "en": "healing, comfort",
+      "lvl": "N2",
+      "cat": "onsen"
+    },
+    {
+      "jp": "足湯",
+      "yomi": "あしゆ",
+      "en": "foot bath",
+      "lvl": "N1",
+      "cat": "onsen"
+    },
+    {
+      "jp": "料理",
+      "yomi": "りょうり",
+      "en": "cuisine, cooking",
+      "lvl": "N5",
+      "cat": "dining"
+    },
+    {
+      "jp": "懐石料理",
+      "yomi": "かいせきりょうり",
+      "en": "kaiseki course cuisine",
+      "lvl": "N1",
+      "cat": "dining"
+    },
+    {
+      "jp": "和食",
+      "yomi": "わしょく",
+      "en": "Japanese cuisine",
+      "lvl": "N4",
+      "cat": "dining"
+    },
+    {
+      "jp": "旬",
+      "yomi": "しゅん",
+      "en": "the season for (a food)",
+      "lvl": "N2",
+      "cat": "dining"
+    },
+    {
+      "jp": "食材",
+      "yomi": "しょくざい",
+      "en": "food ingredients",
+      "lvl": "N2",
+      "cat": "dining"
+    },
+    {
+      "jp": "地元",
+      "yomi": "じもと",
+      "en": "local (area)",
+      "lvl": "N3",
+      "cat": "dining"
+    },
+    {
+      "jp": "堪能",
+      "yomi": "たんのう",
+      "en": "to savor / fully enjoy",
+      "lvl": "N1",
+      "cat": "dining"
+    }
+  ],
+  "grammar": [
+    {
+      "pat": "〜てみてください",
+      "gloss": "try doing ~ (and see)",
+      "note": "Take a verb in て-form, add みる ('to see / try') and the polite ください. It softly invites someone to give something a go, without pressure — perfect for hotel copy nudging you to 'go on, try it.' On the site: 出かけてみてください, 'why not head out (and see).'",
+      "ex": [
+        {
+          "jp": "チェックイン後に、菊ヶ浜を散策してみてください。",
+          "en": "After checking in, try taking a stroll along Kikugahama."
+        },
+        {
+          "jp": "露天風呂に入ってみてください。",
+          "en": "Do try getting into the open-air bath."
+        },
+        {
+          "jp": "地元の和食を食べてみてください。",
+          "en": "Try eating the local Japanese cuisine."
+        }
+      ]
+    },
+    {
+      "pat": "〜ことができます",
+      "gloss": "to be able to ~",
+      "note": "Plain-form verb + ことができます is the 'textbook' way to say 'can / be able to.' It is a touch more formal than the potential verb form (泳げます), which is why guest-facing writing likes it. On the site: 泳ぎに行くことができます, 'you can go swimming.'",
+      "ex": [
+        {
+          "jp": "海水浴シーズンには海に泳ぎに行くことができます。",
+          "en": "During the swimming season, you can go swimming in the sea."
+        },
+        {
+          "jp": "貸切で温泉を満喫することができます。",
+          "en": "You can fully enjoy the hot spring privately."
+        },
+        {
+          "jp": "客室から日本海を一望することができます。",
+          "en": "You can take in a panoramic view of the Sea of Japan from your room."
+        }
+      ]
+    },
+    {
+      "pat": "お／ご〜いただけます・ください",
+      "gloss": "honorific 'you may ~' / 'please ~'",
+      "note": "Hospitality keigo. お + verb-stem (or ご + noun) + いただけます humbly says 'we can have you ~' → 'you may ~'; the ください version is a polite request. On the site: お選びいただけます ('you may choose') and ご堪能ください ('please savor'). ELI5: it's the extra-polite gift-wrap around an ordinary verb.",
+      "ex": [
+        {
+          "jp": "多様なお部屋タイプからお選びいただけます。",
+          "en": "You may choose from a wide variety of room types."
+        },
+        {
+          "jp": "旬のお料理をご堪能ください。",
+          "en": "Please savor the seasonal cuisine."
+        },
+        {
+          "jp": "夕景をゆっくりお楽しみいただけます。",
+          "en": "You may leisurely enjoy the evening view."
+        }
+      ]
+    },
+    {
+      "pat": "〜ながら",
+      "gloss": "while doing ~ (at the same time)",
+      "note": "Attach ながら to a verb-stem to run two actions in parallel; the ながら clause is the backdrop, the main clause is the point. On the site: 夕景を眺めながらの入浴 — 'bathing while gazing at the evening view.' Note how ながら + の turns the whole phrase into a noun modifier.",
+      "ex": [
+        {
+          "jp": "夕景を眺めながら入浴します。",
+          "en": "I bathe while gazing at the evening scenery."
+        },
+        {
+          "jp": "波の音を聞きながら散策しました。",
+          "en": "I strolled while listening to the sound of the waves."
+        },
+        {
+          "jp": "海を見ながら朝食をいただきました。",
+          "en": "I had breakfast while looking at the sea."
+        }
+      ]
+    },
+    {
+      "pat": "〜にこだわる",
+      "gloss": "to be particular about / insist on ~",
+      "note": "Noun + にこだわる signals a proud, uncompromising focus on something — a chef's fixation on quality, a maker's insistence on a detail. Very common in food and craft marketing. On the site: 旬の食材にこだわった和食 — 'Japanese food particular about seasonal ingredients.' The past こだわった here modifies 和食 as a relative clause.",
+      "ex": [
+        {
+          "jp": "地元の食材にこだわっています。",
+          "en": "We are particular about local ingredients."
+        },
+        {
+          "jp": "旬にこだわった料理をご用意します。",
+          "en": "We prepare cuisine that insists on what's in season."
+        },
+        {
+          "jp": "料理長は素材の鮮度にこだわります。",
+          "en": "The head chef is particular about the freshness of the ingredients."
+        }
+      ]
+    }
+  ],
+  "source": [
+    {
+      "jp": "大切な方との思い出の1枚になる。",
+      "en": "It becomes one treasured photo shared with someone dear.",
+      "where": "Home — Appeal",
+      "url": "https://resorthotel-mihagi.com/",
+      "grammar": [
+        {
+          "p": "〜との",
+          "d": "Noun + と + の links 'with (someone)' into the following noun: 大切な方との思い出 = 'memories with a dear person.'"
+        },
+        {
+          "p": "〜になる",
+          "d": "Noun + になる = 'becomes ~.' Here the whole stay 'becomes' a single photo."
+        }
+      ],
+      "vocab": [
+        {
+          "w": "大切",
+          "y": "たいせつ",
+          "m": "precious, dear (na-adj)",
+          "lvl": "N4"
+        },
+        {
+          "w": "思い出",
+          "y": "おもいで",
+          "m": "a memory, remembrance",
+          "lvl": "N3"
+        },
+        {
+          "w": "1枚",
+          "y": "いちまい",
+          "m": "one (flat thing) — here, one photo",
+          "lvl": "N5"
+        }
+      ]
+    },
+    {
+      "jp": "約1km続く白砂浜の菊ヶ浜がホテルの目の前に広がります。",
+      "en": "Kikugahama, a white-sand beach stretching about 1 km, spreads out right in front of the hotel.",
+      "where": "Appeal — Location",
+      "url": "https://resorthotel-mihagi.com/appeal/",
+      "grammar": [
+        {
+          "p": "続く（名詞修飾）",
+          "d": "The plain verb 続く ('continues') directly modifies the noun after it — a relative clause: 約1km続く白砂浜 = 'a white-sand beach that continues about 1 km.'"
+        },
+        {
+          "p": "〜の目の前に",
+          "d": "Noun + の目の前に = 'right in front of ~.' Very handy for describing location."
+        }
+      ],
+      "vocab": [
+        {
+          "w": "約",
+          "y": "やく",
+          "m": "approximately, about",
+          "lvl": "N3"
+        },
+        {
+          "w": "白砂浜",
+          "y": "はくさはま",
+          "m": "white-sand beach",
+          "lvl": "N1"
+        },
+        {
+          "w": "広がる",
+          "y": "ひろがる",
+          "m": "to spread out, extend",
+          "lvl": "N2"
+        }
+      ]
+    },
+    {
+      "jp": "夕暮れには昼間とは違った幻想的な雰囲気があなたを包み込みます。",
+      "en": "At dusk, a dreamlike atmosphere unlike the daytime envelops you.",
+      "where": "Appeal — Location",
+      "url": "https://resorthotel-mihagi.com/appeal/",
+      "grammar": [
+        {
+          "p": "〜とは違った",
+          "d": "Noun + とは違った = 'different from ~ / unlike ~.' Here 昼間とは違った modifies 雰囲気: 'an atmosphere unlike the daytime.'"
+        },
+        {
+          "p": "〜には（時）",
+          "d": "Time word + には marks 'at / on (that time)' with a bit of contrast emphasis: 夕暮れには = 'at dusk (as opposed to other times).'"
+        }
+      ],
+      "vocab": [
+        {
+          "w": "昼間",
+          "y": "ひるま",
+          "m": "daytime",
+          "lvl": "N3"
+        },
+        {
+          "w": "幻想的",
+          "y": "げんそうてき",
+          "m": "dreamlike, fantastical (na-adj)",
+          "lvl": "N1"
+        },
+        {
+          "w": "包み込む",
+          "y": "つつみこむ",
+          "m": "to wrap up, envelop",
+          "lvl": "N1"
+        }
+      ]
+    },
+    {
+      "jp": "チェックイン後にお荷物を置いて、出かけてみてください。",
+      "en": "After checking in, set down your luggage and try heading out.",
+      "where": "Appeal — Beach",
+      "url": "https://resorthotel-mihagi.com/appeal/",
+      "grammar": [
+        {
+          "p": "〜後に",
+          "d": "Noun + 後（ご）に = 'after ~.' チェックイン後に = 'after check-in.'"
+        },
+        {
+          "p": "〜てみてください",
+          "d": "て-form + みてください = 'try doing ~ (and see).' A gentle invitation. Recurs in the Grammar tab."
+        }
+      ],
+      "vocab": [
+        {
+          "w": "荷物",
+          "y": "にもつ",
+          "m": "luggage, baggage",
+          "lvl": "N4"
+        },
+        {
+          "w": "置く",
+          "y": "おく",
+          "m": "to put, set down",
+          "lvl": "N5"
+        },
+        {
+          "w": "出かける",
+          "y": "でかける",
+          "m": "to go out, set off",
+          "lvl": "N4"
+        }
+      ]
+    },
+    {
+      "jp": "海水浴シーズンには、ホテルで着替えて海に泳ぎに行くことができます。",
+      "en": "During the swimming season, you can change at the hotel and go swimming in the sea.",
+      "where": "Appeal — Beach",
+      "url": "https://resorthotel-mihagi.com/appeal/",
+      "grammar": [
+        {
+          "p": "泳ぎに行く",
+          "d": "Verb-stem + に行く = 'go in order to (do).' 泳ぎに行く = 'go to swim.'"
+        },
+        {
+          "p": "〜ことができます",
+          "d": "Plain verb + ことができます = 'be able to ~.' Featured in the Grammar tab."
+        }
+      ],
+      "vocab": [
+        {
+          "w": "海水浴",
+          "y": "かいすいよく",
+          "m": "sea bathing, swimming in the sea",
+          "lvl": "N2"
+        },
+        {
+          "w": "着替える",
+          "y": "きがえる",
+          "m": "to change clothes",
+          "lvl": "N3"
+        }
+      ]
+    },
+    {
+      "jp": "透明度の高い海で思う存分遊んでください。",
+      "en": "Play to your heart's content in the crystal-clear sea.",
+      "where": "Appeal — Beach",
+      "url": "https://resorthotel-mihagi.com/appeal/",
+      "grammar": [
+        {
+          "p": "〜度の高い",
+          "d": "Noun + 度（ど）の高い = 'high in ~.' 透明度の高い海 = 'a sea high in transparency,' i.e. very clear water."
+        },
+        {
+          "p": "思う存分",
+          "d": "A set adverb meaning 'to one's heart's content / as much as one likes.'"
+        }
+      ],
+      "vocab": [
+        {
+          "w": "透明度",
+          "y": "とうめいど",
+          "m": "transparency, clarity",
+          "lvl": "N1"
+        },
+        {
+          "w": "思う存分",
+          "y": "おもうぞんぶん",
+          "m": "to one's heart's content",
+          "lvl": "N1"
+        }
+      ]
+    },
+    {
+      "jp": "絶景の海側客室から城下町側の客室まで、多様なお部屋タイプからお選びいただけます。",
+      "en": "From stunning ocean-side rooms to castle-town-side rooms, you may choose from a wide variety of room types.",
+      "where": "Appeal — Rooms",
+      "url": "https://resorthotel-mihagi.com/appeal/",
+      "grammar": [
+        {
+          "p": "〜から〜まで",
+          "d": "A から B まで = 'from A to B' — spanning a range, here from one room type to another."
+        },
+        {
+          "p": "お選びいただけます",
+          "d": "Honorific お + verb-stem + いただけます = 'you may (kindly) choose.' See the keigo pattern in Grammar."
+        }
+      ],
+      "vocab": [
+        {
+          "w": "海側",
+          "y": "うみがわ",
+          "m": "ocean-facing side",
+          "lvl": "N4"
+        },
+        {
+          "w": "城下町",
+          "y": "じょうかまち",
+          "m": "castle town",
+          "lvl": "N2"
+        },
+        {
+          "w": "多様",
+          "y": "たよう",
+          "m": "diverse, varied (na-adj)",
+          "lvl": "N2"
+        }
+      ]
+    },
+    {
+      "jp": "海を望む露天風呂、夕景を眺めながらの入浴は心身ともに癒されます。",
+      "en": "In the open-air bath overlooking the sea, bathing while gazing at the evening view heals both body and mind.",
+      "where": "Appeal — Onsen",
+      "url": "https://resorthotel-mihagi.com/appeal/",
+      "grammar": [
+        {
+          "p": "〜ながらの",
+          "d": "Verb-stem + ながら + の nominalizes a 'while ~ing' phrase into a noun modifier: 眺めながらの入浴 = 'bathing done while gazing.'"
+        },
+        {
+          "p": "癒される",
+          "d": "Passive of 癒す ('to heal') → 癒される = 'to be healed / soothed.'"
+        }
+      ],
+      "vocab": [
+        {
+          "w": "望む",
+          "y": "のぞむ",
+          "m": "to command a view of, overlook",
+          "lvl": "N2"
+        },
+        {
+          "w": "眺める",
+          "y": "ながめる",
+          "m": "to gaze at",
+          "lvl": "N2"
+        },
+        {
+          "w": "心身",
+          "y": "しんしん",
+          "m": "body and mind",
+          "lvl": "N1"
+        }
+      ]
+    },
+    {
+      "jp": "温泉は、地下1500mから汲み上げている自家源泉の天然温泉。",
+      "en": "The hot spring is a natural one from the inn's own source, drawn up from 1,500 m underground.",
+      "where": "Home — Onsen",
+      "url": "https://resorthotel-mihagi.com/onsen/",
+      "grammar": [
+        {
+          "p": "〜から（起点）",
+          "d": "Noun + から marks a starting point / origin: 地下1500mから = 'from 1,500 m underground.'"
+        },
+        {
+          "p": "汲み上げている（名詞修飾）",
+          "d": "The te-iru clause 汲み上げている ('is drawing up') modifies 天然温泉 as a relative clause. Note the sentence ends on a noun — common in marketing copy for a punchy feel."
+        }
+      ],
+      "vocab": [
+        {
+          "w": "地下",
+          "y": "ちか",
+          "m": "underground",
+          "lvl": "N3"
+        },
+        {
+          "w": "汲み上げる",
+          "y": "くみあげる",
+          "m": "to pump / draw up",
+          "lvl": "N1"
+        },
+        {
+          "w": "自家源泉",
+          "y": "じかげんせん",
+          "m": "one's own (private) spring source",
+          "lvl": "local"
+        }
+      ]
+    },
+    {
+      "jp": "お食事は地元の旬の食材にこだわった和食懐石料理をご堪能ください。",
+      "en": "For your meal, please savor kaiseki Japanese cuisine made with local, in-season ingredients.",
+      "where": "Home — Dishes",
+      "url": "https://resorthotel-mihagi.com/dishes/",
+      "grammar": [
+        {
+          "p": "〜にこだわった",
+          "d": "Noun + にこだわった = '(that is) particular about ~,' modifying 和食懐石料理. See the にこだわる pattern in Grammar."
+        },
+        {
+          "p": "ご堪能ください",
+          "d": "Honorific ご + 堪能 + ください = 'please savor / fully enjoy.' The polished keigo request."
+        }
+      ],
+      "vocab": [
+        {
+          "w": "地元",
+          "y": "じもと",
+          "m": "local (area)",
+          "lvl": "N3"
+        },
+        {
+          "w": "旬",
+          "y": "しゅん",
+          "m": "in season",
+          "lvl": "N2"
+        },
+        {
+          "w": "懐石料理",
+          "y": "かいせきりょうり",
+          "m": "kaiseki course cuisine",
+          "lvl": "N1"
+        }
+      ]
+    }
+  ],
+  "culture": [
+    {
+      "icon": "sun",
+      "jp": "夕陽の海辺リゾート",
+      "en": "The sunset seaside resort",
+      "body": "Mihagi sits directly on Kikugahama, a beach chosen among Japan's '100 best sunsets' (夕陽百選). The whole property is built around the idea of the フォトメモリー — a single photo with someone you love. Expect a 幸せの鐘 ('bell of happiness') photo spot and copy that frames the whole stay as one album page. Come for golden hour: the 夕暮れ light over the Sea of Japan is the thesis of the place.",
+      "terms": ["絶景", "夕陽", "菊ヶ浜"]
+    },
+    {
+      "icon": "waves",
+      "jp": "温泉と露天風呂",
+      "en": "Hot springs & open-air baths",
+      "body": "The bath water is a 天然温泉 drawn from the inn's own source 1,500 m underground. The signature experience is the 露天風呂 — an open-air bath where you soak while the sun sets over the water. Look for a 貸切 (private) option if you'd rather not share the view, and a lobby 足湯 (foot bath) for a quick, clothed soak. Onsen etiquette: rinse fully before entering, and the towel never touches the water.",
+      "terms": ["温泉", "露天風呂", "貸切", "足湯"]
+    },
+    {
+      "icon": "utensils",
+      "jp": "旬の和食懐石",
+      "en": "Seasonal kaiseki dining",
+      "body": "Dinner is 和食懐石料理 — a multi-course meal that changes with the calendar. The kitchen is proud of being 旬にこだわる: leaning on whatever local 食材 are at their peak, much of it pulled from the Sea of Japan that morning. 'The mountain's gifts and the sea's gifts' (山の幸・海の幸) is a phrase you'll see. Pace yourself — courses arrive in a deliberate order, each a small seasonal statement.",
+      "terms": ["懐石料理", "旬", "食材", "地元"]
+    },
+    {
+      "icon": "landmark",
+      "jp": "萩の城下町",
+      "en": "Hagi, the castle town",
+      "body": "The hotel's address — Horiuchi, Hagi — sits inside a preserved 城下町, the old samurai quarter of a former castle town in Yamaguchi. Hagi is a UNESCO World Heritage site tied to Japan's industrial revolution and is famous for 萩焼 (Hagi-yaki pottery). A short 散策 from the beach takes you past white earthen walls and orange 夏みかん trees. The 景観 pairs a quiet, historic townscape with a wide-open coast.",
+      "terms": ["城下町", "散策", "景観"]
+    }
+  ]
+}

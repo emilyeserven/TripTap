@@ -1,0 +1,990 @@
+{
+  "slug": "go-ghost",
+  "title": "ゴーストの囁き",
+  "eyebrow": "YouTube Comments · Japanese Study",
+  "subtitle": "15 real comments on King Gnu's “GO GHOST” opening for 『攻殻機動隊 THE GHOST IN THE SHELL』.",
+  "scrollText": "攻殻機動隊",
+  "footerText": "Built from real public comments on youtube.com/watch?v=FhzaLI_Npg8. Comment text © their authors; translations & notes are study aids. Ghost in the Shell © Shirow Masamune / Kodansha.",
+  "targetLevel": "N2",
+  "sourceUrl": "https://www.youtube.com/watch?v=FhzaLI_Npg8",
+  "videoUrl": "https://www.youtube.com/watch?v=FhzaLI_Npg8",
+  "sourceLabel": "The comments",
+  "categories": [
+    {
+      "key": "anime",
+      "jp": "作品",
+      "en": "Anime",
+      "icon": "clapperboard"
+    },
+    {
+      "key": "net",
+      "jp": "ネット",
+      "en": "Net slang",
+      "icon": "message-square"
+    },
+    {
+      "key": "music",
+      "jp": "音楽",
+      "en": "Music",
+      "icon": "music"
+    },
+    {
+      "key": "era",
+      "jp": "時代",
+      "en": "Era & meta",
+      "icon": "history"
+    }
+  ],
+  "vocab": [
+    {
+      "jp": "攻殻機動隊",
+      "yomi": "こうかくきどうたい",
+      "en": "Ghost in the Shell (lit. 'shell riot-police squad')",
+      "lvl": "title",
+      "cat": "anime"
+    },
+    {
+      "jp": "原作",
+      "yomi": "げんさく",
+      "en": "the original work (source manga)",
+      "lvl": "N2",
+      "cat": "anime"
+    },
+    {
+      "jp": "作品",
+      "yomi": "さくひん",
+      "en": "a work (of art / media)",
+      "lvl": "N4",
+      "cat": "anime"
+    },
+    {
+      "jp": "少佐",
+      "yomi": "しょうさ",
+      "en": "Major (rank; here, Motoko Kusanagi)",
+      "lvl": "N1",
+      "cat": "anime"
+    },
+    {
+      "jp": "義体",
+      "yomi": "ぎたい",
+      "en": "prosthetic (cyborg) body",
+      "lvl": "jargon",
+      "cat": "anime"
+    },
+    {
+      "jp": "電脳",
+      "yomi": "でんのう",
+      "en": "cyberbrain, cyber-brain",
+      "lvl": "jargon",
+      "cat": "anime"
+    },
+    {
+      "jp": "フチコマ",
+      "yomi": "ふちこま",
+      "en": "Fuchikoma (the think-tank robots)",
+      "lvl": "jargon",
+      "cat": "anime"
+    },
+    {
+      "jp": "演出",
+      "yomi": "えんしゅつ",
+      "en": "direction, staging (of a production)",
+      "lvl": "N2",
+      "cat": "anime"
+    },
+    {
+      "jp": "作画",
+      "yomi": "さくが",
+      "en": "the animation art / drawing",
+      "lvl": "jargon",
+      "cat": "anime"
+    },
+    {
+      "jp": "制作陣",
+      "yomi": "せいさくじん",
+      "en": "the production staff / team",
+      "lvl": "N2",
+      "cat": "anime"
+    },
+    {
+      "jp": "セリフ",
+      "yomi": "せりふ",
+      "en": "lines, dialogue",
+      "lvl": "N3",
+      "cat": "anime"
+    },
+    {
+      "jp": "キャラ",
+      "yomi": "きゃら",
+      "en": "character (short for キャラクター)",
+      "lvl": "N3",
+      "cat": "anime"
+    },
+    {
+      "jp": "アクション",
+      "yomi": "あくしょん",
+      "en": "action (scenes)",
+      "lvl": "N4",
+      "cat": "anime"
+    },
+    {
+      "jp": "映像化",
+      "yomi": "えいぞうか",
+      "en": "adaptation into film / video",
+      "lvl": "jargon",
+      "cat": "anime"
+    },
+    {
+      "jp": "踏襲",
+      "yomi": "とうしゅう",
+      "en": "following / adhering to (a precedent)",
+      "lvl": "N1",
+      "cat": "anime"
+    },
+    {
+      "jp": "ゴースト",
+      "yomi": "ごーすと",
+      "en": "'ghost' — the self / soul in a cyber-body",
+      "lvl": "jargon",
+      "cat": "net"
+    },
+    {
+      "jp": "囁く",
+      "yomi": "ささやく",
+      "en": "to whisper",
+      "lvl": "N2",
+      "cat": "net"
+    },
+    {
+      "jp": "めっちゃ",
+      "yomi": "めっちゃ",
+      "en": "super, really (very casual)",
+      "lvl": "slang",
+      "cat": "net"
+    },
+    {
+      "jp": "超",
+      "yomi": "ちょう",
+      "en": "super-, ultra- (casual intensifier)",
+      "lvl": "N3",
+      "cat": "net"
+    },
+    {
+      "jp": "やっぱ",
+      "yomi": "やっぱ",
+      "en": "after all / as expected (casual やっぱり)",
+      "lvl": "N3",
+      "cat": "net"
+    },
+    {
+      "jp": "味がする",
+      "yomi": "あじがする",
+      "en": "to have flavor; (fig.) to still be worth savoring",
+      "lvl": "idiom",
+      "cat": "net"
+    },
+    {
+      "jp": "コメント",
+      "yomi": "こめんと",
+      "en": "a comment",
+      "lvl": "N4",
+      "cat": "net"
+    },
+    {
+      "jp": "オープニング",
+      "yomi": "おーぷにんぐ",
+      "en": "opening (OP)",
+      "lvl": "N4",
+      "cat": "music"
+    },
+    {
+      "jp": "主題歌",
+      "yomi": "しゅだいか",
+      "en": "theme song",
+      "lvl": "N2",
+      "cat": "music"
+    },
+    {
+      "jp": "歌詞",
+      "yomi": "かし",
+      "en": "lyrics",
+      "lvl": "N2",
+      "cat": "music"
+    },
+    {
+      "jp": "サビ",
+      "yomi": "さび",
+      "en": "the hook / chorus of a song",
+      "lvl": "jargon",
+      "cat": "music"
+    },
+    {
+      "jp": "イントロ",
+      "yomi": "いんとろ",
+      "en": "intro (introduction of a song)",
+      "lvl": "N3",
+      "cat": "music"
+    },
+    {
+      "jp": "ベース",
+      "yomi": "べーす",
+      "en": "bass (guitar / line)",
+      "lvl": "N3",
+      "cat": "music"
+    },
+    {
+      "jp": "曲",
+      "yomi": "きょく",
+      "en": "song, tune, track",
+      "lvl": "N4",
+      "cat": "music"
+    },
+    {
+      "jp": "令和",
+      "yomi": "れいわ",
+      "en": "Reiwa era (2019– )",
+      "lvl": "domain",
+      "cat": "era"
+    },
+    {
+      "jp": "昭和",
+      "yomi": "しょうわ",
+      "en": "Showa era (1926–1989)",
+      "lvl": "domain",
+      "cat": "era"
+    },
+    {
+      "jp": "今期",
+      "yomi": "こんき",
+      "en": "this (anime) season / term",
+      "lvl": "N2",
+      "cat": "era"
+    },
+    {
+      "jp": "時代",
+      "yomi": "じだい",
+      "en": "era, period, the times",
+      "lvl": "N4",
+      "cat": "era"
+    },
+    {
+      "jp": "準拠",
+      "yomi": "じゅんきょ",
+      "en": "conformity to; being based on",
+      "lvl": "N1",
+      "cat": "era"
+    },
+    {
+      "jp": "雰囲気",
+      "yomi": "ふんいき",
+      "en": "atmosphere, mood, vibe",
+      "lvl": "N3",
+      "cat": "era"
+    }
+  ],
+  "grammar": [
+    {
+      "pat": "〜すぎる",
+      "gloss": "too ~ / excessively ~",
+      "note": "Attach すぎる to a verb-stem or the stem of an adjective to mean 'too much.' 良い→良すぎる (too good), 気持ちいい→気持ちよすぎる (feels too good). In comment speech it is pure hyperbole — a compliment, not a complaint. The 〜て form すぎて then chains it into a reason: 'so good that...'.",
+      "ex": [
+        {
+          "jp": "曲が良すぎる。",
+          "en": "The song is too good."
+        },
+        {
+          "jp": "イントロのベースが気持ちよすぎてゴーストが喜んでる。",
+          "en": "The intro's bass feels so good my ghost is rejoicing."
+        },
+        {
+          "jp": "面白すぎて一気に見ちゃった。",
+          "en": "It was so interesting I binged it in one go."
+        }
+      ]
+    },
+    {
+      "pat": "〜けど",
+      "gloss": "but / though / and (soft connector)",
+      "note": "けど is the casual cousin of けれど・が. It marks contrast ('but'), but is also used as a gentle, non-committal link — softening a statement or just letting a thought trail on. Comment writers lean on it constantly to sound relaxed rather than argumentative.",
+      "ex": [
+        {
+          "jp": "攻殻機動隊見たことないけど、面白い。",
+          "en": "I've never seen Ghost in the Shell, but it's good."
+        },
+        {
+          "jp": "1話5回見たけどまだ味がする。",
+          "en": "I've watched episode 1 five times but it still has flavor."
+        },
+        {
+          "jp": "原作は読んでたけど、若い頃はアニメを観てなかった。",
+          "en": "I'd read the manga, but when I was young I didn't watch the anime."
+        }
+      ]
+    },
+    {
+      "pat": "可能形 (〜れる / 〜られる)",
+      "gloss": "potential form: can / be able to ~",
+      "note": "The potential form says you CAN do something. 見る→見られる, 楽しむ→楽しめる, 味わう→味わえる. Casual speech often drops the ら (ら抜き言葉): 見られる→見れる, 観られる→観れる. You will see 観れて all over these comments — technically 観られて, but the shortened form is now the norm online.",
+      "ex": [
+        {
+          "jp": "令和になって原作準拠の攻殻が観れて最高。",
+          "en": "In the Reiwa era we can watch a faithful Ghost in the Shell — the best."
+        },
+        {
+          "jp": "マンガを読むと更に楽しめるよ。",
+          "en": "If you read the manga you can enjoy it even more."
+        },
+        {
+          "jp": "原作絵の動く攻殻が見れるなんて。",
+          "en": "To think we can see Ghost in the Shell move in the manga's own art style…"
+        }
+      ]
+    },
+    {
+      "pat": "〜てくれる",
+      "gloss": "to do ~ (for me / us) — a favor",
+      "note": "The 〜てくれる auxiliary frames an action as a favor done for the speaker's side. 作ってくれて = 'made it (for us),' with warmth and gratitude built in. It usually pairs with ありがとう. Note the direction: くれる = toward me; あげる = away from me.",
+      "ex": [
+        {
+          "jp": "しっかり作ってくれてありがとう。",
+          "en": "Thank you for making it so carefully (for us)."
+        },
+        {
+          "jp": "原作を踏襲してくれて嬉しい。",
+          "en": "I'm happy they stayed faithful to the original (for us)."
+        },
+        {
+          "jp": "続きを早く見せてくれ。",
+          "en": "Show us the next part soon! (blunt request form)"
+        }
+      ]
+    },
+    {
+      "pat": "引用の って / と",
+      "gloss": "quotative: '...' — labeling a phrase or feeling",
+      "note": "と (formal) and って (casual) mark quoted words, thoughts, or labels. 「時代が追いついた」って言葉 = 'the phrase “the times caught up.”' It also tags a feeling: 〜って感じだ ('it feels like ~'), and reports perception: 面白いと囁いてる ('whispers that it is interesting').",
+      "ex": [
+        {
+          "jp": "「時代が追いついた」って言葉が相応しい。",
+          "en": "The phrase 'the times have caught up' fits perfectly."
+        },
+        {
+          "jp": "このアニメは面白いとゴーストが囁いてる。",
+          "en": "My ghost whispers that this anime is good."
+        },
+        {
+          "jp": "ようやくなったって感じだ。",
+          "en": "It feels like we've finally gotten there."
+        }
+      ]
+    }
+  ],
+  "source": [
+    {
+      "jp": "曲が良すぎる",
+      "en": "The song is way too good.",
+      "where": "@suzu-momoharu · 4 likes",
+      "url": "https://www.youtube.com/watch?v=FhzaLI_Npg8",
+      "grammar": [
+        {
+          "p": "〜すぎる",
+          "d": "Adjective stem 良 + すぎる = 'too good.' Here it is praise, not a complaint."
+        }
+      ],
+      "vocab": [
+        {
+          "w": "曲",
+          "y": "きょく",
+          "m": "song, track",
+          "lvl": "N4"
+        }
+      ]
+    },
+    {
+      "jp": "今期すごいアニメ多くない？",
+      "en": "Aren't there a ton of amazing anime this season?",
+      "where": "@dream-hm9nw · 10 likes",
+      "url": "https://www.youtube.com/watch?v=FhzaLI_Npg8",
+      "grammar": [
+        {
+          "p": "〜ない？",
+          "d": "A negative used as a tag question — 'right? / don't you think?' Seeks agreement, not literally negative."
+        }
+      ],
+      "vocab": [
+        {
+          "w": "今期",
+          "y": "こんき",
+          "m": "this season / term",
+          "lvl": "N2"
+        },
+        {
+          "w": "多い",
+          "y": "おおい",
+          "m": "many, numerous",
+          "lvl": "N5"
+        }
+      ]
+    },
+    {
+      "jp": "超良かったな！続き楽しみ🔌",
+      "en": "That was super good! Can't wait for the next one. 🔌",
+      "where": "@ukimusya · 15 likes",
+      "url": "https://www.youtube.com/watch?v=FhzaLI_Npg8",
+      "grammar": [
+        {
+          "p": "超〜",
+          "d": "Casual intensifier prefix, 'super / ultra.' 超良かった = 'super good.'"
+        },
+        {
+          "p": "〜な (終助詞)",
+          "d": "Sentence-final な voicing personal feeling / mild exclamation."
+        }
+      ],
+      "vocab": [
+        {
+          "w": "超",
+          "y": "ちょう",
+          "m": "super-, ultra- (casual)",
+          "lvl": "N3"
+        },
+        {
+          "w": "続き",
+          "y": "つづき",
+          "m": "continuation, the next part",
+          "lvl": "N3"
+        },
+        {
+          "w": "楽しみ",
+          "y": "たのしみ",
+          "m": "looking forward to it",
+          "lvl": "N4"
+        }
+      ]
+    },
+    {
+      "jp": "令和になって原作準拠の攻殻が観れてしかもめっちゃクオリティ高いとか最高かよ",
+      "en": "Now that it's the Reiwa era we get a Ghost in the Shell that's faithful to the manga — and on top of that the quality is insanely high? This is the best.",
+      "where": "@summeroil-suguru · 960 likes",
+      "url": "https://www.youtube.com/watch?v=FhzaLI_Npg8",
+      "grammar": [
+        {
+          "p": "〜になって",
+          "d": "'now that it has become ~ / since ~.' 令和になって = 'now that it's Reiwa.'"
+        },
+        {
+          "p": "観れて (ら抜き可能形)",
+          "d": "Casual potential of 観る (=観られて), 'being able to watch.'"
+        },
+        {
+          "p": "〜とか…かよ",
+          "d": "Casual exclamatory frame — 'stuff like ~, seriously?' expressing delighted disbelief."
+        }
+      ],
+      "vocab": [
+        {
+          "w": "準拠",
+          "y": "じゅんきょ",
+          "m": "based on, conforming to",
+          "lvl": "N1"
+        },
+        {
+          "w": "しかも",
+          "y": "しかも",
+          "m": "moreover, on top of that",
+          "lvl": "N3"
+        },
+        {
+          "w": "めっちゃ",
+          "y": "めっちゃ",
+          "m": "super, really (slang)",
+          "lvl": "slang"
+        },
+        {
+          "w": "最高",
+          "y": "さいこう",
+          "m": "the best, awesome",
+          "lvl": "N3"
+        }
+      ]
+    },
+    {
+      "jp": "攻殻機動隊見たことないけど、このアニメは面白いとゴーストが囁いてる",
+      "en": "I've never seen Ghost in the Shell, but my ghost is whispering that this anime is good.",
+      "where": "@ryu-e9k · 82 likes",
+      "url": "https://www.youtube.com/watch?v=FhzaLI_Npg8",
+      "grammar": [
+        {
+          "p": "〜たことない",
+          "d": "'have never done ~.' 見たことない = 'have never watched.'"
+        },
+        {
+          "p": "〜けど",
+          "d": "Soft 'but,' linking the contrast between never having seen it and sensing it's good."
+        },
+        {
+          "p": "〜と (引用)",
+          "d": "Quotative と marking what the ghost 'whispers.' A playful nod to the show's theme."
+        }
+      ],
+      "vocab": [
+        {
+          "w": "面白い",
+          "y": "おもしろい",
+          "m": "interesting, fun",
+          "lvl": "N5"
+        },
+        {
+          "w": "ゴースト",
+          "y": "ごーすと",
+          "m": "'ghost' (self / soul)",
+          "lvl": "jargon"
+        },
+        {
+          "w": "囁く",
+          "y": "ささやく",
+          "m": "to whisper",
+          "lvl": "N2"
+        }
+      ]
+    },
+    {
+      "jp": "1話5回見たけどまだ味がする",
+      "en": "I've watched episode 1 five times but it still has flavor (I'm still getting something out of it).",
+      "where": "@user-gp4fl2ic9i · 7 likes",
+      "url": "https://www.youtube.com/watch?v=FhzaLI_Npg8",
+      "grammar": [
+        {
+          "p": "〜けど",
+          "d": "Casual 'but' — contrasts many rewatches with the fact it hasn't gone stale."
+        },
+        {
+          "p": "まだ〜",
+          "d": "'still ~.' まだ味がする = 'still has flavor.'"
+        }
+      ],
+      "vocab": [
+        {
+          "w": "話",
+          "y": "わ",
+          "m": "counter for episodes (1話 = ep. 1)",
+          "lvl": "N4"
+        },
+        {
+          "w": "回",
+          "y": "かい",
+          "m": "counter for times / occurrences",
+          "lvl": "N5"
+        },
+        {
+          "w": "味がする",
+          "y": "あじがする",
+          "m": "to have flavor; still worth savoring",
+          "lvl": "idiom"
+        }
+      ]
+    },
+    {
+      "jp": "イントロのベースが気持ちよすぎてゴーストが喜んでる",
+      "en": "The intro's bassline feels so good that my ghost is rejoicing.",
+      "where": "@ゆうさく-d9j · 17 likes",
+      "url": "https://www.youtube.com/watch?v=FhzaLI_Npg8",
+      "grammar": [
+        {
+          "p": "〜すぎて",
+          "d": "'so ~ that / because too ~.' 気持ちよすぎて chains the reason into the next clause."
+        },
+        {
+          "p": "〜てる",
+          "d": "Contracted 〜ている progressive: 喜んでる = 'is rejoicing.'"
+        }
+      ],
+      "vocab": [
+        {
+          "w": "イントロ",
+          "y": "いんとろ",
+          "m": "intro (of a song)",
+          "lvl": "N3"
+        },
+        {
+          "w": "ベース",
+          "y": "べーす",
+          "m": "bass (line / guitar)",
+          "lvl": "N3"
+        },
+        {
+          "w": "気持ちいい",
+          "y": "きもちいい",
+          "m": "feels good, pleasant",
+          "lvl": "N4"
+        },
+        {
+          "w": "喜ぶ",
+          "y": "よろこぶ",
+          "m": "to be glad, to rejoice",
+          "lvl": "N4"
+        }
+      ]
+    },
+    {
+      "jp": "面白かった。アクションでしっかり動くし、素子の原作の大事なセリフもしっかりあってよかった。",
+      "en": "It was great. The animation really moves in the action scenes, and the important lines from Motoko's original manga were there too — I'm glad.",
+      "where": "@ortega-h9z · 14 likes",
+      "url": "https://www.youtube.com/watch?v=FhzaLI_Npg8",
+      "grammar": [
+        {
+          "p": "〜し",
+          "d": "Lists reasons/facts: 'it does A, and (also) B.' 動くし = 'it moves, and…'."
+        },
+        {
+          "p": "〜てよかった",
+          "d": "'I'm glad that ~.' あってよかった = 'glad it was there.'"
+        }
+      ],
+      "vocab": [
+        {
+          "w": "しっかり",
+          "y": "しっかり",
+          "m": "firmly, properly, solidly",
+          "lvl": "N3"
+        },
+        {
+          "w": "大事",
+          "y": "だいじ",
+          "m": "important, precious",
+          "lvl": "N4"
+        },
+        {
+          "w": "セリフ",
+          "y": "せりふ",
+          "m": "lines, dialogue",
+          "lvl": "N3"
+        }
+      ]
+    },
+    {
+      "jp": "この作品のすごい所は、マンガをしっかり読むと更に楽しめるよ、というのが随所に感じられる所",
+      "en": "What's amazing about this work is that you can feel, all over the place, the message: 'read the manga carefully and you'll enjoy it even more.'",
+      "where": "@TTxtc · 45 likes",
+      "url": "https://www.youtube.com/watch?v=FhzaLI_Npg8",
+      "grammar": [
+        {
+          "p": "〜と (条件)",
+          "d": "Conditional と: 'when / if you read...' 読むと = 'if you read.'"
+        },
+        {
+          "p": "楽しめる",
+          "d": "Potential of 楽しむ, 'can enjoy.'"
+        },
+        {
+          "p": "というのが",
+          "d": "Wraps the quoted idea into a noun: 'the thing that ~.'"
+        },
+        {
+          "p": "感じられる",
+          "d": "Potential/passive of 感じる: 'can be felt.'"
+        }
+      ],
+      "vocab": [
+        {
+          "w": "作品",
+          "y": "さくひん",
+          "m": "a work (of media)",
+          "lvl": "N4"
+        },
+        {
+          "w": "更に",
+          "y": "さらに",
+          "m": "even more, furthermore",
+          "lvl": "N2"
+        },
+        {
+          "w": "随所",
+          "y": "ずいしょ",
+          "m": "everywhere, in many places",
+          "lvl": "N1"
+        }
+      ]
+    },
+    {
+      "jp": "原作をちゃんと踏襲しながら、ハラハラする演出までしっかり作ってくれてありがとう。最高！",
+      "en": "Thank you for faithfully following the original while also carefully making even the nail-biting direction. The best!",
+      "where": "@lolololololo3601 · 27 likes",
+      "url": "https://www.youtube.com/watch?v=FhzaLI_Npg8",
+      "grammar": [
+        {
+          "p": "〜ながら",
+          "d": "'while doing ~.' 踏襲しながら = 'while adhering (to the original).'"
+        },
+        {
+          "p": "〜まで",
+          "d": "'even ~.' 演出まで = 'even the direction.'"
+        },
+        {
+          "p": "〜てくれて",
+          "d": "Favor auxiliary: 'doing ~ for us,' pairing with ありがとう."
+        }
+      ],
+      "vocab": [
+        {
+          "w": "踏襲",
+          "y": "とうしゅう",
+          "m": "following, adhering to",
+          "lvl": "N1"
+        },
+        {
+          "w": "ハラハラ",
+          "y": "はらはら",
+          "m": "on-edge, nervous (mimetic)",
+          "lvl": "N2"
+        },
+        {
+          "w": "演出",
+          "y": "えんしゅつ",
+          "m": "direction, staging",
+          "lvl": "N2"
+        }
+      ]
+    },
+    {
+      "jp": "やっぱ少佐は押井世界のクール一辺倒より原作よりのエモーショナルな方が好きだわ　なにより可愛い",
+      "en": "After all, I prefer a Major who's emotional and closer to the manga over the all-cool Oshii-world version. Above all — she's cute.",
+      "where": "@zuruzurub · 15 likes",
+      "url": "https://www.youtube.com/watch?v=FhzaLI_Npg8",
+      "grammar": [
+        {
+          "p": "やっぱ",
+          "d": "Casual やっぱり: 'after all / as I thought.'"
+        },
+        {
+          "p": "AよりBの方が好き",
+          "d": "Comparison: 'prefer B over A.'"
+        },
+        {
+          "p": "〜だわ",
+          "d": "Sentence-final わ softening the assertion, adding personal feel."
+        }
+      ],
+      "vocab": [
+        {
+          "w": "少佐",
+          "y": "しょうさ",
+          "m": "Major (rank; Motoko)",
+          "lvl": "N1"
+        },
+        {
+          "w": "一辺倒",
+          "y": "いっぺんとう",
+          "m": "exclusively one way, all-in on one thing",
+          "lvl": "N1"
+        },
+        {
+          "w": "なにより",
+          "y": "なにより",
+          "m": "above all, more than anything",
+          "lvl": "N2"
+        }
+      ]
+    },
+    {
+      "jp": "まさに「時代が追いついた」って言葉が相応しいね。表現も視聴者も、攻殻機動隊という作品を味わうことができる時代にようやくなったって感じだ",
+      "en": "The phrase 'the times have caught up' really is fitting. It feels like we've finally reached an era where both the craft and the audience can savor a work like Ghost in the Shell.",
+      "where": "@lazycrazy1007 · 159 likes",
+      "url": "https://www.youtube.com/watch?v=FhzaLI_Npg8",
+      "grammar": [
+        {
+          "p": "〜って (引用)",
+          "d": "Casual quotative marking 「時代が追いついた」 as a labeled phrase, and 〜って感じ = 'it feels like.'"
+        },
+        {
+          "p": "〜ことができる",
+          "d": "Formal potential: 'be able to ~.' 味わうことができる = 'can savor.'"
+        },
+        {
+          "p": "ようやく〜なった",
+          "d": "'have finally become ~.'"
+        }
+      ],
+      "vocab": [
+        {
+          "w": "追いつく",
+          "y": "おいつく",
+          "m": "to catch up",
+          "lvl": "N2"
+        },
+        {
+          "w": "相応しい",
+          "y": "ふさわしい",
+          "m": "fitting, suitable",
+          "lvl": "N1"
+        },
+        {
+          "w": "味わう",
+          "y": "あじわう",
+          "m": "to savor, to appreciate",
+          "lvl": "N2"
+        }
+      ]
+    },
+    {
+      "jp": "押井守、神山健治、黄瀬和哉…これまで携わったクリエーターたちは皆どこか作家性が強調されてたけど、今回の攻殻機動隊は士郎正宗の原作コミックの雰囲気が全面に押し出されていて…控えめに言って最高だった",
+      "en": "Oshii Mamoru, Kamiyama Kenji, Kise Kazuchika… the creators involved so far all had their authorial voice foregrounded somewhere, but this time Ghost in the Shell pushes Shirow Masamune's manga atmosphere fully to the front… to put it mildly, it was the best.",
+      "where": "@May-pp7tj · 481 likes",
+      "url": "https://www.youtube.com/watch?v=FhzaLI_Npg8",
+      "grammar": [
+        {
+          "p": "〜たち",
+          "d": "Plural for people: クリエーターたち = 'the creators.'"
+        },
+        {
+          "p": "強調されてた (受身)",
+          "d": "Passive of 強調する + past progressive: 'was being emphasized.'"
+        },
+        {
+          "p": "控えめに言って",
+          "d": "Set phrase: 'to put it mildly / understating it.'"
+        }
+      ],
+      "vocab": [
+        {
+          "w": "携わる",
+          "y": "たずさわる",
+          "m": "to be involved in (work)",
+          "lvl": "N1"
+        },
+        {
+          "w": "作家性",
+          "y": "さっかせい",
+          "m": "authorial voice / individuality",
+          "lvl": "jargon"
+        },
+        {
+          "w": "雰囲気",
+          "y": "ふんいき",
+          "m": "atmosphere, mood",
+          "lvl": "N3"
+        }
+      ]
+    },
+    {
+      "jp": "いい歳とった昭和のオッサンだけど、原作踏襲のアニメ作品が出るとは夢にも思わなったし、原作は読んでたけど若い頃はアニメ自体を観てなかった",
+      "en": "I'm a Showa-era old man well on in years, but I never even dreamed a faithful anime adaptation would come out — and though I'd read the manga, I didn't watch the anime itself when I was young.",
+      "where": "@木田太郎-z5w · 182 likes",
+      "url": "https://www.youtube.com/watch?v=FhzaLI_Npg8",
+      "grammar": [
+        {
+          "p": "〜とは思わなかった",
+          "d": "'never thought / dreamed that ~.' (思わなった here is a casual slip for 思わなかった.)"
+        },
+        {
+          "p": "夢にも〜ない",
+          "d": "'not even in one's dreams,' emphasizing total surprise."
+        },
+        {
+          "p": "〜し",
+          "d": "Lists linked reasons/facts across the sentence."
+        }
+      ],
+      "vocab": [
+        {
+          "w": "昭和",
+          "y": "しょうわ",
+          "m": "Showa era (1926–89)",
+          "lvl": "domain"
+        },
+        {
+          "w": "オッサン",
+          "y": "おっさん",
+          "m": "middle-aged guy (casual)",
+          "lvl": "slang"
+        },
+        {
+          "w": "自体",
+          "y": "じたい",
+          "m": "itself, in itself",
+          "lvl": "N2"
+        }
+      ]
+    },
+    {
+      "jp": "コンピューターを用いたテクノロジーがアニメーションに導入されデジタル化が押し進んだ今日。士郎正宗版のオリジナル攻殻を映像化するにふさわしい時代と情報が行き交う環境になった感がある。",
+      "en": "Today, technology using computers has been introduced into animation and digitization has pushed forward. It feels like we've reached an era — and an environment where information flows back and forth — fitting to adapt Shirow Masamune's original Ghost in the Shell to screen.",
+      "where": "@dusttodust2324 · 28 likes",
+      "url": "https://www.youtube.com/watch?v=FhzaLI_Npg8",
+      "grammar": [
+        {
+          "p": "〜を用いた",
+          "d": "Formal/written 'using ~' (= を使った). 用いた modifies テクノロジー."
+        },
+        {
+          "p": "導入され (受身)",
+          "d": "Passive: 'is introduced / adopted.'"
+        },
+        {
+          "p": "〜にふさわしい",
+          "d": "'fitting / suitable for ~.'"
+        },
+        {
+          "p": "〜感がある",
+          "d": "'there's a sense / feeling that ~.'"
+        }
+      ],
+      "vocab": [
+        {
+          "w": "用いる",
+          "y": "もちいる",
+          "m": "to use, employ (formal)",
+          "lvl": "N2"
+        },
+        {
+          "w": "導入",
+          "y": "どうにゅう",
+          "m": "introduction, adoption",
+          "lvl": "N2"
+        },
+        {
+          "w": "映像化",
+          "y": "えいぞうか",
+          "m": "adaptation into film/video",
+          "lvl": "jargon"
+        },
+        {
+          "w": "行き交う",
+          "y": "ゆきかう",
+          "m": "to come and go, flow back and forth",
+          "lvl": "N1"
+        }
+      ]
+    }
+  ],
+  "culture": [
+    {
+      "icon": "clapperboard",
+      "jp": "攻殻機動隊とは",
+      "en": "What Ghost in the Shell is",
+      "body": "Ghost in the Shell (攻殻機動隊) began as Shirow Masamune's 1989 cyberpunk manga about Public Security Section 9 and its cyborg leader, Major Motoko Kusanagi (草薙素子・少佐). Past screen versions — Oshii's films, Kamiyama's Stand Alone Complex — each bent it to their own style. Commenters here are electrified that this new TV series is 原作準拠: faithful to the source manga's look and lines. Watch for the word 少佐 ('the Major') used as a term of endearment.",
+      "terms": ["攻殻機動隊", "原作", "少佐", "義体"]
+    },
+    {
+      "icon": "ghost",
+      "jp": "「ゴースト」という概念",
+      "en": "The concept of the 'ghost'",
+      "body": "In this world people have cyberbrains (電脳) and prosthetic bodies (義体); the 'ghost' is the ineffable self — soul, consciousness, gut instinct — that persists inside the shell. The famous line is 'my ghost is whispering to me.' Fans lovingly recycle it in the comments: ゴーストが囁いてる ('my ghost whispers it's good'), ゴーストが喜んでる ('my ghost rejoices'). Knowing the joke unlocks half the thread.",
+      "terms": ["ゴースト", "電脳", "囁く", "義体"]
+    },
+    {
+      "icon": "music",
+      "jp": "King Gnu「GO GHOST」",
+      "en": "The King Gnu opening theme",
+      "body": "This clip is the non-credit opening (ノンクレジットオープニング) set to King Gnu's theme song 主題歌 'GO GHOST,' written and composed by Daiki Tsuneta. Music comments zoom in on the イントロ, the ベース line, the サビ (hook), and the 歌詞 (lyrics). When someone says 曲が良すぎる, they mean this track.",
+      "terms": ["オープニング", "主題歌", "歌詞", "サビ"]
+    },
+    {
+      "icon": "message-square",
+      "jp": "YouTubeコメントの言葉",
+      "en": "The language of YouTube comments",
+      "body": "Comment Japanese is its own dialect: intensifiers めっちゃ / 超, clipped やっぱ (=やっぱり), the exclamatory tail 〜かよ, soft 〜わ, and the ら-dropped potential 観れる. People also frame time by imperial era — a 昭和 old-timer marveling that in 令和 this exists. The idiom 味がする ('still has flavor') is pure fandom slang for 'I keep rewatching and still enjoy it.'",
+      "terms": ["めっちゃ", "超", "令和", "味がする"]
+    }
+  ]
+}
