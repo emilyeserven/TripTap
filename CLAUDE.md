@@ -90,12 +90,16 @@ Deploy via Coolify using only `DATABASE_URL` (see `README.md`).
 | `POSTGRES_HOST_PORT` | docker-compose | Host port mapped to the db container's 5432 (default: `5432`). Override to avoid host port collisions on a shared host. |
 | `GATEWAY_HOST_PORT` | docker-compose | Host port mapped to the gateway's 3000 (default: `3000`). |
 | `OCR_SERVICE_URL` | middleware | Self-hosted OCR backend base URL (`ocr-service/`) for the Capture feature, e.g. `http://192.168.1.50:8422`. |
-| `OCR_SPACE_API_KEY` | middleware | OCR.space cloud backend key (free tier). Optional: `OCR_SPACE_ENGINE`, `OCR_SPACE_LANGUAGE`, `OCR_SPACE_URL`. |
-| `GOOGLE_VISION_API_KEY` | middleware | Google Cloud Vision backend API key. Optional: `GOOGLE_VISION_URL`. |
+| `OCR_SPACE_API_KEY` | middleware | OCR.space cloud backend key (free tier). Overridden by the Settings-page value stored in the DB. Optional: `OCR_SPACE_ENGINE`, `OCR_SPACE_LANGUAGE`, `OCR_SPACE_URL`. |
+| `GOOGLE_VISION_API_KEY` | middleware | Google Cloud Vision backend API key. Overridden by the Settings-page value stored in the DB. Optional: `GOOGLE_VISION_URL`. |
 | `OCR_PROVIDERS` | middleware | Comma-separated OCR backend order/selection (`self-hosted`, `ocr-space`, `google-vision`). Unset → all configured backends, self-hosted first. |
 
 The Capture feature tries the configured OCR backends in order with automatic fallback; `/api/ocr`
 returns 503 only when **none** are configured. The pluggable seam is `runOcr()` in
-`packages/middleware/src/services/ocr/` (one file per provider + an orchestrator `index.ts`).
+`packages/middleware/src/services/ocr/` (one file per provider + an orchestrator `index.ts`), which
+per request resolves an `OcrConfig` by merging the DB-stored cloud keys (Settings page, via
+`services/settings.ts` + the `settings` table) over the env vars. The Settings UI lives at
+`packages/client/src/routes/settings.tsx` (`OcrKeysCard`), backed by `/api/settings/ocr` — the GET
+returns only masked hints, never raw secrets.
 
 See `packages/middleware/.env.example`.

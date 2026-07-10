@@ -7,6 +7,7 @@ import { healthRoutes } from "@/routes/health";
 import { lessonRoutes } from "@/routes/lessons";
 import { ocrRoutes } from "@/routes/ocr";
 import { sentenceRoutes } from "@/routes/sentences";
+import { settingsRoutes } from "@/routes/settings";
 
 /** Build and configure the Fastify application (without starting it). */
 export async function buildApp(): Promise<FastifyInstance> {
@@ -50,6 +51,10 @@ export async function buildApp(): Promise<FastifyInstance> {
           name: "ocr",
           description: "Image text extraction (OCR)",
         },
+        {
+          name: "settings",
+          description: "Server-side settings (e.g. cloud OCR credentials)",
+        },
       ],
     },
   });
@@ -61,6 +66,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(sentenceRoutes);
   await app.register(lessonRoutes);
   await app.register(ocrRoutes);
+  await app.register(settingsRoutes);
 
   return app;
 }

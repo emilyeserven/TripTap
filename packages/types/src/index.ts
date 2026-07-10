@@ -67,3 +67,29 @@ export interface OcrResult {
   /** All blocks joined into a single string for convenience. */
   fullText: string;
 }
+
+/** Masked state of a single stored secret. The secret itself is never sent to the client. */
+export interface SecretState {
+  /** Whether a value is currently stored. */
+  configured: boolean;
+  /** Last few characters of the stored value, for recognition (e.g. "1234"), or null when unset. */
+  hint: string | null;
+}
+
+/**
+ * Masked view of the cloud OCR credentials, as returned by `GET /api/settings/ocr`. Secrets are
+ * stored server-side (DB, overriding env); only their presence and a short hint are exposed.
+ */
+export interface OcrSettings {
+  ocrSpace: SecretState;
+  googleVision: SecretState;
+}
+
+/**
+ * Payload for `PATCH /api/settings/ocr`. Each field is tri-state: `undefined`/omitted leaves the
+ * stored value unchanged, an empty string or `null` clears it, any other string replaces it.
+ */
+export interface UpdateOcrSettingsInput {
+  ocrSpaceApiKey?: string | null;
+  googleVisionApiKey?: string | null;
+}

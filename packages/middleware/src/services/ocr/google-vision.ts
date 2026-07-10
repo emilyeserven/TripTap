@@ -3,8 +3,6 @@ import type { OcrProvider } from "@/services/ocr/types";
 import { OcrUnavailableError } from "@/services/ocr/errors";
 import { detectLang, normalizeNewlines, REQUEST_TIMEOUT_MS } from "@/services/ocr/util";
 
-const DEFAULT_URL = "https://vision.googleapis.com/v1/images:annotate";
-
 /** Subset of the Vision `images:annotate` response we consume. */
 interface Vertex {
   x?: number;
@@ -72,21 +70,18 @@ function toBbox(vertices: Vertex[] | undefined): [number, number][] {
 /**
  * Google Cloud Vision cloud backend (DOCUMENT_TEXT_DETECTION), authenticated with a plain API key.
  * Best-in-class accuracy for Japanese/CJK. Free for the first 1,000 requests/month, then paid.
- * The `engine` label is `google-vision`.
- *
- * Config: `GOOGLE_VISION_API_KEY` (required — a Cloud API key with the Vision API enabled),
- * `GOOGLE_VISION_URL` (endpoint override).
+ * The `engine` label is `google-vision`. Credentials come from the resolved config
+ * (`googleVision.apiKey`), sourced from the DB Settings first, then environment variables.
  */
 export const googleVisionProvider: OcrProvider = {
   id: "google-vision",
 
-  isConfigured() {
-    return Boolean(process.env.GOOGLE_VISION_API_KEY);
+  isConfigured(config) {
+    return Boolean(config.googleVision.apiKey);
   },
 
-  async recognize(buffer): Promise<OcrResult> {
-    const base = process.env.GOOGLE_VISION_URL || DEFAULT_URL;
-    const url = `${base}?key=${encodeURIComponent(process.env.GOOGLE_VISION_API_KEY as string)}`;
+  async recognize(config, buffer): Promise<OcrResult> {
+    const url = `${config.googleVision.url}?key=${encodeURIComponent(config.googleVision.apiKey as string)}`;
 
     const body = JSON.stringify({
       requests: [{

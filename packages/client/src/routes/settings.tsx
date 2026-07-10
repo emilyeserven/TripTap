@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+import { OcrKeysCard } from "@/components/OcrKeysCard";
 import { SkillInstallCard } from "@/components/SkillInstallCard";
 
 export const Route = createFileRoute("/settings")({
@@ -11,8 +12,9 @@ function SettingsPage() {
     <section className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Settings</h1>
-        <p className="text-sm text-muted-foreground">Tools for authoring lessons.</p>
+        <p className="text-sm text-muted-foreground">Cloud OCR credentials and lesson-authoring tools.</p>
       </div>
+      <OcrKeysCard />
       <SkillInstallCard />
     </section>
   );
