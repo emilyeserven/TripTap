@@ -201,7 +201,7 @@ importers:
         specifier: 11.1.0
         version: 11.1.0
       '@fastify/multipart':
-        specifier: ^10.1.0
+        specifier: 10.1.0
         version: 10.1.0
       '@fastify/swagger':
         specifier: 9.7.0
