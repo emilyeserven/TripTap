@@ -55,6 +55,15 @@ pnpm db:migrate       # apply committed migrations to the local database
 
 To reset the database: `docker compose down -v && docker compose up --wait db && pnpm db:migrate`.
 
+## OCR capture (optional)
+
+The **Capture** page (`/sentences/capture`) extracts Japanese/English text from a photo or upload.
+OCR is CPU/RAM-heavy, so it runs as a **separate service** (`ocr-service/` — PaddleOCR + manga-ocr)
+on a memory-rich LAN machine rather than on the app host. The middleware proxies each image to it via
+`OCR_SERVICE_URL`; when that variable is unset the feature is simply disabled (the endpoint returns
+503). See [`ocr-service/README.md`](ocr-service/README.md) for the full Windows setup tutorial, then set
+`OCR_SERVICE_URL=http://<host>:<port>` in `packages/middleware/.env`.
+
 ## Deploy to Coolify
 
 sentence-bank is built to self-deploy. In production a single Docker image (the repo-root `Dockerfile`)

@@ -45,3 +45,25 @@ export interface ApiError {
   message: string;
   statusCode: number;
 }
+
+/** A single block of text recognized from an image by the OCR service. */
+export interface OcrBlock {
+  /** The recognized text for this block. */
+  text: string;
+  /** Bounding box as four [x, y] points (top-left, top-right, bottom-right, bottom-left). */
+  bbox: [number, number][];
+  /** Recognition confidence in [0, 1]. */
+  confidence: number;
+  /** Detected script for the block, e.g. "ja" or "en". */
+  lang: string;
+  /** Which engine produced the final text ("paddleocr" or "manga-ocr"). */
+  engine: string;
+}
+
+/** Result returned by the OCR service for one image. */
+export interface OcrResult {
+  /** Per-block recognition results, ordered top-to-bottom. */
+  blocks: OcrBlock[];
+  /** All blocks joined into a single string for convenience. */
+  fullText: string;
+}
