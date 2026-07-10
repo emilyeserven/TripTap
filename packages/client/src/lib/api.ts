@@ -5,7 +5,9 @@ import type {
   LessonImportInput,
   LessonSummary,
   OcrResult,
+  OcrSettings,
   Sentence,
+  UpdateOcrSettingsInput,
   UpdateSentenceInput,
   VocabItem,
   VocabRenshuuUpdate,
@@ -63,6 +65,15 @@ export const ocrApi = {
     }
     return (await res.json()) as OcrResult;
   },
+};
+
+export const settingsApi = {
+  getOcr: () => request<OcrSettings>("/settings/ocr"),
+  updateOcr: (input: UpdateOcrSettingsInput) =>
+    request<OcrSettings>("/settings/ocr", {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    }),
 };
 
 export const lessonsApi = {

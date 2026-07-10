@@ -3,10 +3,6 @@ import type { OcrProvider } from "@/services/ocr/types";
 import { OcrUnavailableError } from "@/services/ocr/errors";
 import { detectLang, fetchOcr, normalizeNewlines } from "@/services/ocr/util";
 
-const DEFAULT_URL = "https://api.ocr.space/parse/image";
-const DEFAULT_LANGUAGE = "jpn";
-const DEFAULT_ENGINE = "2"; // Engine 2 supports Japanese, including vertical text.
-
 /** Subset of the OCR.space `/parse/image` response we consume. */
 interface OcrSpaceWord {
   WordText: string;
@@ -49,25 +45,25 @@ function lineBbox(words: OcrSpaceWord[]): [number, number][] {
  * OCR.space cloud backend (https://ocr.space/ocrapi). A zero-registration free tier (25k
  * requests/month) makes it a good "just in case" alternative to the self-hosted service. OCR.space
  * exposes no per-line confidence, so blocks are reported at confidence `1`; the `engine` label is
- * `ocr-space`.
- *
- * Config: `OCR_SPACE_API_KEY` (required), `OCR_SPACE_ENGINE` (default 2), `OCR_SPACE_LANGUAGE`
- * (default jpn), `OCR_SPACE_URL` (endpoint override).
+ * `ocr-space`. Credentials/tuning come from the resolved config (`ocrSpace.apiKey` etc.), which is
+ * sourced from the DB Settings first, then environment variables.
  */
 export const ocrSpaceProvider: OcrProvider = {
   id: "ocr-space",
 
-  isConfigured() {
-    return Boolean(process.env.OCR_SPACE_API_KEY);
+  isConfigured(config) {
+    return Boolean(config.ocrSpace.apiKey);
   },
 
-  async recognize(buffer, filename, mimetype): Promise<OcrResult> {
-    const url = process.env.OCR_SPACE_URL || DEFAULT_URL;
+  async recognize(config, buffer, filename, mimetype): Promise<OcrResult> {
+    const {
+      apiKey, engine, language, url,
+    } = config.ocrSpace;
 
     const form = new FormData();
-    form.append("apikey", process.env.OCR_SPACE_API_KEY as string);
-    form.append("language", process.env.OCR_SPACE_LANGUAGE || DEFAULT_LANGUAGE);
-    form.append("OCREngine", process.env.OCR_SPACE_ENGINE || DEFAULT_ENGINE);
+    form.append("apikey", apiKey as string);
+    form.append("language", language);
+    form.append("OCREngine", engine);
     form.append("isOverlayRequired", "true");
     form.append("file", new Blob([new Uint8Array(buffer)], {
       type: mimetype,
