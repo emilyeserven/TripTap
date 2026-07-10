@@ -22,6 +22,21 @@ export const sentences = pgTable("sentences", {
 export type SentenceRow = typeof sentences.$inferSelect;
 export type NewSentenceRow = typeof sentences.$inferInsert;
 
+/**
+ * `settings` — generic key/value store for server-side configuration edited at runtime (e.g. cloud
+ * OCR API keys entered on the Settings page). Values are stored as plaintext text; treat rows as
+ * secrets — never log them and never return raw values to the client.
+ */
+export const settings = pgTable("settings", {
+  key: text("key").primaryKey(),
+  value: text("value").notNull(),
+  updatedAt: timestamp("updated_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+});
+
+export type SettingRow = typeof settings.$inferSelect;
+
 /* ── Lessons ────────────────────────────────────────────────────────────────────────────────
  * A lesson is the parent of five normalized child item types. Each child references `lessons.id`
  * with ON DELETE CASCADE and carries an explicit `sort_order` so the authored array order round-

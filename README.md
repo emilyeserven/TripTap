@@ -62,11 +62,15 @@ The middleware supports several interchangeable OCR **backends** and tries them 
 automatically when one is unreachable. Configure any subset; the feature is disabled (the endpoint
 returns 503) only when **none** are configured.
 
-| Backend | Env | Notes |
+| Backend | Config | Notes |
 |---|---|---|
 | **Self-hosted** (default first) | `OCR_SERVICE_URL` | The `ocr-service/` app (PaddleOCR + manga-ocr) on a memory-rich LAN machine. Best quality, no per-request cost. See [`ocr-service/README.md`](ocr-service/README.md) for setup. |
-| **OCR.space** (cloud) | `OCR_SPACE_API_KEY` | [Free tier](https://ocr.space/ocrapi): 25k requests/month, no card. Optional `OCR_SPACE_ENGINE` (default `2`), `OCR_SPACE_LANGUAGE` (default `jpn`). |
-| **Google Cloud Vision** (cloud) | `GOOGLE_VISION_API_KEY` | Best CJK accuracy; 1k requests/month free, then paid. A Cloud API key with the Vision API enabled. |
+| **OCR.space** (cloud) | **Settings page** or `OCR_SPACE_API_KEY` | [Free tier](https://ocr.space/ocrapi): 25k requests/month, no card. Optional `OCR_SPACE_ENGINE` (default `2`), `OCR_SPACE_LANGUAGE` (default `jpn`). |
+| **Google Cloud Vision** (cloud) | **Settings page** or `GOOGLE_VISION_API_KEY` | Best CJK accuracy; 1k requests/month free, then paid. A Cloud API key with the Vision API enabled. |
+
+The two cloud API keys can be entered on the in-app **Settings** page — they're stored in the database
+(and take precedence over the corresponding env vars, which remain available for headless deploys). The
+GET endpoint only ever returns a masked hint, never the raw key.
 
 The default fallback order is self-hosted → OCR.space → Google Vision. Override which backends are used
 and in what order with `OCR_PROVIDERS` (comma-separated ids: `self-hosted`, `ocr-space`, `google-vision`),
