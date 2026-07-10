@@ -89,6 +89,13 @@ Deploy via Coolify using only `DATABASE_URL` (see `README.md`).
 | `POSTGRES_DB` | docker-compose | DB name (default: `sentence_bank`) |
 | `POSTGRES_HOST_PORT` | docker-compose | Host port mapped to the db container's 5432 (default: `5432`). Override to avoid host port collisions on a shared host. |
 | `GATEWAY_HOST_PORT` | docker-compose | Host port mapped to the gateway's 3000 (default: `3000`). |
-| `OCR_SERVICE_URL` | middleware | Base URL of the external OCR service (`ocr-service/`) for the Capture feature, e.g. `http://192.168.1.50:8422`. Unset → `/api/ocr` returns 503 and Capture is disabled. |
+| `OCR_SERVICE_URL` | middleware | Self-hosted OCR backend base URL (`ocr-service/`) for the Capture feature, e.g. `http://192.168.1.50:8422`. |
+| `OCR_SPACE_API_KEY` | middleware | OCR.space cloud backend key (free tier). Optional: `OCR_SPACE_ENGINE`, `OCR_SPACE_LANGUAGE`, `OCR_SPACE_URL`. |
+| `GOOGLE_VISION_API_KEY` | middleware | Google Cloud Vision backend API key. Optional: `GOOGLE_VISION_URL`. |
+| `OCR_PROVIDERS` | middleware | Comma-separated OCR backend order/selection (`self-hosted`, `ocr-space`, `google-vision`). Unset → all configured backends, self-hosted first. |
+
+The Capture feature tries the configured OCR backends in order with automatic fallback; `/api/ocr`
+returns 503 only when **none** are configured. The pluggable seam is `runOcr()` in
+`packages/middleware/src/services/ocr/` (one file per provider + an orchestrator `index.ts`).
 
 See `packages/middleware/.env.example`.
