@@ -1,7 +1,10 @@
 # PaddleOCR 2.x API (`.ocr(img, cls=True)`). 3.x renamed the entrypoint to `.predict`,
-# so pin to the 2.x line that server.py targets.
+# so pin both packages to the 2.x line that server.py targets — an unbounded
+# `paddlepaddle` pulls 3.x, whose breaking changes break paddleocr 2.x at runtime.
+# PyPI has 2.x wheels for 64-bit Python 3.8–3.12 on Windows/macOS/Linux x86-64 only
+# (no linux-aarch64 / Raspberry Pi, no musl/Alpine); see README troubleshooting.
 paddleocr>=2.7,<3.0
-paddlepaddle>=2.5
+paddlepaddle>=2.5,<3.0
 manga-ocr>=0.1.11
 fastapi>=0.110
 uvicorn[standard]>=0.29

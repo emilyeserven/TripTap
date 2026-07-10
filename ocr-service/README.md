@@ -136,7 +136,7 @@ You should get JSON with `blocks` and `fullText`; low-confidence Japanese blocks
 | `OSError: [WinError 10048] address already in use` | Port taken — pick another `OCR_PORT` (step 5). |
 | Pi can't connect, but `localhost` works on Windows | Firewall rule missing (step 7) or wrong IP (step 8); confirm `OCR_HOST=0.0.0.0`. |
 | First request hangs for a while | One-time model download/warm-up; subsequent requests are fast. |
-| `pip install` fails on paddlepaddle | Use Python 3.10/3.11 (step 1); newest Python may lack wheels. |
+| `pip install` fails on paddlepaddle with `Could not find a version that satisfies the requirement paddlepaddle ... (from versions: none)` | pip found no wheel for your interpreter. This service needs PaddlePaddle **2.x**, which only has wheels for **64-bit Python 3.8–3.12** on Windows/macOS/Linux **x86-64**. Recreate the venv with **Python 3.10/3.11** (step 1 & 3) — Python 3.13+ has no 2.x wheels. Also fails on the Raspberry Pi (ARM64) and Alpine/musl images: run this service on an x86-64 machine, per the intro. |
 
 ---
 
