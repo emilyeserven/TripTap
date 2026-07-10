@@ -16,7 +16,7 @@ import { Route as GrammarRouteImport } from './routes/grammar'
 import { Route as CultureRouteImport } from './routes/culture'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as LessonsIndexRouteImport } from './routes/lessons.index'
-import { Route as SentencesCaptureRouteImport } from './routes/sentences.capture'
+import { Route as SentencesCaptureRouteImport } from './routes/sentences_.capture'
 import { Route as LessonsNewRouteImport } from './routes/lessons.new'
 import { Route as LessonsSlugRouteImport } from './routes/lessons.$slug'
 
@@ -56,9 +56,9 @@ const LessonsIndexRoute = LessonsIndexRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const SentencesCaptureRoute = SentencesCaptureRouteImport.update({
-  id: '/capture',
-  path: '/capture',
-  getParentRoute: () => SentencesRoute,
+  id: '/sentences_/capture',
+  path: '/sentences/capture',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const LessonsNewRoute = LessonsNewRouteImport.update({
   id: '/lessons/new',
@@ -75,7 +75,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/culture': typeof CultureRoute
   '/grammar': typeof GrammarRoute
-  '/sentences': typeof SentencesRouteWithChildren
+  '/sentences': typeof SentencesRoute
   '/settings': typeof SettingsRoute
   '/vocabulary': typeof VocabularyRoute
   '/lessons/$slug': typeof LessonsSlugRoute
@@ -87,7 +87,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/culture': typeof CultureRoute
   '/grammar': typeof GrammarRoute
-  '/sentences': typeof SentencesRouteWithChildren
+  '/sentences': typeof SentencesRoute
   '/settings': typeof SettingsRoute
   '/vocabulary': typeof VocabularyRoute
   '/lessons/$slug': typeof LessonsSlugRoute
@@ -100,12 +100,12 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/culture': typeof CultureRoute
   '/grammar': typeof GrammarRoute
-  '/sentences': typeof SentencesRouteWithChildren
+  '/sentences': typeof SentencesRoute
   '/settings': typeof SettingsRoute
   '/vocabulary': typeof VocabularyRoute
   '/lessons/$slug': typeof LessonsSlugRoute
   '/lessons/new': typeof LessonsNewRoute
-  '/sentences/capture': typeof SentencesCaptureRoute
+  '/sentences_/capture': typeof SentencesCaptureRoute
   '/lessons/': typeof LessonsIndexRoute
 }
 export interface FileRouteTypes {
@@ -143,7 +143,7 @@ export interface FileRouteTypes {
     | '/vocabulary'
     | '/lessons/$slug'
     | '/lessons/new'
-    | '/sentences/capture'
+    | '/sentences_/capture'
     | '/lessons/'
   fileRoutesById: FileRoutesById
 }
@@ -151,11 +151,12 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CultureRoute: typeof CultureRoute
   GrammarRoute: typeof GrammarRoute
-  SentencesRoute: typeof SentencesRouteWithChildren
+  SentencesRoute: typeof SentencesRoute
   SettingsRoute: typeof SettingsRoute
   VocabularyRoute: typeof VocabularyRoute
   LessonsSlugRoute: typeof LessonsSlugRoute
   LessonsNewRoute: typeof LessonsNewRoute
+  SentencesCaptureRoute: typeof SentencesCaptureRoute
   LessonsIndexRoute: typeof LessonsIndexRoute
 }
 
@@ -210,12 +211,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LessonsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/sentences/capture': {
-      id: '/sentences/capture'
-      path: '/capture'
+    '/sentences_/capture': {
+      id: '/sentences_/capture'
+      path: '/sentences/capture'
       fullPath: '/sentences/capture'
       preLoaderRoute: typeof SentencesCaptureRouteImport
-      parentRoute: typeof SentencesRoute
+      parentRoute: typeof rootRouteImport
     }
     '/lessons/new': {
       id: '/lessons/new'
@@ -234,27 +235,16 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface SentencesRouteChildren {
-  SentencesCaptureRoute: typeof SentencesCaptureRoute
-}
-
-const SentencesRouteChildren: SentencesRouteChildren = {
-  SentencesCaptureRoute: SentencesCaptureRoute,
-}
-
-const SentencesRouteWithChildren = SentencesRoute._addFileChildren(
-  SentencesRouteChildren,
-)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CultureRoute: CultureRoute,
   GrammarRoute: GrammarRoute,
-  SentencesRoute: SentencesRouteWithChildren,
+  SentencesRoute: SentencesRoute,
   SettingsRoute: SettingsRoute,
   VocabularyRoute: VocabularyRoute,
   LessonsSlugRoute: LessonsSlugRoute,
   LessonsNewRoute: LessonsNewRoute,
+  SentencesCaptureRoute: SentencesCaptureRoute,
   LessonsIndexRoute: LessonsIndexRoute,
 }
 export const routeTree = rootRouteImport

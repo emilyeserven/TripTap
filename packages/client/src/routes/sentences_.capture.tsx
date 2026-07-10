@@ -15,7 +15,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useOcr } from "@/hooks/useOcr";
 
-export const Route = createFileRoute("/sentences/capture")({
+export const Route = createFileRoute("/sentences_/capture")({
   component: CapturePage,
 });
 
