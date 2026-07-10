@@ -4,6 +4,7 @@ import type {
   LessonDetail,
   LessonImportInput,
   LessonSummary,
+  OcrResult,
   Sentence,
   UpdateSentenceInput,
   VocabItem,
@@ -44,6 +45,24 @@ export const sentencesApi = {
   remove: (id: string) => request<undefined>(`/sentences/${id}`, {
     method: "DELETE",
   }),
+};
+
+export const ocrApi = {
+  // Uploads a raw image as multipart/form-data — it deliberately bypasses `request()`, which
+  // hard-codes a JSON content type; the browser sets the multipart boundary itself.
+  recognize: async (file: File): Promise<OcrResult> => {
+    const form = new FormData();
+    form.append("file", file);
+    const res = await fetch(`${BASE}/ocr`, {
+      method: "POST",
+      body: form,
+    });
+    if (!res.ok) {
+      const body = (await res.json().catch(() => ({}))) as { message?: string };
+      throw new Error(body.message ?? `Request failed with ${res.status}`);
+    }
+    return (await res.json()) as OcrResult;
+  },
 };
 
 export const lessonsApi = {

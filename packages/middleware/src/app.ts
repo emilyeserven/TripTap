@@ -1,9 +1,11 @@
 import cors from "@fastify/cors";
+import multipart from "@fastify/multipart";
 import swagger from "@fastify/swagger";
 import swaggerUi from "@fastify/swagger-ui";
 import Fastify, { type FastifyInstance } from "fastify";
 import { healthRoutes } from "@/routes/health";
 import { lessonRoutes } from "@/routes/lessons";
+import { ocrRoutes } from "@/routes/ocr";
 import { sentenceRoutes } from "@/routes/sentences";
 
 /** Build and configure the Fastify application (without starting it). */
@@ -16,6 +18,13 @@ export async function buildApp(): Promise<FastifyInstance> {
 
   await app.register(cors, {
     origin: true,
+  });
+
+  // Image uploads for OCR capture. Bypasses the default 1 MiB JSON body limit; cap the file size.
+  await app.register(multipart, {
+    limits: {
+      fileSize: 10 * 1024 * 1024,
+    },
   });
 
   await app.register(swagger, {
@@ -37,6 +46,10 @@ export async function buildApp(): Promise<FastifyInstance> {
           name: "health",
           description: "Service health",
         },
+        {
+          name: "ocr",
+          description: "Image text extraction (OCR)",
+        },
       ],
     },
   });
@@ -47,6 +60,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(healthRoutes);
   await app.register(sentenceRoutes);
   await app.register(lessonRoutes);
+  await app.register(ocrRoutes);
 
   return app;
 }

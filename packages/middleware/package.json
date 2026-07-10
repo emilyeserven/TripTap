@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "@fastify/cors": "11.1.0",
+    "@fastify/multipart": "10.1.0",
     "@fastify/swagger": "9.7.0",
     "@fastify/swagger-ui": "5.2.5",
     "@sentence-bank/types": "workspace:*",

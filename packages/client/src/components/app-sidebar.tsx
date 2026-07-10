@@ -3,6 +3,7 @@ import type * as React from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
   BookOpenIcon,
+  CameraIcon,
   GraduationCapIcon,
   HomeIcon,
   LandmarkIcon,
@@ -53,6 +54,11 @@ const navItems = [
     title: "Sentences",
     to: "/sentences",
     icon: ScrollTextIcon,
+  },
+  {
+    title: "Capture",
+    to: "/sentences/capture",
+    icon: CameraIcon,
   },
   {
     title: "Settings",

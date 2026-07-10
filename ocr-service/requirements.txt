@@ -1,0 +1,11 @@
+# PaddleOCR 2.x API (`.ocr(img, cls=True)`). 3.x renamed the entrypoint to `.predict`,
+# so pin to the 2.x line that server.py targets.
+paddleocr>=2.7,<3.0
+paddlepaddle>=2.5
+manga-ocr>=0.1.11
+fastapi>=0.110
+uvicorn[standard]>=0.29
+pillow>=10
+python-multipart>=0.0.9
+python-dotenv>=1.0
+numpy>=1.24,<2

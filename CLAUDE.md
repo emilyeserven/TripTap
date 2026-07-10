@@ -89,5 +89,6 @@ Deploy via Coolify using only `DATABASE_URL` (see `README.md`).
 | `POSTGRES_DB` | docker-compose | DB name (default: `sentence_bank`) |
 | `POSTGRES_HOST_PORT` | docker-compose | Host port mapped to the db container's 5432 (default: `5432`). Override to avoid host port collisions on a shared host. |
 | `GATEWAY_HOST_PORT` | docker-compose | Host port mapped to the gateway's 3000 (default: `3000`). |
+| `OCR_SERVICE_URL` | middleware | Base URL of the external OCR service (`ocr-service/`) for the Capture feature, e.g. `http://192.168.1.50:8422`. Unset → `/api/ocr` returns 503 and Capture is disabled. |
 
 See `packages/middleware/.env.example`.
