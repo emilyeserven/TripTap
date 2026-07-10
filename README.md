@@ -58,11 +58,20 @@ To reset the database: `docker compose down -v && docker compose up --wait db &&
 ## OCR capture (optional)
 
 The **Capture** page (`/sentences/capture`) extracts Japanese/English text from a photo or upload.
-OCR is CPU/RAM-heavy, so it runs as a **separate service** (`ocr-service/` — PaddleOCR + manga-ocr)
-on a memory-rich LAN machine rather than on the app host. The middleware proxies each image to it via
-`OCR_SERVICE_URL`; when that variable is unset the feature is simply disabled (the endpoint returns
-503). See [`ocr-service/README.md`](ocr-service/README.md) for the full Windows setup tutorial, then set
-`OCR_SERVICE_URL=http://<host>:<port>` in `packages/middleware/.env`.
+The middleware supports several interchangeable OCR **backends** and tries them in order, falling back
+automatically when one is unreachable. Configure any subset; the feature is disabled (the endpoint
+returns 503) only when **none** are configured.
+
+| Backend | Env | Notes |
+|---|---|---|
+| **Self-hosted** (default first) | `OCR_SERVICE_URL` | The `ocr-service/` app (PaddleOCR + manga-ocr) on a memory-rich LAN machine. Best quality, no per-request cost. See [`ocr-service/README.md`](ocr-service/README.md) for setup. |
+| **OCR.space** (cloud) | `OCR_SPACE_API_KEY` | [Free tier](https://ocr.space/ocrapi): 25k requests/month, no card. Optional `OCR_SPACE_ENGINE` (default `2`), `OCR_SPACE_LANGUAGE` (default `jpn`). |
+| **Google Cloud Vision** (cloud) | `GOOGLE_VISION_API_KEY` | Best CJK accuracy; 1k requests/month free, then paid. A Cloud API key with the Vision API enabled. |
+
+The default fallback order is self-hosted → OCR.space → Google Vision. Override which backends are used
+and in what order with `OCR_PROVIDERS` (comma-separated ids: `self-hosted`, `ocr-space`, `google-vision`),
+e.g. `OCR_PROVIDERS=ocr-space` to force the cloud provider only. See
+[`packages/middleware/.env.example`](packages/middleware/.env.example) for all variables.
 
 ## Deploy to Coolify
 
