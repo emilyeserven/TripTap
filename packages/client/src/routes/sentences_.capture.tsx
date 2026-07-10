@@ -1,8 +1,11 @@
-import { useRef, useState } from "react";
+import type { OcrResult } from "@sentence-bank/types";
+
+import { useEffect, useRef, useState } from "react";
 
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { ArrowLeft, Camera, Check, Copy, ScanText } from "lucide-react";
+import { ArrowLeft, Camera, Check, Copy, Crop, ScanText } from "lucide-react";
 
+import { CropDialog } from "@/components/CropDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,31 +24,60 @@ export const Route = createFileRoute("/sentences_/capture")({
 
 function CapturePage() {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  // The originally selected image: source for both the preview and the crop dialog. Kept alive
+  // (not revoked on crop) so the user can re-open the cropper and try a different region.
+  const [sourceUrl, setSourceUrl] = useState<string | null>(null);
+  const [originalFile, setOriginalFile] = useState<File | null>(null);
+  const [cropOpen, setCropOpen] = useState(false);
   const [text, setText] = useState("");
   const [engines, setEngines] = useState<string[]>([]);
   const [copied, setCopied] = useState(false);
   const ocr = useOcr();
 
-  function onSelect(event: React.ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  // Release the object URL when it changes or the page unmounts.
+  useEffect(() => {
+    return () => {
+      if (sourceUrl) URL.revokeObjectURL(sourceUrl);
+    };
+  }, [sourceUrl]);
 
-    // Reset any previous result and swap the preview image.
-    setText("");
-    setEngines([]);
-    ocr.reset();
-    setPreviewUrl((prev) => {
-      if (prev) URL.revokeObjectURL(prev);
-      return URL.createObjectURL(file);
-    });
-
+  function runOcr(file: File) {
     ocr.mutate(file, {
-      onSuccess: (result) => {
+      onSuccess: (result: OcrResult) => {
         setText(result.fullText);
         setEngines([...new Set(result.blocks.map(b => b.engine))]);
       },
     });
+  }
+
+  function onSelect(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Reset any previous result, swap the preview image, and open the cropper before OCR runs.
+    setText("");
+    setEngines([]);
+    ocr.reset();
+    setSourceUrl((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return URL.createObjectURL(file);
+    });
+    setOriginalFile(file);
+    setCropOpen(true);
+    // Allow re-selecting the same file later (onChange won't fire otherwise).
+    event.target.value = "";
+  }
+
+  function onCropConfirm(blob: Blob) {
+    setCropOpen(false);
+    runOcr(new File([blob], "capture.jpg", {
+      type: "image/jpeg",
+    }));
+  }
+
+  function onUseFull() {
+    setCropOpen(false);
+    if (originalFile) runOcr(originalFile);
   }
 
   async function copy() {
@@ -94,24 +126,46 @@ function CapturePage() {
             className="hidden"
             onChange={onSelect}
           />
-          <Button
-            variant="outline"
-            onClick={() => inputRef.current?.click()}
-            disabled={ocr.isPending}
-          >
-            <Camera className="size-4" />
-            {previewUrl ? "Choose another image" : "Choose or capture image"}
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={() => inputRef.current?.click()}
+              disabled={ocr.isPending}
+            >
+              <Camera className="size-4" />
+              {sourceUrl ? "Choose another image" : "Choose or capture image"}
+            </Button>
+            {sourceUrl && (
+              <Button
+                variant="outline"
+                onClick={() => setCropOpen(true)}
+                disabled={ocr.isPending}
+              >
+                <Crop className="size-4" />
+                Crop
+              </Button>
+            )}
+          </div>
 
-          {previewUrl && (
+          {sourceUrl && (
             <img
-              src={previewUrl}
+              src={sourceUrl}
               alt="Selected page"
               className="max-h-80 w-auto rounded-md border border-input"
             />
           )}
         </CardContent>
       </Card>
+
+      {sourceUrl && (
+        <CropDialog
+          imageUrl={sourceUrl}
+          open={cropOpen}
+          onCancel={() => setCropOpen(false)}
+          onUseFull={onUseFull}
+          onConfirm={onCropConfirm}
+        />
+      )}
 
       {(ocr.isPending || ocr.isError || text) && (
         <Card>
