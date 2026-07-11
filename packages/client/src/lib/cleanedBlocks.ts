@@ -95,6 +95,7 @@ export function seedCleanedBlocks(capture: Capture): CleanedBlocks {
     groups.push({
       id: group,
       kind: "sentence",
+      link: null,
     });
     lines.push({
       id: newId(),
@@ -156,16 +157,23 @@ export interface DerivedItems {
 export function deriveItems(cb: CleanedBlocks, opts: DeriveOptions): DerivedItems {
   const ignored = new Set(cb.ignoredLangs);
   const kindOf = new Map<string, CleanedGroupKind>(cb.groups.map(g => [g.id, g.kind]));
+  // Item key = the stitch's link (linked stitches derive as one item), else its own stitch id.
+  const itemKeyOf = new Map<string, string>(cb.groups.map(g => [g.id, g.link ?? g.id]));
 
+  // Bundle lines by item, keeping first-appearance order. Track each item's kind from its first
+  // stitch (linked stitches keep synced kinds).
   const order: string[] = [];
-  const byGroup = new Map<string, CleanedLine[]>();
+  const byItem = new Map<string, CleanedLine[]>();
+  const itemKind = new Map<string, CleanedGroupKind>();
   for (const line of cb.lines) {
     if (ignored.has(line.lang)) continue;
-    let bucket = byGroup.get(line.group);
+    const key = itemKeyOf.get(line.group) ?? line.group;
+    let bucket = byItem.get(key);
     if (!bucket) {
       bucket = [];
-      byGroup.set(line.group, bucket);
-      order.push(line.group);
+      byItem.set(key, bucket);
+      itemKind.set(key, kindOf.get(line.group) ?? "sentence");
+      order.push(key);
     }
     bucket.push(line);
   }
@@ -178,8 +186,8 @@ export function deriveItems(cb: CleanedBlocks, opts: DeriveOptions): DerivedItem
   const tags = opts.tags.trim() || null;
   const notes = opts.notes.trim() || null;
 
-  for (const groupId of order) {
-    const members = byGroup.get(groupId) ?? [];
+  for (const key of order) {
+    const members = byItem.get(key) ?? [];
     const textPart = joinPartition(members.filter(l => l.role === "text"));
     const primary = textPart.text;
     if (!primary) {
@@ -190,7 +198,7 @@ export function deriveItems(cb: CleanedBlocks, opts: DeriveOptions): DerivedItem
     const glossPart = joinPartition(members.filter(l => l.role === "translation"));
     const language = langNameFor(textPart.lang, opts.batchLanguage) || "Japanese";
 
-    if ((kindOf.get(groupId) ?? "sentence") === "sentence") {
+    if ((itemKind.get(key) ?? "sentence") === "sentence") {
       sentences.push({
         text: primary,
         translation: glossPart.text || null,
@@ -252,38 +260,67 @@ export function updateLineText(cb: CleanedBlocks, id: string, text: string): Cle
   }));
 }
 
+/** Set the language on every line in the same stitch (continuation lines share a language). */
 export function updateLineLang(cb: CleanedBlocks, id: string, lang: string): CleanedBlocks {
-  return mapLine(cb, id, l => ({
-    ...l,
-    lang,
-  }));
+  const line = cb.lines.find(l => l.id === id);
+  if (!line) return cb;
+  return {
+    ...cb,
+    lines: cb.lines.map(l => (l.group === line.group
+      ? {
+        ...l,
+        lang,
+      }
+      : l)),
+  };
 }
 
+/** Set the role on every line in the same stitch (continuation lines share a role). */
 export function updateLineRole(cb: CleanedBlocks, id: string, role: CleanedLineRole): CleanedBlocks {
-  return mapLine(cb, id, l => ({
-    ...l,
-    role,
-  }));
+  const line = cb.lines.find(l => l.id === id);
+  if (!line) return cb;
+  return {
+    ...cb,
+    lines: cb.lines.map(l => (l.group === line.group
+      ? {
+        ...l,
+        role,
+      }
+      : l)),
+  };
 }
 
 /**
- * Reorder `lines` so every group's lines are contiguous, following the group's first-appearance
- * order and preserving each group's internal line order. Keeping groups as adjacent runs is what
- * lets a group move as one block (see {@link moveGroup}).
+ * Reorder `lines` into contiguous item → stitch → line runs: items (linked stitches) sit together,
+ * each item's stitches are adjacent, and each stitch keeps its internal order. This keeps a whole
+ * item as one block so it can move together (see {@link moveItem}) and read as a unit.
  */
 export function normalizeOrder(cb: CleanedBlocks): CleanedBlocks {
-  const order: string[] = [];
-  const byGroup = new Map<string, CleanedLine[]>();
+  const linkOf = new Map(cb.groups.map(g => [g.id, g.link]));
+  const keyOf = (line: CleanedLine) => linkOf.get(line.group) ?? line.group;
+
+  const itemOrder: string[] = [];
+  const stitchOrder = new Map<string, string[]>();
+  const byStitch = new Map<string, CleanedLine[]>();
   for (const line of cb.lines) {
-    let bucket = byGroup.get(line.group);
+    const key = keyOf(line);
+    let stitches = stitchOrder.get(key);
+    if (!stitches) {
+      stitches = [];
+      stitchOrder.set(key, stitches);
+      itemOrder.push(key);
+    }
+    let bucket = byStitch.get(line.group);
     if (!bucket) {
       bucket = [];
-      byGroup.set(line.group, bucket);
-      order.push(line.group);
+      byStitch.set(line.group, bucket);
+      stitches.push(line.group);
     }
     bucket.push(line);
   }
-  const lines = order.flatMap(id => byGroup.get(id) ?? []);
+
+  const lines = itemOrder.flatMap(key =>
+    (stitchOrder.get(key) ?? []).flatMap(gid => byStitch.get(gid) ?? []));
   const changed = lines.some((l, i) => l !== cb.lines[i]);
   return changed
     ? {
@@ -311,10 +348,11 @@ export function deleteLines(cb: CleanedBlocks, ids: string[]): CleanedBlocks {
 }
 
 /**
- * Link the selected lines into a single group so they read (and move) as one item. They join the
- * group of the earliest selected line — keeping that group's kind — and are pulled contiguous.
+ * Stitch the selected lines into a single stitch (continuation lines that concatenate into one
+ * text). They join the stitch of the earliest selected line — keeping its kind/link — and are pulled
+ * contiguous.
  */
-export function linkLines(cb: CleanedBlocks, ids: string[]): CleanedBlocks {
+export function stitchLines(cb: CleanedBlocks, ids: string[]): CleanedBlocks {
   const select = new Set(ids);
   const anchor = cb.lines.find(l => select.has(l.id));
   if (!anchor) return cb;
@@ -331,8 +369,8 @@ export function linkLines(cb: CleanedBlocks, ids: string[]): CleanedBlocks {
   return normalizeOrder(pruneGroups(relinked));
 }
 
-/** Break each selected line out into its own fresh `sentence` group (ungroup). */
-export function unlinkLines(cb: CleanedBlocks, ids: string[]): CleanedBlocks {
+/** Break each selected line out into its own fresh standalone stitch (unstitch). */
+export function unstitchLines(cb: CleanedBlocks, ids: string[]): CleanedBlocks {
   const select = new Set(ids);
   if (select.size === 0) return cb;
   const added: CleanedBlocks["groups"] = [];
@@ -342,6 +380,7 @@ export function unlinkLines(cb: CleanedBlocks, ids: string[]): CleanedBlocks {
     added.push({
       id: group,
       kind: "sentence",
+      link: null,
     });
     return {
       ...l,
@@ -353,6 +392,50 @@ export function unlinkLines(cb: CleanedBlocks, ids: string[]): CleanedBlocks {
     lines,
     groups: [...cb.groups, ...added],
   }));
+}
+
+/**
+ * Link the stitches owning the selected lines into one derived item (e.g. a text stitch + its
+ * translation stitch → one sentence). They adopt a shared `link` id and a synced `kind`. Needs at
+ * least two distinct stitches selected.
+ */
+export function linkGroups(cb: CleanedBlocks, ids: string[]): CleanedBlocks {
+  const select = new Set(ids);
+  const anchor = cb.lines.find(l => select.has(l.id));
+  if (!anchor) return cb;
+  const groupIds = new Set(cb.lines.filter(l => select.has(l.id)).map(l => l.group));
+  if (groupIds.size < 2) return cb;
+  const anchorGroup = cb.groups.find(g => g.id === anchor.group);
+  const link = anchorGroup?.link ?? newId();
+  const kind = anchorGroup?.kind ?? "sentence";
+  const groups = cb.groups.map(g => (groupIds.has(g.id)
+    ? {
+      ...g,
+      link,
+      kind,
+    }
+    : g));
+  return normalizeOrder({
+    ...cb,
+    groups,
+  });
+}
+
+/** Unlink the stitches owning the selected lines back into standalone items. */
+export function unlinkGroups(cb: CleanedBlocks, ids: string[]): CleanedBlocks {
+  const select = new Set(ids);
+  const groupIds = new Set(cb.lines.filter(l => select.has(l.id)).map(l => l.group));
+  if (groupIds.size === 0) return cb;
+  const groups = cb.groups.map(g => (groupIds.has(g.id)
+    ? {
+      ...g,
+      link: null,
+    }
+    : g));
+  return normalizeOrder({
+    ...cb,
+    groups,
+  });
 }
 
 /** Bulk-set the role (e.g. `ignore`) on every selected line. */
@@ -370,14 +453,20 @@ export function setLinesRole(cb: CleanedBlocks, ids: string[], role: CleanedLine
   };
 }
 
-/** Set the kind on every group that owns a selected line (bulk → Vocab / → Sentence). */
+/**
+ * Set the kind on every stitch that owns a selected line, plus every stitch linked to those (bulk
+ * → Vocab / → Sentence), so linked items stay one consistent kind.
+ */
 export function setKindForLines(cb: CleanedBlocks, ids: string[], kind: CleanedGroupKind): CleanedBlocks {
   const select = new Set(ids);
   const groupIds = new Set(cb.lines.filter(l => select.has(l.id)).map(l => l.group));
   if (groupIds.size === 0) return cb;
+  const links = new Set(
+    cb.groups.filter(g => groupIds.has(g.id) && g.link != null).map(g => g.link),
+  );
   return {
     ...cb,
-    groups: cb.groups.map(g => (groupIds.has(g.id)
+    groups: cb.groups.map(g => (groupIds.has(g.id) || (g.link != null && links.has(g.link))
       ? {
         ...g,
         kind,
@@ -387,37 +476,46 @@ export function setKindForLines(cb: CleanedBlocks, ids: string[], kind: CleanedG
 }
 
 /**
- * Move a whole group (its contiguous block of lines) up or down past the neighboring group. Assumes
- * groups are contiguous — callers that mutate grouping run through {@link normalizeOrder} first.
+ * Move a whole item (all stitches sharing the given stitch's link) up or down past the neighboring
+ * item, so a linked block moves together. Runs through {@link normalizeOrder} first for contiguity.
  */
-export function moveGroup(cb: CleanedBlocks, groupId: string, dir: "up" | "down"): CleanedBlocks {
+export function moveItem(cb: CleanedBlocks, groupId: string, dir: "up" | "down"): CleanedBlocks {
   const normalized = normalizeOrder(cb);
+  const linkOf = new Map(normalized.groups.map(g => [g.id, g.link]));
+  const keyOf = (line: CleanedLine) => linkOf.get(line.group) ?? line.group;
+
   const order: string[] = [];
-  const byGroup = new Map<string, CleanedLine[]>();
+  const byItem = new Map<string, CleanedLine[]>();
   for (const line of normalized.lines) {
-    let bucket = byGroup.get(line.group);
+    const key = keyOf(line);
+    let bucket = byItem.get(key);
     if (!bucket) {
       bucket = [];
-      byGroup.set(line.group, bucket);
-      order.push(line.group);
+      byItem.set(key, bucket);
+      order.push(key);
     }
     bucket.push(line);
   }
-  const idx = order.indexOf(groupId);
+  const targetKey = linkOf.get(groupId) ?? groupId;
+  const idx = order.indexOf(targetKey);
   if (idx < 0) return cb;
   const target = dir === "up" ? idx - 1 : idx + 1;
   if (target < 0 || target >= order.length) return cb;
   [order[idx], order[target]] = [order[target], order[idx]];
   return {
     ...normalized,
-    lines: order.flatMap(id => byGroup.get(id) ?? []),
+    lines: order.flatMap(key => byItem.get(key) ?? []),
   };
 }
 
+/** Set the kind on a stitch and every stitch sharing its link (linked items are one kind). */
 export function setGroupKind(cb: CleanedBlocks, groupId: string, kind: CleanedGroupKind): CleanedBlocks {
+  const group = cb.groups.find(g => g.id === groupId);
+  if (!group) return cb;
+  const link = group.link;
   return {
     ...cb,
-    groups: cb.groups.map(g => (g.id === groupId
+    groups: cb.groups.map(g => (g.id === groupId || (link != null && g.link === link)
       ? {
         ...g,
         kind,

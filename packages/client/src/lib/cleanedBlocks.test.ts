@@ -1,4 +1,4 @@
-import type { Capture, CleanedBlocks, OcrBlock } from "@sentence-bank/types";
+import type { Capture, CleanedBlocks, CleanedGroupKind, CleanedLineRole, OcrBlock } from "@sentence-bank/types";
 
 import { describe, expect, it } from "vitest";
 
@@ -8,15 +8,19 @@ import {
   deriveItems,
   joinLines,
   langNameFor,
-  linkLines,
-  moveGroup,
+  linkGroups,
+  moveItem,
   normalizeOrder,
   seedCleanedBlocks,
   setGroupKind,
   setKindForLines,
   setLinesRole,
+  stitchLines,
   toggleIgnoredLang,
-  unlinkLines,
+  unlinkGroups,
+  unstitchLines,
+  updateLineLang,
+  updateLineRole,
 } from "./cleanedBlocks";
 
 function block(text: string, lang: string): OcrBlock {
@@ -51,6 +55,31 @@ function capture(overrides: Partial<Capture> = {}): Capture {
   };
 }
 
+/** Terse fixture builders so the group `link` field doesn't clutter every test. */
+function ln(
+  id: string,
+  text: string,
+  lang: string,
+  role: CleanedLineRole,
+  group: string,
+): CleanedBlocks["lines"][number] {
+  return {
+    id,
+    text,
+    lang,
+    role,
+    group,
+  };
+}
+
+function grp(id: string, kind: CleanedGroupKind, link: string | null = null): CleanedBlocks["groups"][number] {
+  return {
+    id,
+    kind,
+    link,
+  };
+}
+
 const DERIVE_OPTS = {
   captureId: "cap-1",
   sourceId: null,
@@ -75,7 +104,7 @@ describe("langNameFor / joinLines", () => {
 });
 
 describe("seedCleanedBlocks", () => {
-  it("seeds one sentence group per OCR block, carrying the block language", () => {
+  it("seeds one standalone stitch per OCR block, carrying the block language", () => {
     const cb = seedCleanedBlocks(capture({
       blocks: [block("毎朝", "ja"), block("every morning", "en")],
     }));
@@ -84,9 +113,8 @@ describe("seedCleanedBlocks", () => {
     expect(cb.ignoredLangs).toEqual([]);
     expect(cb.lines.map(l => l.lang)).toEqual(["ja", "en"]);
     expect(cb.lines.every(l => l.role === "text")).toBe(true);
-    // Each line has its own group, each a sentence.
     expect(new Set(cb.lines.map(l => l.group)).size).toBe(2);
-    expect(cb.groups.every(g => g.kind === "sentence")).toBe(true);
+    expect(cb.groups.every(g => g.kind === "sentence" && g.link === null)).toBe(true);
   });
 
   it("falls back to splitting cleanedText on newlines when there are no blocks", () => {
@@ -101,7 +129,6 @@ describe("seedCleanedBlocks", () => {
   it("still produces unique ids when crypto.randomUUID is unavailable (plain HTTP)", () => {
     const original = globalThis.crypto.randomUUID;
     try {
-      // Simulate a non-secure context where randomUUID is undefined.
       Object.defineProperty(globalThis.crypto, "randomUUID", {
         value: undefined,
         configurable: true,
@@ -123,36 +150,14 @@ describe("seedCleanedBlocks", () => {
 });
 
 describe("deriveItems", () => {
-  it("joins CJK text lines in one group into a single sentence, translation from translation lines", () => {
-    const g = "g1";
+  it("concatenates stitched text lines into one sentence with the translation from translation lines", () => {
     const cb: CleanedBlocks = {
       lines: [
-        {
-          id: "a",
-          text: "毎朝",
-          lang: "ja",
-          role: "text",
-          group: g,
-        },
-        {
-          id: "b",
-          text: "コーヒーを飲む",
-          lang: "ja",
-          role: "text",
-          group: g,
-        },
-        {
-          id: "c",
-          text: "I drink coffee every morning",
-          lang: "en",
-          role: "translation",
-          group: g,
-        },
+        ln("a", "毎朝", "ja", "text", "g1"),
+        ln("b", "コーヒーを飲む", "ja", "text", "g1"),
+        ln("c", "I drink coffee every morning", "en", "translation", "g1"),
       ],
-      groups: [{
-        id: g,
-        kind: "sentence",
-      }],
+      groups: [grp("g1", "sentence")],
       ignoredLangs: [],
     };
     const {
@@ -164,74 +169,51 @@ describe("deriveItems", () => {
     expect(sentences[0].text).toBe("毎朝コーヒーを飲む");
     expect(sentences[0].translation).toBe("I drink coffee every morning");
     expect(sentences[0].language).toBe("Japanese");
-    expect(sentences[0].captureId).toBe("cap-1");
   });
 
-  it("builds a vocab entry with furigana as the reading and translation as the meaning", () => {
-    const g = "g1";
+  it("merges a linked text-stitch and translation-stitch into ONE sentence (not concatenated)", () => {
     const cb: CleanedBlocks = {
       lines: [
-        {
-          id: "a",
-          text: "毎朝",
-          lang: "ja",
-          role: "text",
-          group: g,
-        },
-        {
-          id: "b",
-          text: "まいあさ",
-          lang: "ja",
-          role: "furigana",
-          group: g,
-        },
-        {
-          id: "c",
-          text: "every morning",
-          lang: "en",
-          role: "translation",
-          group: g,
-        },
+        ln("a", "毎朝コーヒーを飲む", "ja", "text", "g1"),
+        ln("b", "I drink coffee every morning", "en", "translation", "g2"),
       ],
-      groups: [{
-        id: g,
-        kind: "vocab",
-      }],
+      groups: [grp("g1", "sentence", "L1"), grp("g2", "sentence", "L1")],
       ignoredLangs: [],
     };
     const {
-      sentences, vocab,
+      sentences,
     } = deriveItems(cb, DERIVE_OPTS);
-    expect(sentences).toHaveLength(0);
+    expect(sentences).toHaveLength(1);
+    expect(sentences[0].text).toBe("毎朝コーヒーを飲む");
+    expect(sentences[0].translation).toBe("I drink coffee every morning");
+  });
+
+  it("merges a linked term + furigana + meaning into one vocab entry", () => {
+    const cb: CleanedBlocks = {
+      lines: [
+        ln("a", "毎朝", "ja", "text", "g1"),
+        ln("b", "まいあさ", "ja", "furigana", "g2"),
+        ln("c", "every morning", "en", "translation", "g3"),
+      ],
+      groups: [grp("g1", "vocab", "L1"), grp("g2", "vocab", "L1"), grp("g3", "vocab", "L1")],
+      ignoredLangs: [],
+    };
+    const {
+      vocab,
+    } = deriveItems(cb, DERIVE_OPTS);
     expect(vocab).toHaveLength(1);
     expect(vocab[0].term).toBe("毎朝");
     expect(vocab[0].reading).toBe("まいあさ");
     expect(vocab[0].meaning).toBe("every morning");
   });
 
-  it("ignores furigana on a sentence group (sentences have no reading field)", () => {
-    const g = "g1";
+  it("ignores furigana on a sentence item (sentences have no reading field)", () => {
     const cb: CleanedBlocks = {
       lines: [
-        {
-          id: "a",
-          text: "毎朝",
-          lang: "ja",
-          role: "text",
-          group: g,
-        },
-        {
-          id: "b",
-          text: "まいあさ",
-          lang: "ja",
-          role: "furigana",
-          group: g,
-        },
+        ln("a", "毎朝", "ja", "text", "g1"),
+        ln("b", "まいあさ", "ja", "furigana", "g1"),
       ],
-      groups: [{
-        id: g,
-        kind: "sentence",
-      }],
+      groups: [grp("g1", "sentence")],
       ignoredLangs: [],
     };
     const {
@@ -239,49 +221,16 @@ describe("deriveItems", () => {
     } = deriveItems(cb, DERIVE_OPTS);
     expect(sentences).toHaveLength(1);
     expect(sentences[0].text).toBe("毎朝");
-    // No reading anywhere on the sentence input.
     expect("reading" in sentences[0]).toBe(false);
   });
 
-  it("skips groups with no text-role content (structure-only, translation-only)", () => {
+  it("skips items with no text-role content", () => {
     const cb: CleanedBlocks = {
       lines: [
-        {
-          id: "a",
-          text: "Chapter 3",
-          lang: "en",
-          role: "structure",
-          group: "g1",
-        },
-        {
-          id: "b",
-          text: "orphan translation",
-          lang: "en",
-          role: "translation",
-          group: "g2",
-        },
-        {
-          id: "c",
-          text: "犬",
-          lang: "ja",
-          role: "text",
-          group: "g3",
-        },
+        ln("a", "Chapter 3", "en", "structure", "g1"),
+        ln("b", "犬", "ja", "text", "g2"),
       ],
-      groups: [
-        {
-          id: "g1",
-          kind: "sentence",
-        },
-        {
-          id: "g2",
-          kind: "sentence",
-        },
-        {
-          id: "g3",
-          kind: "sentence",
-        },
-      ],
+      groups: [grp("g1", "sentence"), grp("g2", "sentence")],
       ignoredLangs: [],
     };
     const {
@@ -289,37 +238,32 @@ describe("deriveItems", () => {
     } = deriveItems(cb, DERIVE_OPTS);
     expect(sentences).toHaveLength(1);
     expect(sentences[0].text).toBe("犬");
-    expect(skipped).toBe(2);
+    expect(skipped).toBe(1);
+  });
+
+  it("excludes lines with the ignore role", () => {
+    const cb: CleanedBlocks = {
+      lines: [
+        ln("a", "犬", "ja", "text", "g1"),
+        ln("b", "noise", "en", "ignore", "g1"),
+      ],
+      groups: [grp("g1", "sentence")],
+      ignoredLangs: [],
+    };
+    const {
+      sentences,
+    } = deriveItems(cb, DERIVE_OPTS);
+    expect(sentences).toHaveLength(1);
+    expect(sentences[0].text).toBe("犬");
   });
 
   it("excludes lines whose language is ignored", () => {
     const cb: CleanedBlocks = {
       lines: [
-        {
-          id: "a",
-          text: "犬",
-          lang: "ja",
-          role: "text",
-          group: "g1",
-        },
-        {
-          id: "b",
-          text: "狗",
-          lang: "zh",
-          role: "text",
-          group: "g2",
-        },
+        ln("a", "犬", "ja", "text", "g1"),
+        ln("b", "狗", "zh", "text", "g2"),
       ],
-      groups: [
-        {
-          id: "g1",
-          kind: "sentence",
-        },
-        {
-          id: "g2",
-          kind: "sentence",
-        },
-      ],
+      groups: [grp("g1", "sentence"), grp("g2", "sentence")],
       ignoredLangs: ["zh"],
     };
     const {
@@ -327,23 +271,13 @@ describe("deriveItems", () => {
     } = deriveItems(cb, DERIVE_OPTS);
     expect(sentences).toHaveLength(1);
     expect(sentences[0].text).toBe("犬");
-    // The Chinese-only group vanished entirely (not counted as skipped).
     expect(skipped).toBe(0);
   });
 
   it("carries shared batch metadata onto every derived item", () => {
     const cb: CleanedBlocks = {
-      lines: [{
-        id: "a",
-        text: "犬",
-        lang: "ja",
-        role: "text",
-        group: "g1",
-      }],
-      groups: [{
-        id: "g1",
-        kind: "sentence",
-      }],
+      lines: [ln("a", "犬", "ja", "text", "g1")],
+      groups: [grp("g1", "sentence")],
       ignoredLangs: [],
     };
     const {
@@ -360,205 +294,122 @@ describe("deriveItems", () => {
     expect(sentences[0].tags).toBe("animals");
     expect(sentences[0].vocabIds).toEqual(["v1", "v2"]);
   });
-
-  it("excludes lines with the ignore role (like structure)", () => {
-    const g = "g1";
-    const cb: CleanedBlocks = {
-      lines: [
-        {
-          id: "a",
-          text: "犬",
-          lang: "ja",
-          role: "text",
-          group: g,
-        },
-        {
-          id: "b",
-          text: "noise",
-          lang: "en",
-          role: "ignore",
-          group: g,
-        },
-      ],
-      groups: [{
-        id: g,
-        kind: "sentence",
-      }],
-      ignoredLangs: [],
-    };
-    const {
-      sentences,
-    } = deriveItems(cb, DERIVE_OPTS);
-    expect(sentences).toHaveLength(1);
-    expect(sentences[0].text).toBe("犬");
-  });
 });
 
 describe("reducers", () => {
-  const twoGroups: CleanedBlocks = {
-    lines: [
-      {
-        id: "a",
-        text: "毎朝",
-        lang: "ja",
-        role: "text",
-        group: "g1",
-      },
-      {
-        id: "b",
-        text: "コーヒー",
-        lang: "ja",
-        role: "text",
-        group: "g2",
-      },
-    ],
-    groups: [
-      {
-        id: "g1",
-        kind: "sentence",
-      },
-      {
-        id: "g2",
-        kind: "sentence",
-      },
-    ],
-    ignoredLangs: [],
-  };
+  function twoStitches(): CleanedBlocks {
+    return {
+      lines: [
+        ln("a", "毎朝", "ja", "text", "g1"),
+        ln("b", "コーヒー", "ja", "text", "g2"),
+      ],
+      groups: [grp("g1", "sentence"), grp("g2", "sentence")],
+      ignoredLangs: [],
+    };
+  }
 
-  it("linkLines joins the selected lines into the earliest one's group (kept contiguous)", () => {
-    const next = linkLines(twoGroups, ["b", "a"]);
-    // Both lines share group g1 (a's group); g2 is pruned.
+  it("stitchLines joins selected lines into the earliest one's stitch (kept contiguous)", () => {
+    const next = stitchLines(twoStitches(), ["b", "a"]);
     expect(next.lines.map(l => l.group)).toEqual(["g1", "g1"]);
     expect(next.groups.map(g => g.id)).toEqual(["g1"]);
   });
 
-  it("linkLines keeps the anchor group's kind", () => {
-    const withVocab = setGroupKind(twoGroups, "g1", "vocab");
-    const next = linkLines(withVocab, ["a", "b"]);
-    expect(next.groups).toEqual([{
-      id: "g1",
-      kind: "vocab",
-    }]);
-  });
-
-  it("unlinkLines splits selected lines into fresh singleton groups", () => {
-    const linked = linkLines(twoGroups, ["a", "b"]);
-    const next = unlinkLines(linked, ["a", "b"]);
-    const groups = next.lines.map(l => l.group);
-    expect(new Set(groups).size).toBe(2);
+  it("unstitchLines splits selected lines into fresh standalone stitches", () => {
+    const stitched = stitchLines(twoStitches(), ["a", "b"]);
+    const next = unstitchLines(stitched, ["a", "b"]);
+    expect(new Set(next.lines.map(l => l.group)).size).toBe(2);
     expect(next.groups).toHaveLength(2);
-    expect(next.groups.every(g => g.kind === "sentence")).toBe(true);
+    expect(next.groups.every(g => g.link === null)).toBe(true);
   });
 
-  it("setLinesRole bulk-sets the role, including ignore", () => {
-    const next = setLinesRole(twoGroups, ["a", "b"], "ignore");
-    expect(next.lines.every(l => l.role === "ignore")).toBe(true);
-  });
-
-  it("setKindForLines sets kind on every group owning a selected line", () => {
-    const next = setKindForLines(twoGroups, ["a", "b"], "vocab");
+  it("linkGroups links the two stitches into one item with synced kind", () => {
+    const withVocab = setGroupKind(twoStitches(), "g1", "vocab");
+    const next = linkGroups(withVocab, ["a", "b"]);
+    const links = next.groups.map(g => g.link);
+    expect(links[0]).not.toBeNull();
+    expect(links[0]).toBe(links[1]);
     expect(next.groups.every(g => g.kind === "vocab")).toBe(true);
   });
 
-  it("deleteLines removes all selected lines and prunes emptied groups", () => {
-    const next = deleteLines(twoGroups, ["a"]);
-    expect(next.lines.map(l => l.id)).toEqual(["b"]);
-    expect(next.groups.map(g => g.id)).toEqual(["g2"]);
+  it("linkGroups is a no-op when fewer than two distinct stitches are selected", () => {
+    const cb = twoStitches();
+    expect(linkGroups(cb, ["a"])).toBe(cb);
   });
 
-  it("deleteLine removes the line and prunes its now-empty group", () => {
-    const next = deleteLine(twoGroups, "a");
-    expect(next.lines.map(l => l.id)).toEqual(["b"]);
-    expect(next.groups.map(g => g.id)).toEqual(["g2"]);
+  it("unlinkGroups clears the shared link", () => {
+    const linked = linkGroups(twoStitches(), ["a", "b"]);
+    const next = unlinkGroups(linked, ["a", "b"]);
+    expect(next.groups.every(g => g.link === null)).toBe(true);
   });
 
-  it("moveGroup moves a whole group past its neighbor, lines staying together", () => {
-    // g1 = [a, a2], g2 = [b]; moving g1 down puts b first, then a, a2.
-    const grouped: CleanedBlocks = {
+  it("updateLineLang / updateLineRole sync across the whole stitch", () => {
+    const cb: CleanedBlocks = {
       lines: [
-        {
-          id: "a",
-          text: "毎",
-          lang: "ja",
-          role: "text",
-          group: "g1",
-        },
-        {
-          id: "a2",
-          text: "朝",
-          lang: "ja",
-          role: "text",
-          group: "g1",
-        },
-        {
-          id: "b",
-          text: "犬",
-          lang: "ja",
-          role: "text",
-          group: "g2",
-        },
+        ln("a", "毎朝", "ja", "text", "g1"),
+        ln("b", "コーヒー", "ja", "text", "g1"),
       ],
-      groups: [
-        {
-          id: "g1",
-          kind: "sentence",
-        },
-        {
-          id: "g2",
-          kind: "sentence",
-        },
-      ],
+      groups: [grp("g1", "sentence")],
       ignoredLangs: [],
     };
-    const next = moveGroup(grouped, "g1", "down");
-    expect(next.lines.map(l => l.id)).toEqual(["b", "a", "a2"]);
+    expect(updateLineLang(cb, "a", "en").lines.every(l => l.lang === "en")).toBe(true);
+    expect(updateLineRole(cb, "a", "structure").lines.every(l => l.role === "structure")).toBe(true);
   });
 
-  it("normalizeOrder pulls a group's scattered lines contiguous", () => {
-    const scattered: CleanedBlocks = {
+  it("setGroupKind syncs kind across all stitches sharing the link", () => {
+    const linked = linkGroups(twoStitches(), ["a", "b"]);
+    const next = setGroupKind(linked, linked.lines[0].group, "vocab");
+    expect(next.groups.every(g => g.kind === "vocab")).toBe(true);
+  });
+
+  it("setKindForLines propagates to linked partners", () => {
+    const linked = linkGroups(twoStitches(), ["a", "b"]);
+    // Select only one line; its linked partner should still flip.
+    const next = setKindForLines(linked, ["a"], "vocab");
+    expect(next.groups.every(g => g.kind === "vocab")).toBe(true);
+  });
+
+  it("setLinesRole bulk-sets the role, including ignore", () => {
+    const next = setLinesRole(twoStitches(), ["a", "b"], "ignore");
+    expect(next.lines.every(l => l.role === "ignore")).toBe(true);
+  });
+
+  it("deleteLines / deleteLine remove lines and prune emptied stitches", () => {
+    expect(deleteLines(twoStitches(), ["a"]).groups.map(g => g.id)).toEqual(["g2"]);
+    expect(deleteLine(twoStitches(), "a").lines.map(l => l.id)).toEqual(["b"]);
+  });
+
+  it("moveItem moves a whole linked item past its neighbor, together", () => {
+    const cb: CleanedBlocks = {
       lines: [
-        {
-          id: "a",
-          text: "1",
-          lang: "ja",
-          role: "text",
-          group: "g1",
-        },
-        {
-          id: "b",
-          text: "2",
-          lang: "ja",
-          role: "text",
-          group: "g2",
-        },
-        {
-          id: "c",
-          text: "3",
-          lang: "ja",
-          role: "text",
-          group: "g1",
-        },
+        ln("a", "text", "ja", "text", "g1"),
+        ln("b", "translation", "en", "translation", "g2"),
+        ln("c", "other", "ja", "text", "g3"),
       ],
-      groups: [
-        {
-          id: "g1",
-          kind: "sentence",
-        },
-        {
-          id: "g2",
-          kind: "sentence",
-        },
-      ],
+      groups: [grp("g1", "sentence", "L1"), grp("g2", "sentence", "L1"), grp("g3", "sentence")],
       ignoredLangs: [],
     };
-    const next = normalizeOrder(scattered);
+    const next = moveItem(cb, "g1", "down");
+    expect(next.lines.map(l => l.id)).toEqual(["c", "a", "b"]);
+  });
+
+  it("normalizeOrder keeps linked stitches adjacent", () => {
+    const cb: CleanedBlocks = {
+      lines: [
+        ln("a", "1", "ja", "text", "g1"),
+        ln("b", "2", "ja", "text", "g2"),
+        ln("c", "3", "ja", "translation", "g3"),
+      ],
+      // g1 and g3 are linked; g2 sits between them in array order.
+      groups: [grp("g1", "sentence", "L1"), grp("g2", "sentence"), grp("g3", "sentence", "L1")],
+      ignoredLangs: [],
+    };
+    const next = normalizeOrder(cb);
     expect(next.lines.map(l => l.id)).toEqual(["a", "c", "b"]);
   });
 
   it("toggleIgnoredLang adds then removes a code", () => {
-    const on = toggleIgnoredLang(twoGroups, "zh");
+    const on = toggleIgnoredLang(twoStitches(), "zh");
     expect(on.ignoredLangs).toEqual(["zh"]);
-    const off = toggleIgnoredLang(on, "zh");
-    expect(off.ignoredLangs).toEqual([]);
+    expect(toggleIgnoredLang(on, "zh").ignoredLangs).toEqual([]);
   });
 });

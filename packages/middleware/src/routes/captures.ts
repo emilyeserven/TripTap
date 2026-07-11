@@ -240,6 +240,9 @@ export async function captureRoutes(app: FastifyInstance): Promise<void> {
                       type: "string",
                       enum: ["sentence", "vocab"],
                     },
+                    link: {
+                      type: ["string", "null"],
+                    },
                   },
                 },
               },
