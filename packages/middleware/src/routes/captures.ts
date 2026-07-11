@@ -10,6 +10,8 @@ import {
   updateCapture,
   type UpdateCaptureInput,
 } from "@/services/captures";
+import { listSentencesByCapture } from "@/services/sentences";
+import { listVocabByCapture } from "@/services/vocab";
 
 const captureParams = {
   type: "object",
@@ -75,6 +77,30 @@ export async function captureRoutes(app: FastifyInstance): Promise<void> {
       message: "Capture not found",
     });
     return capture;
+  });
+
+  app.get("/api/captures/:id/sentences", {
+    schema: {
+      tags: ["captures"],
+      params: captureParams,
+    },
+  }, async (req) => {
+    const {
+      id,
+    } = req.params as { id: string };
+    return listSentencesByCapture(id);
+  });
+
+  app.get("/api/captures/:id/vocab", {
+    schema: {
+      tags: ["captures"],
+      params: captureParams,
+    },
+  }, async (req) => {
+    const {
+      id,
+    } = req.params as { id: string };
+    return listVocabByCapture(id);
   });
 
   app.get("/api/captures/:id/image", {

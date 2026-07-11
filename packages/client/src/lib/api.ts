@@ -17,6 +17,7 @@ import type {
   Source,
   UpdateOcrSettingsInput,
   UpdateSentenceInput,
+  UpdateVocabInput,
   Vocab,
   VocabItem,
   VocabRenshuuUpdate,
@@ -105,6 +106,11 @@ export const vocabApi = {
         vocab: inputs,
       }),
     }),
+  update: (id: string, input: UpdateVocabInput) =>
+    request<Vocab>(`/vocab/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    }),
   remove: (id: string) => request<undefined>(`/vocab/${id}`, {
     method: "DELETE",
   }),
@@ -152,6 +158,9 @@ export const capturesApi = {
   remove: (id: string) => request<undefined>(`/captures/${id}`, {
     method: "DELETE",
   }),
+  /** Sentences and vocab mined from this capture. */
+  sentences: (id: string) => request<Sentence[]>(`/captures/${id}/sentences`),
+  vocab: (id: string) => request<Vocab[]>(`/captures/${id}/vocab`),
   /** Absolute path to a capture's stored image (or `null` when it has none). */
   imageUrl: (id: string) => `${BASE}/captures/${id}/image`,
   // Multipart upload: the OCR result + metadata as a JSON `payload` field, the image as `file`.

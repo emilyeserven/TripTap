@@ -15,6 +15,7 @@ const sentence: Sentence = {
   page: null,
   notes: "Uses the ます-form.",
   tags: "verbs, routine",
+  captureId: null,
   createdAt: "2026-06-01T00:00:00.000Z",
 };
 

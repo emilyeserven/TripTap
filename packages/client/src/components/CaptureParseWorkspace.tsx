@@ -180,6 +180,7 @@ export function CaptureParseWorkspace({
         page: pick(item.fields.page, page) || null,
         tags: pick(item.fields.tags, tags) || null,
         notes: pick(item.fields.notes, notes) || null,
+        captureId: capture.id,
         vocabIds: linksFor(index, item.fields.text),
       }));
       await createSentences.mutateAsync(inputs);
@@ -197,6 +198,7 @@ export function CaptureParseWorkspace({
         page: pick(item.fields.page, page) || null,
         tags: pick(item.fields.tags, tags) || null,
         notes: pick(item.fields.notes, notes) || null,
+        captureId: capture.id,
       }));
       await createVocab.mutateAsync(inputs);
       setDone(`Created ${inputs.length} vocab item(s).`);

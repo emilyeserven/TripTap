@@ -1,11 +1,12 @@
 import type { FastifyInstance } from "fastify";
-import type { CreateVocabInput } from "@sentence-bank/types";
+import type { CreateVocabInput, UpdateVocabInput } from "@sentence-bank/types";
 import {
   createVocab,
   createVocabMany,
   deleteVocab,
   getSentencesForVocab,
   listVocab,
+  updateVocab,
 } from "@/services/vocab";
 
 const vocabParams = {
@@ -51,6 +52,10 @@ const createVocabBody = {
     notes: {
       type: ["string", "null"],
     },
+    captureId: {
+      type: ["string", "null"],
+      format: "uuid",
+    },
   },
 } as const;
 
@@ -64,6 +69,12 @@ const bulkVocabBody = {
       items: createVocabBody,
     },
   },
+} as const;
+
+const updateVocabBody = {
+  type: "object",
+  additionalProperties: false,
+  properties: createVocabBody.properties,
 } as const;
 
 /** CRUD routes for the standalone vocab bank, mounted under `/api/vocab`. */
@@ -107,6 +118,23 @@ export async function vocabRoutes(app: FastifyInstance): Promise<void> {
       id,
     } = req.params as { id: string };
     return getSentencesForVocab(id);
+  });
+
+  app.patch("/api/vocab/:id", {
+    schema: {
+      tags: ["vocab"],
+      params: vocabParams,
+      body: updateVocabBody,
+    },
+  }, async (req, reply) => {
+    const {
+      id,
+    } = req.params as { id: string };
+    const updated = await updateVocab(id, req.body as UpdateVocabInput);
+    if (!updated) return reply.code(404).send({
+      message: "Vocab not found",
+    });
+    return updated;
   });
 
   app.delete("/api/vocab/:id", {

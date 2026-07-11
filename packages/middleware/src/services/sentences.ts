@@ -1,10 +1,10 @@
-import { desc, eq } from "drizzle-orm";
+import { asc, desc, eq } from "drizzle-orm";
 import type { CreateSentenceInput, Sentence, UpdateSentenceInput } from "@sentence-bank/types";
 import { db } from "@/db";
 import { sentences, sentenceVocab, type SentenceRow } from "@/db/schema";
 
 /** Map a DB row to the shared `Sentence` wire type. */
-function toSentence(row: SentenceRow): Sentence {
+export function toSentence(row: SentenceRow): Sentence {
   return {
     id: row.id,
     text: row.text,
@@ -15,6 +15,7 @@ function toSentence(row: SentenceRow): Sentence {
     page: row.page,
     notes: row.notes,
     tags: row.tags,
+    captureId: row.captureId,
     createdAt:
       row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
   };
@@ -31,6 +32,7 @@ function toInsert(input: CreateSentenceInput) {
     page: input.page ?? null,
     notes: input.notes ?? null,
     tags: input.tags ?? null,
+    captureId: input.captureId ?? null,
   };
 }
 
@@ -42,6 +44,16 @@ export async function listSentences(): Promise<Sentence[]> {
 export async function getSentence(id: string): Promise<Sentence | null> {
   const [row] = await db.select().from(sentences).where(eq(sentences.id, id));
   return row ? toSentence(row) : null;
+}
+
+/** Sentences mined from a given capture, oldest first. */
+export async function listSentencesByCapture(captureId: string): Promise<Sentence[]> {
+  const rows = await db
+    .select()
+    .from(sentences)
+    .where(eq(sentences.captureId, captureId))
+    .orderBy(asc(sentences.createdAt));
+  return rows.map(toSentence);
 }
 
 /** Link rows for a sentence's vocab ids, deduped and ignoring empties. */

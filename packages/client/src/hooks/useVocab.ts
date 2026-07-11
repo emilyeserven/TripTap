@@ -1,10 +1,23 @@
-import type { CreateVocabInput } from "@sentence-bank/types";
+import type { CreateVocabInput, UpdateVocabInput } from "@sentence-bank/types";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { vocabApi } from "../lib/api";
 
 const VOCAB_KEY = ["vocab"] as const;
+
+/** Invalidate both the vocab list and any capture-scoped vocab lists. */
+function useVocabInvalidator() {
+  const queryClient = useQueryClient();
+  return () => {
+    queryClient.invalidateQueries({
+      queryKey: VOCAB_KEY,
+    });
+    queryClient.invalidateQueries({
+      queryKey: ["captures"],
+    });
+  };
+}
 
 export function useVocab() {
   return useQuery({
@@ -14,31 +27,37 @@ export function useVocab() {
 }
 
 export function useCreateVocab() {
-  const queryClient = useQueryClient();
+  const invalidate = useVocabInvalidator();
   return useMutation({
     mutationFn: (input: CreateVocabInput) => vocabApi.create(input),
-    onSuccess: () => queryClient.invalidateQueries({
-      queryKey: VOCAB_KEY,
-    }),
+    onSuccess: invalidate,
   });
 }
 
 export function useCreateVocabMany() {
-  const queryClient = useQueryClient();
+  const invalidate = useVocabInvalidator();
   return useMutation({
     mutationFn: (inputs: CreateVocabInput[]) => vocabApi.createMany(inputs),
-    onSuccess: () => queryClient.invalidateQueries({
-      queryKey: VOCAB_KEY,
-    }),
+    onSuccess: invalidate,
+  });
+}
+
+export function useUpdateVocab() {
+  const invalidate = useVocabInvalidator();
+  return useMutation({
+    mutationFn: ({
+      id, input,
+    }: { id: string;
+      input: UpdateVocabInput; }) =>
+      vocabApi.update(id, input),
+    onSuccess: invalidate,
   });
 }
 
 export function useDeleteVocab() {
-  const queryClient = useQueryClient();
+  const invalidate = useVocabInvalidator();
   return useMutation({
     mutationFn: (id: string) => vocabApi.remove(id),
-    onSuccess: () => queryClient.invalidateQueries({
-      queryKey: VOCAB_KEY,
-    }),
+    onSuccess: invalidate,
   });
 }

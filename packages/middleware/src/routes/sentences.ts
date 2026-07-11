@@ -53,6 +53,10 @@ const createSentenceBody = {
     tags: {
       type: ["string", "null"],
     },
+    captureId: {
+      type: ["string", "null"],
+      format: "uuid",
+    },
     vocabIds: {
       type: "array",
       items: {

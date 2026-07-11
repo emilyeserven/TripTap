@@ -49,6 +49,8 @@ export interface Sentence {
   notes: string | null;
   /** Optional comma-separated tags. */
   tags: string | null;
+  /** The capture this sentence was mined from, or null. */
+  captureId: string | null;
   /** ISO-8601 timestamp of when the sentence was added. */
   createdAt: string;
 }
@@ -63,6 +65,7 @@ export interface CreateSentenceInput {
   page?: string | null;
   notes?: string | null;
   tags?: string | null;
+  captureId?: string | null;
   /** Vocab items to link to this sentence (many-to-many). */
   vocabIds?: string[];
 }
@@ -81,6 +84,8 @@ export interface Vocab {
   page: string | null;
   tags: string | null;
   notes: string | null;
+  /** The capture this vocab was mined from, or null. */
+  captureId: string | null;
   createdAt: string;
 }
 
@@ -94,7 +99,11 @@ export interface CreateVocabInput {
   page?: string | null;
   tags?: string | null;
   notes?: string | null;
+  captureId?: string | null;
 }
+
+/** Payload for partially updating a vocab item. */
+export type UpdateVocabInput = Partial<CreateVocabInput>;
 
 /** How a saved parse template delimits items. */
 export type ParseBoundary = "fixed" | "blank";

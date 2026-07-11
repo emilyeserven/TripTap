@@ -1,7 +1,7 @@
 import { useState } from "react";
 
-import { createFileRoute } from "@tanstack/react-router";
-import { Plus } from "lucide-react";
+import { Link, createFileRoute } from "@tanstack/react-router";
+import { Camera, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -90,11 +90,35 @@ function VocabPage() {
               </div>
               {v.reading ? <p className="text-sm text-muted-foreground">{v.reading}</p> : null}
               {v.meaning ? <p className="text-sm">{v.meaning}</p> : null}
-              <p className="text-xs text-muted-foreground">
-                {[sourceName(v.sourceId), v.page ? `p. ${v.page}` : null]
-                  .filter(Boolean)
-                  .join(" · ")}
-              </p>
+              <div
+                className="
+                  flex flex-wrap items-center gap-2 text-xs
+                  text-muted-foreground
+                "
+              >
+                <span>
+                  {[sourceName(v.sourceId), v.page ? `p. ${v.page}` : null]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </span>
+                {v.captureId
+                  ? (
+                    <Link
+                      to="/captures/$id"
+                      params={{
+                        id: v.captureId,
+                      }}
+                      className="
+                        inline-flex items-center gap-1
+                        hover:text-blue-700
+                      "
+                    >
+                      <Camera className="size-3" />
+                      Capture
+                    </Link>
+                  )
+                  : null}
+              </div>
             </CardContent>
           </Card>
         ))}

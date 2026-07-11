@@ -122,7 +122,7 @@ export function OcrKeysCard() {
           Credentials for the cloud OCR backends used by
           {" "}
           <Link
-            to="/sentences/capture"
+            to="/capture"
             className="underline underline-offset-2"
           >Capture
           </Link>

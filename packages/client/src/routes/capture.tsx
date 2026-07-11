@@ -25,7 +25,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useOcr } from "@/hooks/useOcr";
 
-export const Route = createFileRoute("/sentences_/capture")({
+export const Route = createFileRoute("/capture")({
   component: CapturePage,
 });
 
@@ -110,14 +110,14 @@ function CapturePage() {
     <section className="space-y-6">
       <div>
         <Link
-          to="/sentences"
+          to="/captures"
           className="
             mb-2 inline-flex items-center gap-1 text-sm text-muted-foreground
             hover:underline
           "
         >
           <ArrowLeft className="size-3.5" />
-          Sentences
+          Captures
         </Link>
         <h1 className="text-2xl font-bold">Capture text</h1>
         <p className="text-sm text-muted-foreground">

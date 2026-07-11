@@ -1,6 +1,7 @@
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Trash2 } from "lucide-react";
 
+import { CaptureCreatedItems } from "@/components/CaptureCreatedItems";
 import { CaptureParseWorkspace } from "@/components/CaptureParseWorkspace";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -37,11 +38,17 @@ function CaptureDetailPage() {
     : null;
 
   function remove() {
+    if (!globalThis.confirm("Delete this capture? Sentences and vocab created from it are kept.")) {
+      return;
+    }
     deleteCapture.mutate(id, {
       onSuccess: () => {
         void navigate({
           to: "/captures",
         });
+      },
+      onError: (err) => {
+        globalThis.alert(err instanceof Error ? err.message : "Could not delete capture");
       },
     });
   }
@@ -128,6 +135,8 @@ function CaptureDetailPage() {
 
             <CaptureParseWorkspace capture={capture} />
           </div>
+
+          <CaptureCreatedItems captureId={capture.id} />
 
           {capture.hasImage && (
             <Card>
