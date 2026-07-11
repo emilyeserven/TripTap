@@ -97,6 +97,53 @@ export interface OcrResult {
   fullText: string;
 }
 
+/** Workflow state of a capture: freshly scanned, or already mined into sentences. */
+export type CaptureStatus = "new" | "parsed";
+
+/** Fields shared by the capture list summary and the full detail. */
+export interface CaptureSummary {
+  id: string;
+  /** Optional user-given label; falls back to a text preview in the UI. */
+  title: string | null;
+  /** The full extracted text (joined OCR output). */
+  text: string;
+  /** OCR engines that contributed to this capture, e.g. ["paddleocr", "manga-ocr"]. */
+  engines: string[];
+  /** The taxonomy source this capture came from, or null. */
+  sourceId: string | null;
+  /** Location within the source, e.g. "42", "p. 12–13". */
+  page: string | null;
+  notes: string | null;
+  status: CaptureStatus;
+  /** Whether an original image is stored (served from `/api/captures/:id/image`). */
+  hasImage: boolean;
+  imageWidth: number | null;
+  imageHeight: number | null;
+  /** ISO-8601 timestamp of when the capture was saved. */
+  createdAt: string;
+}
+
+/** A saved OCR capture, including the per-block detail (detail view only). */
+export interface Capture extends CaptureSummary {
+  /** Per-block OCR detail, preserved for later parsing into sentences. */
+  blocks: OcrBlock[];
+  imageMime: string | null;
+}
+
+/**
+ * JSON payload accompanying a capture upload. Sent as the `payload` field of a
+ * `multipart/form-data` request whose `file` field carries the (optional) image.
+ */
+export interface CreateCaptureInput {
+  title?: string | null;
+  text: string;
+  blocks: OcrBlock[];
+  engines: string[];
+  sourceId?: string | null;
+  page?: string | null;
+  notes?: string | null;
+}
+
 /** Masked state of a single stored secret. The secret itself is never sent to the client. */
 export interface SecretState {
   /** Whether a value is currently stored. */

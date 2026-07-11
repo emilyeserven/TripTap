@@ -36,6 +36,13 @@
       "when": 1783731760172,
       "tag": "0004_magenta_mad_thinker",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1783734271523,
+      "tag": "0005_aspiring_gladiator",
+      "breakpoints": true
     }
   ]
 }
