@@ -236,7 +236,18 @@ function SourcesPage() {
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0 space-y-0.5">
                           <div className="flex flex-wrap items-center gap-2">
-                            <h2 className="font-medium">{source.name}</h2>
+                            <Link
+                              to="/sources/$id"
+                              params={{
+                                id: source.id,
+                              }}
+                              className="
+                                font-medium
+                                hover:underline
+                              "
+                            >
+                              {source.name}
+                            </Link>
                             {source.type
                               ? <span className="text-xs text-muted-foreground">{source.type}</span>
                               : null}

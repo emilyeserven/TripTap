@@ -21,6 +21,7 @@ import { Route as CaptureRouteImport } from './routes/capture'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as LessonsIndexRouteImport } from './routes/lessons.index'
 import { Route as CapturesIndexRouteImport } from './routes/captures.index'
+import { Route as SourcesIdRouteImport } from './routes/sources.$id'
 import { Route as LessonsNewRouteImport } from './routes/lessons.new'
 import { Route as LessonsSlugRouteImport } from './routes/lessons.$slug'
 import { Route as CapturesIdRouteImport } from './routes/captures.$id'
@@ -85,6 +86,11 @@ const CapturesIndexRoute = CapturesIndexRouteImport.update({
   path: '/captures/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SourcesIdRoute = SourcesIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => SourcesRoute,
+} as any)
 const LessonsNewRoute = LessonsNewRouteImport.update({
   id: '/lessons/new',
   path: '/lessons/new',
@@ -109,12 +115,13 @@ export interface FileRoutesByFullPath {
   '/renshuu': typeof RenshuuRoute
   '/sentences': typeof SentencesRoute
   '/settings': typeof SettingsRoute
-  '/sources': typeof SourcesRoute
+  '/sources': typeof SourcesRouteWithChildren
   '/vocab': typeof VocabRoute
   '/vocabulary': typeof VocabularyRoute
   '/captures/$id': typeof CapturesIdRoute
   '/lessons/$slug': typeof LessonsSlugRoute
   '/lessons/new': typeof LessonsNewRoute
+  '/sources/$id': typeof SourcesIdRoute
   '/captures/': typeof CapturesIndexRoute
   '/lessons/': typeof LessonsIndexRoute
 }
@@ -126,12 +133,13 @@ export interface FileRoutesByTo {
   '/renshuu': typeof RenshuuRoute
   '/sentences': typeof SentencesRoute
   '/settings': typeof SettingsRoute
-  '/sources': typeof SourcesRoute
+  '/sources': typeof SourcesRouteWithChildren
   '/vocab': typeof VocabRoute
   '/vocabulary': typeof VocabularyRoute
   '/captures/$id': typeof CapturesIdRoute
   '/lessons/$slug': typeof LessonsSlugRoute
   '/lessons/new': typeof LessonsNewRoute
+  '/sources/$id': typeof SourcesIdRoute
   '/captures': typeof CapturesIndexRoute
   '/lessons': typeof LessonsIndexRoute
 }
@@ -144,12 +152,13 @@ export interface FileRoutesById {
   '/renshuu': typeof RenshuuRoute
   '/sentences': typeof SentencesRoute
   '/settings': typeof SettingsRoute
-  '/sources': typeof SourcesRoute
+  '/sources': typeof SourcesRouteWithChildren
   '/vocab': typeof VocabRoute
   '/vocabulary': typeof VocabularyRoute
   '/captures/$id': typeof CapturesIdRoute
   '/lessons/$slug': typeof LessonsSlugRoute
   '/lessons/new': typeof LessonsNewRoute
+  '/sources/$id': typeof SourcesIdRoute
   '/captures/': typeof CapturesIndexRoute
   '/lessons/': typeof LessonsIndexRoute
 }
@@ -169,6 +178,7 @@ export interface FileRouteTypes {
     | '/captures/$id'
     | '/lessons/$slug'
     | '/lessons/new'
+    | '/sources/$id'
     | '/captures/'
     | '/lessons/'
   fileRoutesByTo: FileRoutesByTo
@@ -186,6 +196,7 @@ export interface FileRouteTypes {
     | '/captures/$id'
     | '/lessons/$slug'
     | '/lessons/new'
+    | '/sources/$id'
     | '/captures'
     | '/lessons'
   id:
@@ -203,6 +214,7 @@ export interface FileRouteTypes {
     | '/captures/$id'
     | '/lessons/$slug'
     | '/lessons/new'
+    | '/sources/$id'
     | '/captures/'
     | '/lessons/'
   fileRoutesById: FileRoutesById
@@ -215,7 +227,7 @@ export interface RootRouteChildren {
   RenshuuRoute: typeof RenshuuRoute
   SentencesRoute: typeof SentencesRoute
   SettingsRoute: typeof SettingsRoute
-  SourcesRoute: typeof SourcesRoute
+  SourcesRoute: typeof SourcesRouteWithChildren
   VocabRoute: typeof VocabRoute
   VocabularyRoute: typeof VocabularyRoute
   CapturesIdRoute: typeof CapturesIdRoute
@@ -311,6 +323,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CapturesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/sources/$id': {
+      id: '/sources/$id'
+      path: '/$id'
+      fullPath: '/sources/$id'
+      preLoaderRoute: typeof SourcesIdRouteImport
+      parentRoute: typeof SourcesRoute
+    }
     '/lessons/new': {
       id: '/lessons/new'
       path: '/lessons/new'
@@ -335,6 +354,17 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface SourcesRouteChildren {
+  SourcesIdRoute: typeof SourcesIdRoute
+}
+
+const SourcesRouteChildren: SourcesRouteChildren = {
+  SourcesIdRoute: SourcesIdRoute,
+}
+
+const SourcesRouteWithChildren =
+  SourcesRoute._addFileChildren(SourcesRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CaptureRoute: CaptureRoute,
@@ -343,7 +373,7 @@ const rootRouteChildren: RootRouteChildren = {
   RenshuuRoute: RenshuuRoute,
   SentencesRoute: SentencesRoute,
   SettingsRoute: SettingsRoute,
-  SourcesRoute: SourcesRoute,
+  SourcesRoute: SourcesRouteWithChildren,
   VocabRoute: VocabRoute,
   VocabularyRoute: VocabularyRoute,
   CapturesIdRoute: CapturesIdRoute,
