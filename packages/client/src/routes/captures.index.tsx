@@ -1,9 +1,18 @@
-import { Link, createFileRoute } from "@tanstack/react-router";
-import { Camera, ImageOff } from "lucide-react";
+import { useState } from "react";
 
+import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
+import { Camera, ImageOff, PencilLine } from "lucide-react";
+
+import { ManualCaptureForm } from "@/components/ManualCaptureForm";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useCaptures } from "@/hooks/useCaptures";
 import { useSources } from "@/hooks/useSources";
 import { capturesApi } from "@/lib/api";
@@ -13,12 +22,14 @@ export const Route = createFileRoute("/captures/")({
 });
 
 function CapturesPage() {
+  const navigate = useNavigate();
   const {
     data: captures, isLoading, error,
   } = useCaptures();
   const {
     data: sources,
   } = useSources();
+  const [manualOpen, setManualOpen] = useState(false);
 
   const sourceName = (id: string | null) =>
     (id ? sources?.find(s => s.id === id)?.name ?? null : null);
@@ -32,13 +43,46 @@ function CapturesPage() {
             Saved OCR scans, ready to parse into sentences.
           </p>
         </div>
-        <Button asChild>
-          <Link to="/sentences/capture">
-            <Camera className="size-4" />
-            New capture
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setManualOpen(true)}
+          >
+            <PencilLine className="size-4" />
+            Add manually
+          </Button>
+          <Button asChild>
+            <Link to="/sentences/capture">
+              <Camera className="size-4" />
+              Scan
+            </Link>
+          </Button>
+        </div>
       </div>
+
+      <Dialog
+        open={manualOpen}
+        onOpenChange={setManualOpen}
+      >
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>New capture</DialogTitle>
+          </DialogHeader>
+          {manualOpen && (
+            <ManualCaptureForm
+              onSaved={(id) => {
+                setManualOpen(false);
+                void navigate({
+                  to: "/captures/$id",
+                  params: {
+                    id,
+                  },
+                });
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
 
       {error ? <p className="text-destructive">{error.message}</p> : null}
       {isLoading ? <p className="text-muted-foreground">Loading…</p> : null}
