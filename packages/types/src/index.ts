@@ -171,8 +171,10 @@ export interface CaptureSummary {
   id: string;
   /** Optional user-given label; falls back to a text preview in the UI. */
   title: string | null;
-  /** The full extracted text (joined OCR output). */
+  /** The full extracted text (joined OCR output). Preserved untouched as the source of truth. */
   text: string;
+  /** Optional user-edited, tidied-up copy of {@link text}; null when no cleaned copy exists yet. */
+  cleanedText: string | null;
   /** OCR engines that contributed to this capture, e.g. ["paddleocr", "manga-ocr"]. */
   engines: string[];
   /** The taxonomy source this capture came from, or null. */

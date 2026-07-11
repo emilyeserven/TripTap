@@ -26,6 +26,7 @@ import type {
 /** Patchable capture fields (mirror of the middleware's `UpdateCaptureInput`). */
 export interface UpdateCaptureInput {
   title?: string | null;
+  cleanedText?: string | null;
   notes?: string | null;
   sourceId?: string | null;
   page?: string | null;

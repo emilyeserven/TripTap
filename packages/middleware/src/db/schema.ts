@@ -139,6 +139,9 @@ export const captures = pgTable("captures", {
   id: uuid("id").primaryKey().defaultRandom(),
   title: text("title"),
   text: text("text").notNull(),
+  // An optional user-edited, tidied-up copy of `text`. Null means "no cleaned copy yet"; the raw
+  // OCR output in `text` is always preserved untouched.
+  cleanedText: text("cleaned_text"),
   blocks: jsonb("blocks").$type<OcrBlock[]>().notNull(),
   engines: jsonb("engines").$type<string[]>().notNull(),
   sourceId: uuid("source_id").references(() => sources.id, {

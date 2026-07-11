@@ -192,6 +192,9 @@ export async function captureRoutes(app: FastifyInstance): Promise<void> {
           title: {
             type: ["string", "null"],
           },
+          cleanedText: {
+            type: ["string", "null"],
+          },
           notes: {
             type: ["string", "null"],
           },

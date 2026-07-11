@@ -19,6 +19,7 @@ const summaryColumns = {
   id: captures.id,
   title: captures.title,
   text: captures.text,
+  cleanedText: captures.cleanedText,
   engines: captures.engines,
   sourceId: captures.sourceId,
   page: captures.page,
@@ -32,7 +33,7 @@ const summaryColumns = {
 
 type SummaryRow = Pick<
   CaptureRow,
-  "id" | "title" | "text" | "engines" | "sourceId" | "page" | "notes" | "status" | "imageWidth" | "imageHeight" | "createdAt"
+  "id" | "title" | "text" | "cleanedText" | "engines" | "sourceId" | "page" | "notes" | "status" | "imageWidth" | "imageHeight" | "createdAt"
 > & { hasImage: boolean };
 
 function toIso(value: Date | string): string {
@@ -44,6 +45,7 @@ function toSummary(row: SummaryRow): CaptureSummary {
     id: row.id,
     title: row.title,
     text: row.text,
+    cleanedText: row.cleanedText,
     engines: row.engines,
     sourceId: row.sourceId,
     page: row.page,
@@ -128,6 +130,7 @@ export async function createCapture(
     id: row.id,
     title: row.title,
     text: row.text,
+    cleanedText: row.cleanedText,
     blocks: row.blocks,
     engines: row.engines,
     sourceId: row.sourceId,
@@ -145,6 +148,7 @@ export async function createCapture(
 /** Fields of a capture that can be patched (never the image or OCR payload). */
 export interface UpdateCaptureInput {
   title?: string | null;
+  cleanedText?: string | null;
   notes?: string | null;
   sourceId?: string | null;
   page?: string | null;
