@@ -57,6 +57,11 @@ const navItems = [
     icon: ScrollTextIcon,
   },
   {
+    title: "Vocab",
+    to: "/vocab",
+    icon: LibraryIcon,
+  },
+  {
     title: "Capture",
     to: "/sentences/capture",
     icon: CameraIcon,

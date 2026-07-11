@@ -142,6 +142,26 @@ export async function createCapture(
   };
 }
 
+/** Fields of a capture that can be patched (never the image or OCR payload). */
+export interface UpdateCaptureInput {
+  title?: string | null;
+  notes?: string | null;
+  sourceId?: string | null;
+  page?: string | null;
+  status?: CaptureStatus;
+}
+
+export async function updateCapture(
+  id: string,
+  input: UpdateCaptureInput,
+): Promise<Capture | null> {
+  const [row] = await db.update(captures).set(input).where(eq(captures.id, id)).returning({
+    id: captures.id,
+  });
+  if (!row) return null;
+  return getCapture(id);
+}
+
 export async function deleteCapture(id: string): Promise<boolean> {
   const rows = await db.delete(captures).where(eq(captures.id, id)).returning({
     id: captures.id,

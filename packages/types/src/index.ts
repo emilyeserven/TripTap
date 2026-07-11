@@ -35,8 +35,8 @@ export interface Sentence {
   id: string;
   /** The sentence in the target language, e.g. "毎朝コーヒーを飲みます。". */
   text: string;
-  /** The meaning in the user's own language. */
-  translation: string;
+  /** The meaning in the user's own language; null when mined text-only and not yet translated. */
+  translation: string | null;
   /** Target language, e.g. "Japanese". */
   language: string;
   /** Legacy free-text origin, kept for rows predating the source taxonomy. */
@@ -56,13 +56,70 @@ export interface Sentence {
 /** Payload for creating a sentence. */
 export interface CreateSentenceInput {
   text: string;
-  translation: string;
+  translation?: string | null;
   language: string;
   source?: string | null;
   sourceId?: string | null;
   page?: string | null;
   notes?: string | null;
   tags?: string | null;
+  /** Vocab items to link to this sentence (many-to-many). */
+  vocabIds?: string[];
+}
+
+/** A standalone vocabulary entry (peer of {@link Sentence}). */
+export interface Vocab {
+  id: string;
+  /** The word/term, e.g. "毎朝". */
+  term: string;
+  /** Reading/pronunciation, e.g. "まいあさ". */
+  reading: string | null;
+  /** Meaning in the user's language; null when not yet defined. */
+  meaning: string | null;
+  language: string;
+  sourceId: string | null;
+  page: string | null;
+  tags: string | null;
+  notes: string | null;
+  createdAt: string;
+}
+
+/** Payload for creating a vocab item. */
+export interface CreateVocabInput {
+  term: string;
+  reading?: string | null;
+  meaning?: string | null;
+  language: string;
+  sourceId?: string | null;
+  page?: string | null;
+  tags?: string | null;
+  notes?: string | null;
+}
+
+/** How a saved parse template delimits items. */
+export type ParseBoundary = "fixed" | "blank";
+
+/** Which type a parse template produces. */
+export type ParseTarget = "sentence" | "vocab";
+
+/** A saved capture-parsing template. */
+export interface ParseTemplate {
+  id: string;
+  name: string;
+  target: ParseTarget;
+  body: string;
+  boundary: ParseBoundary;
+  ignoreBlankLines: boolean;
+  createdAt: string;
+}
+
+/** Payload for creating a parse template. */
+export interface CreateParseTemplateInput {
+  name: string;
+  target: ParseTarget;
+  body: string;
+  boundary: ParseBoundary;
+  ignoreBlankLines: boolean;
 }
 
 /** Payload for partially updating a sentence. */

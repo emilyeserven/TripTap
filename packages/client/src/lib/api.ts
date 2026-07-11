@@ -2,21 +2,34 @@ import type {
   Capture,
   CaptureSummary,
   CreateCaptureInput,
+  CreateParseTemplateInput,
   CreateSentenceInput,
   CreateSourceInput,
+  CreateVocabInput,
   LessonContent,
   LessonDetail,
   LessonImportInput,
   LessonSummary,
   OcrResult,
   OcrSettings,
+  ParseTemplate,
   Sentence,
   Source,
   UpdateOcrSettingsInput,
   UpdateSentenceInput,
+  Vocab,
   VocabItem,
   VocabRenshuuUpdate,
 } from "@sentence-bank/types";
+
+/** Patchable capture fields (mirror of the middleware's `UpdateCaptureInput`). */
+export interface UpdateCaptureInput {
+  title?: string | null;
+  notes?: string | null;
+  sourceId?: string | null;
+  page?: string | null;
+  status?: "new" | "parsed";
+}
 
 const BASE = "/api";
 
@@ -44,6 +57,13 @@ export const sentencesApi = {
       method: "POST",
       body: JSON.stringify(input),
     }),
+  createMany: (inputs: CreateSentenceInput[]) =>
+    request<Sentence[]>("/sentences/bulk", {
+      method: "POST",
+      body: JSON.stringify({
+        sentences: inputs,
+      }),
+    }),
   update: (id: string, input: UpdateSentenceInput) =>
     request<Sentence>(`/sentences/${id}`, {
       method: "PATCH",
@@ -52,6 +72,14 @@ export const sentencesApi = {
   remove: (id: string) => request<undefined>(`/sentences/${id}`, {
     method: "DELETE",
   }),
+  getVocab: (id: string) => request<Vocab[]>(`/sentences/${id}/vocab`),
+  setVocab: (id: string, vocabIds: string[]) =>
+    request<Vocab[]>(`/sentences/${id}/vocab`, {
+      method: "PUT",
+      body: JSON.stringify({
+        vocabIds,
+      }),
+    }),
 };
 
 export const sourcesApi = {
@@ -61,6 +89,38 @@ export const sourcesApi = {
       method: "POST",
       body: JSON.stringify(input),
     }),
+};
+
+export const vocabApi = {
+  list: () => request<Vocab[]>("/vocab"),
+  create: (input: CreateVocabInput) =>
+    request<Vocab>("/vocab", {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+  createMany: (inputs: CreateVocabInput[]) =>
+    request<Vocab[]>("/vocab/bulk", {
+      method: "POST",
+      body: JSON.stringify({
+        vocab: inputs,
+      }),
+    }),
+  remove: (id: string) => request<undefined>(`/vocab/${id}`, {
+    method: "DELETE",
+  }),
+  sentences: (id: string) => request<Sentence[]>(`/vocab/${id}/sentences`),
+};
+
+export const parseTemplatesApi = {
+  list: () => request<ParseTemplate[]>("/parse-templates"),
+  create: (input: CreateParseTemplateInput) =>
+    request<ParseTemplate>("/parse-templates", {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+  remove: (id: string) => request<undefined>(`/parse-templates/${id}`, {
+    method: "DELETE",
+  }),
 };
 
 export const ocrApi = {
@@ -84,6 +144,11 @@ export const ocrApi = {
 export const capturesApi = {
   list: () => request<CaptureSummary[]>("/captures"),
   get: (id: string) => request<Capture>(`/captures/${id}`),
+  update: (id: string, input: UpdateCaptureInput) =>
+    request<Capture>(`/captures/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    }),
   remove: (id: string) => request<undefined>(`/captures/${id}`, {
     method: "DELETE",
   }),

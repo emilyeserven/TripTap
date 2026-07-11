@@ -7,9 +7,11 @@ import { captureRoutes } from "@/routes/captures";
 import { healthRoutes } from "@/routes/health";
 import { lessonRoutes } from "@/routes/lessons";
 import { ocrRoutes } from "@/routes/ocr";
+import { parseTemplateRoutes } from "@/routes/parse-templates";
 import { sentenceRoutes } from "@/routes/sentences";
 import { settingsRoutes } from "@/routes/settings";
 import { sourceRoutes } from "@/routes/sources";
+import { vocabRoutes } from "@/routes/vocab";
 
 /** Build and configure the Fastify application (without starting it). */
 export async function buildApp(): Promise<FastifyInstance> {
@@ -67,7 +69,9 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(healthRoutes);
   await app.register(sentenceRoutes);
   await app.register(sourceRoutes);
+  await app.register(vocabRoutes);
   await app.register(captureRoutes);
+  await app.register(parseTemplateRoutes);
   await app.register(lessonRoutes);
   await app.register(ocrRoutes);
   await app.register(settingsRoutes);
