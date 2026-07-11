@@ -3,9 +3,10 @@ import type { OcrResult } from "@sentence-bank/types";
 import { useEffect, useRef, useState } from "react";
 
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { ArrowLeft, Camera, Check, Copy, Crop, ScanText } from "lucide-react";
+import { ArrowLeft, Camera, Check, Copy, Crop, Save, ScanText } from "lucide-react";
 
 import { CropDialog } from "@/components/CropDialog";
+import { SentenceForm } from "@/components/SentenceForm";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,6 +16,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { useOcr } from "@/hooks/useOcr";
 
@@ -32,6 +39,7 @@ function CapturePage() {
   const [text, setText] = useState("");
   const [engines, setEngines] = useState<string[]>([]);
   const [copied, setCopied] = useState(false);
+  const [saveOpen, setSaveOpen] = useState(false);
   const ocr = useOcr();
 
   // Release the object URL when it changes or the page unmounts.
@@ -197,7 +205,7 @@ function CapturePage() {
                   rows={8}
                   aria-label="Extracted text"
                 />
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <Button
                     variant="outline"
                     onClick={copy}
@@ -210,6 +218,10 @@ function CapturePage() {
                         />
                       )}
                     {copied ? "Copied" : "Copy text"}
+                  </Button>
+                  <Button onClick={() => setSaveOpen(true)}>
+                    <Save className="size-4" />
+                    Save as sentence
                   </Button>
                   {engines.map(engine => (
                     <Badge
@@ -225,6 +237,26 @@ function CapturePage() {
           </CardContent>
         </Card>
       )}
+
+      <Dialog
+        open={saveOpen}
+        onOpenChange={setSaveOpen}
+      >
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Save as sentence</DialogTitle>
+          </DialogHeader>
+          {/* Mounted only while open so the form seeds from the latest edited text. */}
+          {saveOpen && (
+            <SentenceForm
+              initialValues={{
+                text,
+              }}
+              onSuccess={() => setSaveOpen(false)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }

@@ -1,4 +1,4 @@
-/** Pixel rectangle produced by react-easy-crop's `onCropComplete` (`croppedAreaPixels`). */
+/** A crop rectangle in the source image's natural (unscaled) pixel coordinates. */
 export interface PixelCrop {
   x: number;
   y: number;

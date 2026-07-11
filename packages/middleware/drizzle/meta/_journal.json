@@ -29,6 +29,13 @@
       "when": 1783719049906,
       "tag": "0003_blue_vertigo",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1783731760172,
+      "tag": "0004_magenta_mad_thinker",
+      "breakpoints": true
     }
   ]
 }

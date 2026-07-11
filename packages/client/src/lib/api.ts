@@ -1,5 +1,6 @@
 import type {
   CreateSentenceInput,
+  CreateSourceInput,
   LessonContent,
   LessonDetail,
   LessonImportInput,
@@ -7,6 +8,7 @@ import type {
   OcrResult,
   OcrSettings,
   Sentence,
+  Source,
   UpdateOcrSettingsInput,
   UpdateSentenceInput,
   VocabItem,
@@ -47,6 +49,15 @@ export const sentencesApi = {
   remove: (id: string) => request<undefined>(`/sentences/${id}`, {
     method: "DELETE",
   }),
+};
+
+export const sourcesApi = {
+  list: () => request<Source[]>("/sources"),
+  create: (input: CreateSourceInput) =>
+    request<Source>("/sources", {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
 };
 
 export const ocrApi = {

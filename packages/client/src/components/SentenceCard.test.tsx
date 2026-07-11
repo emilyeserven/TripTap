@@ -11,6 +11,8 @@ const sentence: Sentence = {
   translation: "I drink coffee every morning.",
   language: "Japanese",
   source: "Genki I, Lesson 3",
+  sourceId: null,
+  page: null,
   notes: "Uses the ます-form.",
   tags: "verbs, routine",
   createdAt: "2026-06-01T00:00:00.000Z",

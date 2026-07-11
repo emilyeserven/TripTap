@@ -39,6 +39,13 @@ const createSentenceBody = {
     source: {
       type: ["string", "null"],
     },
+    sourceId: {
+      type: ["string", "null"],
+      format: "uuid",
+    },
+    page: {
+      type: ["string", "null"],
+    },
     notes: {
       type: ["string", "null"],
     },

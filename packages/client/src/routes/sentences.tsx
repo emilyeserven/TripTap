@@ -22,6 +22,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useLessonContent } from "@/hooks/useLessons";
 import { useDeleteSentence, useSentences } from "@/hooks/useSentences";
+import { useSources } from "@/hooks/useSources";
 import { useUiStore } from "@/stores/uiStore";
 
 export const Route = createFileRoute("/sentences")({
@@ -33,6 +34,11 @@ function SentencesPage() {
     data: sentences, isLoading, error,
   } = useSentences();
   const deleteSentence = useDeleteSentence();
+  const {
+    data: sources,
+  } = useSources();
+  const sourceName = (id: string | null) =>
+    (id ? sources?.find(s => s.id === id)?.name ?? null : null);
   const showTranslations = useUiStore(s => s.showTranslations);
   const toggleShowTranslations = useUiStore(s => s.toggleShowTranslations);
 
@@ -126,6 +132,7 @@ function SentencesPage() {
               key={s.id}
               sentence={s}
               showTranslation={showTranslations}
+              sourceName={sourceName(s.sourceId)}
               onDelete={id => deleteSentence.mutate(id)}
             />
           ))}

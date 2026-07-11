@@ -7,6 +7,29 @@
 
 export * from "./lesson.js";
 
+/** A reusable origin for sentences (a book, show, article, …) — the "source taxonomy". */
+export interface Source {
+  id: string;
+  /** Display name, e.g. "よつばと！ vol. 1". */
+  name: string;
+  /** Free-text kind, e.g. "book", "show", "article". */
+  type: string | null;
+  author: string | null;
+  url: string | null;
+  notes: string | null;
+  /** ISO-8601 timestamp of when the source was added. */
+  createdAt: string;
+}
+
+/** Payload for creating a source. */
+export interface CreateSourceInput {
+  name: string;
+  type?: string | null;
+  author?: string | null;
+  url?: string | null;
+  notes?: string | null;
+}
+
 /** A single example sentence stored in the bank. */
 export interface Sentence {
   id: string;
@@ -16,8 +39,12 @@ export interface Sentence {
   translation: string;
   /** Target language, e.g. "Japanese". */
   language: string;
-  /** Optional origin (book, show, lesson, ...). */
+  /** Legacy free-text origin, kept for rows predating the source taxonomy. */
   source: string | null;
+  /** The taxonomy source this sentence belongs to, or null. */
+  sourceId: string | null;
+  /** Per-sentence location within the source, e.g. "42", "p. 12–13". */
+  page: string | null;
   /** Optional free-form notes. */
   notes: string | null;
   /** Optional comma-separated tags. */
@@ -32,6 +59,8 @@ export interface CreateSentenceInput {
   translation: string;
   language: string;
   source?: string | null;
+  sourceId?: string | null;
+  page?: string | null;
   notes?: string | null;
   tags?: string | null;
 }

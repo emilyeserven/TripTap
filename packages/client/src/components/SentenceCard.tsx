@@ -3,16 +3,24 @@ import type { Sentence } from "@sentence-bank/types";
 interface SentenceCardProps {
   sentence: Sentence;
   showTranslation?: boolean;
+  /** Resolved taxonomy source name, when the sentence references one. */
+  sourceName?: string | null;
   onDelete?: (id: string) => void;
 }
 
 export function SentenceCard({
-  sentence, showTranslation = true, onDelete,
+  sentence, showTranslation = true, sourceName, onDelete,
 }: SentenceCardProps) {
   const tags = (sentence.tags ?? "")
     .split(",")
     .map(tag => tag.trim())
     .filter(Boolean);
+
+  // Prefer the resolved taxonomy source name; fall back to the legacy free-text `source` for old rows.
+  const displaySource = sentence.sourceId ? sourceName ?? null : sentence.source;
+  const sourceLabel = [displaySource, sentence.page ? `p. ${sentence.page}` : null]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
     <article
@@ -50,7 +58,7 @@ export function SentenceCard({
         >
           {sentence.language}
         </span>
-        {sentence.source ? <span>{sentence.source}</span> : null}
+        {sourceLabel ? <span>{sourceLabel}</span> : null}
         {tags.map(tag => (
           <span
             key={tag}
