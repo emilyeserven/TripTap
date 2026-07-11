@@ -58,6 +58,9 @@ To reset the database: `docker compose down -v && docker compose up --wait db &&
 ## OCR capture (optional)
 
 The **Capture** page (`/sentences/capture`) extracts Japanese/English text from a photo or upload.
+Before extracting, you can **crop** to just the text region (improves accuracy and shrinks the upload),
+and the middleware **auto-downscales** oversized images to fit each backend's size limit — so a
+multi-megabyte phone photo won't fail OCR.space's 1 MB free-tier cap with HTTP 413.
 The middleware supports several interchangeable OCR **backends** and tries them in order, falling back
 automatically when one is unreachable. Configure any subset; the feature is disabled (the endpoint
 returns 503) only when **none** are configured.

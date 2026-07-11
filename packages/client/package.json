@@ -28,6 +28,7 @@
     "radix-ui": "^1.6.2",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-easy-crop": "^6.2.2",
     "tailwind-merge": "^3.6.0",
     "zod": "^4.1.0",
     "zustand": "^5.0.0"

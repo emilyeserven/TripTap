@@ -1,6 +1,7 @@
 import type { OcrBlock, OcrResult } from "@sentence-bank/types";
 import type { OcrProvider } from "@/services/ocr/types";
 import { OcrUnavailableError } from "@/services/ocr/errors";
+import { fitImageToBytes, GOOGLE_VISION_MAX_BYTES } from "@/services/ocr/image";
 import { detectLang, normalizeNewlines, REQUEST_TIMEOUT_MS } from "@/services/ocr/util";
 
 /** Subset of the Vision `images:annotate` response we consume. */
@@ -80,13 +81,16 @@ export const googleVisionProvider: OcrProvider = {
     return Boolean(config.googleVision.apiKey);
   },
 
-  async recognize(config, buffer): Promise<OcrResult> {
+  async recognize(config, buffer, filename, mimetype): Promise<OcrResult> {
     const url = `${config.googleVision.url}?key=${encodeURIComponent(config.googleVision.apiKey as string)}`;
+
+    // Keep the base64 payload under Vision's 10 MB JSON request limit (base64 inflates ~37%).
+    const image = await fitImageToBytes(buffer, mimetype, filename, GOOGLE_VISION_MAX_BYTES);
 
     const body = JSON.stringify({
       requests: [{
         image: {
-          content: buffer.toString("base64"),
+          content: image.buffer.toString("base64"),
         },
         features: [{
           type: "DOCUMENT_TEXT_DETECTION",

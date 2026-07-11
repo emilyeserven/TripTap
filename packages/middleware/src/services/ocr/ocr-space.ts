@@ -1,6 +1,7 @@
 import type { OcrBlock, OcrResult } from "@sentence-bank/types";
 import type { OcrProvider } from "@/services/ocr/types";
 import { OcrUnavailableError } from "@/services/ocr/errors";
+import { fitImageToBytes, OCR_SPACE_MAX_BYTES } from "@/services/ocr/image";
 import { detectLang, fetchOcr, normalizeNewlines } from "@/services/ocr/util";
 
 /** Subset of the OCR.space `/parse/image` response we consume. */
@@ -60,14 +61,17 @@ export const ocrSpaceProvider: OcrProvider = {
       apiKey, engine, language, url,
     } = config.ocrSpace;
 
+    // OCR.space's free API rejects images over 1 MB (HTTP 413); shrink the upload to fit.
+    const image = await fitImageToBytes(buffer, mimetype, filename, OCR_SPACE_MAX_BYTES);
+
     const form = new FormData();
     form.append("apikey", apiKey as string);
     form.append("language", language);
     form.append("OCREngine", engine);
     form.append("isOverlayRequired", "true");
-    form.append("file", new Blob([new Uint8Array(buffer)], {
-      type: mimetype,
-    }), filename);
+    form.append("file", new Blob([new Uint8Array(image.buffer)], {
+      type: image.mimetype,
+    }), image.filename);
 
     const res = await fetchOcr("OCR.space", url, {
       method: "POST",
