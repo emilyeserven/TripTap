@@ -11,6 +11,8 @@ function toSentence(row: SentenceRow): Sentence {
     translation: row.translation,
     language: row.language,
     source: row.source,
+    sourceId: row.sourceId,
+    page: row.page,
     notes: row.notes,
     tags: row.tags,
     createdAt:
@@ -36,6 +38,8 @@ export async function createSentence(input: CreateSentenceInput): Promise<Senten
       translation: input.translation,
       language: input.language,
       source: input.source ?? null,
+      sourceId: input.sourceId ?? null,
+      page: input.page ?? null,
       notes: input.notes ?? null,
       tags: input.tags ?? null,
     })

@@ -5,13 +5,41 @@ import type {
 } from "@sentence-bank/types";
 import { boolean, integer, jsonb, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 
+/**
+ * `sources` — a reusable taxonomy of where sentences come from (a book, show, article, …). Sentences
+ * reference a source via `sentences.source_id`; the per-sentence location (page number, chapter) lives
+ * on the sentence, not here, since one source spans many sentences.
+ */
+export const sources = pgTable("sources", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull(),
+  /** Free-text kind, e.g. "book", "show", "article", "podcast". */
+  type: text("type"),
+  author: text("author"),
+  url: text("url"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+});
+
+export type SourceRow = typeof sources.$inferSelect;
+export type NewSourceRow = typeof sources.$inferInsert;
+
 /** `sentences` table — one row per stored example sentence. */
 export const sentences = pgTable("sentences", {
   id: uuid("id").primaryKey().defaultRandom(),
   text: text("text").notNull(),
   translation: text("translation").notNull(),
   language: text("language").notNull(),
+  // Legacy free-text origin, kept for rows created before the `sources` taxonomy existed. New
+  // sentences should reference `sourceId` instead; `source` remains a fallback label.
   source: text("source"),
+  sourceId: uuid("source_id").references(() => sources.id, {
+    onDelete: "set null",
+  }),
+  // Per-sentence location within the source, e.g. "42", "p. 12–13", "ch. 3". Free-text on purpose.
+  page: text("page"),
   notes: text("notes"),
   tags: text("tags"),
   createdAt: timestamp("created_at", {

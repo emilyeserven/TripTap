@@ -1,13 +1,16 @@
+import { useState } from "react";
+
 import { useForm } from "@tanstack/react-form";
 import { z } from "zod";
 
+import { SourcePicker } from "./SourcePicker";
 import { useCreateSentence } from "../hooks/useSentences";
 
 const sentenceSchema = z.object({
   text: z.string().min(1, "Sentence text is required"),
   translation: z.string().min(1, "Translation is required"),
   language: z.string().min(1, "Language is required"),
-  source: z.string(),
+  page: z.string(),
   tags: z.string(),
   notes: z.string(),
 });
@@ -15,20 +18,36 @@ const sentenceSchema = z.object({
 const fieldClass
   = "mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none";
 
+/** The prefillable text fields — a subset of the form used to seed it (e.g. from the Capture flow). */
+export interface SentenceFormInitialValues {
+  text?: string;
+  translation?: string;
+  language?: string;
+  page?: string;
+  tags?: string;
+  notes?: string;
+  sourceId?: string | null;
+}
+
 /** Create-sentence form. Owns its own mutation so the page stays focused on the list. */
 export function SentenceForm({
   onSuccess,
-}: { onSuccess?: () => void }) {
+  initialValues,
+}: {
+  onSuccess?: () => void;
+  initialValues?: SentenceFormInitialValues;
+}) {
   const createSentence = useCreateSentence();
+  const [sourceId, setSourceId] = useState<string | null>(initialValues?.sourceId ?? null);
 
   const form = useForm({
     defaultValues: {
-      text: "",
-      translation: "",
-      language: "",
-      source: "",
-      tags: "",
-      notes: "",
+      text: initialValues?.text ?? "",
+      translation: initialValues?.translation ?? "",
+      language: initialValues?.language ?? "",
+      page: initialValues?.page ?? "",
+      tags: initialValues?.tags ?? "",
+      notes: initialValues?.notes ?? "",
     },
     validators: {
       onChange: sentenceSchema,
@@ -40,11 +59,13 @@ export function SentenceForm({
         text: value.text,
         translation: value.translation,
         language: value.language,
-        source: value.source || null,
+        sourceId,
+        page: value.page || null,
         tags: value.tags || null,
         notes: value.notes || null,
       });
       form.reset();
+      setSourceId(null);
       onSuccess?.();
     },
   });
@@ -97,10 +118,15 @@ export function SentenceForm({
         )}
       </form.Field>
 
-      <form.Field name="source">
+      <SourcePicker
+        value={sourceId}
+        onChange={setSourceId}
+      />
+
+      <form.Field name="page">
         {field => (
           <TextField
-            label="Source"
+            label="Page / location"
             value={field.state.value}
             errors={field.state.meta.errors}
             onBlur={field.handleBlur}

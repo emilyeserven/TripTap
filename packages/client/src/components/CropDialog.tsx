@@ -1,9 +1,9 @@
-import type { Area } from "react-easy-crop";
+import type { Crop, PercentCrop, PixelCrop } from "react-image-crop";
 
-import { useCallback, useState } from "react";
+import { useRef, useState } from "react";
 
-import Cropper from "react-easy-crop";
-import "react-easy-crop/react-easy-crop.css";
+import ReactCrop, { centerCrop, makeAspectCrop } from "react-image-crop";
+import "react-image-crop/dist/ReactCrop.css";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -14,10 +14,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Slider } from "@/components/ui/slider";
 import { getCroppedImg } from "@/lib/cropImage";
 
+/** Aspect presets. `undefined` means free-form — the user drags any rectangle. */
 const ASPECTS = [
+  {
+    label: "Free",
+    value: undefined,
+  },
   {
     label: "Portrait",
     value: 3 / 4,
@@ -32,11 +36,28 @@ const ASPECTS = [
   },
 ] as const;
 
+/** Center a starting crop covering ~80% of the image, optionally constrained to an aspect ratio. */
+function initialCrop(width: number, height: number, aspect: number | undefined): Crop {
+  const base: PercentCrop = aspect
+    ? makeAspectCrop({
+      unit: "%",
+      width: 80,
+    }, aspect, width, height)
+    : {
+      unit: "%",
+      x: 10,
+      y: 10,
+      width: 80,
+      height: 80,
+    };
+  return centerCrop(base, width, height);
+}
+
 /**
- * Modal cropper for the Capture flow. The user frames the text region (pan + zoom), then either
- * crops or sends the full image. On confirm it hands back a JPEG {@link Blob} of the selected region
- * (already downscaled by {@link getCroppedImg}); the middleware still enforces per-provider size
- * limits as a safety net.
+ * Modal cropper for the Capture flow. The user drags a rectangle over the image — free-form by
+ * default, or constrained to an aspect preset — then either crops or sends the full image. On confirm
+ * it hands back a JPEG {@link Blob} of the selected region (already downscaled by
+ * {@link getCroppedImg}); the middleware still enforces per-provider size limits as a safety net.
  */
 export function CropDialog({
   imageUrl,
@@ -51,26 +72,41 @@ export function CropDialog({
   onUseFull: () => void;
   onConfirm: (blob: Blob) => void;
 }) {
-  const [crop, setCrop] = useState({
-    x: 0,
-    y: 0,
-  });
-  const [zoom, setZoom] = useState(1);
-  const [aspect, setAspect] = useState<number>(3 / 4);
-  const [areaPixels, setAreaPixels] = useState<Area | null>(null);
+  const imgRef = useRef<HTMLImageElement>(null);
+  const [crop, setCrop] = useState<Crop>();
+  const [completedCrop, setCompletedCrop] = useState<PixelCrop | null>(null);
+  const [aspect, setAspect] = useState<number | undefined>(undefined);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const onCropComplete = useCallback((_area: Area, croppedAreaPixels: Area) => {
-    setAreaPixels(croppedAreaPixels);
-  }, []);
+  function onImageLoad(e: React.SyntheticEvent<HTMLImageElement>) {
+    const {
+      width, height,
+    } = e.currentTarget;
+    setCrop(initialCrop(width, height, aspect));
+  }
+
+  function chooseAspect(next: number | undefined) {
+    setAspect(next);
+    const img = imgRef.current;
+    if (img) setCrop(initialCrop(img.width, img.height, next));
+  }
 
   async function confirm() {
-    if (!areaPixels) return;
+    const img = imgRef.current;
+    if (!img || !completedCrop || completedCrop.width === 0 || completedCrop.height === 0) return;
     setBusy(true);
     setError(null);
     try {
-      const blob = await getCroppedImg(imageUrl, areaPixels);
+      // The crop is in displayed-image pixels; scale to the image's natural resolution.
+      const scaleX = img.naturalWidth / img.width;
+      const scaleY = img.naturalHeight / img.height;
+      const blob = await getCroppedImg(imageUrl, {
+        x: completedCrop.x * scaleX,
+        y: completedCrop.y * scaleY,
+        width: completedCrop.width * scaleX,
+        height: completedCrop.height * scaleY,
+      });
       onConfirm(blob);
     }
     catch (err) {
@@ -92,52 +128,45 @@ export function CropDialog({
         <DialogHeader>
           <DialogTitle>Crop image</DialogTitle>
           <DialogDescription>
-            Frame just the text you want to read — this improves accuracy and shrinks the upload.
+            Drag to frame just the text you want to read — this improves accuracy and shrinks the upload.
           </DialogDescription>
         </DialogHeader>
 
         <div
-          className="relative h-72 w-full overflow-hidden rounded-md bg-muted"
+          className="
+            flex max-h-[60vh] justify-center overflow-auto rounded-md bg-muted
+          "
         >
-          <Cropper
-            image={imageUrl}
+          <ReactCrop
             crop={crop}
-            zoom={zoom}
+            onChange={c => setCrop(c)}
+            onComplete={c => setCompletedCrop(c)}
             aspect={aspect}
-            onCropChange={setCrop}
-            onZoomChange={setZoom}
-            onCropComplete={onCropComplete}
-          />
+          >
+            <img
+              ref={imgRef}
+              src={imageUrl}
+              alt="Crop source"
+              onLoad={onImageLoad}
+              className="max-h-[60vh] w-auto"
+            />
+          </ReactCrop>
         </div>
 
-        <div className="space-y-3">
-          <div className="flex flex-wrap items-center gap-2">
-            {ASPECTS.map(a => (
-              <Button
-                key={a.label}
-                type="button"
-                size="sm"
-                variant={aspect === a.value ? "default" : "outline"}
-                onClick={() => setAspect(a.value)}
-              >
-                {a.label}
-              </Button>
-            ))}
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="w-10 text-xs text-muted-foreground">Zoom</span>
-            <Slider
-              min={1}
-              max={4}
-              step={0.01}
-              value={[zoom]}
-              onValueChange={([z]) => setZoom(z)}
-              className="max-w-xs"
-              aria-label="Zoom"
-            />
-          </div>
-          {error ? <p className="text-sm text-destructive">{error}</p> : null}
+        <div className="flex flex-wrap items-center gap-2">
+          {ASPECTS.map(a => (
+            <Button
+              key={a.label}
+              type="button"
+              size="sm"
+              variant={aspect === a.value ? "default" : "outline"}
+              onClick={() => chooseAspect(a.value)}
+            >
+              {a.label}
+            </Button>
+          ))}
         </div>
+        {error ? <p className="text-sm text-destructive">{error}</p> : null}
 
         <DialogFooter>
           <Button
@@ -159,7 +188,7 @@ export function CropDialog({
           <Button
             type="button"
             onClick={() => void confirm()}
-            disabled={busy || !areaPixels}
+            disabled={busy || !completedCrop?.width}
           >
             {busy ? "Preparing…" : "Crop & extract"}
           </Button>
