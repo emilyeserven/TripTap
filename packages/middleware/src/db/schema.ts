@@ -4,7 +4,7 @@ import type {
   SourceGrammar,
   SourceVocab,
 } from "@sentence-bank/types";
-import { boolean, customType, integer, jsonb, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import { type AnyPgColumn, boolean, customType, integer, jsonb, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 
 /** Postgres `bytea` column mapped to a Node {@link Buffer}. */
 const bytea = customType<{ data: Buffer }>({
@@ -51,6 +51,10 @@ export const sentences = pgTable("sentences", {
   page: text("page"),
   notes: text("notes"),
   tags: text("tags"),
+  // The capture this was mined from, for traceability. Nulled (not deleted) if the capture is removed.
+  captureId: uuid("capture_id").references((): AnyPgColumn => captures.id, {
+    onDelete: "set null",
+  }),
   createdAt: timestamp("created_at", {
     withTimezone: true,
   }).notNull().defaultNow(),
@@ -72,6 +76,10 @@ export const vocab = pgTable("vocab", {
   page: text("page"),
   tags: text("tags"),
   notes: text("notes"),
+  // The capture this was mined from, for traceability. Nulled (not deleted) if the capture is removed.
+  captureId: uuid("capture_id").references((): AnyPgColumn => captures.id, {
+    onDelete: "set null",
+  }),
   createdAt: timestamp("created_at", {
     withTimezone: true,
   }).notNull().defaultNow(),

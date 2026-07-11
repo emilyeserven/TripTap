@@ -17,7 +17,9 @@ import {
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -25,7 +27,8 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 
-const navItems = [
+/** { Captures, Lessons } — source material to mine from. */
+const libraryItems = [
   {
     title: "Home",
     to: "/",
@@ -36,6 +39,15 @@ const navItems = [
     to: "/lessons",
     icon: GraduationCapIcon,
   },
+  {
+    title: "Captures",
+    to: "/captures",
+    icon: ImagesIcon,
+  },
+] as const;
+
+/** The study bank itself. */
+const studyItems = [
   {
     title: "Culture",
     to: "/culture",
@@ -61,27 +73,37 @@ const navItems = [
     to: "/vocab",
     icon: LibraryIcon,
   },
-  {
-    title: "Capture",
-    to: "/sentences/capture",
-    icon: CameraIcon,
-  },
-  {
-    title: "Captures",
-    to: "/captures",
-    icon: ImagesIcon,
-  },
-  {
-    title: "Settings",
-    to: "/settings",
-    icon: SettingsIcon,
-  },
 ] as const;
 
 function isItemActive(pathname: string, to: string) {
   if (to === "/") return pathname === "/";
   // `/lessons` shouldn't stay active on `/lessons/new` sub-navigation beyond its own prefix.
   return pathname === to || pathname.startsWith(`${to}/`);
+}
+
+function NavItem({
+  item,
+  pathname,
+}: {
+  item: { title: string;
+    to: string;
+    icon: React.ComponentType; };
+  pathname: string;
+}) {
+  return (
+    <SidebarMenuItem>
+      <SidebarMenuButton
+        asChild
+        isActive={isItemActive(pathname, item.to)}
+        tooltip={item.title}
+      >
+        <Link to={item.to}>
+          <item.icon />
+          <span>{item.title}</span>
+        </Link>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  );
 }
 
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
@@ -120,26 +142,73 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
+
       <SidebarContent>
+        {/* Primary action — capture new text. */}
         <SidebarGroup>
           <SidebarMenu>
-            {navItems.map(item => (
-              <SidebarMenuItem key={item.to}>
-                <SidebarMenuButton
-                  asChild
-                  isActive={isItemActive(pathname, item.to)}
-                  tooltip={item.title}
-                >
-                  <Link to={item.to}>
-                    <item.icon />
-                    <span>{item.title}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                tooltip="Capture"
+                isActive={isItemActive(pathname, "/capture")}
+                className="
+                  bg-primary text-primary-foreground
+                  hover:bg-primary/90 hover:text-primary-foreground
+                  active:bg-primary/90 active:text-primary-foreground
+                  data-[active=true]:bg-primary
+                  data-[active=true]:text-primary-foreground
+                "
+              >
+                <Link to="/capture">
+                  <CameraIcon />
+                  <span>Capture</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Library</SidebarGroupLabel>
+          <SidebarMenu>
+            {libraryItems.map(item => (
+              <NavItem
+                key={item.to}
+                item={item}
+                pathname={pathname}
+              />
+            ))}
+          </SidebarMenu>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Study</SidebarGroupLabel>
+          <SidebarMenu>
+            {studyItems.map(item => (
+              <NavItem
+                key={item.to}
+                item={item}
+                pathname={pathname}
+              />
             ))}
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
+
+      <SidebarFooter>
+        <SidebarMenu>
+          <NavItem
+            item={{
+              title: "Settings",
+              to: "/settings",
+              icon: SettingsIcon,
+            }}
+            pathname={pathname}
+          />
+        </SidebarMenu>
+      </SidebarFooter>
+
       <SidebarRail />
     </Sidebar>
   );

@@ -2,6 +2,7 @@ import { asc, eq } from "drizzle-orm";
 import type { Vocab } from "@sentence-bank/types";
 import { db } from "@/db";
 import { sentences, sentenceVocab, vocab } from "@/db/schema";
+import { toVocab } from "@/services/vocab";
 
 /** The vocab items linked to a sentence. */
 export async function getVocabForSentence(sentenceId: string): Promise<Vocab[]> {
@@ -15,18 +16,7 @@ export async function getVocabForSentence(sentenceId: string): Promise<Vocab[]> 
     .orderBy(asc(vocab.term));
   return rows.map(({
     v,
-  }) => ({
-    id: v.id,
-    term: v.term,
-    reading: v.reading,
-    meaning: v.meaning,
-    language: v.language,
-    sourceId: v.sourceId,
-    page: v.page,
-    tags: v.tags,
-    notes: v.notes,
-    createdAt: v.createdAt instanceof Date ? v.createdAt.toISOString() : String(v.createdAt),
-  }));
+  }) => toVocab(v));
 }
 
 /**

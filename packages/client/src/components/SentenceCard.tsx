@@ -1,5 +1,8 @@
 import type { Sentence } from "@sentence-bank/types";
 
+import { Link } from "@tanstack/react-router";
+import { Camera } from "lucide-react";
+
 interface SentenceCardProps {
   sentence: Sentence;
   showTranslation?: boolean;
@@ -61,6 +64,24 @@ export function SentenceCard({
           {sentence.language}
         </span>
         {sourceLabel ? <span>{sourceLabel}</span> : null}
+        {sentence.captureId
+          ? (
+            <Link
+              to="/captures/$id"
+              params={{
+                id: sentence.captureId,
+              }}
+              className="
+                inline-flex items-center gap-1 rounded-full bg-slate-100 px-2
+                py-0.5 font-medium text-slate-600
+                hover:text-blue-700
+              "
+            >
+              <Camera className="size-3" />
+              Capture
+            </Link>
+          )
+          : null}
         {tags.map(tag => (
           <span
             key={tag}

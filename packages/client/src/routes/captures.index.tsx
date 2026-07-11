@@ -52,7 +52,7 @@ function CapturesPage() {
             Add manually
           </Button>
           <Button asChild>
-            <Link to="/sentences/capture">
+            <Link to="/capture">
               <Camera className="size-4" />
               Scan
             </Link>

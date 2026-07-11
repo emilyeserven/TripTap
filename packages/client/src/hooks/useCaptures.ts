@@ -21,6 +21,22 @@ export function useCapture(id: string) {
   });
 }
 
+/** Sentences mined from a given capture. Invalidated on any sentence mutation. */
+export function useCaptureSentences(id: string) {
+  return useQuery({
+    queryKey: [...CAPTURES_KEY, id, "sentences"],
+    queryFn: () => capturesApi.sentences(id),
+  });
+}
+
+/** Vocab mined from a given capture. Invalidated on any vocab mutation. */
+export function useCaptureVocab(id: string) {
+  return useQuery({
+    queryKey: [...CAPTURES_KEY, id, "vocab"],
+    queryFn: () => capturesApi.vocab(id),
+  });
+}
+
 export function useCreateCapture() {
   const queryClient = useQueryClient();
   return useMutation({
