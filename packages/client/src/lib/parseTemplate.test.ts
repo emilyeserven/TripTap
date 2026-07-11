@@ -1,6 +1,33 @@
 import { describe, expect, it } from "vitest";
 
-import { parseTemplate } from "./parseTemplate";
+import { parseTemplate, splitOnDivider } from "./parseTemplate";
+
+describe("splitOnDivider", () => {
+  it("splits on the first line equal to the divider and drops that line", () => {
+    const text = "毎朝コーヒーを飲みます。\nI drink coffee every morning.\n---\n毎朝\tevery morning\nコーヒー\tcoffee";
+    const [sentences, vocab] = splitOnDivider(text, "---");
+    expect(sentences).toBe("毎朝コーヒーを飲みます。\nI drink coffee every morning.");
+    expect(vocab).toBe("毎朝\tevery morning\nコーヒー\tcoffee");
+  });
+
+  it("matches the divider ignoring surrounding whitespace", () => {
+    const [sentences, vocab] = splitOnDivider("a\n  ---  \nb", "---");
+    expect(sentences).toBe("a");
+    expect(vocab).toBe("b");
+  });
+
+  it("returns the whole text as the first section when the divider is absent", () => {
+    const [sentences, vocab] = splitOnDivider("a\nb", "---");
+    expect(sentences).toBe("a\nb");
+    expect(vocab).toBe("");
+  });
+
+  it("returns the whole text as the first section when the divider is blank", () => {
+    const [sentences, vocab] = splitOnDivider("a\nb", "  ");
+    expect(sentences).toBe("a\nb");
+    expect(vocab).toBe("");
+  });
+});
 
 describe("parseTemplate", () => {
   it("fixed mode: every 2 lines is one item ({{text}} / {{translation}})", () => {

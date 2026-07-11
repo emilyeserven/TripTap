@@ -21,6 +21,24 @@ export interface ParseOptions {
 
 const TAG = /\{\{(\w+)\}\}/g;
 
+/**
+ * Split `text` into two sections at the first line whose trimmed content equals `divider` (the
+ * divider line itself is dropped). Used by the workspace's "merged" mode to separate a sentence
+ * section (above) from a vocab section (below). When the divider is absent or blank, the whole
+ * text is treated as the first (sentence) section and the second is empty.
+ */
+export function splitOnDivider(text: string, divider: string): [string, string] {
+  const marker = divider.trim();
+  const lines = normalize(text).split("\n");
+  if (marker !== "") {
+    const at = lines.findIndex(l => l.trim() === marker);
+    if (at !== -1) {
+      return [lines.slice(0, at).join("\n"), lines.slice(at + 1).join("\n")];
+    }
+  }
+  return [normalize(text), ""];
+}
+
 function escapeRegex(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
