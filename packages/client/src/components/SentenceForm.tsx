@@ -4,13 +4,11 @@ import { useForm } from "@tanstack/react-form";
 import { z } from "zod";
 
 import { SourcePicker } from "./SourcePicker";
-import { VocabLinkPicker } from "./VocabLinkPicker";
 import { useCreateSentence } from "../hooks/useSentences";
 
 const sentenceSchema = z.object({
   text: z.string().min(1, "Sentence text is required"),
-  // Optional: a sentence can be saved text-only and translated later.
-  translation: z.string(),
+  translation: z.string().min(1, "Translation is required"),
   language: z.string().min(1, "Language is required"),
   page: z.string(),
   tags: z.string(),
@@ -41,7 +39,6 @@ export function SentenceForm({
 }) {
   const createSentence = useCreateSentence();
   const [sourceId, setSourceId] = useState<string | null>(initialValues?.sourceId ?? null);
-  const [vocabIds, setVocabIds] = useState<string[]>([]);
 
   const form = useForm({
     defaultValues: {
@@ -60,17 +57,15 @@ export function SentenceForm({
     }) => {
       await createSentence.mutateAsync({
         text: value.text,
-        translation: value.translation || null,
+        translation: value.translation,
         language: value.language,
         sourceId,
         page: value.page || null,
         tags: value.tags || null,
         notes: value.notes || null,
-        vocabIds,
       });
       form.reset();
       setSourceId(null);
-      setVocabIds([]);
       onSuccess?.();
     },
   });
@@ -151,13 +146,6 @@ export function SentenceForm({
           />
         )}
       </form.Field>
-
-      <div className="sm:col-span-2">
-        <VocabLinkPicker
-          value={vocabIds}
-          onChange={setVocabIds}
-        />
-      </div>
 
       <form.Field name="notes">
         {field => (

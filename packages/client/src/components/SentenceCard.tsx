@@ -29,9 +29,7 @@ export function SentenceCard({
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-lg font-semibold">{sentence.text}</p>
-          {showTranslation && sentence.translation
-            ? <p className="mt-1 text-sm text-slate-600">{sentence.translation}</p>
-            : null}
+          {showTranslation ? <p className="mt-1 text-sm text-slate-600">{sentence.translation}</p> : null}
         </div>
         {onDelete
           ? (

@@ -4,7 +4,7 @@ import type {
   SourceGrammar,
   SourceVocab,
 } from "@sentence-bank/types";
-import { boolean, customType, integer, jsonb, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import { boolean, customType, integer, jsonb, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 
 /** Postgres `bytea` column mapped to a Node {@link Buffer}. */
 const bytea = customType<{ data: Buffer }>({
@@ -38,8 +38,7 @@ export type NewSourceRow = typeof sources.$inferInsert;
 export const sentences = pgTable("sentences", {
   id: uuid("id").primaryKey().defaultRandom(),
   text: text("text").notNull(),
-  // Nullable: a sentence can be mined text-only and translated later.
-  translation: text("translation"),
+  translation: text("translation").notNull(),
   language: text("language").notNull(),
   // Legacy free-text origin, kept for rows created before the `sources` taxonomy existed. New
   // sentences should reference `sourceId` instead; `source` remains a fallback label.
@@ -58,68 +57,6 @@ export const sentences = pgTable("sentences", {
 
 export type SentenceRow = typeof sentences.$inferSelect;
 export type NewSentenceRow = typeof sentences.$inferInsert;
-
-/** `vocab` — standalone vocabulary bank (peer of `sentences`, distinct from lesson-scoped vocab). */
-export const vocab = pgTable("vocab", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  term: text("term").notNull(),
-  reading: text("reading"),
-  meaning: text("meaning"),
-  language: text("language").notNull(),
-  sourceId: uuid("source_id").references(() => sources.id, {
-    onDelete: "set null",
-  }),
-  page: text("page"),
-  tags: text("tags"),
-  notes: text("notes"),
-  createdAt: timestamp("created_at", {
-    withTimezone: true,
-  }).notNull().defaultNow(),
-});
-
-export type VocabRow = typeof vocab.$inferSelect;
-export type NewVocabRow = typeof vocab.$inferInsert;
-
-/** `sentence_vocab` — many-to-many link: a sentence teaches vocab; a word has example sentences. */
-export const sentenceVocab = pgTable(
-  "sentence_vocab",
-  {
-    sentenceId: uuid("sentence_id")
-      .notNull()
-      .references(() => sentences.id, {
-        onDelete: "cascade",
-      }),
-    vocabId: uuid("vocab_id")
-      .notNull()
-      .references(() => vocab.id, {
-        onDelete: "cascade",
-      }),
-  },
-  t => [primaryKey({
-    columns: [t.sentenceId, t.vocabId],
-  })],
-);
-
-export type SentenceVocabRow = typeof sentenceVocab.$inferSelect;
-
-/** `parse_templates` — saved capture-parsing templates the user can reuse. */
-export const parseTemplates = pgTable("parse_templates", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  name: text("name").notNull(),
-  /** Which type the template produces: "sentence" | "vocab". */
-  target: text("target").notNull(),
-  /** Template body with `{{field}}` tags. */
-  body: text("body").notNull(),
-  /** Item boundary mode: "fixed" (lines-per-item) | "blank" (blank-line separated). */
-  boundary: text("boundary").notNull(),
-  ignoreBlankLines: boolean("ignore_blank_lines").notNull().default(true),
-  createdAt: timestamp("created_at", {
-    withTimezone: true,
-  }).notNull().defaultNow(),
-});
-
-export type ParseTemplateRow = typeof parseTemplates.$inferSelect;
-export type NewParseTemplateRow = typeof parseTemplates.$inferInsert;
 
 /**
  * `captures` — a raw OCR scan saved as a first-class record (peer of lessons). A capture holds the

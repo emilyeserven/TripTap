@@ -7,8 +7,6 @@ import {
   getCapture,
   getCaptureImage,
   listCaptures,
-  updateCapture,
-  type UpdateCaptureInput,
 } from "@/services/captures";
 
 const captureParams = {
@@ -153,45 +151,6 @@ export async function captureRoutes(app: FastifyInstance): Promise<void> {
 
     const capture = await createCapture(input, image);
     return reply.code(201).send(capture);
-  });
-
-  app.patch("/api/captures/:id", {
-    schema: {
-      tags: ["captures"],
-      params: captureParams,
-      body: {
-        type: "object",
-        additionalProperties: false,
-        properties: {
-          title: {
-            type: ["string", "null"],
-          },
-          notes: {
-            type: ["string", "null"],
-          },
-          sourceId: {
-            type: ["string", "null"],
-            format: "uuid",
-          },
-          page: {
-            type: ["string", "null"],
-          },
-          status: {
-            type: "string",
-            enum: ["new", "parsed"],
-          },
-        },
-      },
-    },
-  }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const capture = await updateCapture(id, req.body as UpdateCaptureInput);
-    if (!capture) return reply.code(404).send({
-      message: "Capture not found",
-    });
-    return capture;
   });
 
   app.delete("/api/captures/:id", {
