@@ -91,6 +91,29 @@ describe("seedCleanedBlocks", () => {
     expect(cb.lines.map(l => l.text)).toEqual(["行一", "行二"]);
     expect(cb.lines.every(l => l.lang === "ja")).toBe(true);
   });
+
+  it("still produces unique ids when crypto.randomUUID is unavailable (plain HTTP)", () => {
+    const original = globalThis.crypto.randomUUID;
+    try {
+      // Simulate a non-secure context where randomUUID is undefined.
+      Object.defineProperty(globalThis.crypto, "randomUUID", {
+        value: undefined,
+        configurable: true,
+      });
+      const cb = seedCleanedBlocks(capture({
+        blocks: [block("一", "ja"), block("二", "ja")],
+      }));
+      const ids = [...cb.lines.map(l => l.id), ...cb.groups.map(g => g.id)];
+      expect(ids.every(id => typeof id === "string" && id.length > 0)).toBe(true);
+      expect(new Set(ids).size).toBe(ids.length);
+    }
+    finally {
+      Object.defineProperty(globalThis.crypto, "randomUUID", {
+        value: original,
+        configurable: true,
+      });
+    }
+  });
 });
 
 describe("deriveItems", () => {
