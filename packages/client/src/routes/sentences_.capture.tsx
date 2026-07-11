@@ -2,11 +2,11 @@ import type { OcrResult } from "@sentence-bank/types";
 
 import { useEffect, useRef, useState } from "react";
 
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Camera, Check, Copy, Crop, Save, ScanText } from "lucide-react";
 
+import { CaptureForm } from "@/components/CaptureForm";
 import { CropDialog } from "@/components/CropDialog";
-import { SentenceForm } from "@/components/SentenceForm";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,6 +30,7 @@ export const Route = createFileRoute("/sentences_/capture")({
 });
 
 function CapturePage() {
+  const navigate = useNavigate();
   const inputRef = useRef<HTMLInputElement>(null);
   // The originally selected image: source for both the preview and the crop dialog. Kept alive
   // (not revoked on crop) so the user can re-open the cropper and try a different region.
@@ -37,10 +38,14 @@ function CapturePage() {
   const [originalFile, setOriginalFile] = useState<File | null>(null);
   const [cropOpen, setCropOpen] = useState(false);
   const [text, setText] = useState("");
-  const [engines, setEngines] = useState<string[]>([]);
+  const [result, setResult] = useState<OcrResult | null>(null);
+  // The exact image OCR'd (cropped blob or original) — stored with the capture on save.
+  const [capturedBlob, setCapturedBlob] = useState<Blob | null>(null);
   const [copied, setCopied] = useState(false);
   const [saveOpen, setSaveOpen] = useState(false);
   const ocr = useOcr();
+
+  const engines = result ? [...new Set(result.blocks.map(b => b.engine))] : [];
 
   // Release the object URL when it changes or the page unmounts.
   useEffect(() => {
@@ -50,10 +55,11 @@ function CapturePage() {
   }, [sourceUrl]);
 
   function runOcr(file: File) {
+    setCapturedBlob(file);
     ocr.mutate(file, {
-      onSuccess: (result: OcrResult) => {
-        setText(result.fullText);
-        setEngines([...new Set(result.blocks.map(b => b.engine))]);
+      onSuccess: (ocrResult: OcrResult) => {
+        setResult(ocrResult);
+        setText(ocrResult.fullText);
       },
     });
   }
@@ -64,7 +70,8 @@ function CapturePage() {
 
     // Reset any previous result, swap the preview image, and open the cropper before OCR runs.
     setText("");
-    setEngines([]);
+    setResult(null);
+    setCapturedBlob(null);
     ocr.reset();
     setSourceUrl((prev) => {
       if (prev) URL.revokeObjectURL(prev);
@@ -183,7 +190,7 @@ function CapturePage() {
               Extracted text
             </CardTitle>
             <CardDescription>
-              Edit as needed, then copy. Text is not saved automatically.
+              Edit as needed, then save it as a capture to parse into sentences later.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -219,9 +226,12 @@ function CapturePage() {
                       )}
                     {copied ? "Copied" : "Copy text"}
                   </Button>
-                  <Button onClick={() => setSaveOpen(true)}>
+                  <Button
+                    onClick={() => setSaveOpen(true)}
+                    disabled={!result}
+                  >
                     <Save className="size-4" />
-                    Save as sentence
+                    Save capture
                   </Button>
                   {engines.map(engine => (
                     <Badge
@@ -244,15 +254,24 @@ function CapturePage() {
       >
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Save as sentence</DialogTitle>
+            <DialogTitle>Save capture</DialogTitle>
           </DialogHeader>
-          {/* Mounted only while open so the form seeds from the latest edited text. */}
-          {saveOpen && (
-            <SentenceForm
-              initialValues={{
-                text,
+          {/* Mounted only while open so it captures the latest edited text and OCR result. */}
+          {saveOpen && result && (
+            <CaptureForm
+              text={text}
+              blocks={result.blocks}
+              engines={engines}
+              image={capturedBlob}
+              onSaved={(id) => {
+                setSaveOpen(false);
+                void navigate({
+                  to: "/captures/$id",
+                  params: {
+                    id,
+                  },
+                });
               }}
-              onSuccess={() => setSaveOpen(false)}
             />
           )}
         </DialogContent>

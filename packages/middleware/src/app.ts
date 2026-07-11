@@ -3,6 +3,7 @@ import multipart from "@fastify/multipart";
 import swagger from "@fastify/swagger";
 import swaggerUi from "@fastify/swagger-ui";
 import Fastify, { type FastifyInstance } from "fastify";
+import { captureRoutes } from "@/routes/captures";
 import { healthRoutes } from "@/routes/health";
 import { lessonRoutes } from "@/routes/lessons";
 import { ocrRoutes } from "@/routes/ocr";
@@ -66,6 +67,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(healthRoutes);
   await app.register(sentenceRoutes);
   await app.register(sourceRoutes);
+  await app.register(captureRoutes);
   await app.register(lessonRoutes);
   await app.register(ocrRoutes);
   await app.register(settingsRoutes);

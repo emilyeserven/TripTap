@@ -1,4 +1,7 @@
 import type {
+  Capture,
+  CaptureSummary,
+  CreateCaptureInput,
   CreateSentenceInput,
   CreateSourceInput,
   LessonContent,
@@ -75,6 +78,32 @@ export const ocrApi = {
       throw new Error(body.message ?? `Request failed with ${res.status}`);
     }
     return (await res.json()) as OcrResult;
+  },
+};
+
+export const capturesApi = {
+  list: () => request<CaptureSummary[]>("/captures"),
+  get: (id: string) => request<Capture>(`/captures/${id}`),
+  remove: (id: string) => request<undefined>(`/captures/${id}`, {
+    method: "DELETE",
+  }),
+  /** Absolute path to a capture's stored image (or `null` when it has none). */
+  imageUrl: (id: string) => `${BASE}/captures/${id}/image`,
+  // Multipart upload: the OCR result + metadata as a JSON `payload` field, the image as `file`.
+  // Bypasses `request()` for the same reason as `ocrApi.recognize`.
+  create: async (input: CreateCaptureInput, image: Blob | null): Promise<Capture> => {
+    const form = new FormData();
+    form.append("payload", JSON.stringify(input));
+    if (image) form.append("file", image, "capture.jpg");
+    const res = await fetch(`${BASE}/captures`, {
+      method: "POST",
+      body: form,
+    });
+    if (!res.ok) {
+      const body = (await res.json().catch(() => ({}))) as { message?: string };
+      throw new Error(body.message ?? `Request failed with ${res.status}`);
+    }
+    return (await res.json()) as Capture;
   },
 };
 

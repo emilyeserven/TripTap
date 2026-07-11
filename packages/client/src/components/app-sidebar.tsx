@@ -6,6 +6,7 @@ import {
   CameraIcon,
   GraduationCapIcon,
   HomeIcon,
+  ImagesIcon,
   LandmarkIcon,
   LanguagesIcon,
   LibraryIcon,
@@ -59,6 +60,11 @@ const navItems = [
     title: "Capture",
     to: "/sentences/capture",
     icon: CameraIcon,
+  },
+  {
+    title: "Captures",
+    to: "/captures",
+    icon: ImagesIcon,
   },
   {
     title: "Settings",

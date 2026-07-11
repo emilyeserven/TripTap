@@ -1,9 +1,17 @@
 import type {
   GrammarExample,
+  OcrBlock,
   SourceGrammar,
   SourceVocab,
 } from "@sentence-bank/types";
-import { boolean, integer, jsonb, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import { boolean, customType, integer, jsonb, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+
+/** Postgres `bytea` column mapped to a Node {@link Buffer}. */
+const bytea = customType<{ data: Buffer }>({
+  dataType() {
+    return "bytea";
+  },
+});
 
 /**
  * `sources` — a reusable taxonomy of where sentences come from (a book, show, article, …). Sentences
@@ -49,6 +57,37 @@ export const sentences = pgTable("sentences", {
 
 export type SentenceRow = typeof sentences.$inferSelect;
 export type NewSentenceRow = typeof sentences.$inferInsert;
+
+/**
+ * `captures` — a raw OCR scan saved as a first-class record (peer of lessons). A capture holds the
+ * extracted text, the per-block OCR detail, and the original image, so it can be parsed into
+ * sentences later. It optionally references a `sources` taxonomy entry + page. The image is stored
+ * inline as `bytea` and served from a dedicated endpoint, never inlined in JSON list/detail responses.
+ */
+export const captures = pgTable("captures", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  title: text("title"),
+  text: text("text").notNull(),
+  blocks: jsonb("blocks").$type<OcrBlock[]>().notNull(),
+  engines: jsonb("engines").$type<string[]>().notNull(),
+  sourceId: uuid("source_id").references(() => sources.id, {
+    onDelete: "set null",
+  }),
+  page: text("page"),
+  notes: text("notes"),
+  // Workflow state: "new" (unparsed) → "parsed" once sentences have been mined from it.
+  status: text("status").notNull().default("new"),
+  image: bytea("image"),
+  imageMime: text("image_mime"),
+  imageWidth: integer("image_width"),
+  imageHeight: integer("image_height"),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+});
+
+export type CaptureRow = typeof captures.$inferSelect;
+export type NewCaptureRow = typeof captures.$inferInsert;
 
 /**
  * `settings` — generic key/value store for server-side configuration edited at runtime (e.g. cloud
