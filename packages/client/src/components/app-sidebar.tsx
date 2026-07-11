@@ -4,6 +4,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import {
   BookOpenIcon,
   CameraIcon,
+  DatabaseIcon,
   GraduationCapIcon,
   HomeIcon,
   ImagesIcon,
@@ -11,6 +12,7 @@ import {
   LanguagesIcon,
   LibraryIcon,
   ScrollTextIcon,
+  SendIcon,
   SettingsIcon,
 } from "lucide-react";
 
@@ -44,6 +46,11 @@ const libraryItems = [
     to: "/captures",
     icon: ImagesIcon,
   },
+  {
+    title: "Sources",
+    to: "/sources",
+    icon: DatabaseIcon,
+  },
 ] as const;
 
 /** The study bank itself. */
@@ -72,6 +79,15 @@ const studyItems = [
     title: "Vocab",
     to: "/vocab",
     icon: LibraryIcon,
+  },
+] as const;
+
+/** Tools that act on the bank (exports, etc.). */
+const actionItems = [
+  {
+    title: "Renshuu export",
+    to: "/renshuu",
+    icon: SendIcon,
   },
 ] as const;
 
@@ -186,6 +202,19 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
           <SidebarGroupLabel>Study</SidebarGroupLabel>
           <SidebarMenu>
             {studyItems.map(item => (
+              <NavItem
+                key={item.to}
+                item={item}
+                pathname={pathname}
+              />
+            ))}
+          </SidebarMenu>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Action</SidebarGroupLabel>
+          <SidebarMenu>
+            {actionItems.map(item => (
               <NavItem
                 key={item.to}
                 item={item}

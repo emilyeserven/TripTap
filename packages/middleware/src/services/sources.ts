@@ -1,5 +1,5 @@
-import { asc } from "drizzle-orm";
-import type { CreateSourceInput, Source } from "@sentence-bank/types";
+import { asc, eq } from "drizzle-orm";
+import type { CreateSourceInput, Source, UpdateSourceInput } from "@sentence-bank/types";
 import { db } from "@/db";
 import { sources, type SourceRow } from "@/db/schema";
 
@@ -34,4 +34,20 @@ export async function createSource(input: CreateSourceInput): Promise<Source> {
     })
     .returning();
   return toSource(row);
+}
+
+export async function updateSource(id: string, input: UpdateSourceInput): Promise<Source | null> {
+  const [row] = await db
+    .update(sources)
+    .set(input)
+    .where(eq(sources.id, id))
+    .returning();
+  return row ? toSource(row) : null;
+}
+
+export async function deleteSource(id: string): Promise<boolean> {
+  const rows = await db.delete(sources).where(eq(sources.id, id)).returning({
+    id: sources.id,
+  });
+  return rows.length > 0;
 }

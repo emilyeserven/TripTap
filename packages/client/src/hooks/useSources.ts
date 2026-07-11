@@ -1,4 +1,4 @@
-import type { CreateSourceInput } from "@sentence-bank/types";
+import type { CreateSourceInput, UpdateSourceInput } from "@sentence-bank/types";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -13,12 +13,41 @@ export function useSources() {
   });
 }
 
-export function useCreateSource() {
+/** Invalidate sources plus everything that displays a source name / reference. */
+function useSourceInvalidator() {
   const queryClient = useQueryClient();
+  return () => {
+    for (const key of [SOURCES_KEY, ["sentences"], ["captures"], ["vocab"]]) {
+      queryClient.invalidateQueries({
+        queryKey: key,
+      });
+    }
+  };
+}
+
+export function useCreateSource() {
+  const invalidate = useSourceInvalidator();
   return useMutation({
     mutationFn: (input: CreateSourceInput) => sourcesApi.create(input),
-    onSuccess: () => queryClient.invalidateQueries({
-      queryKey: SOURCES_KEY,
-    }),
+    onSuccess: invalidate,
+  });
+}
+
+export function useUpdateSource() {
+  const invalidate = useSourceInvalidator();
+  return useMutation({
+    mutationFn: ({
+      id, input,
+    }: { id: string;
+      input: UpdateSourceInput; }) => sourcesApi.update(id, input),
+    onSuccess: invalidate,
+  });
+}
+
+export function useDeleteSource() {
+  const invalidate = useSourceInvalidator();
+  return useMutation({
+    mutationFn: (id: string) => sourcesApi.remove(id),
+    onSuccess: invalidate,
   });
 }
