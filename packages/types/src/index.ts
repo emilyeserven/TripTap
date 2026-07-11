@@ -163,8 +163,11 @@ export interface OcrResult {
   fullText: string;
 }
 
-/** Role a cleaned line plays within its group when deriving bank items. */
-export type CleanedLineRole = "text" | "furigana" | "translation" | "structure";
+/**
+ * Role a cleaned line plays within its group when deriving bank items. `structure` (page furniture)
+ * and `ignore` (generic exclusion) are both left out of the derived sentence/vocab.
+ */
+export type CleanedLineRole = "text" | "furigana" | "translation" | "structure" | "ignore";
 
 /** What kind of bank item a group of cleaned lines produces. */
 export type CleanedGroupKind = "sentence" | "vocab";

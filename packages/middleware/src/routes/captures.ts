@@ -218,7 +218,7 @@ export async function captureRoutes(app: FastifyInstance): Promise<void> {
                     },
                     role: {
                       type: "string",
-                      enum: ["text", "furigana", "translation", "structure"],
+                      enum: ["text", "furigana", "translation", "structure", "ignore"],
                     },
                     group: {
                       type: "string",
