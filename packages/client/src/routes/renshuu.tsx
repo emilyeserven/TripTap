@@ -88,9 +88,15 @@ function RenshuuPage() {
     !inList.has(s.id)
     && (sourceFilter === "all" || s.sourceId === sourceFilter)
     && matches(search, s.text, s.translation, s.tags, s.notes));
+  // Only exportable rows can be bulk-added (they need a translation).
+  const addableIds = candidates.filter(isRenshuuEligible).map(s => s.id);
 
   function add(id: string) {
     setIds(prev => (prev.includes(id) ? prev : [...prev, id]));
+    setCopied(false);
+  }
+  function addAll() {
+    setIds(prev => [...prev, ...addableIds.filter(id => !prev.includes(id))]);
     setCopied(false);
   }
   function removeId(id: string) {
@@ -149,10 +155,26 @@ function RenshuuPage() {
         {/* Picker */}
         <Card>
           <CardHeader>
-            <CardTitle>Add sentences</CardTitle>
-            <CardDescription>
-              Only sentences with a translation can be exported.
-            </CardDescription>
+            <div className="flex items-start justify-between gap-2">
+              <div className="space-y-1.5">
+                <CardTitle>Add sentences</CardTitle>
+                <CardDescription>
+                  Only sentences with a translation can be exported.
+                </CardDescription>
+              </div>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={addAll}
+                disabled={addableIds.length === 0}
+                title="Add all matching sentences"
+              >
+                Add all (
+                {addableIds.length}
+                )
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex flex-wrap items-center gap-2">
