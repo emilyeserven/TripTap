@@ -23,6 +23,16 @@ export function useCreateSentence() {
   });
 }
 
+export function useCreateSentencesMany() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (inputs: CreateSentenceInput[]) => sentencesApi.createMany(inputs),
+    onSuccess: () => queryClient.invalidateQueries({
+      queryKey: SENTENCES_KEY,
+    }),
+  });
+}
+
 export function useDeleteSentence() {
   const queryClient = useQueryClient();
   return useMutation({

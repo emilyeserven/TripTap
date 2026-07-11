@@ -1,3 +1,4 @@
+import type { UpdateCaptureInput } from "../lib/api";
 import type { CreateCaptureInput } from "@sentence-bank/types";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -31,6 +32,25 @@ export function useCreateCapture() {
     onSuccess: () => queryClient.invalidateQueries({
       queryKey: CAPTURES_KEY,
     }),
+  });
+}
+
+export function useUpdateCapture() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id, input,
+    }: { id: string;
+      input: UpdateCaptureInput; }) =>
+      capturesApi.update(id, input),
+    onSuccess: (capture) => {
+      queryClient.invalidateQueries({
+        queryKey: CAPTURES_KEY,
+      });
+      queryClient.invalidateQueries({
+        queryKey: [...CAPTURES_KEY, capture.id],
+      });
+    },
   });
 }
 

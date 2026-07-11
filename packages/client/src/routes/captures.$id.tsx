@@ -1,6 +1,7 @@
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Trash2 } from "lucide-react";
 
+import { CaptureParseWorkspace } from "@/components/CaptureParseWorkspace";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -102,6 +103,32 @@ function CaptureDetailPage() {
             </Button>
           </div>
 
+          <div
+            className="
+              grid items-start gap-6
+              lg:grid-cols-2
+            "
+          >
+            <Card>
+              <CardHeader>
+                <CardTitle>Source text</CardTitle>
+                <CardDescription>{capture.notes || "The full OCR output for this capture."}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <pre
+                  className="
+                    max-h-[70vh] overflow-auto font-sans text-sm
+                    whitespace-pre-wrap text-foreground
+                  "
+                >
+                  {capture.text}
+                </pre>
+              </CardContent>
+            </Card>
+
+            <CaptureParseWorkspace capture={capture} />
+          </div>
+
           {capture.hasImage && (
             <Card>
               <CardHeader>
@@ -116,22 +143,6 @@ function CaptureDetailPage() {
               </CardContent>
             </Card>
           )}
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Extracted text</CardTitle>
-              <CardDescription>{capture.notes || "The full OCR output for this capture."}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <pre
-                className="
-                  font-sans text-sm whitespace-pre-wrap text-foreground
-                "
-              >
-                {capture.text}
-              </pre>
-            </CardContent>
-          </Card>
 
           <Card>
             <CardHeader>
