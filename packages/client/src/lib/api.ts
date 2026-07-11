@@ -1,6 +1,7 @@
 import type {
   Capture,
   CaptureSummary,
+  CleanedBlocks,
   CreateCaptureInput,
   CreateParseTemplateInput,
   CreateSentenceInput,
@@ -27,6 +28,7 @@ import type {
 export interface UpdateCaptureInput {
   title?: string | null;
   cleanedText?: string | null;
+  cleanedBlocks?: CleanedBlocks | null;
   notes?: string | null;
   sourceId?: string | null;
   page?: string | null;

@@ -7,6 +7,7 @@ import { ArrowLeft, Trash2 } from "lucide-react";
 
 import { CaptureCreatedItems } from "@/components/CaptureCreatedItems";
 import { CaptureParseWorkspace } from "@/components/CaptureParseWorkspace";
+import { CleanedBlocksWorkspace } from "@/components/CleanedBlocksWorkspace";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -210,6 +211,8 @@ function CaptureDetailPage() {
 
             <CaptureParseWorkspace capture={capture} />
           </div>
+
+          <CleanedBlocksWorkspace capture={capture} />
 
           <CaptureCreatedItems captureId={capture.id} />
 

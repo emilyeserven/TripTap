@@ -163,6 +163,44 @@ export interface OcrResult {
   fullText: string;
 }
 
+/** Role a cleaned line plays within its group when deriving bank items. */
+export type CleanedLineRole = "text" | "furigana" | "translation" | "structure";
+
+/** What kind of bank item a group of cleaned lines produces. */
+export type CleanedGroupKind = "sentence" | "vocab";
+
+/** One editable line in the Cleaned Blocks workbench, seeded from an OCR block. */
+export interface CleanedLine {
+  /** Stable id, referenced by nothing but kept for React keys and reorder tracking. */
+  id: string;
+  /** Editable text; OCR fixes are applied here. */
+  text: string;
+  /** Language code for this line, e.g. "ja", "en". */
+  lang: string;
+  role: CleanedLineRole;
+  /** Id of the {@link CleanedGroup} this line belongs to (always assigned). */
+  group: string;
+}
+
+/** A group of lines that together produce one sentence or vocab item. */
+export interface CleanedGroup {
+  /** Stable id (referenced by {@link CleanedLine.group}). */
+  id: string;
+  kind: CleanedGroupKind;
+}
+
+/**
+ * Persisted, structured cleanup of a capture's OCR blocks. Lets the user fix text, group
+ * continuation/translation/furigana lines together, and bulk-ignore whole languages, then derive
+ * sentences and vocab from the result. Null until first saved.
+ */
+export interface CleanedBlocks {
+  lines: CleanedLine[];
+  groups: CleanedGroup[];
+  /** Language codes to exclude from derivation entirely, e.g. ["zh"]. */
+  ignoredLangs: string[];
+}
+
 /** Workflow state of a capture: freshly scanned, or already mined into sentences. */
 export type CaptureStatus = "new" | "parsed";
 
@@ -195,6 +233,8 @@ export interface CaptureSummary {
 export interface Capture extends CaptureSummary {
   /** Per-block OCR detail, preserved for later parsing into sentences. */
   blocks: OcrBlock[];
+  /** Structured, editable cleanup of the OCR blocks; null until first saved. */
+  cleanedBlocks: CleanedBlocks | null;
   imageMime: string | null;
 }
 

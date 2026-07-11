@@ -195,6 +195,62 @@ export async function captureRoutes(app: FastifyInstance): Promise<void> {
           cleanedText: {
             type: ["string", "null"],
           },
+          cleanedBlocks: {
+            type: ["object", "null"],
+            additionalProperties: false,
+            required: ["lines", "groups", "ignoredLangs"],
+            properties: {
+              lines: {
+                type: "array",
+                items: {
+                  type: "object",
+                  additionalProperties: false,
+                  required: ["id", "text", "lang", "role", "group"],
+                  properties: {
+                    id: {
+                      type: "string",
+                    },
+                    text: {
+                      type: "string",
+                    },
+                    lang: {
+                      type: "string",
+                    },
+                    role: {
+                      type: "string",
+                      enum: ["text", "furigana", "translation", "structure"],
+                    },
+                    group: {
+                      type: "string",
+                    },
+                  },
+                },
+              },
+              groups: {
+                type: "array",
+                items: {
+                  type: "object",
+                  additionalProperties: false,
+                  required: ["id", "kind"],
+                  properties: {
+                    id: {
+                      type: "string",
+                    },
+                    kind: {
+                      type: "string",
+                      enum: ["sentence", "vocab"],
+                    },
+                  },
+                },
+              },
+              ignoredLangs: {
+                type: "array",
+                items: {
+                  type: "string",
+                },
+              },
+            },
+          },
           notes: {
             type: ["string", "null"],
           },

@@ -3,6 +3,7 @@ import type {
   Capture,
   CaptureStatus,
   CaptureSummary,
+  CleanedBlocks,
   CreateCaptureInput,
 } from "@sentence-bank/types";
 import { db } from "@/db";
@@ -71,6 +72,7 @@ export async function getCapture(id: string): Promise<Capture | null> {
     .select({
       ...summaryColumns,
       blocks: captures.blocks,
+      cleanedBlocks: captures.cleanedBlocks,
       imageMime: captures.imageMime,
     })
     .from(captures)
@@ -79,6 +81,7 @@ export async function getCapture(id: string): Promise<Capture | null> {
   return {
     ...toSummary(row),
     blocks: row.blocks,
+    cleanedBlocks: row.cleanedBlocks,
     imageMime: row.imageMime,
   };
 }
@@ -132,6 +135,7 @@ export async function createCapture(
     text: row.text,
     cleanedText: row.cleanedText,
     blocks: row.blocks,
+    cleanedBlocks: row.cleanedBlocks,
     engines: row.engines,
     sourceId: row.sourceId,
     page: row.page,
@@ -149,6 +153,7 @@ export async function createCapture(
 export interface UpdateCaptureInput {
   title?: string | null;
   cleanedText?: string | null;
+  cleanedBlocks?: CleanedBlocks | null;
   notes?: string | null;
   sourceId?: string | null;
   page?: string | null;
