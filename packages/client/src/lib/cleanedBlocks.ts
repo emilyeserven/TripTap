@@ -31,6 +31,21 @@ export const LANG_NAMES: Record<string, string> = {
 /** Language codes whose text runs together without inter-word spaces when lines are rejoined. */
 export const CJK_NO_SPACE = new Set(["ja", "zh", "zh-Hans", "zh-Hant"]);
 
+/**
+ * Languages the OCR occasionally mis-fires on for Japanese material (Chinese, Vietnamese, Thai,
+ * Korean). Any of these present at seed time is added to `ignoredLangs` so those lines are excluded
+ * by default; the user can re-include them from the language filter bar.
+ */
+export const DEFAULT_IGNORED_LANGS = ["zh", "zh-Hans", "zh-Hant", "vi", "th", "ko"];
+
+/** True when the text is entirely kana (hira/kata, incl. the prolonged mark) — i.e. a reading. */
+export function isPureKana(text: string): boolean {
+  const stripped = text.replace(/\s/g, "");
+  if (!stripped) return false;
+  // Hiragana + katakana (incl. ー), katakana phonetic extensions, and halfwidth katakana.
+  return /^[぀-ヿㇰ-ㇿｦ-ﾟ]+$/.test(stripped);
+}
+
 /** Resolve a line's language code to a display name, falling back to the batch default. */
 export function langNameFor(code: string, fallback: string): string {
   return LANG_NAMES[code] ?? fallback;
@@ -83,8 +98,9 @@ function joinPartition(lines: CleanedLine[]): { text: string;
 
 /**
  * Build the initial editable structure for a capture: one line per OCR block (its own singleton
- * `sentence` group). When the capture has no blocks (e.g. a manual capture), fall back to splitting
- * the cleaned/raw text on newlines.
+ * `sentence` group). Pure-kana lines default to the `furigana` role (they're readings, not text),
+ * and any {@link DEFAULT_IGNORED_LANGS} present are ignored by default. When the capture has no
+ * blocks (e.g. a manual capture), fall back to splitting the cleaned/raw text on newlines.
  */
 export function seedCleanedBlocks(capture: Capture): CleanedBlocks {
   const lines: CleanedLine[] = [];
@@ -101,7 +117,7 @@ export function seedCleanedBlocks(capture: Capture): CleanedBlocks {
       id: newId(),
       text,
       lang,
-      role: "text",
+      role: isPureKana(text) ? "furigana" : "text",
       group,
     });
   };
@@ -120,10 +136,13 @@ export function seedCleanedBlocks(capture: Capture): CleanedBlocks {
     }
   }
 
+  const present = new Set(lines.map(l => l.lang));
+  const ignoredLangs = DEFAULT_IGNORED_LANGS.filter(code => present.has(code));
+
   return {
     lines,
     groups,
-    ignoredLangs: [],
+    ignoredLangs,
   };
 }
 

@@ -126,6 +126,20 @@ describe("seedCleanedBlocks", () => {
     expect(cb.lines.every(l => l.lang === "ja")).toBe(true);
   });
 
+  it("defaults pure-kana lines to the furigana role", () => {
+    const cb = seedCleanedBlocks(capture({
+      blocks: [block("毎朝", "ja"), block("まいあさ", "ja"), block("コーヒー", "ja")],
+    }));
+    expect(cb.lines.map(l => l.role)).toEqual(["text", "furigana", "furigana"]);
+  });
+
+  it("auto-ignores Chinese/Vietnamese/Thai/Korean lines that appear", () => {
+    const cb = seedCleanedBlocks(capture({
+      blocks: [block("犬", "ja"), block("狗", "zh"), block("chó", "vi"), block("hello", "en")],
+    }));
+    expect(cb.ignoredLangs.sort()).toEqual(["vi", "zh"]);
+  });
+
   it("still produces unique ids when crypto.randomUUID is unavailable (plain HTTP)", () => {
     const original = globalThis.crypto.randomUUID;
     try {
