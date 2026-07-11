@@ -5,7 +5,7 @@ import type {
   CleanedLineRole,
 } from "@sentence-bank/types";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { SourcePicker } from "./SourcePicker";
 
@@ -191,6 +191,18 @@ export function CleanedBlocksWorkspace({
     setSelected(new Set());
     setAnchorIndex(null);
   }
+
+  // Escape deselects everything.
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key !== "Escape") return;
+      // Functional update reads the latest set without re-subscribing; no-op when already empty.
+      setSelected(prev => (prev.size === 0 ? prev : new Set()));
+      setAnchorIndex(null);
+    }
+    globalThis.addEventListener("keydown", onKeyDown);
+    return () => globalThis.removeEventListener("keydown", onKeyDown);
+  }, []);
 
   const selectedIds = () => [...selected];
 
