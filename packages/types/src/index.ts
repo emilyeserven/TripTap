@@ -30,6 +30,9 @@ export interface CreateSourceInput {
   notes?: string | null;
 }
 
+/** Payload for partially updating a source. */
+export type UpdateSourceInput = Partial<CreateSourceInput>;
+
 /** A single example sentence stored in the bank. */
 export interface Sentence {
   id: string;

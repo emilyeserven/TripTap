@@ -5,13 +5,13 @@ import { Plus } from "lucide-react";
 
 import { FuriganaScope } from "@/components/lesson/FuriganaScope";
 import { FuriganaToggle } from "@/components/lesson/FuriganaToggle";
-import { LessonFilterChips } from "@/components/lesson/lesson-filter";
 import { uniqueLessons } from "@/components/lesson/lesson-filter-utils";
 import { matches } from "@/components/lesson/search";
 import { SourceCard } from "@/components/lesson/SourceCard";
 import { SentenceCard } from "@/components/SentenceCard";
 import { SentenceForm } from "@/components/SentenceForm";
 import { Button } from "@/components/ui/button";
+import { Combobox } from "@/components/ui/combobox";
 import {
   Dialog,
   DialogContent,
@@ -27,6 +27,9 @@ import { useUiStore } from "@/stores/uiStore";
 
 export const Route = createFileRoute("/sentences")({
   component: SentencesPage,
+  validateSearch: (search: Record<string, unknown>): { source?: string } => ({
+    source: typeof search.source === "string" ? search.source : undefined,
+  }),
 });
 
 function SentencesPage() {
@@ -48,17 +51,58 @@ function SentencesPage() {
   const lessonSentences = useMemo(() => content?.sentences ?? [], [content]);
   const lessons = useMemo(() => uniqueLessons(lessonSentences), [lessonSentences]);
 
+  const {
+    source: sourceParam,
+  } = Route.useSearch();
+
   const [dialogOpen, setDialogOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all"); // "all" | "mine" | lesson slug
+  const [sourceFilter, setSourceFilter] = useState(sourceParam ?? "all");
 
   const manual = sentences ?? [];
+
+  const lessonOptions = useMemo(() => {
+    const opts = [{
+      value: "all",
+      label: "All lessons",
+    }];
+    if (manual.length > 0) {
+      opts.push({
+        value: "mine",
+        label: "Yours",
+      });
+    }
+    for (const l of lessons) {
+      opts.push({
+        value: l.slug,
+        label: l.title,
+      });
+    }
+    return opts;
+  }, [manual.length, lessons]);
+
+  const sourceOptions = useMemo(() => [
+    {
+      value: "all",
+      label: "All sources",
+    },
+    ...(sources ?? []).map(s => ({
+      value: s.id,
+      label: s.name,
+    })),
+  ], [sources]);
+
+  const bySource = (id: string | null) => sourceFilter === "all" || id === sourceFilter;
   const manualShown = filter === "all" || filter === "mine"
-    ? manual.filter(s => matches(search, s.text, s.translation, s.source, s.tags, s.notes))
+    ? manual.filter(s => bySource(s.sourceId) && matches(search, s.text, s.translation, s.source, s.tags, s.notes))
     : [];
-  const lessonShown = (filter === "mine"
+  // Lesson-mined sentences carry no source, so a specific source filter hides them.
+  const lessonShown = (sourceFilter !== "all"
     ? []
-    : filter === "all" ? lessonSentences : lessonSentences.filter(s => s.lessonSlug === filter))
+    : filter === "mine"
+      ? []
+      : filter === "all" ? lessonSentences : lessonSentences.filter(s => s.lessonSlug === filter))
     .filter(s => matches(search, s.jp, s.en, s.where));
 
   const nothing = !isLoading && manualShown.length === 0 && lessonShown.length === 0;
@@ -109,17 +153,28 @@ function SentencesPage() {
         aria-label="Search sentences"
       />
 
-      <LessonFilterChips
-        lessons={lessons}
-        value={filter}
-        onChange={setFilter}
-        extra={manual.length > 0
-          ? [{
-            value: "mine",
-            label: "Yours",
-          }]
-          : undefined}
-      />
+      <div className="flex flex-wrap items-center gap-2">
+        {lessonOptions.length > 1
+          ? (
+            <Combobox
+              value={filter}
+              onChange={setFilter}
+              options={lessonOptions}
+              ariaLabel="Filter by lesson"
+              searchPlaceholder="Search lessons…"
+              className="w-52"
+            />
+          )
+          : null}
+        <Combobox
+          value={sourceFilter}
+          onChange={setSourceFilter}
+          options={sourceOptions}
+          ariaLabel="Filter by source"
+          searchPlaceholder="Search sources…"
+          className="w-52"
+        />
+      </div>
 
       {error ? <p className="text-destructive">{error.message}</p> : null}
       {isLoading ? <p className="text-muted-foreground">Loading…</p> : null}

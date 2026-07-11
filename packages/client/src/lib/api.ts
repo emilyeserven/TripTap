@@ -18,6 +18,7 @@ import type {
   Source,
   UpdateOcrSettingsInput,
   UpdateSentenceInput,
+  UpdateSourceInput,
   UpdateVocabInput,
   Vocab,
   VocabItem,
@@ -93,6 +94,14 @@ export const sourcesApi = {
       method: "POST",
       body: JSON.stringify(input),
     }),
+  update: (id: string, input: UpdateSourceInput) =>
+    request<Source>(`/sources/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    }),
+  remove: (id: string) => request<undefined>(`/sources/${id}`, {
+    method: "DELETE",
+  }),
 };
 
 export const vocabApi = {

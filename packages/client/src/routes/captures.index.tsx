@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Camera, ImageOff, PencilLine } from "lucide-react";
@@ -7,6 +7,7 @@ import { ManualCaptureForm } from "@/components/ManualCaptureForm";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Combobox } from "@/components/ui/combobox";
 import {
   Dialog,
   DialogContent,
@@ -19,6 +20,9 @@ import { capturesApi } from "@/lib/api";
 
 export const Route = createFileRoute("/captures/")({
   component: CapturesPage,
+  validateSearch: (search: Record<string, unknown>): { source?: string } => ({
+    source: typeof search.source === "string" ? search.source : undefined,
+  }),
 });
 
 function CapturesPage() {
@@ -29,10 +33,27 @@ function CapturesPage() {
   const {
     data: sources,
   } = useSources();
+  const {
+    source: sourceParam,
+  } = Route.useSearch();
   const [manualOpen, setManualOpen] = useState(false);
+  const [sourceFilter, setSourceFilter] = useState(sourceParam ?? "all");
 
   const sourceName = (id: string | null) =>
     (id ? sources?.find(s => s.id === id)?.name ?? null : null);
+
+  const sourceOptions = useMemo(() => [
+    {
+      value: "all",
+      label: "All sources",
+    },
+    ...(sources ?? []).map(s => ({
+      value: s.id,
+      label: s.name,
+    })),
+  ], [sources]);
+
+  const shown = (captures ?? []).filter(c => sourceFilter === "all" || c.sourceId === sourceFilter);
 
   return (
     <section className="space-y-6">
@@ -89,10 +110,26 @@ function CapturesPage() {
         </DialogContent>
       </Dialog>
 
+      {sources && sources.length > 0
+        ? (
+          <Combobox
+            value={sourceFilter}
+            onChange={setSourceFilter}
+            options={sourceOptions}
+            ariaLabel="Filter by source"
+            searchPlaceholder="Search sources…"
+            className="w-52"
+          />
+        )
+        : null}
+
       {error ? <p className="text-destructive">{error.message}</p> : null}
       {isLoading ? <p className="text-muted-foreground">Loading…</p> : null}
       {!isLoading && captures && captures.length === 0
         ? <p className="text-muted-foreground">No captures yet. Scan a page to get started.</p>
+        : null}
+      {!isLoading && captures && captures.length > 0 && shown.length === 0
+        ? <p className="text-muted-foreground">No captures match this source.</p>
         : null}
 
       <div
@@ -101,7 +138,7 @@ function CapturesPage() {
           sm:grid-cols-2
         "
       >
-        {(captures ?? []).map(capture => (
+        {shown.map(capture => (
           <Link
             key={capture.id}
             to="/captures/$id"
