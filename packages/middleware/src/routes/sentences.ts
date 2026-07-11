@@ -1,7 +1,9 @@
 import type { FastifyInstance } from "fastify";
 import type { CreateSentenceInput, UpdateSentenceInput } from "@sentence-bank/types";
+import { getVocabForSentence, setVocabForSentence } from "@/services/sentence-vocab";
 import {
   createSentence,
+  createSentencesMany,
   deleteSentence,
   getSentence,
   listSentences,
@@ -21,7 +23,7 @@ const sentenceParams = {
 
 const createSentenceBody = {
   type: "object",
-  required: ["text", "translation", "language"],
+  required: ["text", "language"],
   additionalProperties: false,
   properties: {
     text: {
@@ -29,8 +31,7 @@ const createSentenceBody = {
       minLength: 1,
     },
     translation: {
-      type: "string",
-      minLength: 1,
+      type: ["string", "null"],
     },
     language: {
       type: "string",
@@ -52,6 +53,13 @@ const createSentenceBody = {
     tags: {
       type: ["string", "null"],
     },
+    vocabIds: {
+      type: "array",
+      items: {
+        type: "string",
+        format: "uuid",
+      },
+    },
   },
 } as const;
 
@@ -59,6 +67,33 @@ const updateSentenceBody = {
   type: "object",
   additionalProperties: false,
   properties: createSentenceBody.properties,
+} as const;
+
+const bulkSentencesBody = {
+  type: "object",
+  required: ["sentences"],
+  additionalProperties: false,
+  properties: {
+    sentences: {
+      type: "array",
+      items: createSentenceBody,
+    },
+  },
+} as const;
+
+const setVocabBody = {
+  type: "object",
+  required: ["vocabIds"],
+  additionalProperties: false,
+  properties: {
+    vocabIds: {
+      type: "array",
+      items: {
+        type: "string",
+        format: "uuid",
+      },
+    },
+  },
 } as const;
 
 /** CRUD routes for sentences, mounted under `/api/sentences`. */
@@ -94,6 +129,51 @@ export async function sentenceRoutes(app: FastifyInstance): Promise<void> {
     const input = req.body as CreateSentenceInput;
     const sentence = await createSentence(input);
     return reply.code(201).send(sentence);
+  });
+
+  app.post("/api/sentences/bulk", {
+    schema: {
+      tags: ["sentences"],
+      body: bulkSentencesBody,
+    },
+  }, async (req, reply) => {
+    const {
+      sentences: inputs,
+    } = req.body as { sentences: CreateSentenceInput[] };
+    const created = await createSentencesMany(inputs);
+    return reply.code(201).send(created);
+  });
+
+  app.get("/api/sentences/:id/vocab", {
+    schema: {
+      tags: ["sentences"],
+      params: sentenceParams,
+    },
+  }, async (req) => {
+    const {
+      id,
+    } = req.params as { id: string };
+    return getVocabForSentence(id);
+  });
+
+  app.put("/api/sentences/:id/vocab", {
+    schema: {
+      tags: ["sentences"],
+      params: sentenceParams,
+      body: setVocabBody,
+    },
+  }, async (req, reply) => {
+    const {
+      id,
+    } = req.params as { id: string };
+    const {
+      vocabIds,
+    } = req.body as { vocabIds: string[] };
+    const linked = await setVocabForSentence(id, vocabIds);
+    if (!linked) return reply.code(404).send({
+      message: "Sentence not found",
+    });
+    return linked;
   });
 
   app.patch(
