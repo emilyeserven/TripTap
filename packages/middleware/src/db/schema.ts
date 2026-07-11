@@ -1,4 +1,5 @@
 import type {
+  CleanedBlocks,
   GrammarExample,
   OcrBlock,
   SourceGrammar,
@@ -142,6 +143,9 @@ export const captures = pgTable("captures", {
   // An optional user-edited, tidied-up copy of `text`. Null means "no cleaned copy yet"; the raw
   // OCR output in `text` is always preserved untouched.
   cleanedText: text("cleaned_text"),
+  // Structured, editable cleanup of the OCR blocks (roles, grouping, ignored languages). Null until
+  // the user first saves the Cleaned Blocks workbench.
+  cleanedBlocks: jsonb("cleaned_blocks").$type<CleanedBlocks>(),
   blocks: jsonb("blocks").$type<OcrBlock[]>().notNull(),
   engines: jsonb("engines").$type<string[]>().notNull(),
   sourceId: uuid("source_id").references(() => sources.id, {
