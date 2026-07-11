@@ -22,14 +22,17 @@ import { useCreateSentencesMany } from "@/hooks/useSentences";
 import { useCreateVocabMany, useVocab } from "@/hooks/useVocab";
 import {
   deleteLine,
+  deleteLines,
   deriveItems,
   LANG_NAMES,
-  mergeIntoPrevGroup,
-  moveLine,
+  linkLines,
+  moveGroup,
   seedCleanedBlocks,
   setGroupKind,
-  splitToOwnGroup,
+  setKindForLines,
+  setLinesRole,
   toggleIgnoredLang,
+  unlinkLines,
   updateLineLang,
   updateLineRole,
   updateLineText,
@@ -57,6 +60,10 @@ const ROLES: { value: CleanedLineRole;
   {
     value: "structure",
     label: "Structure",
+  },
+  {
+    value: "ignore",
+    label: "Ignore",
   },
 ];
 
@@ -93,6 +100,10 @@ export function CleanedBlocksWorkspace({
   const [notes, setNotes] = useState("");
   const [done, setDone] = useState<string | null>(null);
 
+  // Transient multi-select (not persisted). `anchorIndex` drives Shift-range selection.
+  const [selected, setSelected] = useState<Set<string>>(() => new Set());
+  const [anchorIndex, setAnchorIndex] = useState<number | null>(null);
+
   const {
     data: vocab,
   } = useVocab();
@@ -121,7 +132,7 @@ export function CleanedBlocksWorkspace({
 
   // Group ordering + which line opens each group (for the per-group kind selector) + tint colours.
   const {
-    groupTint, firstLineOfGroup, presentLangs,
+    groupTint, firstLineOfGroup, presentLangs, groupOrder,
   } = useMemo(() => {
     const order: string[] = [];
     const first = new Map<string, string>();
@@ -138,6 +149,7 @@ export function CleanedBlocksWorkspace({
       groupTint: tint,
       firstLineOfGroup: first,
       presentLangs: [...langs].sort(),
+      groupOrder: order,
     };
   }, [draft.lines]);
 
@@ -146,6 +158,62 @@ export function CleanedBlocksWorkspace({
 
   // Language options: the standard set plus any code actually present on a line.
   const langOptions = [...new Set([...Object.keys(LANG_NAMES), ...presentLangs])].sort();
+
+  // --- Selection + bulk actions ---
+  function toggleSelect(index: number, shift: boolean) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (shift && anchorIndex !== null) {
+        const [lo, hi] = anchorIndex <= index ? [anchorIndex, index] : [index, anchorIndex];
+        for (let i = lo; i <= hi; i += 1) next.add(draft.lines[i].id);
+      }
+      else {
+        const id = draft.lines[index].id;
+        if (next.has(id)) next.delete(id);
+        else next.add(id);
+      }
+      return next;
+    });
+    if (!shift) setAnchorIndex(index);
+  }
+
+  function clearSelection() {
+    setSelected(new Set());
+    setAnchorIndex(null);
+  }
+
+  const selectedIds = () => [...selected];
+
+  function bulkRole(role: CleanedLineRole) {
+    setDraft(d => setLinesRole(d, selectedIds(), role));
+  }
+
+  function bulkKind(kind: CleanedGroupKind) {
+    setDraft(d => setKindForLines(d, selectedIds(), kind));
+  }
+
+  function bulkDelete() {
+    const ids = selectedIds();
+    setDraft(d => deleteLines(d, ids));
+    clearSelection();
+  }
+
+  /** Remove a single line and drop it from the selection. */
+  function removeLine(id: string) {
+    setDraft(d => deleteLine(d, id));
+    setSelected((prev) => {
+      if (!prev.has(id)) return prev;
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
+  }
+
+  /** Ungroup: split every line of a group back into singletons. */
+  function ungroup(groupId: string) {
+    const ids = draft.lines.filter(l => l.group === groupId).map(l => l.id);
+    setDraft(d => unlinkLines(d, ids));
+  }
 
   async function save() {
     setDone(null);
@@ -198,9 +266,15 @@ export function CleanedBlocksWorkspace({
         <CardHeader>
           <CardTitle>Cleaned blocks</CardTitle>
           <CardDescription>
-            Fix each line, set its language, and group continuation / translation / furigana lines
-            together. Each group becomes one sentence or vocab entry; mark page furniture as
-            “structure” or ignore a whole language to leave it out.
+            Fix each line and set its language. Select rows (Shift-click for a range) and
+            {" "}
+            <strong>Link</strong>
+            {" "}
+            them so OCR-split lines become one sentence that moves together, or switch them to
+            {" "}
+            <strong>Vocab</strong>
+            . Each group becomes one sentence or vocab entry; mark page furniture as “Structure”,
+            set junk lines to “Ignore”, or ignore a whole language to leave it out.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -240,11 +314,100 @@ export function CleanedBlocksWorkspace({
             )
             : null}
 
+          {/* Bulk action bar (shown when rows are selected) */}
+          {selected.size > 0
+            ? (
+              <div
+                className="
+                  sticky top-2 z-10 flex flex-wrap items-center gap-2 rounded-md
+                  border border-blue-300 bg-blue-50 p-2 text-sm
+                "
+              >
+                <span className="font-medium text-blue-900">
+                  {selected.size}
+                  {" "}
+                  selected
+                </span>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setDraft(d => linkLines(d, selectedIds()))}
+                  title="Link the selected lines into one group"
+                >
+                  Link
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setDraft(d => unlinkLines(d, selectedIds()))}
+                  title="Split each selected line into its own group"
+                >
+                  Unlink
+                </Button>
+                <select
+                  className={inlineClass}
+                  value=""
+                  onChange={(e) => {
+                    if (e.target.value) bulkRole(e.target.value as CleanedLineRole);
+                  }}
+                  aria-label="Set role for selected lines"
+                >
+                  <option value="">Set role…</option>
+                  {ROLES.map(r => (
+                    <option
+                      key={r.value}
+                      value={r.value}
+                    >
+                      {r.label}
+                    </option>
+                  ))}
+                </select>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => bulkKind("vocab")}
+                  title="Make the selected lines' groups vocab"
+                >
+                  → Vocab
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => bulkKind("sentence")}
+                  title="Make the selected lines' groups sentences"
+                >
+                  → Sentence
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  onClick={bulkDelete}
+                >
+                  Delete
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  onClick={clearSelection}
+                >
+                  Clear
+                </Button>
+              </div>
+            )
+            : null}
+
           {/* Line editor */}
           <div className="space-y-1.5">
             {draft.lines.map((line, i) => {
               const opensGroup = firstLineOfGroup.get(line.group) === line.id;
-              const dimmed = line.role === "structure" || ignored.has(line.lang);
+              const dimmed = line.role === "structure" || line.role === "ignore" || ignored.has(line.lang);
+              const groupIdx = groupOrder.indexOf(line.group);
               return (
                 <div
                   key={line.id}
@@ -252,26 +415,71 @@ export function CleanedBlocksWorkspace({
                     flex flex-wrap items-center gap-1.5 rounded-md border
                     border-l-4 border-input bg-card p-1.5
                     ${groupTint.get(line.group) ?? ""}
+                    ${selected.has(line.id) ? "ring-2 ring-blue-400" : ""}
                     ${dimmed ? "opacity-50" : ""}
                   `}
                 >
+                  <input
+                    type="checkbox"
+                    className="size-4 shrink-0"
+                    checked={selected.has(line.id)}
+                    onChange={e => toggleSelect(i, (e.nativeEvent as MouseEvent).shiftKey)}
+                    aria-label="Select line"
+                  />
+
                   {opensGroup
                     ? (
-                      <select
-                        className={inlineClass}
-                        value={kindOf.get(line.group) ?? "sentence"}
-                        onChange={e =>
-                          setDraft(d => setGroupKind(d, line.group, e.target.value as CleanedGroupKind))}
-                        aria-label="Group kind"
-                        title="What this group produces"
-                      >
-                        <option value="sentence">Sentence</option>
-                        <option value="vocab">Vocab</option>
-                      </select>
+                      <div className="flex shrink-0 items-center gap-0.5">
+                        <select
+                          className={inlineClass}
+                          value={kindOf.get(line.group) ?? "sentence"}
+                          onChange={e =>
+                            setDraft(d => setGroupKind(d, line.group, e.target.value as CleanedGroupKind))}
+                          aria-label="Group kind"
+                          title="What this group produces"
+                        >
+                          <option value="sentence">Sentence</option>
+                          <option value="vocab">Vocab</option>
+                        </select>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          disabled={groupIdx <= 0}
+                          onClick={() => setDraft(d => moveGroup(d, line.group, "up"))}
+                          title="Move group up"
+                        >
+                          ↑
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          disabled={groupIdx === groupOrder.length - 1}
+                          onClick={() => setDraft(d => moveGroup(d, line.group, "down"))}
+                          title="Move group down"
+                        >
+                          ↓
+                        </Button>
+                        {firstLineOfGroup.get(line.group) === line.id
+                          && draft.lines.filter(l => l.group === line.group).length > 1
+                          ? (
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => ungroup(line.group)}
+                              title="Ungroup"
+                            >
+                              Ungroup
+                            </Button>
+                          )
+                          : null}
+                      </div>
                     )
                     : (
                       <span
-                        className="w-18 shrink-0"
+                        className="w-28 shrink-0"
                         aria-hidden
                       />
                     )}
@@ -318,56 +526,15 @@ export function CleanedBlocksWorkspace({
                     ))}
                   </select>
 
-                  <div className="flex items-center gap-0.5">
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="ghost"
-                      disabled={i === 0}
-                      onClick={() => setDraft(d => moveLine(d, line.id, "up"))}
-                      title="Move up"
-                    >
-                      ↑
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="ghost"
-                      disabled={i === draft.lines.length - 1}
-                      onClick={() => setDraft(d => moveLine(d, line.id, "down"))}
-                      title="Move down"
-                    >
-                      ↓
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="ghost"
-                      disabled={opensGroup}
-                      onClick={() => setDraft(d => mergeIntoPrevGroup(d, line.id))}
-                      title="Join into the group above"
-                    >
-                      Join↥
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => setDraft(d => splitToOwnGroup(d, line.id))}
-                      title="Split into its own group"
-                    >
-                      Split
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => setDraft(d => deleteLine(d, line.id))}
-                      title="Delete line"
-                    >
-                      ✕
-                    </Button>
-                  </div>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => removeLine(line.id)}
+                    title="Delete line"
+                  >
+                    ✕
+                  </Button>
                 </div>
               );
             })}

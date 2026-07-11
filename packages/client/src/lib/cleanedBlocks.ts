@@ -266,17 +266,31 @@ export function updateLineRole(cb: CleanedBlocks, id: string, role: CleanedLineR
   }));
 }
 
-export function moveLine(cb: CleanedBlocks, id: string, dir: "up" | "down"): CleanedBlocks {
-  const idx = cb.lines.findIndex(l => l.id === id);
-  if (idx < 0) return cb;
-  const target = dir === "up" ? idx - 1 : idx + 1;
-  if (target < 0 || target >= cb.lines.length) return cb;
-  const lines = cb.lines.slice();
-  [lines[idx], lines[target]] = [lines[target], lines[idx]];
-  return {
-    ...cb,
-    lines,
-  };
+/**
+ * Reorder `lines` so every group's lines are contiguous, following the group's first-appearance
+ * order and preserving each group's internal line order. Keeping groups as adjacent runs is what
+ * lets a group move as one block (see {@link moveGroup}).
+ */
+export function normalizeOrder(cb: CleanedBlocks): CleanedBlocks {
+  const order: string[] = [];
+  const byGroup = new Map<string, CleanedLine[]>();
+  for (const line of cb.lines) {
+    let bucket = byGroup.get(line.group);
+    if (!bucket) {
+      bucket = [];
+      byGroup.set(line.group, bucket);
+      order.push(line.group);
+    }
+    bucket.push(line);
+  }
+  const lines = order.flatMap(id => byGroup.get(id) ?? []);
+  const changed = lines.some((l, i) => l !== cb.lines[i]);
+  return changed
+    ? {
+      ...cb,
+      lines,
+    }
+    : cb;
 }
 
 export function deleteLine(cb: CleanedBlocks, id: string): CleanedBlocks {
@@ -286,36 +300,118 @@ export function deleteLine(cb: CleanedBlocks, id: string): CleanedBlocks {
   });
 }
 
-/** Move a line into the group of the line directly above it (adopting that group's kind). */
-export function mergeIntoPrevGroup(cb: CleanedBlocks, id: string): CleanedBlocks {
-  const idx = cb.lines.findIndex(l => l.id === id);
-  if (idx <= 0) return cb;
-  const prevGroup = cb.lines[idx - 1].group;
-  if (cb.lines[idx].group === prevGroup) return cb;
-  return pruneGroups(mapLine(cb, id, l => ({
-    ...l,
-    group: prevGroup,
-  })));
-}
-
-/** Break a line out into its own fresh `sentence` group. */
-export function splitToOwnGroup(cb: CleanedBlocks, id: string): CleanedBlocks {
-  const line = cb.lines.find(l => l.id === id);
-  if (!line) return cb;
-  const group = newId();
+/** Delete every selected line at once, then drop any emptied groups. */
+export function deleteLines(cb: CleanedBlocks, ids: string[]): CleanedBlocks {
+  const remove = new Set(ids);
+  if (remove.size === 0) return cb;
   return pruneGroups({
     ...cb,
-    lines: cb.lines.map(l => (l.id === id
+    lines: cb.lines.filter(l => !remove.has(l.id)),
+  });
+}
+
+/**
+ * Link the selected lines into a single group so they read (and move) as one item. They join the
+ * group of the earliest selected line — keeping that group's kind — and are pulled contiguous.
+ */
+export function linkLines(cb: CleanedBlocks, ids: string[]): CleanedBlocks {
+  const select = new Set(ids);
+  const anchor = cb.lines.find(l => select.has(l.id));
+  if (!anchor) return cb;
+  const target = anchor.group;
+  const relinked = {
+    ...cb,
+    lines: cb.lines.map(l => (select.has(l.id)
       ? {
         ...l,
-        group,
+        group: target,
       }
       : l)),
-    groups: [...cb.groups, {
+  };
+  return normalizeOrder(pruneGroups(relinked));
+}
+
+/** Break each selected line out into its own fresh `sentence` group (ungroup). */
+export function unlinkLines(cb: CleanedBlocks, ids: string[]): CleanedBlocks {
+  const select = new Set(ids);
+  if (select.size === 0) return cb;
+  const added: CleanedBlocks["groups"] = [];
+  const lines = cb.lines.map((l) => {
+    if (!select.has(l.id)) return l;
+    const group = newId();
+    added.push({
       id: group,
       kind: "sentence",
-    }],
+    });
+    return {
+      ...l,
+      group,
+    };
   });
+  return normalizeOrder(pruneGroups({
+    ...cb,
+    lines,
+    groups: [...cb.groups, ...added],
+  }));
+}
+
+/** Bulk-set the role (e.g. `ignore`) on every selected line. */
+export function setLinesRole(cb: CleanedBlocks, ids: string[], role: CleanedLineRole): CleanedBlocks {
+  const select = new Set(ids);
+  if (select.size === 0) return cb;
+  return {
+    ...cb,
+    lines: cb.lines.map(l => (select.has(l.id)
+      ? {
+        ...l,
+        role,
+      }
+      : l)),
+  };
+}
+
+/** Set the kind on every group that owns a selected line (bulk → Vocab / → Sentence). */
+export function setKindForLines(cb: CleanedBlocks, ids: string[], kind: CleanedGroupKind): CleanedBlocks {
+  const select = new Set(ids);
+  const groupIds = new Set(cb.lines.filter(l => select.has(l.id)).map(l => l.group));
+  if (groupIds.size === 0) return cb;
+  return {
+    ...cb,
+    groups: cb.groups.map(g => (groupIds.has(g.id)
+      ? {
+        ...g,
+        kind,
+      }
+      : g)),
+  };
+}
+
+/**
+ * Move a whole group (its contiguous block of lines) up or down past the neighboring group. Assumes
+ * groups are contiguous — callers that mutate grouping run through {@link normalizeOrder} first.
+ */
+export function moveGroup(cb: CleanedBlocks, groupId: string, dir: "up" | "down"): CleanedBlocks {
+  const normalized = normalizeOrder(cb);
+  const order: string[] = [];
+  const byGroup = new Map<string, CleanedLine[]>();
+  for (const line of normalized.lines) {
+    let bucket = byGroup.get(line.group);
+    if (!bucket) {
+      bucket = [];
+      byGroup.set(line.group, bucket);
+      order.push(line.group);
+    }
+    bucket.push(line);
+  }
+  const idx = order.indexOf(groupId);
+  if (idx < 0) return cb;
+  const target = dir === "up" ? idx - 1 : idx + 1;
+  if (target < 0 || target >= order.length) return cb;
+  [order[idx], order[target]] = [order[target], order[idx]];
+  return {
+    ...normalized,
+    lines: order.flatMap(id => byGroup.get(id) ?? []),
+  };
 }
 
 export function setGroupKind(cb: CleanedBlocks, groupId: string, kind: CleanedGroupKind): CleanedBlocks {

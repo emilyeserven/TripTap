@@ -4,13 +4,19 @@ import { describe, expect, it } from "vitest";
 
 import {
   deleteLine,
+  deleteLines,
   deriveItems,
   joinLines,
   langNameFor,
-  mergeIntoPrevGroup,
+  linkLines,
+  moveGroup,
+  normalizeOrder,
   seedCleanedBlocks,
   setGroupKind,
+  setKindForLines,
+  setLinesRole,
   toggleIgnoredLang,
+  unlinkLines,
 } from "./cleanedBlocks";
 
 function block(text: string, lang: string): OcrBlock {
@@ -354,6 +360,38 @@ describe("deriveItems", () => {
     expect(sentences[0].tags).toBe("animals");
     expect(sentences[0].vocabIds).toEqual(["v1", "v2"]);
   });
+
+  it("excludes lines with the ignore role (like structure)", () => {
+    const g = "g1";
+    const cb: CleanedBlocks = {
+      lines: [
+        {
+          id: "a",
+          text: "犬",
+          lang: "ja",
+          role: "text",
+          group: g,
+        },
+        {
+          id: "b",
+          text: "noise",
+          lang: "en",
+          role: "ignore",
+          group: g,
+        },
+      ],
+      groups: [{
+        id: g,
+        kind: "sentence",
+      }],
+      ignoredLangs: [],
+    };
+    const {
+      sentences,
+    } = deriveItems(cb, DERIVE_OPTS);
+    expect(sentences).toHaveLength(1);
+    expect(sentences[0].text).toBe("犬");
+  });
 });
 
 describe("reducers", () => {
@@ -387,25 +425,134 @@ describe("reducers", () => {
     ignoredLangs: [],
   };
 
-  it("mergeIntoPrevGroup moves a line up and prunes the emptied group", () => {
-    const next = mergeIntoPrevGroup(twoGroups, "b");
+  it("linkLines joins the selected lines into the earliest one's group (kept contiguous)", () => {
+    const next = linkLines(twoGroups, ["b", "a"]);
+    // Both lines share group g1 (a's group); g2 is pruned.
     expect(next.lines.map(l => l.group)).toEqual(["g1", "g1"]);
     expect(next.groups.map(g => g.id)).toEqual(["g1"]);
   });
 
-  it("merged line inherits the target group's kind via the shared group", () => {
+  it("linkLines keeps the anchor group's kind", () => {
     const withVocab = setGroupKind(twoGroups, "g1", "vocab");
-    const next = mergeIntoPrevGroup(withVocab, "b");
+    const next = linkLines(withVocab, ["a", "b"]);
     expect(next.groups).toEqual([{
       id: "g1",
       kind: "vocab",
     }]);
   });
 
+  it("unlinkLines splits selected lines into fresh singleton groups", () => {
+    const linked = linkLines(twoGroups, ["a", "b"]);
+    const next = unlinkLines(linked, ["a", "b"]);
+    const groups = next.lines.map(l => l.group);
+    expect(new Set(groups).size).toBe(2);
+    expect(next.groups).toHaveLength(2);
+    expect(next.groups.every(g => g.kind === "sentence")).toBe(true);
+  });
+
+  it("setLinesRole bulk-sets the role, including ignore", () => {
+    const next = setLinesRole(twoGroups, ["a", "b"], "ignore");
+    expect(next.lines.every(l => l.role === "ignore")).toBe(true);
+  });
+
+  it("setKindForLines sets kind on every group owning a selected line", () => {
+    const next = setKindForLines(twoGroups, ["a", "b"], "vocab");
+    expect(next.groups.every(g => g.kind === "vocab")).toBe(true);
+  });
+
+  it("deleteLines removes all selected lines and prunes emptied groups", () => {
+    const next = deleteLines(twoGroups, ["a"]);
+    expect(next.lines.map(l => l.id)).toEqual(["b"]);
+    expect(next.groups.map(g => g.id)).toEqual(["g2"]);
+  });
+
   it("deleteLine removes the line and prunes its now-empty group", () => {
     const next = deleteLine(twoGroups, "a");
     expect(next.lines.map(l => l.id)).toEqual(["b"]);
     expect(next.groups.map(g => g.id)).toEqual(["g2"]);
+  });
+
+  it("moveGroup moves a whole group past its neighbor, lines staying together", () => {
+    // g1 = [a, a2], g2 = [b]; moving g1 down puts b first, then a, a2.
+    const grouped: CleanedBlocks = {
+      lines: [
+        {
+          id: "a",
+          text: "毎",
+          lang: "ja",
+          role: "text",
+          group: "g1",
+        },
+        {
+          id: "a2",
+          text: "朝",
+          lang: "ja",
+          role: "text",
+          group: "g1",
+        },
+        {
+          id: "b",
+          text: "犬",
+          lang: "ja",
+          role: "text",
+          group: "g2",
+        },
+      ],
+      groups: [
+        {
+          id: "g1",
+          kind: "sentence",
+        },
+        {
+          id: "g2",
+          kind: "sentence",
+        },
+      ],
+      ignoredLangs: [],
+    };
+    const next = moveGroup(grouped, "g1", "down");
+    expect(next.lines.map(l => l.id)).toEqual(["b", "a", "a2"]);
+  });
+
+  it("normalizeOrder pulls a group's scattered lines contiguous", () => {
+    const scattered: CleanedBlocks = {
+      lines: [
+        {
+          id: "a",
+          text: "1",
+          lang: "ja",
+          role: "text",
+          group: "g1",
+        },
+        {
+          id: "b",
+          text: "2",
+          lang: "ja",
+          role: "text",
+          group: "g2",
+        },
+        {
+          id: "c",
+          text: "3",
+          lang: "ja",
+          role: "text",
+          group: "g1",
+        },
+      ],
+      groups: [
+        {
+          id: "g1",
+          kind: "sentence",
+        },
+        {
+          id: "g2",
+          kind: "sentence",
+        },
+      ],
+      ignoredLangs: [],
+    };
+    const next = normalizeOrder(scattered);
+    expect(next.lines.map(l => l.id)).toEqual(["a", "c", "b"]);
   });
 
   it("toggleIgnoredLang adds then removes a code", () => {
