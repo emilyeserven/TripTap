@@ -17,6 +17,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
 import { useCapture, useDeleteCapture, useUpdateCapture } from "@/hooks/useCaptures";
 import { useSources } from "@/hooks/useSources";
 import { capturesApi } from "@/lib/api";
@@ -201,76 +207,105 @@ function CaptureDetailPage() {
             </Button>
           </div>
 
-          <div
-            className="
-              grid items-start gap-6
-              lg:grid-cols-2
-            "
+          <Tabs
+            defaultValue="block"
+            className="w-full"
           >
-            <CaptureTextCard capture={capture} />
+            <TabsList className="flex-wrap">
+              <TabsTrigger value="block">Block Mode</TabsTrigger>
+              <TabsTrigger value="text">Text Mode</TabsTrigger>
+              <TabsTrigger value="created">Created From Capture</TabsTrigger>
+              <TabsTrigger value="source">Source Reference</TabsTrigger>
+            </TabsList>
 
-            <CaptureParseWorkspace capture={capture} />
-          </div>
+            {/* 1. Block Mode — cleaned blocks editor + resulting items (side-by-side on wide screens) */}
+            <TabsContent value="block">
+              <CleanedBlocksWorkspace capture={capture} />
+            </TabsContent>
 
-          <CleanedBlocksWorkspace capture={capture} />
+            {/* 2. Text Mode — cleaned text + create-from-text + preview */}
+            <TabsContent value="text">
+              <div
+                className="
+                  grid items-start gap-6
+                  lg:grid-cols-2
+                "
+              >
+                <CaptureTextCard capture={capture} />
 
-          <CaptureCreatedItems captureId={capture.id} />
-
-          {capture.hasImage && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Image</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <img
-                  src={capturesApi.imageUrl(capture.id)}
-                  alt="Captured page"
-                  className="max-h-[70vh] w-auto rounded-md border border-input"
-                />
-              </CardContent>
-            </Card>
-          )}
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Blocks</CardTitle>
-              <CardDescription>
-                {capture.blocks.length}
-                {" "}
-                recognized region(s), preserved for later parsing.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead className="text-left text-muted-foreground">
-                    <tr>
-                      <th className="py-1 pr-4 font-medium">Text</th>
-                      <th className="py-1 pr-4 font-medium">Lang</th>
-                      <th className="py-1 pr-4 font-medium">Engine</th>
-                      <th className="py-1 font-medium">Conf.</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {capture.blocks.map((block, i) => (
-                      <tr
-                        key={i}
-                        className="border-t border-border align-top"
-                      >
-                        <td className="py-1 pr-4">{block.text}</td>
-                        <td className="py-1 pr-4 text-muted-foreground">{block.lang}</td>
-                        <td className="py-1 pr-4 text-muted-foreground">{block.engine}</td>
-                        <td className="py-1 text-muted-foreground">
-                          {Math.round(block.confidence * 100)}
-                          %
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                <CaptureParseWorkspace capture={capture} />
               </div>
-            </CardContent>
-          </Card>
+            </TabsContent>
+
+            {/* 3. Created From Capture */}
+            <TabsContent value="created">
+              <CaptureCreatedItems captureId={capture.id} />
+            </TabsContent>
+
+            {/* 4. Source Reference — original image + raw OCR blocks */}
+            <TabsContent
+              value="source"
+              className="space-y-6"
+            >
+              {capture.hasImage && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Image</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <img
+                      src={capturesApi.imageUrl(capture.id)}
+                      alt="Captured page"
+                      className="
+                        max-h-[70vh] w-auto rounded-md border border-input
+                      "
+                    />
+                  </CardContent>
+                </Card>
+              )}
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Blocks</CardTitle>
+                  <CardDescription>
+                    {capture.blocks.length}
+                    {" "}
+                    recognized region(s), preserved for later parsing.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead className="text-left text-muted-foreground">
+                        <tr>
+                          <th className="py-1 pr-4 font-medium">Text</th>
+                          <th className="py-1 pr-4 font-medium">Lang</th>
+                          <th className="py-1 pr-4 font-medium">Engine</th>
+                          <th className="py-1 font-medium">Conf.</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {capture.blocks.map((block, i) => (
+                          <tr
+                            key={i}
+                            className="border-t border-border align-top"
+                          >
+                            <td className="py-1 pr-4">{block.text}</td>
+                            <td className="py-1 pr-4 text-muted-foreground">{block.lang}</td>
+                            <td className="py-1 pr-4 text-muted-foreground">{block.engine}</td>
+                            <td className="py-1 text-muted-foreground">
+                              {Math.round(block.confidence * 100)}
+                              %
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </>
       )}
     </section>

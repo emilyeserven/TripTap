@@ -286,7 +286,12 @@ export function CleanedBlocksWorkspace({
   const totalValid = preview.sentences.length + preview.vocab.length;
 
   return (
-    <div className="space-y-4">
+    <div
+      className="
+        grid items-start gap-4
+        xl:grid-cols-2
+      "
+    >
       <Card>
         <CardHeader>
           <CardTitle>Cleaned blocks</CardTitle>
