@@ -185,11 +185,17 @@ export interface CleanedLine {
   group: string;
 }
 
-/** A group of lines that together produce one sentence or vocab item. */
+/**
+ * A stitch: a run of continuation lines that concatenate into one text unit. Stitches sharing a
+ * {@link CleanedGroup.link} are combined into one derived bank item (e.g. a text stitch linked to its
+ * translation stitch → one sentence with both fields).
+ */
 export interface CleanedGroup {
   /** Stable id (referenced by {@link CleanedLine.group}). */
   id: string;
   kind: CleanedGroupKind;
+  /** Stitches sharing a link derive as one item (text + translation); null = standalone. */
+  link: string | null;
 }
 
 /**

@@ -25,14 +25,16 @@ import {
   deleteLines,
   deriveItems,
   LANG_NAMES,
-  linkLines,
-  moveGroup,
+  linkGroups,
+  moveItem,
   seedCleanedBlocks,
   setGroupKind,
   setKindForLines,
   setLinesRole,
+  stitchLines,
   toggleIgnoredLang,
-  unlinkLines,
+  unlinkGroups,
+  unstitchLines,
   updateLineLang,
   updateLineRole,
   updateLineText,
@@ -130,30 +132,38 @@ export function CleanedBlocksWorkspace({
 
   const vocabName = (id: string) => vocab?.find(v => v.id === id)?.term ?? id;
 
-  // Group ordering + which line opens each group (for the per-group kind selector) + tint colours.
+  // Item (linked-stitch) ordering + which line opens each item (for the kind/move controls) + tint.
+  // An "item" key is a stitch's link, or its own id when unlinked — matching how deriveItems bundles.
   const {
-    groupTint, firstLineOfGroup, presentLangs, groupOrder,
+    itemTint, firstLineOfItem, presentLangs, itemOrder, linkedGroupIds,
   } = useMemo(() => {
+    const linkOf = new Map(draft.groups.map(g => [g.id, g.link]));
+    const keyOf = (line: (typeof draft.lines)[number]) => linkOf.get(line.group) ?? line.group;
     const order: string[] = [];
     const first = new Map<string, string>();
     const langs = new Set<string>();
+    const linked = new Set<string>();
     for (const line of draft.lines) {
       langs.add(line.lang);
-      if (!first.has(line.group)) {
-        first.set(line.group, line.id);
-        order.push(line.group);
+      if ((linkOf.get(line.group) ?? null) !== null) linked.add(line.group);
+      const key = keyOf(line);
+      if (!first.has(key)) {
+        first.set(key, line.id);
+        order.push(key);
       }
     }
     const tint = new Map(order.map((id, i) => [id, GROUP_TINTS[i % GROUP_TINTS.length]]));
     return {
-      groupTint: tint,
-      firstLineOfGroup: first,
+      itemTint: tint,
+      firstLineOfItem: first,
       presentLangs: [...langs].sort(),
-      groupOrder: order,
+      itemOrder: order,
+      linkedGroupIds: linked,
     };
-  }, [draft.lines]);
+  }, [draft.lines, draft.groups]);
 
   const kindOf = new Map<string, CleanedGroupKind>(draft.groups.map(g => [g.id, g.kind]));
+  const linkOf = new Map<string, string | null>(draft.groups.map(g => [g.id, g.link]));
   const ignored = new Set(draft.ignoredLangs);
 
   // Language options: the standard set plus any code actually present on a line.
@@ -209,10 +219,13 @@ export function CleanedBlocksWorkspace({
     });
   }
 
-  /** Ungroup: split every line of a group back into singletons. */
-  function ungroup(groupId: string) {
-    const ids = draft.lines.filter(l => l.group === groupId).map(l => l.id);
-    setDraft(d => unlinkLines(d, ids));
+  /** Unlink an item: clear the link on every stitch that shares this stitch's link. */
+  function unlinkItem(groupId: string) {
+    const link = linkOf.get(groupId);
+    const ids = draft.lines
+      .filter(l => (link != null ? linkOf.get(l.group) === link : l.group === groupId))
+      .map(l => l.id);
+    setDraft(d => unlinkGroups(d, ids));
   }
 
   async function save() {
@@ -266,15 +279,19 @@ export function CleanedBlocksWorkspace({
         <CardHeader>
           <CardTitle>Cleaned blocks</CardTitle>
           <CardDescription>
-            Fix each line and set its language. Select rows (Shift-click for a range) and
+            Fix each line and set its language. Select rows (Shift-click for a range), then
+            {" "}
+            <strong>Stitch</strong>
+            {" "}
+            OCR-split continuation lines into one text, or
             {" "}
             <strong>Link</strong>
             {" "}
-            them so OCR-split lines become one sentence that moves together, or switch them to
+            a text block to its translation so they combine into one item. Switch items to
             {" "}
             <strong>Vocab</strong>
-            . Each group becomes one sentence or vocab entry; mark page furniture as “Structure”,
-            set junk lines to “Ignore”, or ignore a whole language to leave it out.
+            , mark page furniture as “Structure”, set junk lines to “Ignore”, or ignore a whole
+            language to leave it out.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -314,107 +331,125 @@ export function CleanedBlocksWorkspace({
             )
             : null}
 
-          {/* Bulk action bar (shown when rows are selected) */}
-          {selected.size > 0
-            ? (
-              <div
-                className="
-                  sticky top-2 z-10 flex flex-wrap items-center gap-2 rounded-md
-                  border border-blue-300 bg-blue-50 p-2 text-sm
-                "
-              >
-                <span className="font-medium text-blue-900">
-                  {selected.size}
-                  {" "}
-                  selected
-                </span>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setDraft(d => linkLines(d, selectedIds()))}
-                  title="Link the selected lines into one group"
+          {/* Bulk action bar — always occupies its space; visibility toggles so rows never shift. */}
+          <div
+            className={`
+              sticky top-2 z-10 flex flex-wrap items-center gap-2 rounded-md
+              border border-blue-300 bg-blue-50 p-2 text-sm
+              ${selected.size > 0 ? "visible" : "invisible"}
+            `}
+            aria-hidden={selected.size === 0}
+          >
+            <span className="font-medium text-blue-900">
+              {selected.size}
+              {" "}
+              selected
+            </span>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => setDraft(d => stitchLines(d, selectedIds()))}
+              title="Stitch continuation lines into one text"
+            >
+              Stitch
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => setDraft(d => unstitchLines(d, selectedIds()))}
+              title="Split each selected line into its own stitch"
+            >
+              Unstitch
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => setDraft(d => linkGroups(d, selectedIds()))}
+              title="Link a text block to its translation (they derive as one item)"
+            >
+              Link
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => setDraft(d => unlinkGroups(d, selectedIds()))}
+              title="Unlink the selected items"
+            >
+              Unlink
+            </Button>
+            <select
+              className={inlineClass}
+              value=""
+              onChange={(e) => {
+                if (e.target.value) bulkRole(e.target.value as CleanedLineRole);
+              }}
+              aria-label="Set role for selected lines"
+            >
+              <option value="">Set role…</option>
+              {ROLES.map(r => (
+                <option
+                  key={r.value}
+                  value={r.value}
                 >
-                  Link
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setDraft(d => unlinkLines(d, selectedIds()))}
-                  title="Split each selected line into its own group"
-                >
-                  Unlink
-                </Button>
-                <select
-                  className={inlineClass}
-                  value=""
-                  onChange={(e) => {
-                    if (e.target.value) bulkRole(e.target.value as CleanedLineRole);
-                  }}
-                  aria-label="Set role for selected lines"
-                >
-                  <option value="">Set role…</option>
-                  {ROLES.map(r => (
-                    <option
-                      key={r.value}
-                      value={r.value}
-                    >
-                      {r.label}
-                    </option>
-                  ))}
-                </select>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  onClick={() => bulkKind("vocab")}
-                  title="Make the selected lines' groups vocab"
-                >
-                  → Vocab
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  onClick={() => bulkKind("sentence")}
-                  title="Make the selected lines' groups sentences"
-                >
-                  → Sentence
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="ghost"
-                  onClick={bulkDelete}
-                >
-                  Delete
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="ghost"
-                  onClick={clearSelection}
-                >
-                  Clear
-                </Button>
-              </div>
-            )
-            : null}
+                  {r.label}
+                </option>
+              ))}
+            </select>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => bulkKind("vocab")}
+              title="Make the selected items vocab"
+            >
+              → Vocab
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => bulkKind("sentence")}
+              title="Make the selected items sentences"
+            >
+              → Sentence
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={bulkDelete}
+            >
+              Delete
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={clearSelection}
+            >
+              Clear
+            </Button>
+          </div>
 
           {/* Line editor */}
           <div className="space-y-1.5">
             {draft.lines.map((line, i) => {
-              const opensGroup = firstLineOfGroup.get(line.group) === line.id;
+              const itemKey = linkOf.get(line.group) ?? line.group;
+              const opensItem = firstLineOfItem.get(itemKey) === line.id;
               const dimmed = line.role === "structure" || line.role === "ignore" || ignored.has(line.lang);
-              const groupIdx = groupOrder.indexOf(line.group);
+              const itemIdx = itemOrder.indexOf(itemKey);
+              const isLinked = linkedGroupIds.has(line.group);
               return (
                 <div
                   key={line.id}
                   className={`
                     flex flex-wrap items-center gap-1.5 rounded-md border
                     border-l-4 border-input bg-card p-1.5
-                    ${groupTint.get(line.group) ?? ""}
+                    ${itemTint.get(itemKey) ?? ""}
                     ${selected.has(line.id) ? "ring-2 ring-blue-400" : ""}
                     ${dimmed ? "opacity-50" : ""}
                   `}
@@ -427,7 +462,7 @@ export function CleanedBlocksWorkspace({
                     aria-label="Select line"
                   />
 
-                  {opensGroup
+                  {opensItem
                     ? (
                       <div className="flex shrink-0 items-center gap-0.5">
                         <select
@@ -435,8 +470,8 @@ export function CleanedBlocksWorkspace({
                           value={kindOf.get(line.group) ?? "sentence"}
                           onChange={e =>
                             setDraft(d => setGroupKind(d, line.group, e.target.value as CleanedGroupKind))}
-                          aria-label="Group kind"
-                          title="What this group produces"
+                          aria-label="Item kind"
+                          title="What this item produces"
                         >
                           <option value="sentence">Sentence</option>
                           <option value="vocab">Vocab</option>
@@ -445,9 +480,9 @@ export function CleanedBlocksWorkspace({
                           type="button"
                           size="sm"
                           variant="ghost"
-                          disabled={groupIdx <= 0}
-                          onClick={() => setDraft(d => moveGroup(d, line.group, "up"))}
-                          title="Move group up"
+                          disabled={itemIdx <= 0}
+                          onClick={() => setDraft(d => moveItem(d, line.group, "up"))}
+                          title="Move item up"
                         >
                           ↑
                         </Button>
@@ -455,23 +490,22 @@ export function CleanedBlocksWorkspace({
                           type="button"
                           size="sm"
                           variant="ghost"
-                          disabled={groupIdx === groupOrder.length - 1}
-                          onClick={() => setDraft(d => moveGroup(d, line.group, "down"))}
-                          title="Move group down"
+                          disabled={itemIdx === itemOrder.length - 1}
+                          onClick={() => setDraft(d => moveItem(d, line.group, "down"))}
+                          title="Move item down"
                         >
                           ↓
                         </Button>
-                        {firstLineOfGroup.get(line.group) === line.id
-                          && draft.lines.filter(l => l.group === line.group).length > 1
+                        {isLinked
                           ? (
                             <Button
                               type="button"
                               size="sm"
                               variant="ghost"
-                              onClick={() => ungroup(line.group)}
-                              title="Ungroup"
+                              onClick={() => unlinkItem(line.group)}
+                              title="Unlink this item"
                             >
-                              Ungroup
+                              🔗✕
                             </Button>
                           )
                           : null}
@@ -479,9 +513,16 @@ export function CleanedBlocksWorkspace({
                     )
                     : (
                       <span
-                        className="w-28 shrink-0"
+                        className={`
+                          shrink-0
+                          ${isLinked
+                        ? "w-7 text-center text-xs text-blue-500"
+                        : "w-28"}
+                        `}
                         aria-hidden
-                      />
+                      >
+                        {isLinked ? "🔗" : null}
+                      </span>
                     )}
 
                   <input
