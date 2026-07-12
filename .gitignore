@@ -12,6 +12,7 @@ coverage/
 # Caches
 .cache/
 .eslintcache
+.tanstack/
 
 # Env
 .env
