@@ -14,6 +14,7 @@ import {
   LibraryIcon,
   NotebookPenIcon,
   PencilRulerIcon,
+  PenLineIcon,
   ScrollTextIcon,
   SendIcon,
   SettingsIcon,
@@ -91,6 +92,11 @@ const actionItems = [
     title: "My Sentences",
     to: "/my-sentences",
     icon: PencilRulerIcon,
+  },
+  {
+    title: "My Writing",
+    to: "/my-writing",
+    icon: PenLineIcon,
   },
   {
     title: "Renshuu export",

@@ -15,6 +15,7 @@ import { sentenceRoutes } from "@/routes/sentences";
 import { settingsRoutes } from "@/routes/settings";
 import { sourceRoutes } from "@/routes/sources";
 import { vocabRoutes } from "@/routes/vocab";
+import { writingRoutes } from "@/routes/writings";
 
 /** Build and configure the Fastify application (without starting it). */
 export async function buildApp(): Promise<FastifyInstance> {
@@ -53,6 +54,10 @@ export async function buildApp(): Promise<FastifyInstance> {
         {
           name: "my-sentences",
           description: "Learner-produced sentences awaiting correction",
+        },
+        {
+          name: "writings",
+          description: "Free-form learner writing with inline corrections",
         },
         {
           name: "lessons",
@@ -102,6 +107,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(sentenceRoutes);
   await app.register(practiceSentenceRoutes);
   await app.register(mySentenceRoutes);
+  await app.register(writingRoutes);
   await app.register(sourceRoutes);
   await app.register(vocabRoutes);
   await app.register(captureRoutes);

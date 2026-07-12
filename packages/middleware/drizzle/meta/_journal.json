@@ -134,6 +134,13 @@
       "when": 1783889831645,
       "tag": "0018_magenta_roulette",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1783893376080,
+      "tag": "0019_flashy_wiccan",
+      "breakpoints": true
     }
   ]
 }
