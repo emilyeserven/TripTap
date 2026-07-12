@@ -45,6 +45,8 @@ export const sentences = pgTable("sentences", {
   // Auto-generated furigana segmentation of `text` (ruby readings). Null until generated / for
   // non-Japanese text.
   reading: jsonb("reading").$type<FuriToken[]>(),
+  // Error message from the last failed furigana generation, so the user knows it didn't run.
+  readingError: text("reading_error"),
   language: text("language").notNull(),
   // Legacy free-text origin, kept for rows created before the `sources` taxonomy existed. New
   // sentences should reference `sourceId` instead; `source` remains a fallback label.

@@ -29,6 +29,7 @@ export function toSentence(row: SentenceRow): Sentence {
     text: row.text,
     translation: row.translation,
     reading: row.reading ?? null,
+    readingError: row.readingError ?? null,
     language: row.language,
     source: row.source,
     sourceId: row.sourceId,
@@ -86,11 +87,14 @@ function linkRows(sentenceId: string, vocabIds: string[] | undefined) {
 
 export async function createSentence(input: CreateSentenceInput): Promise<Sentence> {
   // Generate furigana before the transaction so analysis never holds a DB lock open.
-  const reading = await generateFurigana(input.text, await getFuriganaOverrides());
+  const {
+    tokens, error,
+  } = await generateFurigana(input.text, await getFuriganaOverrides());
   return db.transaction(async (tx) => {
     const [row] = await tx.insert(sentences).values({
       ...toInsert(input),
-      reading,
+      reading: tokens,
+      readingError: error,
     }).returning();
     const links = linkRows(row.id, input.vocabIds);
     if (links.length > 0) await tx.insert(sentenceVocab).values(links);
@@ -102,13 +106,14 @@ export async function createSentence(input: CreateSentenceInput): Promise<Senten
 export async function createSentencesMany(inputs: CreateSentenceInput[]): Promise<Sentence[]> {
   if (inputs.length === 0) return [];
   const overrides = await getFuriganaOverrides();
-  const readings = await Promise.all(inputs.map(i => generateFurigana(i.text, overrides)));
+  const results = await Promise.all(inputs.map(i => generateFurigana(i.text, overrides)));
   return db.transaction(async (tx) => {
     const rows = await tx
       .insert(sentences)
       .values(inputs.map((input, i) => ({
         ...toInsert(input),
-        reading: readings[i],
+        reading: results[i].tokens,
+        readingError: results[i].error,
       })))
       .returning();
     const links = rows.flatMap((row, i) => linkRows(row.id, inputs[i].vocabIds));
@@ -125,12 +130,23 @@ export async function updateSentence(id: string, input: UpdateSentenceInput): Pr
   if (vocabIds !== undefined) {
     // Intentionally ignored here — links are set through the dedicated endpoint.
   }
-  // An explicit `reading` (a manual edit) is used as-is; otherwise a text change regenerates it.
-  let patch = columns;
-  if (columns.reading === undefined && typeof columns.text === "string") {
+  // An explicit `reading` (a manual edit) is used as-is and clears any prior error; otherwise a text
+  // change regenerates the reading (and records any new error).
+  let patch: Record<string, unknown> = columns;
+  if (columns.reading !== undefined) {
     patch = {
       ...columns,
-      reading: await generateFurigana(columns.text, await getFuriganaOverrides()),
+      readingError: null,
+    };
+  }
+  else if (typeof columns.text === "string") {
+    const {
+      tokens, error,
+    } = await generateFurigana(columns.text, await getFuriganaOverrides());
+    patch = {
+      ...columns,
+      reading: tokens,
+      readingError: error,
     };
   }
   const [row] = await db.update(sentences).set(patch).where(eq(sentences.id, id)).returning();
@@ -146,18 +162,22 @@ export async function regenerateSentenceFurigana(id: string): Promise<Sentence |
     .from(sentences)
     .where(eq(sentences.id, id));
   if (!existing) return null;
-  const reading = await generateFurigana(existing.text, await getFuriganaOverrides());
+  const {
+    tokens, error,
+  } = await generateFurigana(existing.text, await getFuriganaOverrides());
   const [row] = await db.update(sentences).set({
-    reading,
+    reading: tokens,
+    readingError: error,
   }).where(eq(sentences.id, id)).returning();
   return row ? toSentence(row) : null;
 }
 
 /**
- * Generate furigana for every sentence that lacks it (one-time backfill for rows created before
- * furigana existed). Returns how many rows were updated.
+ * Generate furigana for every sentence that still lacks it (rows created before furigana existed, or
+ * where a prior attempt failed). Returns how many were filled and how many errored.
  */
-export async function backfillFurigana(): Promise<number> {
+export async function backfillFurigana(): Promise<{ updated: number;
+  errors: number; }> {
   const overrides = await getFuriganaOverrides();
   const rows = await db
     .select({
@@ -167,15 +187,29 @@ export async function backfillFurigana(): Promise<number> {
     .from(sentences)
     .where(isNull(sentences.reading));
   let updated = 0;
+  let errors = 0;
   for (const row of rows) {
-    const reading = await generateFurigana(row.text, overrides);
-    if (!reading) continue;
+    const {
+      tokens, error,
+    } = await generateFurigana(row.text, overrides);
+    if (error) {
+      errors += 1;
+      await db.update(sentences).set({
+        readingError: error,
+      }).where(eq(sentences.id, row.id));
+      continue;
+    }
+    if (!tokens) continue;
     await db.update(sentences).set({
-      reading,
+      reading: tokens,
+      readingError: null,
     }).where(eq(sentences.id, row.id));
     updated += 1;
   }
-  return updated;
+  return {
+    updated,
+    errors,
+  };
 }
 
 export async function deleteSentence(id: string): Promise<boolean> {

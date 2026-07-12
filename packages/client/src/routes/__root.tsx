@@ -9,6 +9,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { Toaster } from "@/components/ui/sonner";
 
 export interface RouterContext {
   queryClient: QueryClient;
@@ -31,6 +32,7 @@ function RootComponent() {
           <Outlet />
         </main>
       </SidebarInset>
+      <Toaster />
       {import.meta.env.DEV ? <TanStackRouterDevtools /> : null}
     </SidebarProvider>
   );

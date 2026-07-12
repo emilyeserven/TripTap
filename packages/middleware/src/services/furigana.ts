@@ -112,16 +112,27 @@ export function applyOverrides(tokens: FuriToken[], overrides: Map<string, strin
   return out;
 }
 
+/** Outcome of a furigana generation attempt. `error` is set only when the analyzer threw. */
+export interface FuriganaResult {
+  tokens: FuriToken[] | null;
+  error: string | null;
+}
+
 /**
- * Generate furigana tokens for a sentence, with optional user reading overrides. Returns `null` on
- * empty text or if the analyzer fails (generation is best-effort and must never block saving a
- * sentence). A returned array with no `r` fields simply means "no kanji to annotate".
+ * Generate furigana tokens for a sentence, with optional user reading overrides. Generation is
+ * best-effort and must never block saving a sentence — on failure it returns `error` (so callers can
+ * persist and surface it) rather than throwing. Empty text or no-kanji simply yields `tokens: null`.
  */
 export async function generateFurigana(
   text: string,
   overrides?: Map<string, string>,
-): Promise<FuriToken[] | null> {
-  if (!text.trim()) return null;
+): Promise<FuriganaResult> {
+  if (!text.trim()) {
+    return {
+      tokens: null,
+      error: null,
+    };
+  }
   try {
     const kuroshiro = await getKuroshiro();
     const html = await kuroshiro.convert(text, {
@@ -131,10 +142,17 @@ export async function generateFurigana(
     const tokens = overrides && overrides.size > 0
       ? applyOverrides(parse(html), overrides)
       : parse(html);
-    // If nothing needed a reading, store the tokens anyway so the row counts as "generated".
-    return tokens.length > 0 ? tokens : null;
+    return {
+      // If nothing needed a reading, store the tokens anyway so the row counts as "generated".
+      tokens: tokens.length > 0 ? tokens : null,
+      error: null,
+    };
   }
-  catch {
-    return null;
+  catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    return {
+      tokens: null,
+      error: message.slice(0, 500),
+    };
   }
 }

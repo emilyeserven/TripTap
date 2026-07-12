@@ -3,7 +3,7 @@ import type { Sentence } from "@sentence-bank/types";
 import { useState } from "react";
 
 import { Link } from "@tanstack/react-router";
-import { Camera, ChevronDown, Database, Layers, PenLine, Volume2 } from "lucide-react";
+import { Camera, ChevronDown, Database, Layers, PenLine, TriangleAlert, Volume2 } from "lucide-react";
 
 import { FuriganaEditor } from "./FuriganaEditor";
 import { speak } from "./lesson/speak";
@@ -187,6 +187,19 @@ export function SentenceCard({
                   <PenLine className="size-4" />
                   {editFuri ? "Close furigana" : "Edit furigana"}
                 </Button>
+              )
+              : null}
+            {sentence.readingError
+              ? (
+                <span
+                  className="
+                    inline-flex items-center gap-1 text-xs text-destructive
+                  "
+                  title={sentence.readingError}
+                >
+                  <TriangleAlert className="size-3.5" />
+                  Furigana failed
+                </span>
               )
               : null}
           </div>

@@ -18,6 +18,7 @@ const sentence: Sentence = {
   text: "毎朝コーヒーを飲みます。",
   translation: "I drink coffee every morning.",
   reading: null,
+  readingError: null,
   language: "Japanese",
   source: "Genki I, Lesson 3",
   sourceId: null,
