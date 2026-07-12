@@ -10,6 +10,7 @@ import {
   ImagesIcon,
   LandmarkIcon,
   LanguagesIcon,
+  LayersIcon,
   LibraryIcon,
   ScrollTextIcon,
   SendIcon,
@@ -83,6 +84,11 @@ const actionItems = [
     title: "Renshuu export",
     to: "/renshuu",
     icon: SendIcon,
+  },
+  {
+    title: "Anki export",
+    to: "/anki",
+    icon: LayersIcon,
   },
 ] as const;
 
