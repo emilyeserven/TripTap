@@ -187,6 +187,14 @@ export const capturesApi = {
   /** Sentences and vocab mined from this capture. */
   sentences: (id: string) => request<Sentence[]>(`/captures/${id}/sentences`),
   vocab: (id: string) => request<Vocab[]>(`/captures/${id}/vocab`),
+  /** Persist a manual order for this capture's sentences; returns the reordered list. */
+  reorderSentences: (id: string, sentenceIds: string[]) =>
+    request<Sentence[]>(`/captures/${id}/sentences/order`, {
+      method: "PUT",
+      body: JSON.stringify({
+        sentenceIds,
+      }),
+    }),
   /** Absolute path to a capture's stored image (or `null` when it has none). */
   imageUrl: (id: string) => `${BASE}/captures/${id}/image`,
   // Multipart upload: the OCR result + metadata as a JSON `payload` field, the image as `file`.

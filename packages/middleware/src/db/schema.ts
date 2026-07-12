@@ -62,6 +62,9 @@ export const sentences = pgTable("sentences", {
   captureId: uuid("capture_id").references((): AnyPgColumn => captures.id, {
     onDelete: "set null",
   }),
+  // Manual ordering within a capture's created items. Null until the user reorders; rows then sort by
+  // this ascending (nulls last, i.e. never-ordered/new sentences trail) with createdAt as tiebreaker.
+  sortOrder: integer("sort_order"),
   createdAt: timestamp("created_at", {
     withTimezone: true,
   }).notNull().defaultNow(),

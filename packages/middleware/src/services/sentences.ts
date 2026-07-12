@@ -1,4 +1,4 @@
-import { asc, desc, eq, isNull } from "drizzle-orm";
+import { and, asc, desc, eq, isNull } from "drizzle-orm";
 import type { CreateSentenceInput, Sentence, UpdateSentenceInput } from "@sentence-bank/types";
 import { db } from "@/db";
 import { sentences, sentenceVocab, type SentenceRow, vocab } from "@/db/schema";
@@ -67,14 +67,41 @@ export async function getSentence(id: string): Promise<Sentence | null> {
   return row ? toSentence(row) : null;
 }
 
-/** Sentences mined from a given capture, oldest first. */
+/**
+ * Sentences mined from a given capture, in the user's manual order. Rows with an explicit
+ * `sortOrder` sort ascending; never-reordered/new rows (null `sortOrder`) trail (Postgres sorts
+ * NULLS LAST by default), each group broken by `createdAt` ascending.
+ */
 export async function listSentencesByCapture(captureId: string): Promise<Sentence[]> {
   const rows = await db
     .select()
     .from(sentences)
     .where(eq(sentences.captureId, captureId))
-    .orderBy(asc(sentences.createdAt));
+    .orderBy(asc(sentences.sortOrder), asc(sentences.createdAt));
   return rows.map(toSentence);
+}
+
+/**
+ * Persist a manual ordering of a capture's sentences. `orderedIds` is the full set of the capture's
+ * sentence ids in the desired order; each is assigned `sortOrder` = its index (scoped by
+ * `captureId`, so ids from another capture are silently ignored). Returns the reordered list.
+ */
+export async function reorderCaptureSentences(
+  captureId: string,
+  orderedIds: string[],
+): Promise<Sentence[]> {
+  await db.transaction(async (tx) => {
+    await Promise.all(
+      orderedIds.map((id, index) =>
+        tx
+          .update(sentences)
+          .set({
+            sortOrder: index,
+          })
+          .where(and(eq(sentences.id, id), eq(sentences.captureId, captureId)))),
+    );
+  });
+  return listSentencesByCapture(captureId);
 }
 
 /** Link rows for a sentence's vocab ids, deduped and ignoring empties. */

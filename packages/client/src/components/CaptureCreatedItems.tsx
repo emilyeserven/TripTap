@@ -1,6 +1,25 @@
+import type { DragEndEvent } from "@dnd-kit/core";
 import type { Sentence, Vocab } from "@sentence-bank/types";
 
 import { useState } from "react";
+
+import {
+  closestCenter,
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { GripVertical } from "lucide-react";
 
 import { FuriganaScope } from "@/components/lesson/FuriganaScope";
 import { FuriganaToggle } from "@/components/lesson/FuriganaToggle";
@@ -14,10 +33,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useCaptureSentences, useCaptureVocab } from "@/hooks/useCaptures";
+import { useCaptureSentences, useCaptureVocab, useReorderCaptureSentences } from "@/hooks/useCaptures";
 import { useDeleteSentence, useUpdateSentence } from "@/hooks/useSentences";
 import { useSources } from "@/hooks/useSources";
 import { useDeleteVocab, useUpdateVocab } from "@/hooks/useVocab";
+import { cn } from "@/lib/utils";
 import { vocabToCardItem } from "@/lib/vocab-card";
 
 const fieldClass
@@ -137,17 +157,35 @@ export function CaptureCreatedItems({
             <>
               {sentenceItems.length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-sm font-medium text-slate-700">
-                    Sentences (
-                    {sentenceItems.length}
+                  <div
+                    className="
+                      flex flex-wrap items-baseline justify-between gap-x-2
+                    "
+                  >
+                    <p className="text-sm font-medium text-slate-700">
+                      Sentences (
+                      {sentenceItems.length}
+                      )
+                    </p>
+                    {sentenceItems.length > 1 && (
+                      <p className="text-xs text-muted-foreground">Drag the handle to reorder.</p>
+                    )}
+                  </div>
+                  {sentenceItems.length > 1
+                    ? (
+                      <SortableSentences
+                        captureId={captureId}
+                        sentences={sentenceItems}
+                      />
                     )
-                  </p>
-                  {sentenceItems.map(s => (
-                    <SentenceRow
-                      key={s.id}
-                      sentence={s}
-                    />
-                  ))}
+                    : (
+                      sentenceItems.map(s => (
+                        <SentenceRow
+                          key={s.id}
+                          sentence={s}
+                        />
+                      ))
+                    )}
                 </div>
               )}
 
@@ -170,6 +208,103 @@ export function CaptureCreatedItems({
           )}
       </CardContent>
     </Card>
+  );
+}
+
+/** Drag-and-drop wrapper around the edit-mode sentence rows; persists the new order on drop. */
+function SortableSentences({
+  captureId,
+  sentences,
+}: { captureId: string;
+  sentences: Sentence[]; }) {
+  const reorder = useReorderCaptureSentences(captureId);
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 4,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
+  const ids = sentences.map(s => s.id);
+
+  function onDragEnd(event: DragEndEvent) {
+    const {
+      active, over,
+    } = event;
+    if (!over || active.id === over.id) return;
+    const oldIndex = ids.indexOf(String(active.id));
+    const newIndex = ids.indexOf(String(over.id));
+    if (oldIndex === -1 || newIndex === -1) return;
+    reorder.mutate(arrayMove(ids, oldIndex, newIndex));
+  }
+
+  return (
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragEnd={onDragEnd}
+    >
+      <SortableContext
+        items={ids}
+        strategy={verticalListSortingStrategy}
+      >
+        <div className="space-y-2">
+          {sentences.map(s => (
+            <SortableSentenceRow
+              key={s.id}
+              sentence={s}
+            />
+          ))}
+        </div>
+      </SortableContext>
+    </DndContext>
+  );
+}
+
+/** One draggable sentence: a grip handle beside the in-place editor. */
+function SortableSentenceRow({
+  sentence,
+}: { sentence: Sentence }) {
+  const {
+    attributes, listeners, setNodeRef, transform, transition, isDragging,
+  } = useSortable({
+    id: sentence.id,
+  });
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+      }}
+      className={cn("flex items-stretch gap-2", isDragging && `
+        relative z-10 opacity-70
+      `)}
+    >
+      <button
+        type="button"
+        className="
+          flex shrink-0 cursor-grab touch-none items-center rounded-md px-1
+          text-muted-foreground
+          hover:text-foreground
+          focus:outline-none
+          focus-visible:ring-2 focus-visible:ring-ring
+          active:cursor-grabbing
+        "
+        aria-label="Drag to reorder sentence"
+        {...attributes}
+        {...listeners}
+      >
+        <GripVertical className="size-4" />
+      </button>
+      <div className="min-w-0 flex-1">
+        <SentenceRow sentence={sentence} />
+      </div>
+    </div>
   );
 }
 
