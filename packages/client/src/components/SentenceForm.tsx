@@ -1,9 +1,12 @@
+import type { SentenceTermRef } from "@sentence-bank/types";
+
 import { useState } from "react";
 
 import { useForm } from "@tanstack/react-form";
 import { z } from "zod";
 
 import { SourcePicker } from "./SourcePicker";
+import { TermPicker } from "./TermPicker";
 import { VocabLinkPicker } from "./VocabLinkPicker";
 import { useCreateSentence } from "../hooks/useSentences";
 
@@ -42,6 +45,7 @@ export function SentenceForm({
   const createSentence = useCreateSentence();
   const [sourceId, setSourceId] = useState<string | null>(initialValues?.sourceId ?? null);
   const [vocabIds, setVocabIds] = useState<string[]>([]);
+  const [terms, setTerms] = useState<SentenceTermRef[]>([]);
 
   const form = useForm({
     defaultValues: {
@@ -65,12 +69,14 @@ export function SentenceForm({
         sourceId,
         page: value.page || null,
         tags: value.tags || null,
+        terms: terms.length > 0 ? terms : null,
         notes: value.notes || null,
         vocabIds,
       });
       form.reset();
       setSourceId(null);
       setVocabIds([]);
+      setTerms([]);
       onSuccess?.();
     },
   });
@@ -151,6 +157,13 @@ export function SentenceForm({
           />
         )}
       </form.Field>
+
+      <div className="sm:col-span-2">
+        <TermPicker
+          value={terms}
+          onChange={setTerms}
+        />
+      </div>
 
       <div className="sm:col-span-2">
         <VocabLinkPicker

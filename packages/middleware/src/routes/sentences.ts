@@ -55,6 +55,32 @@ const createSentenceBody = {
     tags: {
       type: ["string", "null"],
     },
+    terms: {
+      type: ["array", "null"],
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["id", "name", "kind", "sourceId", "sourceLabel"],
+        properties: {
+          id: {
+            type: "string",
+          },
+          name: {
+            type: "string",
+          },
+          kind: {
+            type: "string",
+            enum: ["tag", "taxonomy"],
+          },
+          sourceId: {
+            type: "string",
+          },
+          sourceLabel: {
+            type: "string",
+          },
+        },
+      },
+    },
     captureId: {
       type: ["string", "null"],
       format: "uuid",

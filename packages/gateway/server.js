@@ -3,7 +3,7 @@
 // A single Fastify entrypoint that:
 //   1. applies versioned database migrations on boot (fails hard if they don't apply),
 //   2. spawns the middleware API as a child process and respawns it with backoff,
-//   3. proxies `/api/*` to the middleware,
+//   3. proxies `/api/*` and `/docs/*` (OpenAPI UI + spec) to the middleware,
 //   4. serves the client's static build (with SPA fallback),
 //   5. exposes `/healthz` for orchestrators.
 //
@@ -123,6 +123,14 @@ async function startGateway() {
     rewritePrefix: "/api",
   });
 
+  // Expose the middleware's Swagger UI + OpenAPI spec (served at /docs, /docs/json) in production so
+  // other apps can discover and call this API. Registered as a separate prefix since it isn't /api.
+  await app.register(fastifyHttpProxy, {
+    upstream: MIDDLEWARE_URL,
+    prefix: "/docs",
+    rewritePrefix: "/docs",
+  });
+
   app.get("/healthz", async () => ({
     status: "ok",
   }));
@@ -132,9 +140,10 @@ async function startGateway() {
       root: clientDist,
       wildcard: false,
     });
-    // SPA fallback: serve index.html for client-side routes.
+    // SPA fallback: serve index.html for client-side routes. `/api` and `/docs` are proxied above and
+    // must never fall through to the SPA shell.
     app.setNotFoundHandler((req, reply) => {
-      if (req.method === "GET" && !req.url.startsWith("/api")) {
+      if (req.method === "GET" && !req.url.startsWith("/api") && !req.url.startsWith("/docs")) {
         return reply.sendFile("index.html");
       }
       return reply.code(404).send({

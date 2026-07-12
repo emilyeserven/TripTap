@@ -36,6 +36,7 @@ export function toSentence(row: SentenceRow): Sentence {
     page: row.page,
     notes: row.notes,
     tags: row.tags,
+    terms: row.terms ?? null,
     captureId: row.captureId,
     createdAt:
       row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
@@ -53,6 +54,7 @@ function toInsert(input: CreateSentenceInput) {
     page: input.page ?? null,
     notes: input.notes ?? null,
     tags: input.tags ?? null,
+    terms: input.terms ?? null,
     captureId: input.captureId ?? null,
   };
 }

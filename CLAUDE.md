@@ -93,6 +93,7 @@ Deploy via Coolify using only `DATABASE_URL` (see `README.md`).
 | `OCR_SPACE_API_KEY` | middleware | OCR.space cloud backend key (free tier). Overridden by the Settings-page value stored in the DB. Optional: `OCR_SPACE_ENGINE`, `OCR_SPACE_LANGUAGE`, `OCR_SPACE_URL`. |
 | `GOOGLE_VISION_API_KEY` | middleware | Google Cloud Vision backend API key. Overridden by the Settings-page value stored in the DB. Optional: `GOOGLE_VISION_URL`. |
 | `OCR_PROVIDERS` | middleware | Comma-separated OCR backend order/selection (`self-hosted`, `ocr-space`, `google-vision`). Unset → all configured backends, self-hosted first. |
+| `BOOKMARKS_API_URL` | middleware | Base URL of the external bookmarks tag/taxonomy API borrowed to tag sentences. Overridden by the Settings-page value stored in the DB; unset falls back to a built-in default. Must be reachable from the middleware (e.g. same Tailnet). |
 
 The Capture feature tries the configured OCR backends in order with automatic fallback; `/api/ocr`
 returns 503 only when **none** are configured. The pluggable seam is `runOcr()` in
