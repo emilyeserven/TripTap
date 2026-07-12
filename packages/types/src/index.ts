@@ -5,9 +5,11 @@
  * (`@sentence-bank/client`) so the wire contract stays in one place.
  */
 
+export * from "./answer-sheet.js";
 export * from "./lesson.js";
 export * from "./my-sentence.js";
 export * from "./practice-sentence.js";
+export * from "./question-sheet.js";
 export * from "./writing.js";
 
 /** A reusable origin for sentences (a book, show, article, …) — the "source taxonomy". */
