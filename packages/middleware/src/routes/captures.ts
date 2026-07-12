@@ -10,7 +10,7 @@ import {
   updateCapture,
   type UpdateCaptureInput,
 } from "@/services/captures";
-import { listSentencesByCapture } from "@/services/sentences";
+import { listSentencesByCapture, reorderCaptureSentences } from "@/services/sentences";
 import { listVocabByCapture } from "@/services/vocab";
 
 const captureParams = {
@@ -89,6 +89,38 @@ export async function captureRoutes(app: FastifyInstance): Promise<void> {
       id,
     } = req.params as { id: string };
     return listSentencesByCapture(id);
+  });
+
+  app.put("/api/captures/:id/sentences/order", {
+    schema: {
+      tags: ["captures"],
+      params: captureParams,
+      body: {
+        type: "object",
+        additionalProperties: false,
+        required: ["sentenceIds"],
+        properties: {
+          sentenceIds: {
+            type: "array",
+            items: {
+              type: "string",
+              format: "uuid",
+            },
+          },
+        },
+      },
+    },
+  }, async (req, reply) => {
+    const {
+      id,
+    } = req.params as { id: string };
+    if (!(await getCapture(id))) return reply.code(404).send({
+      message: "Capture not found",
+    });
+    const {
+      sentenceIds,
+    } = req.body as { sentenceIds: string[] };
+    return reorderCaptureSentences(id, sentenceIds);
   });
 
   app.get("/api/captures/:id/vocab", {
