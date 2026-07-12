@@ -62,6 +62,31 @@ export function useBookmarksGeneralVocabulary() {
   return useBookmarksVocabulary("general");
 }
 
+/** The Listening channel's vocabulary (the child tags used to filter listening bookmarks). */
+export function useBookmarksListeningVocabulary() {
+  return useBookmarksVocabulary("listening");
+}
+
+/** Bookmarks tagged with the given tag id. Deferred until a tag id is provided. */
+export function useBookmarkRecords(tagId: string | null) {
+  return useQuery({
+    queryKey: [...BOOKMARKS_KEY, "records", tagId],
+    queryFn: () => bookmarksApi.records(tagId as string),
+    enabled: Boolean(tagId),
+    retry: false,
+  });
+}
+
+/** A single bookmark (with its timestamp sections). Deferred until an id is provided. */
+export function useBookmarkRecord(id: string | null) {
+  return useQuery({
+    queryKey: [...BOOKMARKS_KEY, "record", id],
+    queryFn: () => bookmarksApi.record(id as string),
+    enabled: Boolean(id),
+    retry: false,
+  });
+}
+
 /**
  * Create a new term in the bookmarks app under one channel's configured source. On success every
  * bookmarks query is invalidated so the new term appears in the relevant vocabulary picker.

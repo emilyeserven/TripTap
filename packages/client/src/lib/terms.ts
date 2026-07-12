@@ -19,6 +19,10 @@ export const TERM_CATEGORIES: { category: SentenceTermCategory;
     category: "resource",
     label: "Textbooks & Worksheets",
   },
+  {
+    category: "listening",
+    label: "Listening",
+  },
 ];
 
 /** A term's channel, defaulting rows created before channels existed to "vocabulary". */
@@ -35,6 +39,7 @@ export function groupTermsByCategory(
     grammar: [],
     general: [],
     resource: [],
+    listening: [],
   };
   for (const term of terms) groups[termCategory(term)].push(term);
   return groups;

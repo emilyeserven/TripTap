@@ -6,6 +6,7 @@ import {
   CameraIcon,
   DatabaseIcon,
   GraduationCapIcon,
+  HeadphonesIcon,
   HomeIcon,
   ImagesIcon,
   LandmarkIcon,
@@ -15,6 +16,7 @@ import {
   NotebookPenIcon,
   PencilRulerIcon,
   PenLineIcon,
+  Repeat2Icon,
   ScrollTextIcon,
   SendIcon,
   SettingsIcon,
@@ -97,6 +99,16 @@ const actionItems = [
     title: "My Writing",
     to: "/my-writing",
     icon: PenLineIcon,
+  },
+  {
+    title: "Listen and Shadow",
+    to: "/listen-shadow",
+    icon: HeadphonesIcon,
+  },
+  {
+    title: "Shadowing Practice",
+    to: "/shadowing",
+    icon: Repeat2Icon,
   },
   {
     title: "Renshuu export",
