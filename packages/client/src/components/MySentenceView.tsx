@@ -7,84 +7,22 @@ import { CorrectionDiff } from "../lib/sentenceDiff";
 import { groupTermsByCategory, TERM_CATEGORIES } from "../lib/terms";
 
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 
-/**
- * One learner-produced sentence in the list — a compact, read-only summary that links to its own view
- * and edit pages. When a correction exists it's previewed as a word/char diff against the written
- * sentence.
- */
-export function MySentenceCard({
+/** Read-only detail of one My Sentence: the written text, a diff against its correction, the
+ * intended/actual meaning, an explanation, and its tags. */
+export function MySentenceView({
   mySentence: ms,
-  onDelete,
 }: {
   mySentence: MySentence;
-  onDelete?: (id: string) => void;
 }) {
   const termGroups = groupTermsByCategory(ms.terms ?? []);
 
   return (
     <Card>
-      <CardContent className="space-y-3 p-4">
-        <div className="flex items-start justify-between gap-2">
-          <Link
-            to="/my-sentences/$id"
-            params={{
-              id: ms.id,
-            }}
-            className="
-              text-lg font-semibold
-              hover:underline
-            "
-          >
-            {ms.text}
-          </Link>
-          <div className="flex shrink-0 items-center gap-2">
-            <Button
-              asChild
-              variant="ghost"
-              size="sm"
-            >
-              <Link
-                to="/my-sentences/$id/edit"
-                params={{
-                  id: ms.id,
-                }}
-              >
-                Edit
-              </Link>
-            </Button>
-            {onDelete
-              ? (
-                <button
-                  type="button"
-                  onClick={() => onDelete(ms.id)}
-                  className="
-                    text-sm text-destructive
-                    hover:underline
-                  "
-                >
-                  Delete
-                </button>
-              )
-              : null}
-          </div>
-        </div>
-
-        {ms.correction
-          ? (
-            <div className="rounded-md border bg-muted/30 p-2">
-              <CorrectionDiff
-                written={ms.text}
-                correct={ms.correction}
-                language={ms.language}
-              />
-            </div>
-          )
-          : null}
-
-        {ms.translation ? <p className="text-sm text-muted-foreground">Meant: {ms.translation}</p> : null}
+      <CardContent className="space-y-4 p-4">
+        <p className="text-xl font-semibold">{ms.text}</p>
 
         <div
           className="
@@ -143,6 +81,55 @@ export function MySentenceCard({
               </span>
             );
           })}
+        </div>
+
+        {ms.correction
+          ? (
+            <div className="space-y-1">
+              <Label className="text-sm">Correction</Label>
+              <div className="space-y-1 rounded-md border bg-muted/30 p-3">
+                <CorrectionDiff
+                  written={ms.text}
+                  correct={ms.correction}
+                  language={ms.language}
+                />
+                <p className="text-base">{ms.correction}</p>
+              </div>
+            </div>
+          )
+          : null}
+
+        {ms.explanation
+          ? (
+            <div className="space-y-1">
+              <Label className="text-sm">Explanation</Label>
+              <p className="text-sm">{ms.explanation}</p>
+            </div>
+          )
+          : null}
+
+        <div
+          className="
+            grid gap-4
+            sm:grid-cols-2
+          "
+        >
+          {ms.translation
+            ? (
+              <div className="space-y-1">
+                <Label className="text-sm">Intended meaning</Label>
+                <p className="text-sm text-muted-foreground">{ms.translation}</p>
+              </div>
+            )
+            : null}
+          {ms.actualMeaning
+            ? (
+              <div className="space-y-1">
+                <Label className="text-sm">What it actually says</Label>
+                <p className="text-sm text-muted-foreground">{ms.actualMeaning}</p>
+              </div>
+            )
+            : null}
         </div>
       </CardContent>
     </Card>

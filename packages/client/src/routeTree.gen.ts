@@ -14,7 +14,6 @@ import { Route as VocabRouteImport } from './routes/vocab'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SentencesRouteImport } from './routes/sentences'
 import { Route as RenshuuRouteImport } from './routes/renshuu'
-import { Route as MySentencesRouteImport } from './routes/my-sentences'
 import { Route as GrammarRouteImport } from './routes/grammar'
 import { Route as CultureRouteImport } from './routes/culture'
 import { Route as CaptureRouteImport } from './routes/capture'
@@ -22,16 +21,21 @@ import { Route as AnkiRouteImport } from './routes/anki'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SourcesIndexRouteImport } from './routes/sources.index'
 import { Route as PracticeIndexRouteImport } from './routes/practice.index'
+import { Route as MySentencesIndexRouteImport } from './routes/my-sentences.index'
 import { Route as LessonsIndexRouteImport } from './routes/lessons.index'
 import { Route as CapturesIndexRouteImport } from './routes/captures.index'
 import { Route as SourcesIdRouteImport } from './routes/sources.$id'
 import { Route as PracticeNewRouteImport } from './routes/practice.new'
 import { Route as PracticeIdRouteImport } from './routes/practice.$id'
+import { Route as MySentencesNewRouteImport } from './routes/my-sentences.new'
+import { Route as MySentencesIdRouteImport } from './routes/my-sentences.$id'
 import { Route as LessonsNewRouteImport } from './routes/lessons.new'
 import { Route as LessonsSlugRouteImport } from './routes/lessons.$slug'
 import { Route as CapturesIdRouteImport } from './routes/captures.$id'
 import { Route as PracticeIdIndexRouteImport } from './routes/practice.$id.index'
+import { Route as MySentencesIdIndexRouteImport } from './routes/my-sentences.$id.index'
 import { Route as PracticeIdEditRouteImport } from './routes/practice.$id.edit'
+import { Route as MySentencesIdEditRouteImport } from './routes/my-sentences.$id.edit'
 
 const VocabularyRoute = VocabularyRouteImport.update({
   id: '/vocabulary',
@@ -56,11 +60,6 @@ const SentencesRoute = SentencesRouteImport.update({
 const RenshuuRoute = RenshuuRouteImport.update({
   id: '/renshuu',
   path: '/renshuu',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MySentencesRoute = MySentencesRouteImport.update({
-  id: '/my-sentences',
-  path: '/my-sentences',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GrammarRoute = GrammarRouteImport.update({
@@ -98,6 +97,11 @@ const PracticeIndexRoute = PracticeIndexRouteImport.update({
   path: '/practice/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MySentencesIndexRoute = MySentencesIndexRouteImport.update({
+  id: '/my-sentences/',
+  path: '/my-sentences/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LessonsIndexRoute = LessonsIndexRouteImport.update({
   id: '/lessons/',
   path: '/lessons/',
@@ -123,6 +127,16 @@ const PracticeIdRoute = PracticeIdRouteImport.update({
   path: '/practice/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MySentencesNewRoute = MySentencesNewRouteImport.update({
+  id: '/my-sentences/new',
+  path: '/my-sentences/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MySentencesIdRoute = MySentencesIdRouteImport.update({
+  id: '/my-sentences/$id',
+  path: '/my-sentences/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LessonsNewRoute = LessonsNewRouteImport.update({
   id: '/lessons/new',
   path: '/lessons/new',
@@ -143,10 +157,20 @@ const PracticeIdIndexRoute = PracticeIdIndexRouteImport.update({
   path: '/',
   getParentRoute: () => PracticeIdRoute,
 } as any)
+const MySentencesIdIndexRoute = MySentencesIdIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => MySentencesIdRoute,
+} as any)
 const PracticeIdEditRoute = PracticeIdEditRouteImport.update({
   id: '/edit',
   path: '/edit',
   getParentRoute: () => PracticeIdRoute,
+} as any)
+const MySentencesIdEditRoute = MySentencesIdEditRouteImport.update({
+  id: '/edit',
+  path: '/edit',
+  getParentRoute: () => MySentencesIdRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -155,7 +179,6 @@ export interface FileRoutesByFullPath {
   '/capture': typeof CaptureRoute
   '/culture': typeof CultureRoute
   '/grammar': typeof GrammarRoute
-  '/my-sentences': typeof MySentencesRoute
   '/renshuu': typeof RenshuuRoute
   '/sentences': typeof SentencesRoute
   '/settings': typeof SettingsRoute
@@ -164,14 +187,19 @@ export interface FileRoutesByFullPath {
   '/captures/$id': typeof CapturesIdRoute
   '/lessons/$slug': typeof LessonsSlugRoute
   '/lessons/new': typeof LessonsNewRoute
+  '/my-sentences/$id': typeof MySentencesIdRouteWithChildren
+  '/my-sentences/new': typeof MySentencesNewRoute
   '/practice/$id': typeof PracticeIdRouteWithChildren
   '/practice/new': typeof PracticeNewRoute
   '/sources/$id': typeof SourcesIdRoute
   '/captures/': typeof CapturesIndexRoute
   '/lessons/': typeof LessonsIndexRoute
+  '/my-sentences/': typeof MySentencesIndexRoute
   '/practice/': typeof PracticeIndexRoute
   '/sources/': typeof SourcesIndexRoute
+  '/my-sentences/$id/edit': typeof MySentencesIdEditRoute
   '/practice/$id/edit': typeof PracticeIdEditRoute
+  '/my-sentences/$id/': typeof MySentencesIdIndexRoute
   '/practice/$id/': typeof PracticeIdIndexRoute
 }
 export interface FileRoutesByTo {
@@ -180,7 +208,6 @@ export interface FileRoutesByTo {
   '/capture': typeof CaptureRoute
   '/culture': typeof CultureRoute
   '/grammar': typeof GrammarRoute
-  '/my-sentences': typeof MySentencesRoute
   '/renshuu': typeof RenshuuRoute
   '/sentences': typeof SentencesRoute
   '/settings': typeof SettingsRoute
@@ -189,13 +216,17 @@ export interface FileRoutesByTo {
   '/captures/$id': typeof CapturesIdRoute
   '/lessons/$slug': typeof LessonsSlugRoute
   '/lessons/new': typeof LessonsNewRoute
+  '/my-sentences/new': typeof MySentencesNewRoute
   '/practice/new': typeof PracticeNewRoute
   '/sources/$id': typeof SourcesIdRoute
   '/captures': typeof CapturesIndexRoute
   '/lessons': typeof LessonsIndexRoute
+  '/my-sentences': typeof MySentencesIndexRoute
   '/practice': typeof PracticeIndexRoute
   '/sources': typeof SourcesIndexRoute
+  '/my-sentences/$id/edit': typeof MySentencesIdEditRoute
   '/practice/$id/edit': typeof PracticeIdEditRoute
+  '/my-sentences/$id': typeof MySentencesIdIndexRoute
   '/practice/$id': typeof PracticeIdIndexRoute
 }
 export interface FileRoutesById {
@@ -205,7 +236,6 @@ export interface FileRoutesById {
   '/capture': typeof CaptureRoute
   '/culture': typeof CultureRoute
   '/grammar': typeof GrammarRoute
-  '/my-sentences': typeof MySentencesRoute
   '/renshuu': typeof RenshuuRoute
   '/sentences': typeof SentencesRoute
   '/settings': typeof SettingsRoute
@@ -214,14 +244,19 @@ export interface FileRoutesById {
   '/captures/$id': typeof CapturesIdRoute
   '/lessons/$slug': typeof LessonsSlugRoute
   '/lessons/new': typeof LessonsNewRoute
+  '/my-sentences/$id': typeof MySentencesIdRouteWithChildren
+  '/my-sentences/new': typeof MySentencesNewRoute
   '/practice/$id': typeof PracticeIdRouteWithChildren
   '/practice/new': typeof PracticeNewRoute
   '/sources/$id': typeof SourcesIdRoute
   '/captures/': typeof CapturesIndexRoute
   '/lessons/': typeof LessonsIndexRoute
+  '/my-sentences/': typeof MySentencesIndexRoute
   '/practice/': typeof PracticeIndexRoute
   '/sources/': typeof SourcesIndexRoute
+  '/my-sentences/$id/edit': typeof MySentencesIdEditRoute
   '/practice/$id/edit': typeof PracticeIdEditRoute
+  '/my-sentences/$id/': typeof MySentencesIdIndexRoute
   '/practice/$id/': typeof PracticeIdIndexRoute
 }
 export interface FileRouteTypes {
@@ -232,7 +267,6 @@ export interface FileRouteTypes {
     | '/capture'
     | '/culture'
     | '/grammar'
-    | '/my-sentences'
     | '/renshuu'
     | '/sentences'
     | '/settings'
@@ -241,14 +275,19 @@ export interface FileRouteTypes {
     | '/captures/$id'
     | '/lessons/$slug'
     | '/lessons/new'
+    | '/my-sentences/$id'
+    | '/my-sentences/new'
     | '/practice/$id'
     | '/practice/new'
     | '/sources/$id'
     | '/captures/'
     | '/lessons/'
+    | '/my-sentences/'
     | '/practice/'
     | '/sources/'
+    | '/my-sentences/$id/edit'
     | '/practice/$id/edit'
+    | '/my-sentences/$id/'
     | '/practice/$id/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -257,7 +296,6 @@ export interface FileRouteTypes {
     | '/capture'
     | '/culture'
     | '/grammar'
-    | '/my-sentences'
     | '/renshuu'
     | '/sentences'
     | '/settings'
@@ -266,13 +304,17 @@ export interface FileRouteTypes {
     | '/captures/$id'
     | '/lessons/$slug'
     | '/lessons/new'
+    | '/my-sentences/new'
     | '/practice/new'
     | '/sources/$id'
     | '/captures'
     | '/lessons'
+    | '/my-sentences'
     | '/practice'
     | '/sources'
+    | '/my-sentences/$id/edit'
     | '/practice/$id/edit'
+    | '/my-sentences/$id'
     | '/practice/$id'
   id:
     | '__root__'
@@ -281,7 +323,6 @@ export interface FileRouteTypes {
     | '/capture'
     | '/culture'
     | '/grammar'
-    | '/my-sentences'
     | '/renshuu'
     | '/sentences'
     | '/settings'
@@ -290,14 +331,19 @@ export interface FileRouteTypes {
     | '/captures/$id'
     | '/lessons/$slug'
     | '/lessons/new'
+    | '/my-sentences/$id'
+    | '/my-sentences/new'
     | '/practice/$id'
     | '/practice/new'
     | '/sources/$id'
     | '/captures/'
     | '/lessons/'
+    | '/my-sentences/'
     | '/practice/'
     | '/sources/'
+    | '/my-sentences/$id/edit'
     | '/practice/$id/edit'
+    | '/my-sentences/$id/'
     | '/practice/$id/'
   fileRoutesById: FileRoutesById
 }
@@ -307,7 +353,6 @@ export interface RootRouteChildren {
   CaptureRoute: typeof CaptureRoute
   CultureRoute: typeof CultureRoute
   GrammarRoute: typeof GrammarRoute
-  MySentencesRoute: typeof MySentencesRoute
   RenshuuRoute: typeof RenshuuRoute
   SentencesRoute: typeof SentencesRoute
   SettingsRoute: typeof SettingsRoute
@@ -316,11 +361,14 @@ export interface RootRouteChildren {
   CapturesIdRoute: typeof CapturesIdRoute
   LessonsSlugRoute: typeof LessonsSlugRoute
   LessonsNewRoute: typeof LessonsNewRoute
+  MySentencesIdRoute: typeof MySentencesIdRouteWithChildren
+  MySentencesNewRoute: typeof MySentencesNewRoute
   PracticeIdRoute: typeof PracticeIdRouteWithChildren
   PracticeNewRoute: typeof PracticeNewRoute
   SourcesIdRoute: typeof SourcesIdRoute
   CapturesIndexRoute: typeof CapturesIndexRoute
   LessonsIndexRoute: typeof LessonsIndexRoute
+  MySentencesIndexRoute: typeof MySentencesIndexRoute
   PracticeIndexRoute: typeof PracticeIndexRoute
   SourcesIndexRoute: typeof SourcesIndexRoute
 }
@@ -360,13 +408,6 @@ declare module '@tanstack/react-router' {
       path: '/renshuu'
       fullPath: '/renshuu'
       preLoaderRoute: typeof RenshuuRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/my-sentences': {
-      id: '/my-sentences'
-      path: '/my-sentences'
-      fullPath: '/my-sentences'
-      preLoaderRoute: typeof MySentencesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/grammar': {
@@ -418,6 +459,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PracticeIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/my-sentences/': {
+      id: '/my-sentences/'
+      path: '/my-sentences'
+      fullPath: '/my-sentences/'
+      preLoaderRoute: typeof MySentencesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/lessons/': {
       id: '/lessons/'
       path: '/lessons'
@@ -453,6 +501,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PracticeIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/my-sentences/new': {
+      id: '/my-sentences/new'
+      path: '/my-sentences/new'
+      fullPath: '/my-sentences/new'
+      preLoaderRoute: typeof MySentencesNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/my-sentences/$id': {
+      id: '/my-sentences/$id'
+      path: '/my-sentences/$id'
+      fullPath: '/my-sentences/$id'
+      preLoaderRoute: typeof MySentencesIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/lessons/new': {
       id: '/lessons/new'
       path: '/lessons/new'
@@ -481,6 +543,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PracticeIdIndexRouteImport
       parentRoute: typeof PracticeIdRoute
     }
+    '/my-sentences/$id/': {
+      id: '/my-sentences/$id/'
+      path: '/'
+      fullPath: '/my-sentences/$id/'
+      preLoaderRoute: typeof MySentencesIdIndexRouteImport
+      parentRoute: typeof MySentencesIdRoute
+    }
     '/practice/$id/edit': {
       id: '/practice/$id/edit'
       path: '/edit'
@@ -488,8 +557,29 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PracticeIdEditRouteImport
       parentRoute: typeof PracticeIdRoute
     }
+    '/my-sentences/$id/edit': {
+      id: '/my-sentences/$id/edit'
+      path: '/edit'
+      fullPath: '/my-sentences/$id/edit'
+      preLoaderRoute: typeof MySentencesIdEditRouteImport
+      parentRoute: typeof MySentencesIdRoute
+    }
   }
 }
+
+interface MySentencesIdRouteChildren {
+  MySentencesIdEditRoute: typeof MySentencesIdEditRoute
+  MySentencesIdIndexRoute: typeof MySentencesIdIndexRoute
+}
+
+const MySentencesIdRouteChildren: MySentencesIdRouteChildren = {
+  MySentencesIdEditRoute: MySentencesIdEditRoute,
+  MySentencesIdIndexRoute: MySentencesIdIndexRoute,
+}
+
+const MySentencesIdRouteWithChildren = MySentencesIdRoute._addFileChildren(
+  MySentencesIdRouteChildren,
+)
 
 interface PracticeIdRouteChildren {
   PracticeIdEditRoute: typeof PracticeIdEditRoute
@@ -511,7 +601,6 @@ const rootRouteChildren: RootRouteChildren = {
   CaptureRoute: CaptureRoute,
   CultureRoute: CultureRoute,
   GrammarRoute: GrammarRoute,
-  MySentencesRoute: MySentencesRoute,
   RenshuuRoute: RenshuuRoute,
   SentencesRoute: SentencesRoute,
   SettingsRoute: SettingsRoute,
@@ -520,11 +609,14 @@ const rootRouteChildren: RootRouteChildren = {
   CapturesIdRoute: CapturesIdRoute,
   LessonsSlugRoute: LessonsSlugRoute,
   LessonsNewRoute: LessonsNewRoute,
+  MySentencesIdRoute: MySentencesIdRouteWithChildren,
+  MySentencesNewRoute: MySentencesNewRoute,
   PracticeIdRoute: PracticeIdRouteWithChildren,
   PracticeNewRoute: PracticeNewRoute,
   SourcesIdRoute: SourcesIdRoute,
   CapturesIndexRoute: CapturesIndexRoute,
   LessonsIndexRoute: LessonsIndexRoute,
+  MySentencesIndexRoute: MySentencesIndexRoute,
   PracticeIndexRoute: PracticeIndexRoute,
   SourcesIndexRoute: SourcesIndexRoute,
 }

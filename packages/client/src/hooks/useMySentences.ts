@@ -23,6 +23,14 @@ export function useMySentences() {
   });
 }
 
+/** A single my-sentence by id (for its view / edit pages). */
+export function useMySentence(id: string) {
+  return useQuery({
+    queryKey: [...MY_SENTENCES_KEY, id],
+    queryFn: () => mySentencesApi.get(id),
+  });
+}
+
 /** The my-sentences produced from a given practice sentence (0 or more). */
 export function useMySentencesForPractice(practiceSentenceId: string) {
   return useQuery({
@@ -37,6 +45,18 @@ export function useCreateMySentence() {
     mutationFn: (input: CreateMySentenceInput) => mySentencesApi.create(input),
     onSuccess: invalidate,
     onError: err => toast.error("Couldn't save your sentence", {
+      description: err instanceof Error ? err.message : undefined,
+    }),
+  });
+}
+
+/** Bulk-create many my-sentences from pasted content in a single request. */
+export function useCreateMySentencesMany() {
+  const invalidate = useMySentenceInvalidator();
+  return useMutation({
+    mutationFn: (inputs: CreateMySentenceInput[]) => mySentencesApi.createMany(inputs),
+    onSuccess: invalidate,
+    onError: err => toast.error("Couldn't import your sentences", {
       description: err instanceof Error ? err.message : undefined,
     }),
   });

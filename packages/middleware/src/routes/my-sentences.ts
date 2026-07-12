@@ -2,6 +2,7 @@ import type { FastifyInstance } from "fastify";
 import type { CreateMySentenceInput, UpdateMySentenceInput } from "@sentence-bank/types";
 import {
   createMySentence,
+  createMySentencesMany,
   deleteMySentence,
   getMySentence,
   listMySentences,
@@ -26,6 +27,37 @@ const listQuery = {
     practiceSentenceId: {
       type: "string",
       format: "uuid",
+    },
+  },
+} as const;
+
+const termsSchema = {
+  type: ["array", "null"],
+  items: {
+    type: "object",
+    additionalProperties: false,
+    required: ["id", "name", "kind", "sourceId", "sourceLabel"],
+    properties: {
+      id: {
+        type: "string",
+      },
+      name: {
+        type: "string",
+      },
+      kind: {
+        type: "string",
+        enum: ["tag", "taxonomy"],
+      },
+      sourceId: {
+        type: "string",
+      },
+      sourceLabel: {
+        type: "string",
+      },
+      category: {
+        type: "string",
+        enum: ["vocabulary", "grammar", "general"],
+      },
     },
   },
 } as const;
@@ -56,6 +88,13 @@ const createMySentenceBody = {
     correction: {
       type: ["string", "null"],
     },
+    actualMeaning: {
+      type: ["string", "null"],
+    },
+    explanation: {
+      type: ["string", "null"],
+    },
+    terms: termsSchema,
   },
 } as const;
 
@@ -64,6 +103,18 @@ const updateMySentenceBody = {
   additionalProperties: false,
   properties: {
     ...createMySentenceBody.properties,
+  },
+} as const;
+
+const bulkMySentencesBody = {
+  type: "object",
+  required: ["mySentences"],
+  additionalProperties: false,
+  properties: {
+    mySentences: {
+      type: "array",
+      items: createMySentenceBody,
+    },
   },
 } as const;
 
@@ -105,6 +156,19 @@ export async function mySentenceRoutes(app: FastifyInstance): Promise<void> {
   }, async (req, reply) => {
     const input = req.body as CreateMySentenceInput;
     const created = await createMySentence(input);
+    return reply.code(201).send(created);
+  });
+
+  app.post("/api/my-sentences/bulk", {
+    schema: {
+      tags: ["my-sentences"],
+      body: bulkMySentencesBody,
+    },
+  }, async (req, reply) => {
+    const {
+      mySentences: inputs,
+    } = req.body as { mySentences: CreateMySentenceInput[] };
+    const created = await createMySentencesMany(inputs);
     return reply.code(201).send(created);
   });
 
