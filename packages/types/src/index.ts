@@ -318,13 +318,23 @@ export interface UpdateOcrSettingsInput {
 
 /* ── Bookmarks tag/taxonomy integration ────────────────────────────────────────────────────────
  * A borrowed vocabulary from the external "eeSimple Bookmarks" app. The user configures an endpoint
- * plus one source — either a parent tag (whose children become the vocabulary) or a taxonomy (whose
- * terms become the vocabulary) — then tags sentences with terms drawn from it. All calls to the
- * bookmarks host go server-side through the middleware proxy.
+ * plus one source per channel — either a parent tag (whose children become the vocabulary) or a
+ * taxonomy (whose terms become the vocabulary) — then tags sentences with terms drawn from it.
+ * There are three independent channels ({@link SentenceTermCategory}): Vocabulary, Grammar, and a
+ * catch-all General channel (e.g. politeness level, situational context). A taxonomy source may
+ * optionally drill into a parent term, so only that term's children become the vocabulary. All calls
+ * to the bookmarks host go server-side through the middleware proxy.
  */
 
 /** Which of the bookmarks app's two vocabulary systems a source refers to. */
 export type BookmarksSourceKind = "tag" | "taxonomy";
+
+/**
+ * Which tagging channel a term belongs to. Each channel has its own configured {@link BookmarksSource}
+ * and its own sentence-form picker. Older stored terms predate this field — default them to
+ * `"vocabulary"` when absent.
+ */
+export type SentenceTermCategory = "vocabulary" | "grammar" | "general";
 
 /** The configured vocabulary source: a chosen parent tag or taxonomy in the bookmarks app. */
 export interface BookmarksSource {
@@ -333,6 +343,13 @@ export interface BookmarksSource {
   id: string;
   /** Display name captured at selection time, e.g. the tag/taxonomy name. */
   label: string;
+  /**
+   * Optional parent-term drill-down (kind "taxonomy" only): when set, only this term's direct
+   * children form the vocabulary, and newly created terms are nested under it. Empty = whole taxonomy.
+   */
+  termId?: string | null;
+  /** Display name of the parent term captured at selection time. */
+  termLabel?: string | null;
 }
 
 /**
@@ -342,8 +359,12 @@ export interface BookmarksSource {
 export interface BookmarksSettings {
   /** Base URL of the bookmarks API, or null to fall back to the env/default. */
   endpointUrl: string | null;
-  /** The selected vocabulary source, or null when unconfigured. */
+  /** The selected Vocabulary source, or null when unconfigured. */
   source: BookmarksSource | null;
+  /** The selected Grammar source, or null when unconfigured. */
+  grammarSource: BookmarksSource | null;
+  /** The selected General source, or null when unconfigured. */
+  generalSource: BookmarksSource | null;
 }
 
 /**
@@ -353,6 +374,8 @@ export interface BookmarksSettings {
 export interface UpdateBookmarksSettingsInput {
   endpointUrl?: string | null;
   source?: BookmarksSource | null;
+  grammarSource?: BookmarksSource | null;
+  generalSource?: BookmarksSource | null;
 }
 
 /**
@@ -389,4 +412,6 @@ export interface SentenceTermRef {
   sourceId: string;
   /** The source tag/taxonomy display name at the time of tagging. */
   sourceLabel: string;
+  /** Which channel this term belongs to. Absent on rows created before channels existed → treat as "vocabulary". */
+  category: SentenceTermCategory;
 }

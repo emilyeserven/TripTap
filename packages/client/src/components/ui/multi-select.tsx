@@ -2,7 +2,7 @@ import type { ComboboxOption } from "@/components/ui/combobox";
 
 import * as React from "react";
 
-import { Check, ChevronsUpDown, X } from "lucide-react";
+import { Check, ChevronsUpDown, Loader2, Plus, X } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,8 @@ import { cn } from "@/lib/utils";
  * A searchable multi-select built from Popover + Input + Badge (the single-select {@link Combobox}
  * can't be reused directly). Selected options render as removable badges above the trigger; the
  * popover offers a type-to-filter list that toggles items without closing. `single` caps selection to
- * one (for single-value taxonomies).
+ * one (for single-value taxonomies). When `creatable`, a query with no exact match offers a
+ * "Create …" row that calls `onCreate`.
  */
 export function MultiSelect({
   value,
@@ -27,6 +28,9 @@ export function MultiSelect({
   ariaLabel,
   single = false,
   disabled = false,
+  creatable = false,
+  onCreate,
+  creating = false,
   className,
 }: {
   value: string[];
@@ -38,6 +42,9 @@ export function MultiSelect({
   ariaLabel?: string;
   single?: boolean;
   disabled?: boolean;
+  creatable?: boolean;
+  onCreate?: (name: string) => void;
+  creating?: boolean;
   className?: string;
 }) {
   const [open, setOpen] = React.useState(false);
@@ -47,7 +54,16 @@ export function MultiSelect({
   const selectedOptions = value
     .map(v => options.find(o => o.value === v))
     .filter((o): o is ComboboxOption => o !== undefined);
-  const filtered = query.trim() ? options.filter(o => comboboxMatches(query, o.label)) : options;
+  const trimmedQuery = query.trim();
+  const filtered = trimmedQuery ? options.filter(o => comboboxMatches(query, o.label)) : options;
+  const hasExactMatch = options.some(o => o.label.toLowerCase() === trimmedQuery.toLowerCase());
+  const showCreate = creatable && !!onCreate && trimmedQuery.length > 0 && !hasExactMatch;
+
+  function create() {
+    if (!onCreate || !trimmedQuery || creating) return;
+    onCreate(trimmedQuery);
+    setQuery("");
+  }
 
   function toggle(optionValue: string) {
     if (single) {
@@ -126,7 +142,7 @@ export function MultiSelect({
             />
           </div>
           <div className="max-h-64 overflow-y-auto p-1">
-            {filtered.length === 0
+            {filtered.length === 0 && !showCreate
               ? <p className="px-2 py-1.5 text-sm text-muted-foreground">{emptyText}</p>
               : filtered.map((o) => {
                 const on = selectedSet.has(o.value);
@@ -153,6 +169,26 @@ export function MultiSelect({
                   </button>
                 );
               })}
+            {showCreate && (
+              <button
+                type="button"
+                onClick={create}
+                disabled={creating}
+                className="
+                  flex w-full items-center gap-2 rounded-sm px-2 py-1.5
+                  text-left text-sm
+                  hover:bg-accent
+                  disabled:opacity-60
+                "
+              >
+                {creating
+                  ? <Loader2 className="size-4 shrink-0 animate-spin" />
+                  : <Plus className="size-4 shrink-0" />}
+                <span className="truncate">
+                  {creating ? "Creating…" : `Create “${trimmedQuery}”`}
+                </span>
+              </button>
+            )}
           </div>
         </PopoverContent>
       </Popover>

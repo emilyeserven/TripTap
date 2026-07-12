@@ -110,7 +110,15 @@ export async function updateOcrSettings(input: UpdateOcrSettingsInput): Promise<
 export const BOOKMARKS_KEYS = {
   endpointUrl: "bookmarks.endpointUrl",
   source: "bookmarks.source",
+  grammarSource: "bookmarks.grammarSource",
+  generalSource: "bookmarks.generalSource",
 } as const;
+
+/** Optional `termId`/`termLabel` off a stored source: keep only when a string or explicit null. */
+function parseTermField(value: unknown): string | null | undefined {
+  if (value === null || typeof value === "string") return value;
+  return undefined;
+}
 
 /** Parse a stored {@link BookmarksSource} JSON string, tolerating absent/corrupt values. */
 function parseBookmarksSource(raw: string | null): BookmarksSource | null {
@@ -123,7 +131,13 @@ function parseBookmarksSource(raw: string | null): BookmarksSource | null {
       && typeof parsed.id === "string"
       && typeof parsed.label === "string"
     ) {
-      return parsed;
+      return {
+        kind: parsed.kind,
+        id: parsed.id,
+        label: parsed.label,
+        termId: parseTermField(parsed.termId),
+        termLabel: parseTermField(parsed.termLabel),
+      };
     }
     return null;
   }
@@ -138,6 +152,8 @@ export async function getBookmarksSettings(): Promise<BookmarksSettings> {
   return {
     endpointUrl: stored[BOOKMARKS_KEYS.endpointUrl] ?? null,
     source: parseBookmarksSource(stored[BOOKMARKS_KEYS.source] ?? null),
+    grammarSource: parseBookmarksSource(stored[BOOKMARKS_KEYS.grammarSource] ?? null),
+    generalSource: parseBookmarksSource(stored[BOOKMARKS_KEYS.generalSource] ?? null),
   };
 }
 
@@ -153,6 +169,12 @@ export async function updateBookmarksSettings(
   }
   if (input.source !== undefined) {
     await setSetting(BOOKMARKS_KEYS.source, input.source ? JSON.stringify(input.source) : null);
+  }
+  if (input.grammarSource !== undefined) {
+    await setSetting(BOOKMARKS_KEYS.grammarSource, input.grammarSource ? JSON.stringify(input.grammarSource) : null);
+  }
+  if (input.generalSource !== undefined) {
+    await setSetting(BOOKMARKS_KEYS.generalSource, input.generalSource ? JSON.stringify(input.generalSource) : null);
   }
   return getBookmarksSettings();
 }

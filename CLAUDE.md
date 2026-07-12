@@ -95,6 +95,20 @@ Deploy via Coolify using only `DATABASE_URL` (see `README.md`).
 | `OCR_PROVIDERS` | middleware | Comma-separated OCR backend order/selection (`self-hosted`, `ocr-space`, `google-vision`). Unset → all configured backends, self-hosted first. |
 | `BOOKMARKS_API_URL` | middleware | Base URL of the external bookmarks tag/taxonomy API borrowed to tag sentences. Overridden by the Settings-page value stored in the DB; unset falls back to a built-in default. Must be reachable from the middleware (e.g. same Tailnet). |
 
+The bookmarks integration borrows vocabularies from the external app across **three independent
+channels** — Vocabulary, Grammar, and General (`SentenceTermCategory`), each with its own configured
+source stored under `bookmarks.source` / `bookmarks.grammarSource` / `bookmarks.generalSource`
+(`services/settings.ts`). A source is a parent tag (its children are the choices) or a taxonomy (its
+terms are the choices); a taxonomy source may optionally **drill into one parent term** (`termId`/
+`termLabel`), so only that term's children are offered and new terms nest under it. Sentences store the
+picked terms as `SentenceTermRef[]` in a `jsonb` column, each stamped with its `category` (older rows
+without one default to Vocabulary — no migration needed). The middleware proxies all host calls under
+`/api/bookmarks/*`: `GET /vocabulary?category=…` resolves a channel's choices, and
+`POST /api/bookmarks/terms` creates a new term/tag in the bookmarks app under the channel's source
+(`createVocabularyTerm` in `services/bookmarks/index.ts`). `BookmarksNotConfigured` → 503,
+`BookmarksUnavailable` → 502. The Settings UI is `BookmarksTagsCard`; the sentence-form pickers are
+`TermPicker` (one per channel). The separate free-text `tags` string field is unrelated.
+
 The Capture feature tries the configured OCR backends in order with automatic fallback; `/api/ocr`
 returns 503 only when **none** are configured. The pluggable seam is `runOcr()` in
 `packages/middleware/src/services/ocr/` (one file per provider + an orchestrator `index.ts`), which

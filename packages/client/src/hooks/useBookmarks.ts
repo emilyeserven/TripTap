@@ -1,4 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
+import type { SentenceTermCategory } from "@sentence-bank/types";
+
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { bookmarksApi } from "../lib/api";
 
@@ -38,11 +40,42 @@ export function useBookmarksTerms(taxonomyId: string | null) {
   });
 }
 
-/** The selectable vocabulary for the currently configured source (parent tag's children or terms). */
-export function useBookmarksVocabulary() {
+/**
+ * The selectable vocabulary for one channel's configured source (parent tag's children or a
+ * taxonomy's terms, optionally narrowed to a parent term).
+ */
+export function useBookmarksVocabulary(category: SentenceTermCategory = "vocabulary") {
   return useQuery({
-    queryKey: [...BOOKMARKS_KEY, "vocabulary"],
-    queryFn: bookmarksApi.vocabulary,
+    queryKey: [...BOOKMARKS_KEY, "vocabulary", category],
+    queryFn: () => bookmarksApi.vocabulary(category),
     retry: false,
+  });
+}
+
+/** The Grammar channel's vocabulary. */
+export function useBookmarksGrammarVocabulary() {
+  return useBookmarksVocabulary("grammar");
+}
+
+/** The General channel's vocabulary. */
+export function useBookmarksGeneralVocabulary() {
+  return useBookmarksVocabulary("general");
+}
+
+/**
+ * Create a new term in the bookmarks app under one channel's configured source. On success every
+ * bookmarks query is invalidated so the new term appears in the relevant vocabulary picker.
+ */
+export function useCreateBookmarkTerm() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: { name: string;
+      category: SentenceTermCategory; }) =>
+      bookmarksApi.createTerm(input),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: BOOKMARKS_KEY,
+      });
+    },
   });
 }
