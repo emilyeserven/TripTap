@@ -18,6 +18,8 @@ export function toWriting(row: WritingRow): Writing {
     readyToReview: row.readyToReview,
     terms: row.terms ?? null,
     corrections: row.corrections ?? null,
+    promptTitle: row.promptTitle ?? null,
+    promptText: row.promptText ?? null,
     createdAt:
       row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
     updatedAt:
@@ -35,6 +37,8 @@ function toInsert(input: CreateWritingInput) {
     readyToReview: input.readyToReview ?? false,
     terms: input.terms ?? null,
     corrections: input.corrections ?? null,
+    promptTitle: input.promptTitle ?? null,
+    promptText: input.promptText ?? null,
   };
 }
 

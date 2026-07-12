@@ -3,6 +3,7 @@ import type {
   CleanedBlocks,
   FuriToken,
   GrammarExample,
+  ListeningEntry,
   OcrBlock,
   PracticeGrammar,
   PracticePasses,
@@ -10,6 +11,7 @@ import type {
   QuestionSheetGrid,
   QuestionSheetQuestion,
   SentenceTermRef,
+  ShadowingSegment,
   SourceGrammar,
   SourceVocab,
   WritingCorrection,
@@ -268,6 +270,9 @@ export const writings = pgTable("writings", {
   readyToReview: boolean("ready_to_review").notNull().default(false),
   terms: jsonb("terms").$type<SentenceTermRef[]>(),
   corrections: jsonb("corrections").$type<WritingCorrection[]>(),
+  /** Snapshot of the writing prompt this entry was started from; null if freeform. */
+  promptTitle: text("prompt_title"),
+  promptText: text("prompt_text"),
   createdAt: timestamp("created_at", {
     withTimezone: true,
   }).notNull().defaultNow(),
@@ -327,6 +332,82 @@ export const answerSheets = pgTable("answer_sheets", {
 
 export type AnswerSheetRow = typeof answerSheets.$inferSelect;
 export type NewAnswerSheetRow = typeof answerSheets.$inferInsert;
+
+/**
+ * `listening_sessions` — a "Listen and Shadow" session: a YouTube video (usually one of the learner's
+ * bookmarks) plus a running log of timestamped `entries` typed while it plays. The associated bookmark
+ * is denormalized (id/title/url) so the view can render and deep-link without a live bookmarks call.
+ */
+export const listeningSessions = pgTable("listening_sessions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  title: text("title").notNull(),
+  videoUrl: text("video_url"),
+  language: text("language").notNull(),
+  bookmarkId: text("bookmark_id"),
+  bookmarkTitle: text("bookmark_title"),
+  bookmarkUrl: text("bookmark_url"),
+  entries: jsonb("entries").$type<ListeningEntry[]>(),
+  terms: jsonb("terms").$type<SentenceTermRef[]>(),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+});
+
+export type ListeningSessionRow = typeof listeningSessions.$inferSelect;
+export type NewListeningSessionRow = typeof listeningSessions.$inferInsert;
+
+/**
+ * `shadowing_sessions` — a shadowing practice session: a YouTube video plus a list of `segments` that
+ * the player loops automatically (`default_max_replays` times, with a `default_gap_ms` silent gap,
+ * each segment optionally overriding those). Also carries the same timestamped `entries` as a
+ * listening session. The associated bookmark is denormalized like `listening_sessions`.
+ */
+export const shadowingSessions = pgTable("shadowing_sessions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  title: text("title").notNull(),
+  videoUrl: text("video_url"),
+  language: text("language").notNull(),
+  bookmarkId: text("bookmark_id"),
+  bookmarkTitle: text("bookmark_title"),
+  bookmarkUrl: text("bookmark_url"),
+  defaultMaxReplays: integer("default_max_replays").notNull().default(3),
+  defaultGapMs: integer("default_gap_ms").notNull().default(0),
+  segments: jsonb("segments").$type<ShadowingSegment[]>(),
+  entries: jsonb("entries").$type<ListeningEntry[]>(),
+  terms: jsonb("terms").$type<SentenceTermRef[]>(),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+});
+
+export type ShadowingSessionRow = typeof shadowingSessions.$inferSelect;
+export type NewShadowingSessionRow = typeof shadowingSessions.$inferInsert;
+
+/**
+ * `writing_prompts` — reusable prompts the learner saves to spark a free-write. Each is a `title`
+ * plus prompt `text`. When starting a My Writing entry the learner can pick one; the chosen prompt is
+ * snapshotted onto the writing (`writings.prompt_title` / `writings.prompt_text`).
+ */
+export const writingPrompts = pgTable("writing_prompts", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  title: text("title").notNull(),
+  text: text("text").notNull(),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+});
+
+export type WritingPromptRow = typeof writingPrompts.$inferSelect;
+export type NewWritingPromptRow = typeof writingPrompts.$inferInsert;
 
 /** `parse_templates` — saved capture-parsing templates the user can reuse. */
 export const parseTemplates = pgTable("parse_templates", {

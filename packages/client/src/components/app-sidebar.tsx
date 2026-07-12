@@ -8,15 +8,18 @@ import {
   ClipboardListIcon,
   DatabaseIcon,
   GraduationCapIcon,
+  HeadphonesIcon,
   HomeIcon,
   ImagesIcon,
   LandmarkIcon,
   LanguagesIcon,
   LayersIcon,
   LibraryIcon,
+  LightbulbIcon,
   NotebookPenIcon,
   PencilRulerIcon,
   PenLineIcon,
+  Repeat2Icon,
   ScrollTextIcon,
   SendIcon,
   SettingsIcon,
@@ -81,6 +84,11 @@ const studyItems = [
     to: "/sentences",
     icon: ScrollTextIcon,
   },
+  {
+    title: "Writing Prompts",
+    to: "/writing-prompts",
+    icon: LightbulbIcon,
+  },
 ] as const;
 
 /** Tools that act on the bank (exports, etc.). */
@@ -109,6 +117,16 @@ const actionItems = [
     title: "Answer Sheets",
     to: "/answer-sheets",
     icon: ClipboardCheckIcon,
+  },
+  {
+    title: "Listening Sessions",
+    to: "/listening-sessions",
+    icon: HeadphonesIcon,
+  },
+  {
+    title: "Shadowing Practice",
+    to: "/shadowing",
+    icon: Repeat2Icon,
   },
   {
     title: "Renshuu export",

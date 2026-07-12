@@ -44,7 +44,7 @@ const termsSchema = {
       },
       category: {
         type: "string",
-        enum: ["vocabulary", "grammar", "general"],
+        enum: ["vocabulary", "grammar", "general", "resource", "listening"],
       },
     },
   },
@@ -99,6 +99,12 @@ const createWritingBody = {
     },
     terms: termsSchema,
     corrections: correctionsSchema,
+    promptTitle: {
+      type: ["string", "null"],
+    },
+    promptText: {
+      type: ["string", "null"],
+    },
   },
 } as const;
 

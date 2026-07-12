@@ -1,75 +1,9 @@
 {
-  "id": "41cb9775-bbb7-4171-ae0d-2529ad8368b4",
+  "id": "02bf9ce3-7a92-4072-ade0-f5e07a3d2cfc",
   "prevId": "304dee28-af22-4964-b387-a1198db31b65",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.answer_sheets": {
-      "name": "answer_sheets",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "question_sheet_id": {
-          "name": "question_sheet_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "title": {
-          "name": "title",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "entries": {
-          "name": "entries",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "answer_sheets_question_sheet_id_question_sheets_id_fk": {
-          "name": "answer_sheets_question_sheet_id_question_sheets_id_fk",
-          "tableFrom": "answer_sheets",
-          "tableTo": "question_sheets",
-          "columnsFrom": [
-            "question_sheet_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "restrict",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.captures": {
       "name": "captures",
       "schema": "",
@@ -1127,77 +1061,6 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.question_sheets": {
-      "name": "question_sheets",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "title": {
-          "name": "title",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "notes": {
-          "name": "notes",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "resource_terms": {
-          "name": "resource_terms",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "layout": {
-          "name": "layout",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'list'"
-        },
-        "questions": {
-          "name": "questions",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "grid": {
-          "name": "grid",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.sentence_vocab": {
       "name": "sentence_vocab",
       "schema": "",
@@ -1587,6 +1450,52 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.writing_prompts": {
+      "name": "writing_prompts",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "text": {
+          "name": "text",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.writings": {
       "name": "writings",
       "schema": "",
@@ -1638,6 +1547,18 @@
         "corrections": {
           "name": "corrections",
           "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "prompt_title": {
+          "name": "prompt_title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "prompt_text": {
+          "name": "prompt_text",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },

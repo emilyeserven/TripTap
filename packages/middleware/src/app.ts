@@ -8,6 +8,7 @@ import { bookmarksRoutes } from "@/routes/bookmarks";
 import { captureRoutes } from "@/routes/captures";
 import { healthRoutes } from "@/routes/health";
 import { lessonRoutes } from "@/routes/lessons";
+import { listeningSessionsRoutes } from "@/routes/listening-sessions";
 import { mySentenceRoutes } from "@/routes/my-sentences";
 import { ocrRoutes } from "@/routes/ocr";
 import { parseTemplateRoutes } from "@/routes/parse-templates";
@@ -15,9 +16,11 @@ import { practiceSentenceRoutes } from "@/routes/practice-sentences";
 import { questionSheetRoutes } from "@/routes/question-sheets";
 import { sentenceRoutes } from "@/routes/sentences";
 import { settingsRoutes } from "@/routes/settings";
+import { shadowingSessionsRoutes } from "@/routes/shadowing-sessions";
 import { sourceRoutes } from "@/routes/sources";
 import { vocabRoutes } from "@/routes/vocab";
 import { writingRoutes } from "@/routes/writings";
+import { writingPromptRoutes } from "@/routes/writing-prompts";
 
 /** Build and configure the Fastify application (without starting it). */
 export async function buildApp(): Promise<FastifyInstance> {
@@ -70,6 +73,18 @@ export async function buildApp(): Promise<FastifyInstance> {
           description: "Filled-in attempts at a question sheet, with corrections",
         },
         {
+          name: "listening-sessions",
+          description: "Listen and Shadow sessions — video + timestamped notes",
+        },
+        {
+          name: "shadowing-sessions",
+          description: "Shadowing practice sessions — looped video segments + notes",
+        },
+        {
+          name: "writing-prompts",
+          description: "Reusable prompts to spark a free-write",
+        },
+        {
           name: "lessons",
           description: "Lesson import & viewing",
         },
@@ -120,6 +135,9 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(writingRoutes);
   await app.register(questionSheetRoutes);
   await app.register(answerSheetRoutes);
+  await app.register(listeningSessionsRoutes);
+  await app.register(shadowingSessionsRoutes);
+  await app.register(writingPromptRoutes);
   await app.register(sourceRoutes);
   await app.register(vocabRoutes);
   await app.register(captureRoutes);
