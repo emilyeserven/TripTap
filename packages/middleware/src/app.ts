@@ -3,6 +3,7 @@ import multipart from "@fastify/multipart";
 import swagger from "@fastify/swagger";
 import swaggerUi from "@fastify/swagger-ui";
 import Fastify, { type FastifyInstance } from "fastify";
+import { bookmarksRoutes } from "@/routes/bookmarks";
 import { captureRoutes } from "@/routes/captures";
 import { healthRoutes } from "@/routes/health";
 import { lessonRoutes } from "@/routes/lessons";
@@ -59,6 +60,26 @@ export async function buildApp(): Promise<FastifyInstance> {
           name: "settings",
           description: "Server-side settings (e.g. cloud OCR credentials)",
         },
+        {
+          name: "captures",
+          description: "OCR captures and their created items",
+        },
+        {
+          name: "sources",
+          description: "Source taxonomy (books, shows, articles)",
+        },
+        {
+          name: "vocab",
+          description: "Standalone vocabulary bank",
+        },
+        {
+          name: "parse-templates",
+          description: "Saved capture-parsing templates",
+        },
+        {
+          name: "bookmarks",
+          description: "External bookmarks tag/taxonomy proxy",
+        },
       ],
     },
   });
@@ -67,6 +88,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   });
 
   await app.register(healthRoutes);
+  await app.register(bookmarksRoutes);
   await app.register(sentenceRoutes);
   await app.register(sourceRoutes);
   await app.register(vocabRoutes);

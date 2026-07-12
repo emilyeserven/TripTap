@@ -68,6 +68,12 @@ export interface Sentence {
   notes: string | null;
   /** Optional comma-separated tags. */
   tags: string | null;
+  /**
+   * Structured tags borrowed from the external bookmarks taxonomy (distinct from free-text {@link
+   * tags}). Denormalized (id + name + provenance) so display never needs a live bookmarks call. Null
+   * when none are attached.
+   */
+  terms: SentenceTermRef[] | null;
   /** The capture this sentence was mined from, or null. */
   captureId: string | null;
   /** ISO-8601 timestamp of when the sentence was added. */
@@ -84,6 +90,8 @@ export interface CreateSentenceInput {
   page?: string | null;
   notes?: string | null;
   tags?: string | null;
+  /** Structured taxonomy terms borrowed from the bookmarks app; see {@link SentenceTermRef}. */
+  terms?: SentenceTermRef[] | null;
   captureId?: string | null;
   /** Vocab items to link to this sentence (many-to-many). */
   vocabIds?: string[];
@@ -306,4 +314,79 @@ export interface OcrSettings {
 export interface UpdateOcrSettingsInput {
   ocrSpaceApiKey?: string | null;
   googleVisionApiKey?: string | null;
+}
+
+/* ── Bookmarks tag/taxonomy integration ────────────────────────────────────────────────────────
+ * A borrowed vocabulary from the external "eeSimple Bookmarks" app. The user configures an endpoint
+ * plus one source — either a parent tag (whose children become the vocabulary) or a taxonomy (whose
+ * terms become the vocabulary) — then tags sentences with terms drawn from it. All calls to the
+ * bookmarks host go server-side through the middleware proxy.
+ */
+
+/** Which of the bookmarks app's two vocabulary systems a source refers to. */
+export type BookmarksSourceKind = "tag" | "taxonomy";
+
+/** The configured vocabulary source: a chosen parent tag or taxonomy in the bookmarks app. */
+export interface BookmarksSource {
+  kind: BookmarksSourceKind;
+  /** The parent tag id (kind "tag") or the taxonomy id (kind "taxonomy"). */
+  id: string;
+  /** Display name captured at selection time, e.g. the tag/taxonomy name. */
+  label: string;
+}
+
+/**
+ * Bookmarks integration settings as returned by `GET /api/settings/bookmarks`. Unlike
+ * {@link OcrSettings} these are not secrets, so raw values are returned.
+ */
+export interface BookmarksSettings {
+  /** Base URL of the bookmarks API, or null to fall back to the env/default. */
+  endpointUrl: string | null;
+  /** The selected vocabulary source, or null when unconfigured. */
+  source: BookmarksSource | null;
+}
+
+/**
+ * Payload for `PATCH /api/settings/bookmarks`. Tri-state per field like {@link UpdateOcrSettingsInput}:
+ * `undefined`/omitted leaves the value unchanged, `null`/empty clears it, any other value replaces it.
+ */
+export interface UpdateBookmarksSettingsInput {
+  endpointUrl?: string | null;
+  source?: BookmarksSource | null;
+}
+
+/**
+ * A normalized, selectable option from the bookmarks vocabulary — one child tag or one taxonomy term.
+ * `parentId` carries the upstream hierarchy (nullable adjacency). Extra upstream fields are dropped.
+ */
+export interface TagTermOption {
+  id: string;
+  name: string;
+  parentId: string | null;
+  slug?: string | null;
+  description?: string | null;
+}
+
+/** A taxonomy in the bookmarks app, offered as a source option in Settings. */
+export interface BookmarksTaxonomy {
+  id: string;
+  name: string;
+  slug: string;
+  /** Whether terms nest via parentId. */
+  hierarchical: boolean;
+  /** Whether an owner may hold at most one term from this taxonomy. */
+  singleValue: boolean;
+  icon: string | null;
+  termCount: number;
+}
+
+/** One borrowed tag/term stored on a sentence, with provenance so the UI can group and re-open it. */
+export interface SentenceTermRef {
+  id: string;
+  name: string;
+  kind: BookmarksSourceKind;
+  /** The source tag/taxonomy id this term was drawn from. */
+  sourceId: string;
+  /** The source tag/taxonomy display name at the time of tagging. */
+  sourceLabel: string;
 }

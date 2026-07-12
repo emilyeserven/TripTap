@@ -1,5 +1,5 @@
 import type { DragEndEvent } from "@dnd-kit/core";
-import type { Sentence, Vocab } from "@sentence-bank/types";
+import type { Sentence, SentenceTermRef, Vocab } from "@sentence-bank/types";
 
 import { useState } from "react";
 
@@ -25,6 +25,7 @@ import { FuriganaScope } from "@/components/lesson/FuriganaScope";
 import { FuriganaToggle } from "@/components/lesson/FuriganaToggle";
 import { VocabCard } from "@/components/lesson/VocabCard";
 import { SentenceCard } from "@/components/SentenceCard";
+import { TermPicker } from "@/components/TermPicker";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -308,6 +309,13 @@ function SortableSentenceRow({
   );
 }
 
+/** True when two term lists differ (order-insensitive, by id). */
+function termsChanged(a: SentenceTermRef[], b: SentenceTermRef[]): boolean {
+  if (a.length !== b.length) return true;
+  const ids = new Set(b.map(t => t.id));
+  return a.some(t => !ids.has(t.id));
+}
+
 function SentenceRow({
   sentence,
 }: { sentence: Sentence }) {
@@ -315,52 +323,63 @@ function SentenceRow({
   const remove = useDeleteSentence();
   const [text, setText] = useState(sentence.text);
   const [translation, setTranslation] = useState(sentence.translation ?? "");
+  const [terms, setTerms] = useState<SentenceTermRef[]>(sentence.terms ?? []);
 
-  const dirty = text !== sentence.text || translation !== (sentence.translation ?? "");
+  const dirty
+    = text !== sentence.text
+      || translation !== (sentence.translation ?? "")
+      || termsChanged(terms, sentence.terms ?? []);
 
   return (
-    <div
-      className="
-        grid gap-2 rounded-md border border-input p-2
-        sm:grid-cols-[1fr_1fr_auto]
-      "
-    >
-      <input
-        className={fieldClass}
-        aria-label="Sentence text"
-        value={text}
-        onChange={e => setText(e.target.value)}
-      />
-      <input
-        className={fieldClass}
-        aria-label="Translation"
-        placeholder="Translation"
-        value={translation}
-        onChange={e => setTranslation(e.target.value)}
-      />
-      <div className="flex items-center gap-2">
-        <button
-          type="button"
-          className={saveBtn}
-          disabled={!dirty || !text.trim() || update.isPending}
-          onClick={() => update.mutate({
-            id: sentence.id,
-            input: {
-              text: text.trim(),
-              translation: translation.trim() || null,
-            },
-          })}
-        >
-          {update.isPending ? "…" : "Save"}
-        </button>
-        <button
-          type="button"
-          className={delBtn}
-          onClick={() => remove.mutate(sentence.id)}
-        >
-          Delete
-        </button>
+    <div className="space-y-2 rounded-md border border-input p-2">
+      <div
+        className="
+          grid gap-2
+          sm:grid-cols-[1fr_1fr_auto]
+        "
+      >
+        <input
+          className={fieldClass}
+          aria-label="Sentence text"
+          value={text}
+          onChange={e => setText(e.target.value)}
+        />
+        <input
+          className={fieldClass}
+          aria-label="Translation"
+          placeholder="Translation"
+          value={translation}
+          onChange={e => setTranslation(e.target.value)}
+        />
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            className={saveBtn}
+            disabled={!dirty || !text.trim() || update.isPending}
+            onClick={() => update.mutate({
+              id: sentence.id,
+              input: {
+                text: text.trim(),
+                translation: translation.trim() || null,
+                terms: terms.length > 0 ? terms : null,
+              },
+            })}
+          >
+            {update.isPending ? "…" : "Save"}
+          </button>
+          <button
+            type="button"
+            className={delBtn}
+            onClick={() => remove.mutate(sentence.id)}
+          >
+            Delete
+          </button>
+        </div>
       </div>
+      <TermPicker
+        value={terms}
+        onChange={setTerms}
+      />
     </div>
   );
 }

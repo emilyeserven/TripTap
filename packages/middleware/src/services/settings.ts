@@ -1,5 +1,11 @@
 import { eq, inArray } from "drizzle-orm";
-import type { OcrSettings, UpdateOcrSettingsInput } from "@sentence-bank/types";
+import type {
+  BookmarksSettings,
+  BookmarksSource,
+  OcrSettings,
+  UpdateBookmarksSettingsInput,
+  UpdateOcrSettingsInput,
+} from "@sentence-bank/types";
 import { db } from "@/db";
 import { settings } from "@/db/schema";
 
@@ -95,4 +101,58 @@ export async function updateOcrSettings(input: UpdateOcrSettingsInput): Promise<
     await setSetting(OCR_SECRET_KEYS.googleVisionApiKey, input.googleVisionApiKey?.trim() ?? null);
   }
   return getOcrSettings();
+}
+
+/**
+ * Settings keys for the external bookmarks tag/taxonomy integration. The chosen source is stored as a
+ * JSON-encoded {@link BookmarksSource}. Neither value is a secret.
+ */
+export const BOOKMARKS_KEYS = {
+  endpointUrl: "bookmarks.endpointUrl",
+  source: "bookmarks.source",
+} as const;
+
+/** Parse a stored {@link BookmarksSource} JSON string, tolerating absent/corrupt values. */
+function parseBookmarksSource(raw: string | null): BookmarksSource | null {
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw) as BookmarksSource;
+    if (
+      parsed
+      && (parsed.kind === "tag" || parsed.kind === "taxonomy")
+      && typeof parsed.id === "string"
+      && typeof parsed.label === "string"
+    ) {
+      return parsed;
+    }
+    return null;
+  }
+  catch {
+    return null;
+  }
+}
+
+/** The bookmarks integration settings stored in the DB (raw values; these are not secrets). */
+export async function getBookmarksSettings(): Promise<BookmarksSettings> {
+  const stored = await getSettings(Object.values(BOOKMARKS_KEYS));
+  return {
+    endpointUrl: stored[BOOKMARKS_KEYS.endpointUrl] ?? null,
+    source: parseBookmarksSource(stored[BOOKMARKS_KEYS.source] ?? null),
+  };
+}
+
+/**
+ * Apply a partial update to the bookmarks integration settings. Each field is tri-state: `undefined`
+ * leaves the value unchanged, `""`/`null` clears it, any other value replaces it. Returns the new view.
+ */
+export async function updateBookmarksSettings(
+  input: UpdateBookmarksSettingsInput,
+): Promise<BookmarksSettings> {
+  if (input.endpointUrl !== undefined) {
+    await setSetting(BOOKMARKS_KEYS.endpointUrl, input.endpointUrl?.trim() ?? null);
+  }
+  if (input.source !== undefined) {
+    await setSetting(BOOKMARKS_KEYS.source, input.source ? JSON.stringify(input.source) : null);
+  }
+  return getBookmarksSettings();
 }

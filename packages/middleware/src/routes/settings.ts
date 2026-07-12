@@ -1,6 +1,11 @@
 import type { FastifyInstance } from "fastify";
-import type { UpdateOcrSettingsInput } from "@sentence-bank/types";
-import { getOcrSettings, updateOcrSettings } from "@/services/settings";
+import type { UpdateBookmarksSettingsInput, UpdateOcrSettingsInput } from "@sentence-bank/types";
+import {
+  getBookmarksSettings,
+  getOcrSettings,
+  updateBookmarksSettings,
+  updateOcrSettings,
+} from "@/services/settings";
 
 const updateOcrSettingsBody = {
   type: "object",
@@ -11,6 +16,33 @@ const updateOcrSettingsBody = {
     },
     googleVisionApiKey: {
       type: ["string", "null"],
+    },
+  },
+} as const;
+
+const updateBookmarksSettingsBody = {
+  type: "object",
+  additionalProperties: false,
+  properties: {
+    endpointUrl: {
+      type: ["string", "null"],
+    },
+    source: {
+      type: ["object", "null"],
+      additionalProperties: false,
+      required: ["kind", "id", "label"],
+      properties: {
+        kind: {
+          type: "string",
+          enum: ["tag", "taxonomy"],
+        },
+        id: {
+          type: "string",
+        },
+        label: {
+          type: "string",
+        },
+      },
     },
   },
 } as const;
@@ -33,5 +65,20 @@ export async function settingsRoutes(app: FastifyInstance): Promise<void> {
     },
   }, async (req) => {
     return updateOcrSettings(req.body as UpdateOcrSettingsInput);
+  });
+
+  app.get("/api/settings/bookmarks", {
+    schema: {
+      tags: ["settings"],
+    },
+  }, async () => getBookmarksSettings());
+
+  app.patch("/api/settings/bookmarks", {
+    schema: {
+      tags: ["settings"],
+      body: updateBookmarksSettingsBody,
+    },
+  }, async (req) => {
+    return updateBookmarksSettings(req.body as UpdateBookmarksSettingsInput);
   });
 }

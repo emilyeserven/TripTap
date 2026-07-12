@@ -29,3 +29,48 @@ test("POST /api/sentences rejects a payload missing required fields", async () =
   assert.equal(res.statusCode, 400);
   await app.close();
 });
+
+test("POST /api/sentences rejects a terms entry with a missing field", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/sentences",
+    payload: {
+      text: "毎朝コーヒーを飲みます。",
+      language: "Japanese",
+      terms: [
+        {
+          id: "t1",
+          name: "Routine",
+          kind: "taxonomy",
+          // sourceId + sourceLabel omitted → invalid
+        },
+      ],
+    },
+  });
+  assert.equal(res.statusCode, 400);
+  await app.close();
+});
+
+test("POST /api/sentences rejects a terms entry with an unknown kind", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/sentences",
+    payload: {
+      text: "毎朝コーヒーを飲みます。",
+      language: "Japanese",
+      terms: [
+        {
+          id: "t1",
+          name: "Routine",
+          kind: "folder",
+          sourceId: "s1",
+          sourceLabel: "Genres",
+        },
+      ],
+    },
+  });
+  assert.equal(res.statusCode, 400);
+  await app.close();
+});

@@ -1,4 +1,6 @@
 import type {
+  BookmarksSettings,
+  BookmarksTaxonomy,
   Capture,
   CaptureSummary,
   CleanedBlocks,
@@ -16,6 +18,8 @@ import type {
   ParseTemplate,
   Sentence,
   Source,
+  TagTermOption,
+  UpdateBookmarksSettingsInput,
   UpdateOcrSettingsInput,
   UpdateSentenceInput,
   UpdateSourceInput,
@@ -222,6 +226,21 @@ export const settingsApi = {
       method: "PATCH",
       body: JSON.stringify(input),
     }),
+  getBookmarks: () => request<BookmarksSettings>("/settings/bookmarks"),
+  updateBookmarks: (input: UpdateBookmarksSettingsInput) =>
+    request<BookmarksSettings>("/settings/bookmarks", {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    }),
+};
+
+/** Read-only proxy to the external bookmarks tag/taxonomy API (all calls go server-side). */
+export const bookmarksApi = {
+  tags: () => request<TagTermOption[]>("/bookmarks/tags"),
+  taxonomies: () => request<BookmarksTaxonomy[]>("/bookmarks/taxonomies"),
+  terms: (taxonomyId: string) =>
+    request<TagTermOption[]>(`/bookmarks/taxonomies/${taxonomyId}/terms`),
+  vocabulary: () => request<TagTermOption[]>("/bookmarks/vocabulary"),
 };
 
 export const lessonsApi = {

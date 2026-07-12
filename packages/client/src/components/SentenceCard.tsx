@@ -157,6 +157,15 @@ export function SentenceCard({
               {tag}
             </span>
           ))}
+          {(sentence.terms ?? []).map(term => (
+            <Badge
+              key={`${term.sourceId}:${term.id}`}
+              variant="outline"
+              title={term.sourceLabel ? `${term.sourceLabel} (${term.kind})` : undefined}
+            >
+              {term.name}
+            </Badge>
+          ))}
         </div>
 
         {sentence.notes ? <p className="text-sm">{sentence.notes}</p> : null}

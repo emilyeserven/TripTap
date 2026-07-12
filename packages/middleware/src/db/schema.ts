@@ -3,6 +3,7 @@ import type {
   FuriToken,
   GrammarExample,
   OcrBlock,
+  SentenceTermRef,
   SourceGrammar,
   SourceVocab,
 } from "@sentence-bank/types";
@@ -58,6 +59,9 @@ export const sentences = pgTable("sentences", {
   page: text("page"),
   notes: text("notes"),
   tags: text("tags"),
+  // Structured taxonomy tags borrowed from the external bookmarks app (distinct from free-text
+  // `tags`). Denormalized so display never needs a live bookmarks call. Null until any are attached.
+  terms: jsonb("terms").$type<SentenceTermRef[]>(),
   // The capture this was mined from, for traceability. Nulled (not deleted) if the capture is removed.
   captureId: uuid("capture_id").references((): AnyPgColumn => captures.id, {
     onDelete: "set null",
