@@ -3,6 +3,7 @@ import multipart from "@fastify/multipart";
 import swagger from "@fastify/swagger";
 import swaggerUi from "@fastify/swagger-ui";
 import Fastify, { type FastifyInstance } from "fastify";
+import { answerSheetRoutes } from "@/routes/answer-sheets";
 import { bookmarksRoutes } from "@/routes/bookmarks";
 import { captureRoutes } from "@/routes/captures";
 import { healthRoutes } from "@/routes/health";
@@ -11,6 +12,7 @@ import { mySentenceRoutes } from "@/routes/my-sentences";
 import { ocrRoutes } from "@/routes/ocr";
 import { parseTemplateRoutes } from "@/routes/parse-templates";
 import { practiceSentenceRoutes } from "@/routes/practice-sentences";
+import { questionSheetRoutes } from "@/routes/question-sheets";
 import { sentenceRoutes } from "@/routes/sentences";
 import { settingsRoutes } from "@/routes/settings";
 import { sourceRoutes } from "@/routes/sources";
@@ -58,6 +60,14 @@ export async function buildApp(): Promise<FastifyInstance> {
         {
           name: "writings",
           description: "Free-form learner writing with inline corrections",
+        },
+        {
+          name: "question-sheets",
+          description: "Reusable templates of textbook/worksheet questions",
+        },
+        {
+          name: "answer-sheets",
+          description: "Filled-in attempts at a question sheet, with corrections",
         },
         {
           name: "lessons",
@@ -108,6 +118,8 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(practiceSentenceRoutes);
   await app.register(mySentenceRoutes);
   await app.register(writingRoutes);
+  await app.register(questionSheetRoutes);
+  await app.register(answerSheetRoutes);
   await app.register(sourceRoutes);
   await app.register(vocabRoutes);
   await app.register(captureRoutes);

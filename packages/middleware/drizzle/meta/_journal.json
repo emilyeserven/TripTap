@@ -141,6 +141,13 @@
       "when": 1783893376080,
       "tag": "0019_flashy_wiccan",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1783896836183,
+      "tag": "0020_first_ego",
+      "breakpoints": true
     }
   ]
 }
