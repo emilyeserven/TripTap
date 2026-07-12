@@ -4,6 +4,8 @@ import { Badge } from "@/components/ui/badge";
 export function LevelBadge({
   lvl,
 }: { lvl: string }) {
+  // Standalone vocab carries no level; render nothing rather than an empty pill.
+  if (!lvl) return null;
   const isJlpt = /^N[1-5]$/.test(lvl);
   return <Badge variant={isJlpt ? "default" : "secondary"}>{lvl}</Badge>;
 }

@@ -75,11 +75,6 @@ const studyItems = [
     to: "/sentences",
     icon: ScrollTextIcon,
   },
-  {
-    title: "Vocab",
-    to: "/vocab",
-    icon: LibraryIcon,
-  },
 ] as const;
 
 /** Tools that act on the bank (exports, etc.). */

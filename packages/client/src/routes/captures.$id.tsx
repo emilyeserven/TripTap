@@ -208,22 +208,27 @@ function CaptureDetailPage() {
           </div>
 
           <Tabs
-            defaultValue="block"
+            defaultValue="created"
             className="w-full"
           >
             <TabsList className="flex-wrap">
+              <TabsTrigger value="created">Created From Capture</TabsTrigger>
               <TabsTrigger value="block">Block Mode</TabsTrigger>
               <TabsTrigger value="text">Text Mode</TabsTrigger>
-              <TabsTrigger value="created">Created From Capture</TabsTrigger>
               <TabsTrigger value="source">Source Reference</TabsTrigger>
             </TabsList>
 
-            {/* 1. Block Mode — cleaned blocks editor + resulting items (side-by-side on wide screens) */}
+            {/* 1. Created From Capture */}
+            <TabsContent value="created">
+              <CaptureCreatedItems captureId={capture.id} />
+            </TabsContent>
+
+            {/* 2. Block Mode — cleaned blocks editor + resulting items (side-by-side on wide screens) */}
             <TabsContent value="block">
               <CleanedBlocksWorkspace capture={capture} />
             </TabsContent>
 
-            {/* 2. Text Mode — cleaned text + create-from-text + preview */}
+            {/* 3. Text Mode — cleaned text + create-from-text + preview */}
             <TabsContent value="text">
               <div
                 className="
@@ -235,11 +240,6 @@ function CaptureDetailPage() {
 
                 <CaptureParseWorkspace capture={capture} />
               </div>
-            </TabsContent>
-
-            {/* 3. Created From Capture */}
-            <TabsContent value="created">
-              <CaptureCreatedItems captureId={capture.id} />
             </TabsContent>
 
             {/* 4. Source Reference — original image + raw OCR blocks */}
