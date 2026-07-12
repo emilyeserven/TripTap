@@ -7,10 +7,15 @@ import { useBookmarksVocabulary, useCreateBookmarkTerm } from "@/hooks/useBookma
 import { useBookmarksSettings } from "@/hooks/useSettings";
 
 /** Which configured source backs each channel. */
-const SOURCE_KEY: Record<SentenceTermCategory, "source" | "grammarSource" | "generalSource"> = {
+const SOURCE_KEY: Record<
+  SentenceTermCategory,
+  "source" | "grammarSource" | "generalSource" | "resourceSource" | "listeningSource"
+> = {
   vocabulary: "source",
   grammar: "grammarSource",
   general: "generalSource",
+  resource: "resourceSource",
+  listening: "listeningSource",
 };
 
 /**

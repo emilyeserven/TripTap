@@ -54,6 +54,8 @@ const updateBookmarksSettingsBody = {
     source: bookmarksSourceSchema,
     grammarSource: bookmarksSourceSchema,
     generalSource: bookmarksSourceSchema,
+    resourceSource: bookmarksSourceSchema,
+    listeningSource: bookmarksSourceSchema,
   },
 } as const;
 

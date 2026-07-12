@@ -33,6 +33,10 @@ const TERM_GROUPS: { category: SentenceTermCategory;
     category: "general",
     label: "General",
   },
+  {
+    category: "resource",
+    label: "Textbooks & Worksheets",
+  },
 ];
 
 /**

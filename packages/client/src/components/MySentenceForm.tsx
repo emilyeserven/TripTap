@@ -47,13 +47,16 @@ export function MySentenceForm({
   const [generalTerms, setGeneralTerms] = useState<SentenceTermRef[]>(
     initialTerms.filter(t => termCategory(t) === "general"),
   );
+  const [resourceTerms, setResourceTerms] = useState<SentenceTermRef[]>(
+    initialTerms.filter(t => termCategory(t) === "resource"),
+  );
 
   const pending = create.isPending || update.isPending;
   const canSubmit = text.trim().length > 0 && language.trim().length > 0 && !pending;
 
   const submit = async () => {
     if (!canSubmit) return;
-    const terms = [...vocabTerms, ...grammarTerms, ...generalTerms];
+    const terms = [...vocabTerms, ...grammarTerms, ...generalTerms, ...resourceTerms];
     const input = {
       text: text.trim(),
       language: language.trim(),
@@ -171,7 +174,7 @@ export function MySentenceForm({
       <div
         className="
           grid gap-4
-          sm:grid-cols-3
+          sm:grid-cols-2
         "
       >
         <TermPicker
@@ -191,6 +194,12 @@ export function MySentenceForm({
           label="General tags"
           value={generalTerms}
           onChange={setGeneralTerms}
+        />
+        <TermPicker
+          category="resource"
+          label="Textbook / Worksheet"
+          value={resourceTerms}
+          onChange={setResourceTerms}
         />
       </div>
 

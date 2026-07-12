@@ -26,7 +26,7 @@ import { Label } from "@/components/ui/label";
 import { useBookmarksTags, useBookmarksTaxonomies, useBookmarksTerms } from "@/hooks/useBookmarks";
 import { useBookmarksSettings, useUpdateBookmarksSettings } from "@/hooks/useSettings";
 
-/** The three tagging channels, each backed by its own configured source. */
+/** The five tagging channels, each backed by its own configured source. */
 const CHANNELS: { category: SentenceTermCategory;
   title: string;
   hint: string; }[] = [
@@ -44,6 +44,16 @@ const CHANNELS: { category: SentenceTermCategory;
     category: "general",
     title: "General source",
     hint: "Politeness level, situational context, etc.",
+  },
+  {
+    category: "resource",
+    title: "Textbooks & Worksheets source",
+    hint: "Textbooks, worksheets, and other source material.",
+  },
+  {
+    category: "listening",
+    title: "Listening source",
+    hint: "Bookmarks to shadow — the tag whose child tags group your listening material.",
   },
 ];
 
@@ -262,6 +272,12 @@ export function BookmarksTagsCard() {
     general: {
       ...EMPTY_DRAFT,
     },
+    resource: {
+      ...EMPTY_DRAFT,
+    },
+    listening: {
+      ...EMPTY_DRAFT,
+    },
   });
   const [saved, setSaved] = useState(false);
 
@@ -275,6 +291,8 @@ export function BookmarksTagsCard() {
       vocabulary: draftFromSource(settings.data.source),
       grammar: draftFromSource(settings.data.grammarSource),
       general: draftFromSource(settings.data.generalSource),
+      resource: draftFromSource(settings.data.resourceSource),
+      listening: draftFromSource(settings.data.listeningSource),
     });
   }, [settings.data]);
 
@@ -289,6 +307,8 @@ export function BookmarksTagsCard() {
       source: draftToSource(drafts.vocabulary),
       grammarSource: draftToSource(drafts.grammar),
       generalSource: draftToSource(drafts.general),
+      resourceSource: draftToSource(drafts.resource),
+      listeningSource: draftToSource(drafts.listening),
     });
     flashSaved();
   }
@@ -297,6 +317,8 @@ export function BookmarksTagsCard() {
     vocabulary: settings.data?.source,
     grammar: settings.data?.grammarSource,
     general: settings.data?.generalSource,
+    resource: settings.data?.resourceSource,
+    listening: settings.data?.listeningSource,
   };
 
   return (

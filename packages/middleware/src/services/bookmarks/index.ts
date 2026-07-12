@@ -1,6 +1,8 @@
 import type {
+  BookmarkRecord,
   BookmarksSource,
   BookmarksTaxonomy,
+  BookmarkSection,
   SentenceTermCategory,
   TagTermOption,
 } from "@sentence-bank/types";
@@ -31,6 +33,8 @@ async function resolveBookmarksConfig(): Promise<BookmarksConfig> {
     vocabulary: null,
     grammar: null,
     general: null,
+    resource: null,
+    listening: null,
   };
   try {
     const settings = await getBookmarksSettings();
@@ -38,6 +42,8 @@ async function resolveBookmarksConfig(): Promise<BookmarksConfig> {
     sources.vocabulary = settings.source;
     sources.grammar = settings.grammarSource;
     sources.general = settings.generalSource;
+    sources.resource = settings.resourceSource;
+    sources.listening = settings.listeningSource;
   }
   catch {
     // Database unavailable — fall back to environment/default.
@@ -141,6 +147,77 @@ export async function fetchVocabulary(
   }
   const tags = toOptions(await fetchBookmarksJson<unknown>(apiUrl(baseUrl, "/tags")));
   return tags.filter(t => t.parentId === source.id);
+}
+
+/**
+ * Recursively flatten a bookmark's `sectionsValues[].sections[]` tree into the timestamp sections we
+ * surface. Only entries with `type === "timestamp"` and both a start and end value are kept.
+ */
+function flattenTimestampSections(raw: unknown): BookmarkSection[] {
+  const out: BookmarkSection[] = [];
+  const walk = (sections: unknown): void => {
+    if (!Array.isArray(sections)) return;
+    for (const s of sections) {
+      if (!s || typeof s !== "object") continue;
+      const o = s as Record<string, unknown>;
+      if (
+        o.type === "timestamp"
+        && typeof o.startValue === "string"
+        && o.startValue !== ""
+        && typeof o.endValue === "string"
+        && o.endValue !== ""
+      ) {
+        out.push({
+          id: typeof o.id === "string" ? o.id : `${out.length}`,
+          label: typeof o.name === "string" ? o.name : null,
+          startValue: o.startValue,
+          endValue: o.endValue,
+        });
+      }
+      if (Array.isArray(o.children)) walk(o.children);
+    }
+  };
+  if (Array.isArray(raw)) {
+    for (const group of raw) {
+      if (group && typeof group === "object") walk((group as Record<string, unknown>).sections);
+    }
+  }
+  return out;
+}
+
+/** Pull the fields we depend on from an upstream bookmark record, optionally flattening its sections. */
+function toBookmarkRecord(raw: unknown, includeSections: boolean): BookmarkRecord | null {
+  if (!raw || typeof raw !== "object") return null;
+  const o = raw as Record<string, unknown>;
+  if (typeof o.id !== "string" || typeof o.title !== "string") return null;
+  return {
+    id: o.id,
+    title: o.title,
+    url: typeof o.url === "string" ? o.url : null,
+    sections: includeSections ? flattenTimestampSections(o.sectionsValues) : [],
+  };
+}
+
+/** Bookmarks tagged with the given tag id, newest-app-order. Sections are not included in the list. */
+export async function listBookmarks(tagId: string): Promise<BookmarkRecord[]> {
+  const {
+    baseUrl,
+  } = await resolveBookmarksConfig();
+  const raw = await fetchBookmarksJson<unknown>(
+    apiUrl(baseUrl, `/bookmarks?tags=${encodeURIComponent(tagId)}`),
+  );
+  return Array.isArray(raw)
+    ? raw.map(r => toBookmarkRecord(r, false)).filter((b): b is BookmarkRecord => b !== null)
+    : [];
+}
+
+/** A single bookmark by id, including its flattened timestamp sections. Null when not found/unreadable. */
+export async function getBookmark(id: string): Promise<BookmarkRecord | null> {
+  const {
+    baseUrl,
+  } = await resolveBookmarksConfig();
+  const raw = await fetchBookmarksJson<unknown>(apiUrl(baseUrl, `/bookmarks/${encodeURIComponent(id)}`));
+  return toBookmarkRecord(raw, true);
 }
 
 /** Normalize an upstream create response into a {@link TagTermOption}, or fail if it can't be read. */

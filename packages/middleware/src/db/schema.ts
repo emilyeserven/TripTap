@@ -2,11 +2,13 @@ import type {
   CleanedBlocks,
   FuriToken,
   GrammarExample,
+  ListeningEntry,
   OcrBlock,
   PracticeGrammar,
   PracticePasses,
   PracticeWord,
   SentenceTermRef,
+  ShadowingSegment,
   SourceGrammar,
   SourceVocab,
   WritingCorrection,
@@ -278,6 +280,62 @@ export const writings = pgTable("writings", {
 
 export type WritingRow = typeof writings.$inferSelect;
 export type NewWritingRow = typeof writings.$inferInsert;
+
+/**
+ * `listening_sessions` — a "Listen and Shadow" session: a YouTube video (usually one of the learner's
+ * bookmarks) plus a running log of timestamped `entries` typed while it plays. The associated bookmark
+ * is denormalized (id/title/url) so the view can render and deep-link without a live bookmarks call.
+ */
+export const listeningSessions = pgTable("listening_sessions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  title: text("title").notNull(),
+  videoUrl: text("video_url"),
+  language: text("language").notNull(),
+  bookmarkId: text("bookmark_id"),
+  bookmarkTitle: text("bookmark_title"),
+  bookmarkUrl: text("bookmark_url"),
+  entries: jsonb("entries").$type<ListeningEntry[]>(),
+  terms: jsonb("terms").$type<SentenceTermRef[]>(),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+});
+
+export type ListeningSessionRow = typeof listeningSessions.$inferSelect;
+export type NewListeningSessionRow = typeof listeningSessions.$inferInsert;
+
+/**
+ * `shadowing_sessions` — a shadowing practice session: a YouTube video plus a list of `segments` that
+ * the player loops automatically (`default_max_replays` times, with a `default_gap_ms` silent gap,
+ * each segment optionally overriding those). Also carries the same timestamped `entries` as a
+ * listening session. The associated bookmark is denormalized like `listening_sessions`.
+ */
+export const shadowingSessions = pgTable("shadowing_sessions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  title: text("title").notNull(),
+  videoUrl: text("video_url"),
+  language: text("language").notNull(),
+  bookmarkId: text("bookmark_id"),
+  bookmarkTitle: text("bookmark_title"),
+  bookmarkUrl: text("bookmark_url"),
+  defaultMaxReplays: integer("default_max_replays").notNull().default(3),
+  defaultGapMs: integer("default_gap_ms").notNull().default(0),
+  segments: jsonb("segments").$type<ShadowingSegment[]>(),
+  entries: jsonb("entries").$type<ListeningEntry[]>(),
+  terms: jsonb("terms").$type<SentenceTermRef[]>(),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+});
+
+export type ShadowingSessionRow = typeof shadowingSessions.$inferSelect;
+export type NewShadowingSessionRow = typeof shadowingSessions.$inferInsert;
 
 /**
  * `writing_prompts` — reusable prompts the learner saves to spark a free-write. Each is a `title`

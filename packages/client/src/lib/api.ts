@@ -1,4 +1,5 @@
 import type {
+  BookmarkRecord,
   BookmarksSettings,
   BookmarksTaxonomy,
   Capture,
@@ -11,6 +12,12 @@ import type {
   CreateSourceInput,
   CreateVocabInput,
   CreateMySentenceInput,
+  CreateListeningSessionInput,
+  CreateShadowingSessionInput,
+  ListeningSession,
+  ShadowingSession,
+  UpdateListeningSessionInput,
+  UpdateShadowingSessionInput,
   LessonContent,
   LessonDetail,
   LessonImportInput,
@@ -199,6 +206,42 @@ export const writingsApi = {
   }),
 };
 
+export const listeningSessionsApi = {
+  list: () => request<ListeningSession[]>("/listening-sessions"),
+  get: (id: string) => request<ListeningSession>(`/listening-sessions/${id}`),
+  create: (input: CreateListeningSessionInput) =>
+    request<ListeningSession>("/listening-sessions", {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+  update: (id: string, input: UpdateListeningSessionInput) =>
+    request<ListeningSession>(`/listening-sessions/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    }),
+  remove: (id: string) => request<undefined>(`/listening-sessions/${id}`, {
+    method: "DELETE",
+  }),
+};
+
+export const shadowingSessionsApi = {
+  list: () => request<ShadowingSession[]>("/shadowing-sessions"),
+  get: (id: string) => request<ShadowingSession>(`/shadowing-sessions/${id}`),
+  create: (input: CreateShadowingSessionInput) =>
+    request<ShadowingSession>("/shadowing-sessions", {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+  update: (id: string, input: UpdateShadowingSessionInput) =>
+    request<ShadowingSession>(`/shadowing-sessions/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    }),
+  remove: (id: string) => request<undefined>(`/shadowing-sessions/${id}`, {
+    method: "DELETE",
+  }),
+};
+
 export const writingPromptsApi = {
   list: () => request<WritingPrompt[]>("/writing-prompts"),
   get: (id: string) => request<WritingPrompt>(`/writing-prompts/${id}`),
@@ -360,6 +403,11 @@ export const bookmarksApi = {
       method: "POST",
       body: JSON.stringify(input),
     }),
+  /** Bookmarks tagged with the given tag id (sections omitted). */
+  records: (tagId: string) =>
+    request<BookmarkRecord[]>(`/bookmarks/records?tagId=${encodeURIComponent(tagId)}`),
+  /** A single bookmark with its flattened timestamp sections. */
+  record: (id: string) => request<BookmarkRecord>(`/bookmarks/records/${encodeURIComponent(id)}`),
 };
 
 export const lessonsApi = {

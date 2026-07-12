@@ -8,6 +8,8 @@ import {
   fetchTaxonomies,
   fetchTerms,
   fetchVocabulary,
+  getBookmark,
+  listBookmarks,
 } from "@/services/bookmarks";
 
 /** Map a bookmarks domain error to its HTTP status; rethrow anything else. */
@@ -35,7 +37,7 @@ const taxonomyParams = {
   },
 } as const;
 
-const CATEGORY_ENUM = ["vocabulary", "grammar", "general"] as const;
+const CATEGORY_ENUM = ["vocabulary", "grammar", "general", "resource", "listening"] as const;
 
 const vocabularyQuery = {
   type: "object",
@@ -59,6 +61,27 @@ const createTermBody = {
     category: {
       type: "string",
       enum: CATEGORY_ENUM,
+    },
+  },
+} as const;
+
+const recordsQuery = {
+  type: "object",
+  required: ["tagId"],
+  properties: {
+    tagId: {
+      type: "string",
+      minLength: 1,
+    },
+  },
+} as const;
+
+const recordParams = {
+  type: "object",
+  required: ["id"],
+  properties: {
+    id: {
+      type: "string",
     },
   },
 } as const;
@@ -123,6 +146,44 @@ export async function bookmarksRoutes(app: FastifyInstance): Promise<void> {
     } = req.query as { category?: SentenceTermCategory };
     try {
       return await fetchVocabulary(category);
+    }
+    catch (err) {
+      return handleError(err, reply);
+    }
+  });
+
+  app.get("/api/bookmarks/records", {
+    schema: {
+      tags: ["bookmarks"],
+      querystring: recordsQuery,
+    },
+  }, async (req, reply) => {
+    const {
+      tagId,
+    } = req.query as { tagId: string };
+    try {
+      return await listBookmarks(tagId);
+    }
+    catch (err) {
+      return handleError(err, reply);
+    }
+  });
+
+  app.get("/api/bookmarks/records/:id", {
+    schema: {
+      tags: ["bookmarks"],
+      params: recordParams,
+    },
+  }, async (req, reply) => {
+    const {
+      id,
+    } = req.params as { id: string };
+    try {
+      const record = await getBookmark(id);
+      if (!record) return reply.code(404).send({
+        message: "Bookmark not found",
+      });
+      return record;
     }
     catch (err) {
       return handleError(err, reply);

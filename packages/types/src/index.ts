@@ -5,9 +5,13 @@
  * (`@sentence-bank/client`) so the wire contract stays in one place.
  */
 
+export * from "./answer-sheet.js";
 export * from "./lesson.js";
+export * from "./listening-session.js";
 export * from "./my-sentence.js";
 export * from "./practice-sentence.js";
+export * from "./question-sheet.js";
+export * from "./shadowing-session.js";
 export * from "./writing.js";
 export * from "./writing-prompt.js";
 
@@ -324,8 +328,10 @@ export interface UpdateOcrSettingsInput {
  * A borrowed vocabulary from the external "eeSimple Bookmarks" app. The user configures an endpoint
  * plus one source per channel — either a parent tag (whose children become the vocabulary) or a
  * taxonomy (whose terms become the vocabulary) — then tags sentences with terms drawn from it.
- * There are three independent channels ({@link SentenceTermCategory}): Vocabulary, Grammar, and a
- * catch-all General channel (e.g. politeness level, situational context). A taxonomy source may
+ * There are five independent channels ({@link SentenceTermCategory}): Vocabulary, Grammar, a
+ * catch-all General channel (e.g. politeness level, situational context), Textbooks &
+ * Worksheets (the `resource` channel, for tagging by source material), and Listening (the
+ * `listening` channel, for associating Listen-and-Shadow sessions with a source). A taxonomy source may
  * optionally drill into a parent term, so only that term's children become the vocabulary. All calls
  * to the bookmarks host go server-side through the middleware proxy.
  */
@@ -338,7 +344,7 @@ export type BookmarksSourceKind = "tag" | "taxonomy";
  * and its own sentence-form picker. Older stored terms predate this field — default them to
  * `"vocabulary"` when absent.
  */
-export type SentenceTermCategory = "vocabulary" | "grammar" | "general";
+export type SentenceTermCategory = "vocabulary" | "grammar" | "general" | "resource" | "listening";
 
 /** The configured vocabulary source: a chosen parent tag or taxonomy in the bookmarks app. */
 export interface BookmarksSource {
@@ -369,6 +375,10 @@ export interface BookmarksSettings {
   grammarSource: BookmarksSource | null;
   /** The selected General source, or null when unconfigured. */
   generalSource: BookmarksSource | null;
+  /** The selected Textbooks & Worksheets source, or null when unconfigured. */
+  resourceSource: BookmarksSource | null;
+  /** The selected Listening source, or null when unconfigured. */
+  listeningSource: BookmarksSource | null;
 }
 
 /**
@@ -380,6 +390,8 @@ export interface UpdateBookmarksSettingsInput {
   source?: BookmarksSource | null;
   grammarSource?: BookmarksSource | null;
   generalSource?: BookmarksSource | null;
+  resourceSource?: BookmarksSource | null;
+  listeningSource?: BookmarksSource | null;
 }
 
 /**
@@ -418,4 +430,32 @@ export interface SentenceTermRef {
   sourceLabel: string;
   /** Which channel this term belongs to. Absent on rows created before channels existed → treat as "vocabulary". */
   category: SentenceTermCategory;
+}
+
+/**
+ * One timestamped "section" borrowed from a bookmark's Sections custom property, flattened from the
+ * upstream (possibly nested) structure. Only entries with `type === "timestamp"` are surfaced; the
+ * `startValue`/`endValue` are the upstream raw strings (parsed to milliseconds on the client).
+ */
+export interface BookmarkSection {
+  id: string;
+  /** Display label (the upstream section `name`); null when unnamed. */
+  label: string | null;
+  /** Raw upstream start value, e.g. "00:01:23.400" or "83" (seconds). */
+  startValue: string;
+  /** Raw upstream end value. */
+  endValue: string;
+}
+
+/**
+ * A bookmark record fetched from the external bookmarks app. Only the fields we consume are surfaced;
+ * `sections` is populated only by the single-record fetch (`GET /api/bookmarks/records/:id`).
+ */
+export interface BookmarkRecord {
+  id: string;
+  title: string;
+  /** The primary link (the video URL for Listen-and-Shadow); null when the bookmark has none. */
+  url: string | null;
+  /** Flattened timestamp sections; empty on the list endpoint, populated on the single-record fetch. */
+  sections: BookmarkSection[];
 }
