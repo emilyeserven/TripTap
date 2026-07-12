@@ -4,6 +4,8 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import {
   BookOpenIcon,
   CameraIcon,
+  ClipboardCheckIcon,
+  ClipboardListIcon,
   DatabaseIcon,
   GraduationCapIcon,
   HomeIcon,
@@ -97,6 +99,16 @@ const actionItems = [
     title: "My Writing",
     to: "/my-writing",
     icon: PenLineIcon,
+  },
+  {
+    title: "Question Sheets",
+    to: "/question-sheets",
+    icon: ClipboardListIcon,
+  },
+  {
+    title: "Answer Sheets",
+    to: "/answer-sheets",
+    icon: ClipboardCheckIcon,
   },
   {
     title: "Renshuu export",

@@ -20,12 +20,16 @@ import { Route as CaptureRouteImport } from './routes/capture'
 import { Route as AnkiRouteImport } from './routes/anki'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SourcesIndexRouteImport } from './routes/sources.index'
+import { Route as QuestionSheetsIndexRouteImport } from './routes/question-sheets.index'
 import { Route as PracticeIndexRouteImport } from './routes/practice.index'
 import { Route as MyWritingIndexRouteImport } from './routes/my-writing.index'
 import { Route as MySentencesIndexRouteImport } from './routes/my-sentences.index'
 import { Route as LessonsIndexRouteImport } from './routes/lessons.index'
 import { Route as CapturesIndexRouteImport } from './routes/captures.index'
+import { Route as AnswerSheetsIndexRouteImport } from './routes/answer-sheets.index'
 import { Route as SourcesIdRouteImport } from './routes/sources.$id'
+import { Route as QuestionSheetsNewRouteImport } from './routes/question-sheets.new'
+import { Route as QuestionSheetsIdRouteImport } from './routes/question-sheets.$id'
 import { Route as PracticeNewRouteImport } from './routes/practice.new'
 import { Route as PracticeIdRouteImport } from './routes/practice.$id'
 import { Route as MyWritingIdRouteImport } from './routes/my-writing.$id'
@@ -34,10 +38,16 @@ import { Route as MySentencesIdRouteImport } from './routes/my-sentences.$id'
 import { Route as LessonsNewRouteImport } from './routes/lessons.new'
 import { Route as LessonsSlugRouteImport } from './routes/lessons.$slug'
 import { Route as CapturesIdRouteImport } from './routes/captures.$id'
+import { Route as AnswerSheetsNewRouteImport } from './routes/answer-sheets.new'
+import { Route as AnswerSheetsIdRouteImport } from './routes/answer-sheets.$id'
+import { Route as QuestionSheetsIdIndexRouteImport } from './routes/question-sheets.$id.index'
 import { Route as PracticeIdIndexRouteImport } from './routes/practice.$id.index'
 import { Route as MySentencesIdIndexRouteImport } from './routes/my-sentences.$id.index'
+import { Route as AnswerSheetsIdIndexRouteImport } from './routes/answer-sheets.$id.index'
+import { Route as QuestionSheetsIdEditRouteImport } from './routes/question-sheets.$id.edit'
 import { Route as PracticeIdEditRouteImport } from './routes/practice.$id.edit'
 import { Route as MySentencesIdEditRouteImport } from './routes/my-sentences.$id.edit'
+import { Route as AnswerSheetsIdEditRouteImport } from './routes/answer-sheets.$id.edit'
 
 const VocabularyRoute = VocabularyRouteImport.update({
   id: '/vocabulary',
@@ -94,6 +104,11 @@ const SourcesIndexRoute = SourcesIndexRouteImport.update({
   path: '/sources/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const QuestionSheetsIndexRoute = QuestionSheetsIndexRouteImport.update({
+  id: '/question-sheets/',
+  path: '/question-sheets/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PracticeIndexRoute = PracticeIndexRouteImport.update({
   id: '/practice/',
   path: '/practice/',
@@ -119,9 +134,24 @@ const CapturesIndexRoute = CapturesIndexRouteImport.update({
   path: '/captures/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AnswerSheetsIndexRoute = AnswerSheetsIndexRouteImport.update({
+  id: '/answer-sheets/',
+  path: '/answer-sheets/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SourcesIdRoute = SourcesIdRouteImport.update({
   id: '/sources/$id',
   path: '/sources/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const QuestionSheetsNewRoute = QuestionSheetsNewRouteImport.update({
+  id: '/question-sheets/new',
+  path: '/question-sheets/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const QuestionSheetsIdRoute = QuestionSheetsIdRouteImport.update({
+  id: '/question-sheets/$id',
+  path: '/question-sheets/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PracticeNewRoute = PracticeNewRouteImport.update({
@@ -164,6 +194,21 @@ const CapturesIdRoute = CapturesIdRouteImport.update({
   path: '/captures/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AnswerSheetsNewRoute = AnswerSheetsNewRouteImport.update({
+  id: '/answer-sheets/new',
+  path: '/answer-sheets/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AnswerSheetsIdRoute = AnswerSheetsIdRouteImport.update({
+  id: '/answer-sheets/$id',
+  path: '/answer-sheets/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const QuestionSheetsIdIndexRoute = QuestionSheetsIdIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => QuestionSheetsIdRoute,
+} as any)
 const PracticeIdIndexRoute = PracticeIdIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -174,6 +219,16 @@ const MySentencesIdIndexRoute = MySentencesIdIndexRouteImport.update({
   path: '/',
   getParentRoute: () => MySentencesIdRoute,
 } as any)
+const AnswerSheetsIdIndexRoute = AnswerSheetsIdIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AnswerSheetsIdRoute,
+} as any)
+const QuestionSheetsIdEditRoute = QuestionSheetsIdEditRouteImport.update({
+  id: '/edit',
+  path: '/edit',
+  getParentRoute: () => QuestionSheetsIdRoute,
+} as any)
 const PracticeIdEditRoute = PracticeIdEditRouteImport.update({
   id: '/edit',
   path: '/edit',
@@ -183,6 +238,11 @@ const MySentencesIdEditRoute = MySentencesIdEditRouteImport.update({
   id: '/edit',
   path: '/edit',
   getParentRoute: () => MySentencesIdRoute,
+} as any)
+const AnswerSheetsIdEditRoute = AnswerSheetsIdEditRouteImport.update({
+  id: '/edit',
+  path: '/edit',
+  getParentRoute: () => AnswerSheetsIdRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -196,6 +256,8 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRoute
   '/vocab': typeof VocabRoute
   '/vocabulary': typeof VocabularyRoute
+  '/answer-sheets/$id': typeof AnswerSheetsIdRouteWithChildren
+  '/answer-sheets/new': typeof AnswerSheetsNewRoute
   '/captures/$id': typeof CapturesIdRoute
   '/lessons/$slug': typeof LessonsSlugRoute
   '/lessons/new': typeof LessonsNewRoute
@@ -204,17 +266,25 @@ export interface FileRoutesByFullPath {
   '/my-writing/$id': typeof MyWritingIdRoute
   '/practice/$id': typeof PracticeIdRouteWithChildren
   '/practice/new': typeof PracticeNewRoute
+  '/question-sheets/$id': typeof QuestionSheetsIdRouteWithChildren
+  '/question-sheets/new': typeof QuestionSheetsNewRoute
   '/sources/$id': typeof SourcesIdRoute
+  '/answer-sheets/': typeof AnswerSheetsIndexRoute
   '/captures/': typeof CapturesIndexRoute
   '/lessons/': typeof LessonsIndexRoute
   '/my-sentences/': typeof MySentencesIndexRoute
   '/my-writing/': typeof MyWritingIndexRoute
   '/practice/': typeof PracticeIndexRoute
+  '/question-sheets/': typeof QuestionSheetsIndexRoute
   '/sources/': typeof SourcesIndexRoute
+  '/answer-sheets/$id/edit': typeof AnswerSheetsIdEditRoute
   '/my-sentences/$id/edit': typeof MySentencesIdEditRoute
   '/practice/$id/edit': typeof PracticeIdEditRoute
+  '/question-sheets/$id/edit': typeof QuestionSheetsIdEditRoute
+  '/answer-sheets/$id/': typeof AnswerSheetsIdIndexRoute
   '/my-sentences/$id/': typeof MySentencesIdIndexRoute
   '/practice/$id/': typeof PracticeIdIndexRoute
+  '/question-sheets/$id/': typeof QuestionSheetsIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -227,23 +297,31 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/vocab': typeof VocabRoute
   '/vocabulary': typeof VocabularyRoute
+  '/answer-sheets/new': typeof AnswerSheetsNewRoute
   '/captures/$id': typeof CapturesIdRoute
   '/lessons/$slug': typeof LessonsSlugRoute
   '/lessons/new': typeof LessonsNewRoute
   '/my-sentences/new': typeof MySentencesNewRoute
   '/my-writing/$id': typeof MyWritingIdRoute
   '/practice/new': typeof PracticeNewRoute
+  '/question-sheets/new': typeof QuestionSheetsNewRoute
   '/sources/$id': typeof SourcesIdRoute
+  '/answer-sheets': typeof AnswerSheetsIndexRoute
   '/captures': typeof CapturesIndexRoute
   '/lessons': typeof LessonsIndexRoute
   '/my-sentences': typeof MySentencesIndexRoute
   '/my-writing': typeof MyWritingIndexRoute
   '/practice': typeof PracticeIndexRoute
+  '/question-sheets': typeof QuestionSheetsIndexRoute
   '/sources': typeof SourcesIndexRoute
+  '/answer-sheets/$id/edit': typeof AnswerSheetsIdEditRoute
   '/my-sentences/$id/edit': typeof MySentencesIdEditRoute
   '/practice/$id/edit': typeof PracticeIdEditRoute
+  '/question-sheets/$id/edit': typeof QuestionSheetsIdEditRoute
+  '/answer-sheets/$id': typeof AnswerSheetsIdIndexRoute
   '/my-sentences/$id': typeof MySentencesIdIndexRoute
   '/practice/$id': typeof PracticeIdIndexRoute
+  '/question-sheets/$id': typeof QuestionSheetsIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -257,6 +335,8 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRoute
   '/vocab': typeof VocabRoute
   '/vocabulary': typeof VocabularyRoute
+  '/answer-sheets/$id': typeof AnswerSheetsIdRouteWithChildren
+  '/answer-sheets/new': typeof AnswerSheetsNewRoute
   '/captures/$id': typeof CapturesIdRoute
   '/lessons/$slug': typeof LessonsSlugRoute
   '/lessons/new': typeof LessonsNewRoute
@@ -265,17 +345,25 @@ export interface FileRoutesById {
   '/my-writing/$id': typeof MyWritingIdRoute
   '/practice/$id': typeof PracticeIdRouteWithChildren
   '/practice/new': typeof PracticeNewRoute
+  '/question-sheets/$id': typeof QuestionSheetsIdRouteWithChildren
+  '/question-sheets/new': typeof QuestionSheetsNewRoute
   '/sources/$id': typeof SourcesIdRoute
+  '/answer-sheets/': typeof AnswerSheetsIndexRoute
   '/captures/': typeof CapturesIndexRoute
   '/lessons/': typeof LessonsIndexRoute
   '/my-sentences/': typeof MySentencesIndexRoute
   '/my-writing/': typeof MyWritingIndexRoute
   '/practice/': typeof PracticeIndexRoute
+  '/question-sheets/': typeof QuestionSheetsIndexRoute
   '/sources/': typeof SourcesIndexRoute
+  '/answer-sheets/$id/edit': typeof AnswerSheetsIdEditRoute
   '/my-sentences/$id/edit': typeof MySentencesIdEditRoute
   '/practice/$id/edit': typeof PracticeIdEditRoute
+  '/question-sheets/$id/edit': typeof QuestionSheetsIdEditRoute
+  '/answer-sheets/$id/': typeof AnswerSheetsIdIndexRoute
   '/my-sentences/$id/': typeof MySentencesIdIndexRoute
   '/practice/$id/': typeof PracticeIdIndexRoute
+  '/question-sheets/$id/': typeof QuestionSheetsIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -290,6 +378,8 @@ export interface FileRouteTypes {
     | '/settings'
     | '/vocab'
     | '/vocabulary'
+    | '/answer-sheets/$id'
+    | '/answer-sheets/new'
     | '/captures/$id'
     | '/lessons/$slug'
     | '/lessons/new'
@@ -298,17 +388,25 @@ export interface FileRouteTypes {
     | '/my-writing/$id'
     | '/practice/$id'
     | '/practice/new'
+    | '/question-sheets/$id'
+    | '/question-sheets/new'
     | '/sources/$id'
+    | '/answer-sheets/'
     | '/captures/'
     | '/lessons/'
     | '/my-sentences/'
     | '/my-writing/'
     | '/practice/'
+    | '/question-sheets/'
     | '/sources/'
+    | '/answer-sheets/$id/edit'
     | '/my-sentences/$id/edit'
     | '/practice/$id/edit'
+    | '/question-sheets/$id/edit'
+    | '/answer-sheets/$id/'
     | '/my-sentences/$id/'
     | '/practice/$id/'
+    | '/question-sheets/$id/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -321,23 +419,31 @@ export interface FileRouteTypes {
     | '/settings'
     | '/vocab'
     | '/vocabulary'
+    | '/answer-sheets/new'
     | '/captures/$id'
     | '/lessons/$slug'
     | '/lessons/new'
     | '/my-sentences/new'
     | '/my-writing/$id'
     | '/practice/new'
+    | '/question-sheets/new'
     | '/sources/$id'
+    | '/answer-sheets'
     | '/captures'
     | '/lessons'
     | '/my-sentences'
     | '/my-writing'
     | '/practice'
+    | '/question-sheets'
     | '/sources'
+    | '/answer-sheets/$id/edit'
     | '/my-sentences/$id/edit'
     | '/practice/$id/edit'
+    | '/question-sheets/$id/edit'
+    | '/answer-sheets/$id'
     | '/my-sentences/$id'
     | '/practice/$id'
+    | '/question-sheets/$id'
   id:
     | '__root__'
     | '/'
@@ -350,6 +456,8 @@ export interface FileRouteTypes {
     | '/settings'
     | '/vocab'
     | '/vocabulary'
+    | '/answer-sheets/$id'
+    | '/answer-sheets/new'
     | '/captures/$id'
     | '/lessons/$slug'
     | '/lessons/new'
@@ -358,17 +466,25 @@ export interface FileRouteTypes {
     | '/my-writing/$id'
     | '/practice/$id'
     | '/practice/new'
+    | '/question-sheets/$id'
+    | '/question-sheets/new'
     | '/sources/$id'
+    | '/answer-sheets/'
     | '/captures/'
     | '/lessons/'
     | '/my-sentences/'
     | '/my-writing/'
     | '/practice/'
+    | '/question-sheets/'
     | '/sources/'
+    | '/answer-sheets/$id/edit'
     | '/my-sentences/$id/edit'
     | '/practice/$id/edit'
+    | '/question-sheets/$id/edit'
+    | '/answer-sheets/$id/'
     | '/my-sentences/$id/'
     | '/practice/$id/'
+    | '/question-sheets/$id/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -382,6 +498,8 @@ export interface RootRouteChildren {
   SettingsRoute: typeof SettingsRoute
   VocabRoute: typeof VocabRoute
   VocabularyRoute: typeof VocabularyRoute
+  AnswerSheetsIdRoute: typeof AnswerSheetsIdRouteWithChildren
+  AnswerSheetsNewRoute: typeof AnswerSheetsNewRoute
   CapturesIdRoute: typeof CapturesIdRoute
   LessonsSlugRoute: typeof LessonsSlugRoute
   LessonsNewRoute: typeof LessonsNewRoute
@@ -390,12 +508,16 @@ export interface RootRouteChildren {
   MyWritingIdRoute: typeof MyWritingIdRoute
   PracticeIdRoute: typeof PracticeIdRouteWithChildren
   PracticeNewRoute: typeof PracticeNewRoute
+  QuestionSheetsIdRoute: typeof QuestionSheetsIdRouteWithChildren
+  QuestionSheetsNewRoute: typeof QuestionSheetsNewRoute
   SourcesIdRoute: typeof SourcesIdRoute
+  AnswerSheetsIndexRoute: typeof AnswerSheetsIndexRoute
   CapturesIndexRoute: typeof CapturesIndexRoute
   LessonsIndexRoute: typeof LessonsIndexRoute
   MySentencesIndexRoute: typeof MySentencesIndexRoute
   MyWritingIndexRoute: typeof MyWritingIndexRoute
   PracticeIndexRoute: typeof PracticeIndexRoute
+  QuestionSheetsIndexRoute: typeof QuestionSheetsIndexRoute
   SourcesIndexRoute: typeof SourcesIndexRoute
 }
 
@@ -478,6 +600,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SourcesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/question-sheets/': {
+      id: '/question-sheets/'
+      path: '/question-sheets'
+      fullPath: '/question-sheets/'
+      preLoaderRoute: typeof QuestionSheetsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/practice/': {
       id: '/practice/'
       path: '/practice'
@@ -513,11 +642,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CapturesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/answer-sheets/': {
+      id: '/answer-sheets/'
+      path: '/answer-sheets'
+      fullPath: '/answer-sheets/'
+      preLoaderRoute: typeof AnswerSheetsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sources/$id': {
       id: '/sources/$id'
       path: '/sources/$id'
       fullPath: '/sources/$id'
       preLoaderRoute: typeof SourcesIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/question-sheets/new': {
+      id: '/question-sheets/new'
+      path: '/question-sheets/new'
+      fullPath: '/question-sheets/new'
+      preLoaderRoute: typeof QuestionSheetsNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/question-sheets/$id': {
+      id: '/question-sheets/$id'
+      path: '/question-sheets/$id'
+      fullPath: '/question-sheets/$id'
+      preLoaderRoute: typeof QuestionSheetsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/practice/new': {
@@ -576,6 +726,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CapturesIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/answer-sheets/new': {
+      id: '/answer-sheets/new'
+      path: '/answer-sheets/new'
+      fullPath: '/answer-sheets/new'
+      preLoaderRoute: typeof AnswerSheetsNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/answer-sheets/$id': {
+      id: '/answer-sheets/$id'
+      path: '/answer-sheets/$id'
+      fullPath: '/answer-sheets/$id'
+      preLoaderRoute: typeof AnswerSheetsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/question-sheets/$id/': {
+      id: '/question-sheets/$id/'
+      path: '/'
+      fullPath: '/question-sheets/$id/'
+      preLoaderRoute: typeof QuestionSheetsIdIndexRouteImport
+      parentRoute: typeof QuestionSheetsIdRoute
+    }
     '/practice/$id/': {
       id: '/practice/$id/'
       path: '/'
@@ -589,6 +760,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/my-sentences/$id/'
       preLoaderRoute: typeof MySentencesIdIndexRouteImport
       parentRoute: typeof MySentencesIdRoute
+    }
+    '/answer-sheets/$id/': {
+      id: '/answer-sheets/$id/'
+      path: '/'
+      fullPath: '/answer-sheets/$id/'
+      preLoaderRoute: typeof AnswerSheetsIdIndexRouteImport
+      parentRoute: typeof AnswerSheetsIdRoute
+    }
+    '/question-sheets/$id/edit': {
+      id: '/question-sheets/$id/edit'
+      path: '/edit'
+      fullPath: '/question-sheets/$id/edit'
+      preLoaderRoute: typeof QuestionSheetsIdEditRouteImport
+      parentRoute: typeof QuestionSheetsIdRoute
     }
     '/practice/$id/edit': {
       id: '/practice/$id/edit'
@@ -604,8 +789,29 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MySentencesIdEditRouteImport
       parentRoute: typeof MySentencesIdRoute
     }
+    '/answer-sheets/$id/edit': {
+      id: '/answer-sheets/$id/edit'
+      path: '/edit'
+      fullPath: '/answer-sheets/$id/edit'
+      preLoaderRoute: typeof AnswerSheetsIdEditRouteImport
+      parentRoute: typeof AnswerSheetsIdRoute
+    }
   }
 }
+
+interface AnswerSheetsIdRouteChildren {
+  AnswerSheetsIdEditRoute: typeof AnswerSheetsIdEditRoute
+  AnswerSheetsIdIndexRoute: typeof AnswerSheetsIdIndexRoute
+}
+
+const AnswerSheetsIdRouteChildren: AnswerSheetsIdRouteChildren = {
+  AnswerSheetsIdEditRoute: AnswerSheetsIdEditRoute,
+  AnswerSheetsIdIndexRoute: AnswerSheetsIdIndexRoute,
+}
+
+const AnswerSheetsIdRouteWithChildren = AnswerSheetsIdRoute._addFileChildren(
+  AnswerSheetsIdRouteChildren,
+)
 
 interface MySentencesIdRouteChildren {
   MySentencesIdEditRoute: typeof MySentencesIdEditRoute
@@ -635,6 +841,19 @@ const PracticeIdRouteWithChildren = PracticeIdRoute._addFileChildren(
   PracticeIdRouteChildren,
 )
 
+interface QuestionSheetsIdRouteChildren {
+  QuestionSheetsIdEditRoute: typeof QuestionSheetsIdEditRoute
+  QuestionSheetsIdIndexRoute: typeof QuestionSheetsIdIndexRoute
+}
+
+const QuestionSheetsIdRouteChildren: QuestionSheetsIdRouteChildren = {
+  QuestionSheetsIdEditRoute: QuestionSheetsIdEditRoute,
+  QuestionSheetsIdIndexRoute: QuestionSheetsIdIndexRoute,
+}
+
+const QuestionSheetsIdRouteWithChildren =
+  QuestionSheetsIdRoute._addFileChildren(QuestionSheetsIdRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AnkiRoute: AnkiRoute,
@@ -646,6 +865,8 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRoute: SettingsRoute,
   VocabRoute: VocabRoute,
   VocabularyRoute: VocabularyRoute,
+  AnswerSheetsIdRoute: AnswerSheetsIdRouteWithChildren,
+  AnswerSheetsNewRoute: AnswerSheetsNewRoute,
   CapturesIdRoute: CapturesIdRoute,
   LessonsSlugRoute: LessonsSlugRoute,
   LessonsNewRoute: LessonsNewRoute,
@@ -654,12 +875,16 @@ const rootRouteChildren: RootRouteChildren = {
   MyWritingIdRoute: MyWritingIdRoute,
   PracticeIdRoute: PracticeIdRouteWithChildren,
   PracticeNewRoute: PracticeNewRoute,
+  QuestionSheetsIdRoute: QuestionSheetsIdRouteWithChildren,
+  QuestionSheetsNewRoute: QuestionSheetsNewRoute,
   SourcesIdRoute: SourcesIdRoute,
+  AnswerSheetsIndexRoute: AnswerSheetsIndexRoute,
   CapturesIndexRoute: CapturesIndexRoute,
   LessonsIndexRoute: LessonsIndexRoute,
   MySentencesIndexRoute: MySentencesIndexRoute,
   MyWritingIndexRoute: MyWritingIndexRoute,
   PracticeIndexRoute: PracticeIndexRoute,
+  QuestionSheetsIndexRoute: QuestionSheetsIndexRoute,
   SourcesIndexRoute: SourcesIndexRoute,
 }
 export const routeTree = rootRouteImport
