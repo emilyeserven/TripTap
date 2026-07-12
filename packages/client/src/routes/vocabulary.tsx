@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 
 import { createFileRoute } from "@tanstack/react-router";
+import { Plus } from "lucide-react";
 
 import { FuriganaScope } from "@/components/lesson/FuriganaScope";
 import { FuriganaToggle } from "@/components/lesson/FuriganaToggle";
@@ -8,6 +9,14 @@ import { LessonFilterChips } from "@/components/lesson/lesson-filter";
 import { uniqueLessons } from "@/components/lesson/lesson-filter-utils";
 import { matches, sortLevels } from "@/components/lesson/search";
 import { VocabCard } from "@/components/lesson/VocabCard";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -16,7 +25,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { VocabBankCard } from "@/components/VocabBankCard";
+import { VocabForm } from "@/components/VocabForm";
 import { useLessonContent, useUpdateVocabRenshuu } from "@/hooks/useLessons";
+import { useSources } from "@/hooks/useSources";
+import { useDeleteVocab, useVocab } from "@/hooks/useVocab";
 
 export const Route = createFileRoute("/vocabulary")({
   component: VocabularyPage,
@@ -28,23 +41,50 @@ function VocabularyPage() {
   } = useLessonContent();
   const updateVocab = useUpdateVocabRenshuu();
 
+  const {
+    data: standalone,
+  } = useVocab();
+  const {
+    data: sources,
+  } = useSources();
+  const deleteVocab = useDeleteVocab();
+  const sourceName = (id: string | null) =>
+    (id ? sources?.find(s => s.id === id)?.name ?? null : null);
+
   const items = useMemo(() => data?.vocab ?? [], [data]);
+  const bank = useMemo(() => standalone ?? [], [standalone]);
   const lessons = useMemo(() => uniqueLessons(items), [items]);
   const levels = useMemo(() => sortLevels(items.map(v => v.lvl)), [items]);
   const categories = useMemo(() => [...new Set(items.map(v => v.cat))].sort(), [items]);
 
+  const [dialogOpen, setDialogOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [scope, setScope] = useState("all"); // "all" | "yours" | "lessons"
   const [lesson, setLesson] = useState("all");
   const [level, setLevel] = useState("all");
   const [category, setCategory] = useState("all");
   const [renshuu, setRenshuu] = useState("all");
 
-  const filtered = items.filter(v =>
-    (lesson === "all" || v.lessonSlug === lesson)
-    && (level === "all" || v.lvl === level)
-    && (category === "all" || v.cat === category)
-    && (renshuu === "all" || (renshuu === "in" ? v.renshuuAdded : !v.renshuuAdded))
-    && matches(search, v.jp, v.yomi, v.en));
+  // A lesson-specific refinement hides the standalone bank (it carries no lesson/level/category).
+  const noLessonNarrowing
+    = lesson === "all" && level === "all" && category === "all" && renshuu === "all";
+
+  const bankShown = scope !== "lessons" && (scope === "yours" || noLessonNarrowing)
+    ? bank.filter(v => matches(search, v.term, v.reading, v.meaning, v.tags, v.notes))
+    : [];
+
+  const lessonShown = scope !== "yours"
+    ? items.filter(v =>
+      (lesson === "all" || v.lessonSlug === lesson)
+      && (level === "all" || v.lvl === level)
+      && (category === "all" || v.cat === category)
+      && (renshuu === "all" || (renshuu === "in" ? v.renshuuAdded : !v.renshuuAdded))
+      && matches(search, v.jp, v.yomi, v.en))
+    : [];
+
+  const shownCount = bankShown.length + lessonShown.length;
+  const totalCount = bank.length + items.length;
+  const nothing = !isLoading && shownCount === 0;
 
   return (
     <FuriganaScope>
@@ -53,10 +93,29 @@ function VocabularyPage() {
           <div>
             <h1 className="text-2xl font-bold">Vocabulary</h1>
             <p className="text-sm text-muted-foreground">
-              {`${filtered.length} of ${items.length} words.`}
+              {`Your own words and those mined from lessons — ${shownCount} of ${totalCount}.`}
             </p>
           </div>
-          <FuriganaToggle />
+          <div className="flex items-center gap-4">
+            <FuriganaToggle />
+            <Dialog
+              open={dialogOpen}
+              onOpenChange={setDialogOpen}
+            >
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="size-4" />
+                  New vocab
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle>New vocab</DialogTitle>
+                </DialogHeader>
+                <VocabForm onSuccess={() => setDialogOpen(false)} />
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
 
         <Input
@@ -67,6 +126,22 @@ function VocabularyPage() {
         />
 
         <div className="flex flex-wrap items-center gap-2">
+          <Select
+            value={scope}
+            onValueChange={setScope}
+          >
+            <SelectTrigger
+              className="w-40"
+              aria-label="Vocab scope"
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All vocab</SelectItem>
+              <SelectItem value="yours">Yours</SelectItem>
+              <SelectItem value="lessons">From lessons</SelectItem>
+            </SelectContent>
+          </Select>
           <FilterSelect
             value={level}
             onChange={setLevel}
@@ -99,11 +174,13 @@ function VocabularyPage() {
           </Select>
         </div>
 
-        <LessonFilterChips
-          lessons={lessons}
-          value={lesson}
-          onChange={setLesson}
-        />
+        {scope !== "yours" && (
+          <LessonFilterChips
+            lessons={lessons}
+            value={lesson}
+            onChange={setLesson}
+          />
+        )}
 
         {isLoading ? <p className="text-muted-foreground">Loading…</p> : null}
         {error ? <p className="text-destructive">{error.message}</p> : null}
@@ -114,7 +191,15 @@ function VocabularyPage() {
             lg:grid-cols-3
           "
         >
-          {filtered.map(v => (
+          {bankShown.map(v => (
+            <VocabBankCard
+              key={v.id}
+              vocab={v}
+              sourceName={sourceName(v.sourceId)}
+              onDelete={id => deleteVocab.mutate(id)}
+            />
+          ))}
+          {lessonShown.map(v => (
             <VocabCard
               key={v.id}
               vocab={v}
@@ -129,7 +214,7 @@ function VocabularyPage() {
             />
           ))}
         </div>
-        {!isLoading && filtered.length === 0
+        {nothing
           ? <p className="text-muted-foreground">No matching vocabulary.</p>
           : null}
       </section>
