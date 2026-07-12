@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { useOcr } from "@/hooks/useOcr";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/capture")({
   component: CapturePage,
@@ -43,6 +44,7 @@ function CapturePage() {
   const [capturedBlob, setCapturedBlob] = useState<Blob | null>(null);
   const [copied, setCopied] = useState(false);
   const [saveOpen, setSaveOpen] = useState(false);
+  const [dragging, setDragging] = useState(false);
   const ocr = useOcr();
 
   const engines = result ? [...new Set(result.blocks.map(b => b.engine))] : [];
@@ -54,6 +56,17 @@ function CapturePage() {
     };
   }, [sourceUrl]);
 
+  // Swallow drops that miss the drop zone so the browser doesn't navigate to the dropped file.
+  useEffect(() => {
+    const prevent = (e: DragEvent) => e.preventDefault();
+    globalThis.addEventListener("dragover", prevent);
+    globalThis.addEventListener("drop", prevent);
+    return () => {
+      globalThis.removeEventListener("dragover", prevent);
+      globalThis.removeEventListener("drop", prevent);
+    };
+  }, []);
+
   function runOcr(file: File) {
     setCapturedBlob(file);
     ocr.mutate(file, {
@@ -64,11 +77,8 @@ function CapturePage() {
     });
   }
 
-  function onSelect(event: React.ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    // Reset any previous result, swap the preview image, and open the cropper before OCR runs.
+  /** Common entry point for a chosen/dropped image: reset state, preview it, and open the cropper. */
+  function selectFile(file: File) {
     setText("");
     setResult(null);
     setCapturedBlob(null);
@@ -79,8 +89,30 @@ function CapturePage() {
     });
     setOriginalFile(file);
     setCropOpen(true);
+  }
+
+  function onSelect(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (file) selectFile(file);
     // Allow re-selecting the same file later (onChange won't fire otherwise).
     event.target.value = "";
+  }
+
+  function onDrop(event: React.DragEvent) {
+    event.preventDefault();
+    setDragging(false);
+    const file = [...(event.dataTransfer.files ?? [])].find(f => f.type.startsWith("image/"));
+    if (file) selectFile(file);
+  }
+
+  function onDragOver(event: React.DragEvent) {
+    event.preventDefault();
+    if (!dragging) setDragging(true);
+  }
+
+  function onDragLeave(event: React.DragEvent) {
+    // Ignore leaves into child elements; only clear when the pointer exits the zone.
+    if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setDragging(false);
   }
 
   function onCropConfirm(blob: Blob) {
@@ -129,8 +161,7 @@ function CapturePage() {
         <CardHeader>
           <CardTitle>Image</CardTitle>
           <CardDescription>
-            On a phone you can take a photo or pick one from your library; on desktop it opens a file
-            picker.
+            Take a photo, pick one from your library, or drag &amp; drop an image here (desktop).
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -141,34 +172,50 @@ function CapturePage() {
             className="hidden"
             onChange={onSelect}
           />
-          <div className="flex flex-wrap items-center gap-2">
-            <Button
-              variant="outline"
-              onClick={() => inputRef.current?.click()}
-              disabled={ocr.isPending}
-            >
-              <Camera className="size-4" />
-              {sourceUrl ? "Choose another image" : "Choose or capture image"}
-            </Button>
-            {sourceUrl && (
+          <div
+            onDrop={onDrop}
+            onDragOver={onDragOver}
+            onDragLeave={onDragLeave}
+            className={cn(
+              `
+                space-y-3 rounded-md border-2 border-dashed p-4
+                transition-colors
+              `,
+              dragging ? "border-blue-500 bg-blue-50/60" : "border-input",
+            )}
+          >
+            <div className="flex flex-wrap items-center gap-2">
               <Button
                 variant="outline"
-                onClick={() => setCropOpen(true)}
+                onClick={() => inputRef.current?.click()}
                 disabled={ocr.isPending}
               >
-                <Crop className="size-4" />
-                Crop
+                <Camera className="size-4" />
+                {sourceUrl ? "Choose another image" : "Choose or capture image"}
               </Button>
+              {sourceUrl && (
+                <Button
+                  variant="outline"
+                  onClick={() => setCropOpen(true)}
+                  disabled={ocr.isPending}
+                >
+                  <Crop className="size-4" />
+                  Crop
+                </Button>
+              )}
+              <span className="text-sm text-muted-foreground">
+                {dragging ? "Drop the image to use it" : "or drag & drop an image here"}
+              </span>
+            </div>
+
+            {sourceUrl && (
+              <img
+                src={sourceUrl}
+                alt="Selected page"
+                className="max-h-80 w-auto rounded-md border border-input"
+              />
             )}
           </div>
-
-          {sourceUrl && (
-            <img
-              src={sourceUrl}
-              alt="Selected page"
-              className="max-h-80 w-auto rounded-md border border-input"
-            />
-          )}
         </CardContent>
       </Card>
 
