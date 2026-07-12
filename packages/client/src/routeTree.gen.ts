@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WritingPromptsRouteImport } from './routes/writing-prompts'
 import { Route as VocabularyRouteImport } from './routes/vocabulary'
 import { Route as VocabRouteImport } from './routes/vocab'
 import { Route as SettingsRouteImport } from './routes/settings'
@@ -49,6 +50,11 @@ import { Route as PracticeIdEditRouteImport } from './routes/practice.$id.edit'
 import { Route as MySentencesIdEditRouteImport } from './routes/my-sentences.$id.edit'
 import { Route as ListeningSessionsIdEditRouteImport } from './routes/listening-sessions.$id.edit'
 
+const WritingPromptsRoute = WritingPromptsRouteImport.update({
+  id: '/writing-prompts',
+  path: '/writing-prompts',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const VocabularyRoute = VocabularyRouteImport.update({
   id: '/vocabulary',
   path: '/vocabulary',
@@ -257,6 +263,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRoute
   '/vocab': typeof VocabRoute
   '/vocabulary': typeof VocabularyRoute
+  '/writing-prompts': typeof WritingPromptsRoute
   '/captures/$id': typeof CapturesIdRoute
   '/lessons/$slug': typeof LessonsSlugRoute
   '/lessons/new': typeof LessonsNewRoute
@@ -298,6 +305,7 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/vocab': typeof VocabRoute
   '/vocabulary': typeof VocabularyRoute
+  '/writing-prompts': typeof WritingPromptsRoute
   '/captures/$id': typeof CapturesIdRoute
   '/lessons/$slug': typeof LessonsSlugRoute
   '/lessons/new': typeof LessonsNewRoute
@@ -336,6 +344,7 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRoute
   '/vocab': typeof VocabRoute
   '/vocabulary': typeof VocabularyRoute
+  '/writing-prompts': typeof WritingPromptsRoute
   '/captures/$id': typeof CapturesIdRoute
   '/lessons/$slug': typeof LessonsSlugRoute
   '/lessons/new': typeof LessonsNewRoute
@@ -379,6 +388,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/vocab'
     | '/vocabulary'
+    | '/writing-prompts'
     | '/captures/$id'
     | '/lessons/$slug'
     | '/lessons/new'
@@ -420,6 +430,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/vocab'
     | '/vocabulary'
+    | '/writing-prompts'
     | '/captures/$id'
     | '/lessons/$slug'
     | '/lessons/new'
@@ -457,6 +468,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/vocab'
     | '/vocabulary'
+    | '/writing-prompts'
     | '/captures/$id'
     | '/lessons/$slug'
     | '/lessons/new'
@@ -499,6 +511,7 @@ export interface RootRouteChildren {
   SettingsRoute: typeof SettingsRoute
   VocabRoute: typeof VocabRoute
   VocabularyRoute: typeof VocabularyRoute
+  WritingPromptsRoute: typeof WritingPromptsRoute
   CapturesIdRoute: typeof CapturesIdRoute
   LessonsSlugRoute: typeof LessonsSlugRoute
   LessonsNewRoute: typeof LessonsNewRoute
@@ -524,6 +537,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/writing-prompts': {
+      id: '/writing-prompts'
+      path: '/writing-prompts'
+      fullPath: '/writing-prompts'
+      preLoaderRoute: typeof WritingPromptsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/vocabulary': {
       id: '/vocabulary'
       path: '/vocabulary'
@@ -866,6 +886,7 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRoute: SettingsRoute,
   VocabRoute: VocabRoute,
   VocabularyRoute: VocabularyRoute,
+  WritingPromptsRoute: WritingPromptsRoute,
   CapturesIdRoute: CapturesIdRoute,
   LessonsSlugRoute: LessonsSlugRoute,
   LessonsNewRoute: LessonsNewRoute,

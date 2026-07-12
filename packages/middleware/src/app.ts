@@ -18,6 +18,7 @@ import { shadowingSessionsRoutes } from "@/routes/shadowing-sessions";
 import { sourceRoutes } from "@/routes/sources";
 import { vocabRoutes } from "@/routes/vocab";
 import { writingRoutes } from "@/routes/writings";
+import { writingPromptRoutes } from "@/routes/writing-prompts";
 
 /** Build and configure the Fastify application (without starting it). */
 export async function buildApp(): Promise<FastifyInstance> {
@@ -70,6 +71,10 @@ export async function buildApp(): Promise<FastifyInstance> {
           description: "Shadowing practice sessions — looped video segments + notes",
         },
         {
+          name: "writing-prompts",
+          description: "Reusable prompts to spark a free-write",
+        },
+        {
           name: "lessons",
           description: "Lesson import & viewing",
         },
@@ -120,6 +125,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(writingRoutes);
   await app.register(listeningSessionsRoutes);
   await app.register(shadowingSessionsRoutes);
+  await app.register(writingPromptRoutes);
   await app.register(sourceRoutes);
   await app.register(vocabRoutes);
   await app.register(captureRoutes);

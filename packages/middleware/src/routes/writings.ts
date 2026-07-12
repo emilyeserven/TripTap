@@ -99,6 +99,12 @@ const createWritingBody = {
     },
     terms: termsSchema,
     corrections: correctionsSchema,
+    promptTitle: {
+      type: ["string", "null"],
+    },
+    promptText: {
+      type: ["string", "null"],
+    },
   },
 } as const;
 

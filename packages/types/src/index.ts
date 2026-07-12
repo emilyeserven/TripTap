@@ -13,6 +13,7 @@ export * from "./practice-sentence.js";
 export * from "./question-sheet.js";
 export * from "./shadowing-session.js";
 export * from "./writing.js";
+export * from "./writing-prompt.js";
 
 /** A reusable origin for sentences (a book, show, article, …) — the "source taxonomy". */
 export interface Source {

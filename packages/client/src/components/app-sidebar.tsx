@@ -13,6 +13,7 @@ import {
   LanguagesIcon,
   LayersIcon,
   LibraryIcon,
+  LightbulbIcon,
   NotebookPenIcon,
   PencilRulerIcon,
   PenLineIcon,
@@ -80,6 +81,11 @@ const studyItems = [
     title: "Sentences",
     to: "/sentences",
     icon: ScrollTextIcon,
+  },
+  {
+    title: "Writing Prompts",
+    to: "/writing-prompts",
+    icon: LightbulbIcon,
   },
 ] as const;
 
