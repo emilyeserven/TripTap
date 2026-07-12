@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useLessonContent } from "@/hooks/useLessons";
-import { useDeleteSentence, useSentences } from "@/hooks/useSentences";
+import { useBackfillFurigana, useDeleteSentence, useSentences } from "@/hooks/useSentences";
 import { useSources } from "@/hooks/useSources";
 import { useUiStore } from "@/stores/uiStore";
 
@@ -37,6 +37,7 @@ function SentencesPage() {
     data: sentences, isLoading, error,
   } = useSentences();
   const deleteSentence = useDeleteSentence();
+  const backfillFurigana = useBackfillFurigana();
   const {
     data: sources,
   } = useSources();
@@ -126,6 +127,18 @@ function SentencesPage() {
             Show translations
           </label>
           <FuriganaToggle />
+          <Button
+            variant="outline"
+            onClick={() => backfillFurigana.mutate()}
+            disabled={backfillFurigana.isPending}
+            title="Generate furigana for sentences that don't have it yet"
+          >
+            {backfillFurigana.isPending
+              ? "Generating…"
+              : backfillFurigana.data
+                ? `Furigana +${backfillFurigana.data.updated}`
+                : "Generate furigana"}
+          </Button>
           <Dialog
             open={dialogOpen}
             onOpenChange={setDialogOpen}

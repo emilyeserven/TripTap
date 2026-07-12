@@ -70,3 +70,12 @@ export function useDeleteSentence() {
     onSuccess: invalidate,
   });
 }
+
+/** Generate furigana for every sentence that lacks it (one-time backfill). */
+export function useBackfillFurigana() {
+  const invalidate = useSentenceInvalidator();
+  return useMutation({
+    mutationFn: () => sentencesApi.backfillFurigana(),
+    onSuccess: invalidate,
+  });
+}

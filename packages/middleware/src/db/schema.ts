@@ -1,5 +1,6 @@
 import type {
   CleanedBlocks,
+  FuriToken,
   GrammarExample,
   OcrBlock,
   SourceGrammar,
@@ -41,6 +42,9 @@ export const sentences = pgTable("sentences", {
   text: text("text").notNull(),
   // Nullable: a sentence can be mined text-only and translated later.
   translation: text("translation"),
+  // Auto-generated furigana segmentation of `text` (ruby readings). Null until generated / for
+  // non-Japanese text.
+  reading: jsonb("reading").$type<FuriToken[]>(),
   language: text("language").notNull(),
   // Legacy free-text origin, kept for rows created before the `sources` taxonomy existed. New
   // sentences should reference `sourceId` instead; `source` remains a fallback label.

@@ -17,6 +17,7 @@ const sentence: Sentence = {
   id: "11111111-1111-1111-1111-111111111111",
   text: "毎朝コーヒーを飲みます。",
   translation: "I drink coffee every morning.",
+  reading: null,
   language: "Japanese",
   source: "Genki I, Lesson 3",
   sourceId: null,

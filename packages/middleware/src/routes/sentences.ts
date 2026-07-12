@@ -2,6 +2,7 @@ import type { FastifyInstance } from "fastify";
 import type { CreateSentenceInput, UpdateSentenceInput } from "@sentence-bank/types";
 import { getVocabForSentence, setVocabForSentence } from "@/services/sentence-vocab";
 import {
+  backfillFurigana,
   createSentence,
   createSentencesMany,
   deleteSentence,
@@ -146,6 +147,17 @@ export async function sentenceRoutes(app: FastifyInstance): Promise<void> {
     } = req.body as { sentences: CreateSentenceInput[] };
     const created = await createSentencesMany(inputs);
     return reply.code(201).send(created);
+  });
+
+  app.post("/api/sentences/furigana/backfill", {
+    schema: {
+      tags: ["sentences"],
+    },
+  }, async () => {
+    const updated = await backfillFurigana();
+    return {
+      updated,
+    };
   });
 
   app.get("/api/sentences/:id/vocab", {

@@ -6,6 +6,7 @@ import { Link } from "@tanstack/react-router";
 import { Camera, ChevronDown, Database, Layers, Volume2 } from "lucide-react";
 
 import { speak } from "./lesson/speak";
+import { SentenceText } from "./SentenceText";
 import { VocabHoverPill } from "./VocabHoverPill";
 
 import { Badge } from "@/components/ui/badge";
@@ -55,7 +56,12 @@ export function SentenceCard({
             >
               <Volume2 className="size-4" />
             </Button>
-            <p className="text-lg font-semibold">{sentence.text}</p>
+            <p className="text-lg font-semibold">
+              <SentenceText
+                text={sentence.text}
+                reading={sentence.reading}
+              />
+            </p>
           </div>
           {onDelete
             ? (
