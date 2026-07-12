@@ -1,11 +1,19 @@
 import { useMemo, useState } from "react";
 
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { PlusIcon } from "lucide-react";
+import { LightbulbIcon, PlusIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { WritingCard } from "@/components/WritingCard";
+import { useWritingPrompts } from "@/hooks/useWritingPrompts";
 import { useCreateWriting, useDeleteWriting, useWritings } from "@/hooks/useWritings";
 
 export const Route = createFileRoute("/my-writing/")({
@@ -21,6 +29,7 @@ function MyWritingPage() {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [onlyReady, setOnlyReady] = useState(false);
+  const [promptPickerOpen, setPromptPickerOpen] = useState(false);
 
   const shown = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -35,12 +44,15 @@ function MyWritingPage() {
 
   const nothing = !isLoading && shown.length === 0;
 
-  const startWriting = () => {
+  const startWriting = (seed?: { promptTitle: string;
+    promptText: string; }) => {
     createWriting.mutate(
       {
         text: "",
         language: "Japanese",
         readyToReview: false,
+        promptTitle: seed?.promptTitle ?? null,
+        promptText: seed?.promptText ?? null,
       },
       {
         onSuccess: writing =>
@@ -65,13 +77,43 @@ function MyWritingPage() {
             sentence and send it to My Sentences.
           </p>
         </div>
-        <Button
-          onClick={startWriting}
-          disabled={createWriting.isPending}
-        >
-          <PlusIcon className="size-4" />
-          New writing
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Dialog
+            open={promptPickerOpen}
+            onOpenChange={setPromptPickerOpen}
+          >
+            <DialogTrigger asChild>
+              <Button
+                variant="outline"
+                disabled={createWriting.isPending}
+              >
+                <LightbulbIcon className="size-4" />
+                From a prompt
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Start from a prompt</DialogTitle>
+              </DialogHeader>
+              <PromptPicker
+                onPick={(promptTitle, promptText) => {
+                  setPromptPickerOpen(false);
+                  startWriting({
+                    promptTitle,
+                    promptText,
+                  });
+                }}
+              />
+            </DialogContent>
+          </Dialog>
+          <Button
+            onClick={() => startWriting()}
+            disabled={createWriting.isPending}
+          >
+            <PlusIcon className="size-4" />
+            New writing
+          </Button>
+        </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-4">
@@ -112,5 +154,47 @@ function MyWritingPage() {
         ))}
       </div>
     </section>
+  );
+}
+
+/** Lets the learner pick one saved writing prompt to start a new entry from. */
+function PromptPicker({
+  onPick,
+}: {
+  onPick: (title: string, text: string) => void;
+}) {
+  const {
+    data: prompts, isLoading, error,
+  } = useWritingPrompts();
+
+  if (isLoading) return <p className="text-muted-foreground">Loading prompts…</p>;
+  if (error) return <p className="text-destructive">{error.message}</p>;
+  if (!prompts || prompts.length === 0) {
+    return (
+      <p className="text-muted-foreground">
+        No prompts yet. Add some on the Writing Prompts page first.
+      </p>
+    );
+  }
+
+  return (
+    <div
+      className="max-h-[60vh] space-y-2 overflow-y-auto"
+    >
+      {prompts.map(prompt => (
+        <button
+          key={prompt.id}
+          type="button"
+          onClick={() => onPick(prompt.title, prompt.text)}
+          className="
+            w-full rounded-md border p-3 text-left
+            hover:bg-accent
+          "
+        >
+          <p className="font-semibold">{prompt.title}</p>
+          <p className="line-clamp-2 text-sm text-muted-foreground">{prompt.text}</p>
+        </button>
+      ))}
+    </div>
   );
 }

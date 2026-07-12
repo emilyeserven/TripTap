@@ -2,7 +2,7 @@ import type { SentenceTermCategory, SentenceTermRef, UpdateWritingInput, Writing
 
 import { useEffect, useRef, useState } from "react";
 
-import { Check, SparklesIcon } from "lucide-react";
+import { Check, LightbulbIcon, SparklesIcon } from "lucide-react";
 
 import { TermPicker } from "./TermPicker";
 import { WritingCorrections } from "./WritingCorrections";
@@ -143,6 +143,25 @@ export function WritingEditor({
           )
           : (
             <div className="space-y-1.5">
+              {writing.promptText
+                ? (
+                  <div
+                    className="rounded-md border border-dashed bg-muted/40 p-3"
+                  >
+                    <p
+                      className="
+                        flex items-center gap-1.5 text-xs font-medium
+                        text-muted-foreground
+                      "
+                    >
+                      <LightbulbIcon className="size-3.5" />
+                      Prompt
+                      {writing.promptTitle ? `: ${writing.promptTitle}` : null}
+                    </p>
+                    <p className="mt-1 text-sm whitespace-pre-wrap">{writing.promptText}</p>
+                  </div>
+                )
+                : null}
               <Label className="text-sm">Your writing</Label>
               <Textarea
                 value={draft.text}

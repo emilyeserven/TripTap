@@ -44,6 +44,10 @@ export interface Writing {
   terms: SentenceTermRef[] | null;
   /** Inline corrections made against this writing; null if none. */
   corrections: WritingCorrection[] | null;
+  /** Title of the writing prompt this entry was started from; null if freeform. */
+  promptTitle: string | null;
+  /** Body of the writing prompt this entry was started from; null if freeform. */
+  promptText: string | null;
   /** ISO-8601 timestamp of when the writing was created. */
   createdAt: string;
   /** ISO-8601 timestamp of the last update (bumped on every save). */
@@ -60,6 +64,10 @@ export interface CreateWritingInput {
   readyToReview?: boolean;
   terms?: SentenceTermRef[] | null;
   corrections?: WritingCorrection[] | null;
+  /** Title of the writing prompt this entry was started from; null/omitted if freeform. */
+  promptTitle?: string | null;
+  /** Body of the writing prompt this entry was started from; null/omitted if freeform. */
+  promptText?: string | null;
 }
 
 /** Payload for partially updating a writing. */
