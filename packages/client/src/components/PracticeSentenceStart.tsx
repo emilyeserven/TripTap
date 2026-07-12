@@ -7,9 +7,11 @@ import { useNavigate } from "@tanstack/react-router";
 import { useLessonContent } from "../hooks/useLessons";
 import { useCreatePracticeSentence } from "../hooks/usePracticeSentences";
 import { useSentences } from "../hooks/useSentences";
+import { useSources } from "../hooks/useSources";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Combobox } from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -122,6 +124,8 @@ interface Candidate {
   translation: string | null;
   /** Lesson title when mined from a lesson; null for bank sentences. */
   lesson: string | null;
+  /** Taxonomy source id for bank sentences; null when unsourced or lesson-mined. */
+  sourceId: string | null;
   input: CreatePracticeSentenceInput;
 }
 
@@ -138,7 +142,11 @@ function SearchTab({
   const {
     data: lessonContent,
   } = useLessonContent();
+  const {
+    data: sources,
+  } = useSources();
   const [search, setSearch] = useState("");
+  const [sourceFilter, setSourceFilter] = useState("all");
 
   const candidates = useMemo<Candidate[]>(() => {
     const bank: Candidate[] = (sentences ?? []).map(s => ({
@@ -146,6 +154,7 @@ function SearchTab({
       text: s.text,
       translation: s.translation,
       lesson: null,
+      sourceId: s.sourceId,
       input: {
         text: s.text,
         language: s.language,
@@ -162,6 +171,7 @@ function SearchTab({
       text: s.jp,
       translation: s.en,
       lesson: s.lessonTitle,
+      sourceId: null,
       input: {
         text: s.jp,
         language: "Japanese",
@@ -172,16 +182,30 @@ function SearchTab({
     return [...bank, ...lessons];
   }, [sentences, lessonContent]);
 
+  const sourceOptions = useMemo(() => [
+    {
+      value: "all",
+      label: "All sources",
+    },
+    ...(sources ?? []).map(s => ({
+      value: s.id,
+      label: s.name,
+    })),
+  ], [sources]);
+
   const shown = useMemo(() => {
     const q = search.trim().toLowerCase();
-    const matched = q
-      ? candidates.filter(c =>
-        c.text.toLowerCase().includes(q)
+    // Lesson-mined candidates carry no source, so a specific source filter hides them.
+    const bySource = (c: Candidate) => sourceFilter === "all" || c.sourceId === sourceFilter;
+    const matched = candidates.filter((c) => {
+      if (!bySource(c)) return false;
+      if (!q) return true;
+      return c.text.toLowerCase().includes(q)
         || (c.translation ?? "").toLowerCase().includes(q)
-        || (c.lesson ?? "").toLowerCase().includes(q))
-      : candidates;
+        || (c.lesson ?? "").toLowerCase().includes(q);
+    });
     return matched.slice(0, 50);
-  }, [candidates, search]);
+  }, [candidates, search, sourceFilter]);
 
   return (
     <div className="space-y-3 pt-2">
@@ -191,6 +215,18 @@ function SearchTab({
         placeholder="Search your bank and lesson sentences…"
         aria-label="Search sentences"
       />
+      {sourceOptions.length > 1
+        ? (
+          <Combobox
+            value={sourceFilter}
+            onChange={setSourceFilter}
+            options={sourceOptions}
+            ariaLabel="Filter by source"
+            searchPlaceholder="Search sources…"
+            className="w-52"
+          />
+        )
+        : null}
       <div className="max-h-96 space-y-1 overflow-y-auto rounded-md border p-2">
         {shown.length === 0
           ? <p className="p-2 text-sm text-muted-foreground">No matching sentences.</p>
