@@ -6,22 +6,28 @@ import type {
   CleanedBlocks,
   CreateCaptureInput,
   CreateParseTemplateInput,
+  CreatePracticeSentenceInput,
   CreateSentenceInput,
   CreateSourceInput,
   CreateVocabInput,
+  CreateMySentenceInput,
   LessonContent,
   LessonDetail,
   LessonImportInput,
   LessonSummary,
+  MySentence,
   OcrResult,
   OcrSettings,
   ParseTemplate,
+  PracticeSentence,
   Sentence,
   SentenceTermCategory,
   Source,
   TagTermOption,
   UpdateBookmarksSettingsInput,
+  UpdateMySentenceInput,
   UpdateOcrSettingsInput,
+  UpdatePracticeSentenceInput,
   UpdateSentenceInput,
   UpdateSourceInput,
   UpdateVocabInput,
@@ -104,6 +110,61 @@ export const sentencesApi = {
     request<Sentence>(`/sentences/${id}/furigana`, {
       method: "POST",
     }),
+};
+
+export const practiceSentencesApi = {
+  list: () => request<PracticeSentence[]>("/practice-sentences"),
+  get: (id: string) => request<PracticeSentence>(`/practice-sentences/${id}`),
+  create: (input: CreatePracticeSentenceInput) =>
+    request<PracticeSentence>("/practice-sentences", {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+  createMany: (inputs: CreatePracticeSentenceInput[]) =>
+    request<PracticeSentence[]>("/practice-sentences/bulk", {
+      method: "POST",
+      body: JSON.stringify({
+        practiceSentences: inputs,
+      }),
+    }),
+  update: (id: string, input: UpdatePracticeSentenceInput) =>
+    request<PracticeSentence>(`/practice-sentences/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    }),
+  remove: (id: string) => request<undefined>(`/practice-sentences/${id}`, {
+    method: "DELETE",
+  }),
+  getVocab: (id: string) => request<Vocab[]>(`/practice-sentences/${id}/vocab`),
+  setVocab: (id: string, vocabIds: string[]) =>
+    request<Vocab[]>(`/practice-sentences/${id}/vocab`, {
+      method: "PUT",
+      body: JSON.stringify({
+        vocabIds,
+      }),
+    }),
+};
+
+export const mySentencesApi = {
+  list: (practiceSentenceId?: string) =>
+    request<MySentence[]>(
+      practiceSentenceId
+        ? `/my-sentences?practiceSentenceId=${practiceSentenceId}`
+        : "/my-sentences",
+    ),
+  create: (input: CreateMySentenceInput) =>
+    request<MySentence>("/my-sentences", {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+  update: (id: string, input: UpdateMySentenceInput) =>
+    request<MySentence>(`/my-sentences/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    }),
+  remove: (id: string) => request<undefined>(`/my-sentences/${id}`, {
+    method: "DELETE",
+  }),
 };
 
 export const sourcesApi = {

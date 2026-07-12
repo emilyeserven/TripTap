@@ -12,6 +12,8 @@ import {
   LanguagesIcon,
   LayersIcon,
   LibraryIcon,
+  NotebookPenIcon,
+  PencilRulerIcon,
   ScrollTextIcon,
   SendIcon,
   SettingsIcon,
@@ -80,6 +82,16 @@ const studyItems = [
 
 /** Tools that act on the bank (exports, etc.). */
 const actionItems = [
+  {
+    title: "Practice Sentences",
+    to: "/practice",
+    icon: NotebookPenIcon,
+  },
+  {
+    title: "My Sentences",
+    to: "/my-sentences",
+    icon: PencilRulerIcon,
+  },
   {
     title: "Renshuu export",
     to: "/renshuu",

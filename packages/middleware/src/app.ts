@@ -7,8 +7,10 @@ import { bookmarksRoutes } from "@/routes/bookmarks";
 import { captureRoutes } from "@/routes/captures";
 import { healthRoutes } from "@/routes/health";
 import { lessonRoutes } from "@/routes/lessons";
+import { mySentenceRoutes } from "@/routes/my-sentences";
 import { ocrRoutes } from "@/routes/ocr";
 import { parseTemplateRoutes } from "@/routes/parse-templates";
+import { practiceSentenceRoutes } from "@/routes/practice-sentences";
 import { sentenceRoutes } from "@/routes/sentences";
 import { settingsRoutes } from "@/routes/settings";
 import { sourceRoutes } from "@/routes/sources";
@@ -43,6 +45,14 @@ export async function buildApp(): Promise<FastifyInstance> {
         {
           name: "sentences",
           description: "Sentence bank endpoints",
+        },
+        {
+          name: "practice-sentences",
+          description: "Practice sentences (study-aid worksheet cards)",
+        },
+        {
+          name: "my-sentences",
+          description: "Learner-produced sentences awaiting correction",
         },
         {
           name: "lessons",
@@ -90,6 +100,8 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(healthRoutes);
   await app.register(bookmarksRoutes);
   await app.register(sentenceRoutes);
+  await app.register(practiceSentenceRoutes);
+  await app.register(mySentenceRoutes);
   await app.register(sourceRoutes);
   await app.register(vocabRoutes);
   await app.register(captureRoutes);
