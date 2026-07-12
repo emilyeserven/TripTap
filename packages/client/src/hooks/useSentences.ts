@@ -70,3 +70,21 @@ export function useDeleteSentence() {
     onSuccess: invalidate,
   });
 }
+
+/** Generate furigana for every sentence that lacks it (one-time backfill). */
+export function useBackfillFurigana() {
+  const invalidate = useSentenceInvalidator();
+  return useMutation({
+    mutationFn: () => sentencesApi.backfillFurigana(),
+    onSuccess: invalidate,
+  });
+}
+
+/** Re-run furigana generation for one sentence (applies current vocab overrides). */
+export function useRegenerateFurigana() {
+  const invalidate = useSentenceInvalidator();
+  return useMutation({
+    mutationFn: (id: string) => sentencesApi.regenerateFurigana(id),
+    onSuccess: invalidate,
+  });
+}

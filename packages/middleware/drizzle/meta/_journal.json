@@ -71,6 +71,13 @@
       "when": 1783784929834,
       "tag": "0009_talented_karma",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1783815403669,
+      "tag": "0010_thick_gravity",
+      "breakpoints": true
     }
   ]
 }

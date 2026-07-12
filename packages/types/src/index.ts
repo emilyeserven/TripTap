@@ -33,11 +33,25 @@ export interface CreateSourceInput {
 /** Payload for partially updating a source. */
 export type UpdateSourceInput = Partial<CreateSourceInput>;
 
+/**
+ * One segment of a furigana-annotated sentence: a base run of text and, for kanji runs, the reading
+ * to show as ruby (`r` is null for kana/latin/punctuation that needs no reading).
+ */
+export interface FuriToken {
+  t: string;
+  r: string | null;
+}
+
 /** A single example sentence stored in the bank. */
 export interface Sentence {
   id: string;
   /** The sentence in the target language, e.g. "毎朝コーヒーを飲みます。". */
   text: string;
+  /**
+   * Furigana segmentation of {@link text}, auto-generated server-side; null until generated (or for
+   * non-Japanese text). Rendered as ruby when the furigana toggle is on.
+   */
+  reading: FuriToken[] | null;
   /** The meaning in the user's own language; null when mined text-only and not yet translated. */
   translation: string | null;
   /** Target language, e.g. "Japanese". */
@@ -134,8 +148,10 @@ export interface CreateParseTemplateInput {
   ignoreBlankLines: boolean;
 }
 
-/** Payload for partially updating a sentence. */
-export type UpdateSentenceInput = Partial<CreateSentenceInput>;
+/** Payload for partially updating a sentence. `reading` is a manual furigana override (null clears it). */
+export type UpdateSentenceInput = Partial<CreateSentenceInput> & {
+  reading?: FuriToken[] | null;
+};
 
 /** Standard error shape returned by the API. */
 export interface ApiError {
