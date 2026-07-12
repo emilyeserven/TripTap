@@ -63,6 +63,62 @@ describe("MultiSelect", () => {
     })).toBeInTheDocument();
   });
 
+  it("offers a create row for a novel query and calls onCreate", () => {
+    const created: string[] = [];
+    function CreatableHarness() {
+      const [value, setValue] = useState<string[]>([]);
+      return (
+        <MultiSelect
+          value={value}
+          onChange={setValue}
+          options={OPTIONS}
+          placeholder="Add…"
+          searchPlaceholder="Search or create…"
+          creatable
+          onCreate={name => created.push(name)}
+        />
+      );
+    }
+    render(<CreatableHarness />);
+    fireEvent.click(screen.getByRole("combobox"));
+    fireEvent.change(screen.getByLabelText("Search or create…"), {
+      target: {
+        value: "Delta",
+      },
+    });
+
+    // A create affordance appears for the unmatched query.
+    const createRow = screen.getByText(/Create/);
+    expect(createRow).toBeInTheDocument();
+    fireEvent.click(createRow);
+    expect(created).toEqual(["Delta"]);
+  });
+
+  it("hides the create row when the query exactly matches an option", () => {
+    function CreatableHarness() {
+      const [value, setValue] = useState<string[]>([]);
+      return (
+        <MultiSelect
+          value={value}
+          onChange={setValue}
+          options={OPTIONS}
+          placeholder="Add…"
+          searchPlaceholder="Search or create…"
+          creatable
+          onCreate={() => undefined}
+        />
+      );
+    }
+    render(<CreatableHarness />);
+    fireEvent.click(screen.getByRole("combobox"));
+    fireEvent.change(screen.getByLabelText("Search or create…"), {
+      target: {
+        value: "Alpha",
+      },
+    });
+    expect(screen.queryByText(/Create/)).not.toBeInTheDocument();
+  });
+
   it("caps selection to one when single", () => {
     render(<Harness single />);
     fireEvent.click(screen.getByRole("combobox"));

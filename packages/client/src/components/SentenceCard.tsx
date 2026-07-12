@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useSentenceVocab } from "@/hooks/useSentences";
+import { groupTermsByCategory, TERM_CATEGORIES } from "@/lib/terms";
 
 interface SentenceCardProps {
   sentence: Sentence;
@@ -40,6 +41,7 @@ export function SentenceCard({
     .split(",")
     .map(tag => tag.trim())
     .filter(Boolean);
+  const termGroups = groupTermsByCategory(sentence.terms ?? []);
 
   // Prefer the resolved taxonomy source name; fall back to the legacy free-text `source` for old rows.
   const sourceId = sentence.sourceId;
@@ -157,15 +159,29 @@ export function SentenceCard({
               {tag}
             </span>
           ))}
-          {(sentence.terms ?? []).map(term => (
-            <Badge
-              key={`${term.sourceId}:${term.id}`}
-              variant="outline"
-              title={term.sourceLabel ? `${term.sourceLabel} (${term.kind})` : undefined}
-            >
-              {term.name}
-            </Badge>
-          ))}
+          {TERM_CATEGORIES.map(({
+            category, label,
+          }) => {
+            const terms = termGroups[category];
+            if (terms.length === 0) return null;
+            return (
+              <span
+                key={category}
+                className="inline-flex flex-wrap items-center gap-1"
+              >
+                <span className="text-xs text-muted-foreground">{label}:</span>
+                {terms.map(term => (
+                  <Badge
+                    key={`${term.sourceId}:${term.id}`}
+                    variant="outline"
+                    title={term.sourceLabel ? `${term.sourceLabel} (${term.kind})` : undefined}
+                  >
+                    {term.name}
+                  </Badge>
+                ))}
+              </span>
+            );
+          })}
         </div>
 
         {sentence.notes ? <p className="text-sm">{sentence.notes}</p> : null}

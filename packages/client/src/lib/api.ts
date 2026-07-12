@@ -17,6 +17,7 @@ import type {
   OcrSettings,
   ParseTemplate,
   Sentence,
+  SentenceTermCategory,
   Source,
   TagTermOption,
   UpdateBookmarksSettingsInput,
@@ -240,7 +241,14 @@ export const bookmarksApi = {
   taxonomies: () => request<BookmarksTaxonomy[]>("/bookmarks/taxonomies"),
   terms: (taxonomyId: string) =>
     request<TagTermOption[]>(`/bookmarks/taxonomies/${taxonomyId}/terms`),
-  vocabulary: () => request<TagTermOption[]>("/bookmarks/vocabulary"),
+  vocabulary: (category?: SentenceTermCategory) =>
+    request<TagTermOption[]>(`/bookmarks/vocabulary${category ? `?category=${category}` : ""}`),
+  createTerm: (input: { name: string;
+    category: SentenceTermCategory; }) =>
+    request<TagTermOption>("/bookmarks/terms", {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
 };
 
 export const lessonsApi = {

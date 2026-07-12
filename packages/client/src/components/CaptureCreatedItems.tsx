@@ -38,6 +38,7 @@ import { useCaptureSentences, useCaptureVocab, useReorderCaptureSentences } from
 import { useDeleteSentence, useUpdateSentence } from "@/hooks/useSentences";
 import { useSources } from "@/hooks/useSources";
 import { useDeleteVocab, useUpdateVocab } from "@/hooks/useVocab";
+import { groupTermsByCategory } from "@/lib/terms";
 import { cn } from "@/lib/utils";
 import { vocabToCardItem } from "@/lib/vocab-card";
 
@@ -323,7 +324,16 @@ function SentenceRow({
   const remove = useDeleteSentence();
   const [text, setText] = useState(sentence.text);
   const [translation, setTranslation] = useState(sentence.translation ?? "");
-  const [terms, setTerms] = useState<SentenceTermRef[]>(sentence.terms ?? []);
+  const [vocabTerms, setVocabTerms] = useState<SentenceTermRef[]>(
+    () => groupTermsByCategory(sentence.terms ?? []).vocabulary,
+  );
+  const [grammarTerms, setGrammarTerms] = useState<SentenceTermRef[]>(
+    () => groupTermsByCategory(sentence.terms ?? []).grammar,
+  );
+  const [generalTerms, setGeneralTerms] = useState<SentenceTermRef[]>(
+    () => groupTermsByCategory(sentence.terms ?? []).general,
+  );
+  const terms = [...vocabTerms, ...grammarTerms, ...generalTerms];
 
   const dirty
     = text !== sentence.text
@@ -376,10 +386,31 @@ function SentenceRow({
           </button>
         </div>
       </div>
-      <TermPicker
-        value={terms}
-        onChange={setTerms}
-      />
+      <div
+        className="
+          grid gap-3
+          sm:grid-cols-3
+        "
+      >
+        <TermPicker
+          category="vocabulary"
+          label="Vocabulary tags"
+          value={vocabTerms}
+          onChange={setVocabTerms}
+        />
+        <TermPicker
+          category="grammar"
+          label="Grammar tags"
+          value={grammarTerms}
+          onChange={setGrammarTerms}
+        />
+        <TermPicker
+          category="general"
+          label="General tags"
+          value={generalTerms}
+          onChange={setGeneralTerms}
+        />
+      </div>
     </div>
   );
 }

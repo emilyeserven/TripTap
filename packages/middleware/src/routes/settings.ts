@@ -20,6 +20,30 @@ const updateOcrSettingsBody = {
   },
 } as const;
 
+const bookmarksSourceSchema = {
+  type: ["object", "null"],
+  additionalProperties: false,
+  required: ["kind", "id", "label"],
+  properties: {
+    kind: {
+      type: "string",
+      enum: ["tag", "taxonomy"],
+    },
+    id: {
+      type: "string",
+    },
+    label: {
+      type: "string",
+    },
+    termId: {
+      type: ["string", "null"],
+    },
+    termLabel: {
+      type: ["string", "null"],
+    },
+  },
+} as const;
+
 const updateBookmarksSettingsBody = {
   type: "object",
   additionalProperties: false,
@@ -27,23 +51,9 @@ const updateBookmarksSettingsBody = {
     endpointUrl: {
       type: ["string", "null"],
     },
-    source: {
-      type: ["object", "null"],
-      additionalProperties: false,
-      required: ["kind", "id", "label"],
-      properties: {
-        kind: {
-          type: "string",
-          enum: ["tag", "taxonomy"],
-        },
-        id: {
-          type: "string",
-        },
-        label: {
-          type: "string",
-        },
-      },
-    },
+    source: bookmarksSourceSchema,
+    grammarSource: bookmarksSourceSchema,
+    generalSource: bookmarksSourceSchema,
   },
 } as const;
 

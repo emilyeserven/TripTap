@@ -1,6 +1,11 @@
-import type { BookmarksSource, BookmarksTaxonomy, TagTermOption } from "@sentence-bank/types";
+import type {
+  BookmarksSource,
+  BookmarksTaxonomy,
+  SentenceTermCategory,
+  TagTermOption,
+} from "@sentence-bank/types";
 import { getBookmarksSettings } from "@/services/settings";
-import { BookmarksNotConfiguredError } from "@/services/bookmarks/errors";
+import { BookmarksNotConfiguredError, BookmarksUnavailableError } from "@/services/bookmarks/errors";
 import { fetchBookmarksJson } from "@/services/bookmarks/util";
 
 export { BookmarksNotConfiguredError, BookmarksUnavailableError } from "@/services/bookmarks/errors";
@@ -10,7 +15,8 @@ const DEFAULT_BOOKMARKS_URL = "https://eserve-raspi.seahorse-butterfly.ts.net";
 
 interface BookmarksConfig {
   baseUrl: string;
-  source: BookmarksSource | null;
+  /** The configured source per tagging channel; any may be null when that channel is unconfigured. */
+  sources: Record<SentenceTermCategory, BookmarksSource | null>;
 }
 
 /**
@@ -21,11 +27,17 @@ interface BookmarksConfig {
  */
 async function resolveBookmarksConfig(): Promise<BookmarksConfig> {
   let dbEndpoint: string | null = null;
-  let source: BookmarksSource | null = null;
+  const sources: Record<SentenceTermCategory, BookmarksSource | null> = {
+    vocabulary: null,
+    grammar: null,
+    general: null,
+  };
   try {
     const settings = await getBookmarksSettings();
     dbEndpoint = settings.endpointUrl;
-    source = settings.source;
+    sources.vocabulary = settings.source;
+    sources.grammar = settings.grammarSource;
+    sources.general = settings.generalSource;
   }
   catch {
     // Database unavailable — fall back to environment/default.
@@ -34,7 +46,7 @@ async function resolveBookmarksConfig(): Promise<BookmarksConfig> {
   if (!baseUrl) throw new BookmarksNotConfiguredError();
   return {
     baseUrl,
-    source,
+    sources,
   };
 }
 
@@ -108,20 +120,94 @@ export async function fetchTerms(taxonomyId: string): Promise<TagTermOption[]> {
 }
 
 /**
- * The selectable vocabulary for the configured source: a parent tag's direct children (kind "tag") or
- * a taxonomy's terms (kind "taxonomy"). Returns `[]` when no source is configured or a stale parent
- * tag has no children.
+ * The selectable vocabulary for one channel's configured source: a parent tag's direct children
+ * (kind "tag") or a taxonomy's terms (kind "taxonomy"). When a taxonomy source drills into a parent
+ * term (`termId`), only that term's direct children are returned. Returns `[]` when the channel has no
+ * source configured or a stale parent tag/term has no children.
  */
-export async function fetchVocabulary(): Promise<TagTermOption[]> {
+export async function fetchVocabulary(
+  category: SentenceTermCategory = "vocabulary",
+): Promise<TagTermOption[]> {
   const {
-    baseUrl, source,
+    baseUrl, sources,
   } = await resolveBookmarksConfig();
+  const source = sources[category];
   if (!source) return [];
   if (source.kind === "taxonomy") {
-    return toOptions(
+    const terms = toOptions(
       await fetchBookmarksJson<unknown>(apiUrl(baseUrl, `/taxonomies/${encodeURIComponent(source.id)}/terms`)),
     );
+    return source.termId ? terms.filter(t => t.parentId === source.termId) : terms;
   }
   const tags = toOptions(await fetchBookmarksJson<unknown>(apiUrl(baseUrl, "/tags")));
   return tags.filter(t => t.parentId === source.id);
+}
+
+/** Normalize an upstream create response into a {@link TagTermOption}, or fail if it can't be read. */
+function createdOption(raw: unknown): TagTermOption {
+  const option = toOption(raw);
+  if (!option) {
+    throw new BookmarksUnavailableError("Bookmarks host returned an unexpected create response");
+  }
+  return option;
+}
+
+/** Create a taxonomy term, optionally nested under a parent term. Returns the created term. */
+export async function createTerm(
+  baseUrl: string,
+  taxonomyId: string,
+  name: string,
+  parentId?: string | null,
+): Promise<TagTermOption> {
+  const body: Record<string, unknown> = {
+    name,
+  };
+  if (parentId) body.parentId = parentId;
+  return createdOption(
+    await fetchBookmarksJson<unknown>(
+      apiUrl(baseUrl, `/taxonomies/${encodeURIComponent(taxonomyId)}/terms`),
+      {
+        method: "POST",
+        body,
+      },
+    ),
+  );
+}
+
+/** Create a child tag nested under a parent tag. Returns the created tag. */
+export async function createTag(
+  baseUrl: string,
+  name: string,
+  parentId: string,
+): Promise<TagTermOption> {
+  return createdOption(
+    await fetchBookmarksJson<unknown>(apiUrl(baseUrl, "/tags"), {
+      method: "POST",
+      body: {
+        name,
+        parentId,
+      },
+    }),
+  );
+}
+
+/**
+ * Create a new term in the bookmarks app under one channel's configured source and return it as a
+ * selectable option. A taxonomy source creates a taxonomy term (nested under its drill-down parent
+ * term when set); a parent-tag source creates a child tag. Throws {@link BookmarksNotConfiguredError}
+ * when the channel has no source configured.
+ */
+export async function createVocabularyTerm(
+  name: string,
+  category: SentenceTermCategory = "vocabulary",
+): Promise<TagTermOption> {
+  const {
+    baseUrl, sources,
+  } = await resolveBookmarksConfig();
+  const source = sources[category];
+  if (!source) throw new BookmarksNotConfiguredError();
+  if (source.kind === "taxonomy") {
+    return createTerm(baseUrl, source.id, name, source.termId ?? undefined);
+  }
+  return createTag(baseUrl, name, source.id);
 }

@@ -45,7 +45,9 @@ export function SentenceForm({
   const createSentence = useCreateSentence();
   const [sourceId, setSourceId] = useState<string | null>(initialValues?.sourceId ?? null);
   const [vocabIds, setVocabIds] = useState<string[]>([]);
-  const [terms, setTerms] = useState<SentenceTermRef[]>([]);
+  const [vocabTerms, setVocabTerms] = useState<SentenceTermRef[]>([]);
+  const [grammarTerms, setGrammarTerms] = useState<SentenceTermRef[]>([]);
+  const [generalTerms, setGeneralTerms] = useState<SentenceTermRef[]>([]);
 
   const form = useForm({
     defaultValues: {
@@ -62,6 +64,7 @@ export function SentenceForm({
     onSubmit: async ({
       value,
     }) => {
+      const terms = [...vocabTerms, ...grammarTerms, ...generalTerms];
       await createSentence.mutateAsync({
         text: value.text,
         translation: value.translation || null,
@@ -76,7 +79,9 @@ export function SentenceForm({
       form.reset();
       setSourceId(null);
       setVocabIds([]);
-      setTerms([]);
+      setVocabTerms([]);
+      setGrammarTerms([]);
+      setGeneralTerms([]);
       onSuccess?.();
     },
   });
@@ -158,10 +163,29 @@ export function SentenceForm({
         )}
       </form.Field>
 
-      <div className="sm:col-span-2">
+      <div
+        className="
+          grid gap-4
+          sm:col-span-2 sm:grid-cols-3
+        "
+      >
         <TermPicker
-          value={terms}
-          onChange={setTerms}
+          category="vocabulary"
+          label="Vocabulary tags"
+          value={vocabTerms}
+          onChange={setVocabTerms}
+        />
+        <TermPicker
+          category="grammar"
+          label="Grammar tags"
+          value={grammarTerms}
+          onChange={setGrammarTerms}
+        />
+        <TermPicker
+          category="general"
+          label="General tags"
+          value={generalTerms}
+          onChange={setGeneralTerms}
         />
       </div>
 

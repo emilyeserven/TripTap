@@ -78,6 +78,10 @@ const createSentenceBody = {
           sourceLabel: {
             type: "string",
           },
+          category: {
+            type: "string",
+            enum: ["vocabulary", "grammar", "general"],
+          },
         },
       },
     },

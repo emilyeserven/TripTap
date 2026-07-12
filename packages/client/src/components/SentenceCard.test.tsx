@@ -48,6 +48,57 @@ describe("SentenceCard", () => {
     expect(screen.queryByText("I drink coffee every morning.")).not.toBeInTheDocument();
   });
 
+  it("groups term badges by channel and defaults uncategorized terms to Vocabulary", () => {
+    renderCard(
+      <SentenceCard
+        sentence={{
+          ...sentence,
+          terms: [
+            {
+              id: "v1",
+              name: "コーヒー",
+              kind: "taxonomy",
+              sourceId: "s1",
+              sourceLabel: "Nouns",
+              category: "vocabulary",
+            },
+            {
+              id: "g1",
+              name: "ます-form",
+              kind: "taxonomy",
+              sourceId: "s2",
+              sourceLabel: "Grammar",
+              category: "grammar",
+            },
+            {
+              id: "x1",
+              name: "丁寧",
+              kind: "taxonomy",
+              sourceId: "s3",
+              sourceLabel: "Register",
+              category: "general",
+            },
+            // No category → treated as Vocabulary.
+            {
+              id: "v2",
+              name: "毎朝",
+              kind: "taxonomy",
+              sourceId: "s1",
+              sourceLabel: "Nouns",
+            } as never,
+          ],
+        }}
+      />,
+    );
+    expect(screen.getByText("Vocabulary:")).toBeInTheDocument();
+    expect(screen.getByText("Grammar:")).toBeInTheDocument();
+    expect(screen.getByText("General:")).toBeInTheDocument();
+    expect(screen.getByText("コーヒー")).toBeInTheDocument();
+    expect(screen.getByText("毎朝")).toBeInTheDocument();
+    expect(screen.getByText("ます-form")).toBeInTheDocument();
+    expect(screen.getByText("丁寧")).toBeInTheDocument();
+  });
+
   it("calls onDelete with the sentence id when the delete button is clicked", () => {
     const onDelete = vi.fn();
     renderCard(
