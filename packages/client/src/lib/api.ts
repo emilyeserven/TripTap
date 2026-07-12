@@ -89,6 +89,10 @@ export const sentencesApi = {
     request<{ updated: number }>("/sentences/furigana/backfill", {
       method: "POST",
     }),
+  regenerateFurigana: (id: string) =>
+    request<Sentence>(`/sentences/${id}/furigana`, {
+      method: "POST",
+    }),
 };
 
 export const sourcesApi = {

@@ -3,8 +3,9 @@ import type { Sentence } from "@sentence-bank/types";
 import { useState } from "react";
 
 import { Link } from "@tanstack/react-router";
-import { Camera, ChevronDown, Database, Layers, Volume2 } from "lucide-react";
+import { Camera, ChevronDown, Database, Layers, PenLine, Volume2 } from "lucide-react";
 
+import { FuriganaEditor } from "./FuriganaEditor";
 import { speak } from "./lesson/speak";
 import { SentenceText } from "./SentenceText";
 import { VocabHoverPill } from "./VocabHoverPill";
@@ -27,10 +28,13 @@ export function SentenceCard({
 }: SentenceCardProps) {
   const [revealed, setRevealed] = useState(false);
   const [showBreak, setShowBreak] = useState(false);
+  const [editFuri, setEditFuri] = useState(false);
   // Lazily fetch the sentence's linked vocab only when the breakdown is opened.
   const {
     data: linkedVocab,
   } = useSentenceVocab(sentence.id, showBreak);
+
+  const hasKanji = /[㐀-䶿一-鿿々]/.test(sentence.text);
 
   const tags = (sentence.tags ?? "")
     .split(",")
@@ -158,20 +162,34 @@ export function SentenceCard({
         {sentence.notes ? <p className="text-sm">{sentence.notes}</p> : null}
 
         <div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowBreak(v => !v)}
-          >
-            <Layers className="size-4" />
-            {showBreak ? "Hide breakdown" : "Break it down"}
-            <ChevronDown
-              className={`
-                size-4 transition-transform
-                ${showBreak ? "rotate-180" : ""}
-              `}
-            />
-          </Button>
+          <div className="flex flex-wrap items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowBreak(v => !v)}
+            >
+              <Layers className="size-4" />
+              {showBreak ? "Hide breakdown" : "Break it down"}
+              <ChevronDown
+                className={`
+                  size-4 transition-transform
+                  ${showBreak ? "rotate-180" : ""}
+                `}
+              />
+            </Button>
+            {hasKanji
+              ? (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setEditFuri(v => !v)}
+                >
+                  <PenLine className="size-4" />
+                  {editFuri ? "Close furigana" : "Edit furigana"}
+                </Button>
+              )
+              : null}
+          </div>
           {showBreak
             ? (
               <div className="mt-2 rounded-md border p-3">
@@ -188,6 +206,14 @@ export function SentenceCard({
                   )
                   : <p className="text-sm text-muted-foreground">No linked vocab.</p>}
               </div>
+            )
+            : null}
+          {editFuri
+            ? (
+              <FuriganaEditor
+                sentence={sentence}
+                onClose={() => setEditFuri(false)}
+              />
             )
             : null}
         </div>

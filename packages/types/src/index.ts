@@ -148,8 +148,10 @@ export interface CreateParseTemplateInput {
   ignoreBlankLines: boolean;
 }
 
-/** Payload for partially updating a sentence. */
-export type UpdateSentenceInput = Partial<CreateSentenceInput>;
+/** Payload for partially updating a sentence. `reading` is a manual furigana override (null clears it). */
+export type UpdateSentenceInput = Partial<CreateSentenceInput> & {
+  reading?: FuriToken[] | null;
+};
 
 /** Standard error shape returned by the API. */
 export interface ApiError {

@@ -8,6 +8,7 @@ import {
   deleteSentence,
   getSentence,
   listSentences,
+  regenerateSentenceFurigana,
   updateSentence,
 } from "@/services/sentences";
 
@@ -68,10 +69,31 @@ const createSentenceBody = {
   },
 } as const;
 
+const readingSchema = {
+  type: ["array", "null"],
+  items: {
+    type: "object",
+    additionalProperties: false,
+    required: ["t", "r"],
+    properties: {
+      t: {
+        type: "string",
+      },
+      r: {
+        type: ["string", "null"],
+      },
+    },
+  },
+} as const;
+
 const updateSentenceBody = {
   type: "object",
   additionalProperties: false,
-  properties: createSentenceBody.properties,
+  properties: {
+    ...createSentenceBody.properties,
+    // A manual furigana override (clears/edits the generated reading).
+    reading: readingSchema,
+  },
 } as const;
 
 const bulkSentencesBody = {
@@ -158,6 +180,22 @@ export async function sentenceRoutes(app: FastifyInstance): Promise<void> {
     return {
       updated,
     };
+  });
+
+  app.post("/api/sentences/:id/furigana", {
+    schema: {
+      tags: ["sentences"],
+      params: sentenceParams,
+    },
+  }, async (req, reply) => {
+    const {
+      id,
+    } = req.params as { id: string };
+    const sentence = await regenerateSentenceFurigana(id);
+    if (!sentence) return reply.code(404).send({
+      message: "Sentence not found",
+    });
+    return sentence;
   });
 
   app.get("/api/sentences/:id/vocab", {

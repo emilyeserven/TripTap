@@ -79,3 +79,12 @@ export function useBackfillFurigana() {
     onSuccess: invalidate,
   });
 }
+
+/** Re-run furigana generation for one sentence (applies current vocab overrides). */
+export function useRegenerateFurigana() {
+  const invalidate = useSentenceInvalidator();
+  return useMutation({
+    mutationFn: (id: string) => sentencesApi.regenerateFurigana(id),
+    onSuccess: invalidate,
+  });
+}

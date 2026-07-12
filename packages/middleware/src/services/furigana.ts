@@ -75,11 +75,52 @@ function parse(html: string): FuriToken[] {
 }
 
 /**
- * Generate furigana tokens for a sentence. Returns `null` on empty text or if the analyzer fails
- * (generation is best-effort and must never block saving a sentence). A returned array with no `r`
- * fields simply means "no kanji to annotate".
+ * Apply user reading overrides (from the vocab bank) over analyzer output. Consecutive base runs are
+ * greedily merged when they spell an override term (longest match wins), so a name the analyzer split
+ * or mis-read is replaced by the user's reading. This is what lets names be "excluded from analysis":
+ * add the term to vocab with its correct reading and it wins everywhere.
  */
-export async function generateFurigana(text: string): Promise<FuriToken[] | null> {
+export function applyOverrides(tokens: FuriToken[], overrides: Map<string, string>): FuriToken[] {
+  if (overrides.size === 0) return tokens;
+  const maxLen = Math.max(...[...overrides.keys()].map(k => k.length));
+  const out: FuriToken[] = [];
+  let i = 0;
+  while (i < tokens.length) {
+    let matchEnd = -1;
+    let matchTerm = "";
+    let acc = "";
+    for (let j = i; j < tokens.length && acc.length < maxLen; j += 1) {
+      acc += tokens[j].t;
+      if (acc.length > maxLen) break;
+      if (overrides.has(acc)) {
+        matchEnd = j;
+        matchTerm = acc;
+      }
+    }
+    if (matchEnd >= 0) {
+      out.push({
+        t: matchTerm,
+        r: overrides.get(matchTerm) ?? null,
+      });
+      i = matchEnd + 1;
+    }
+    else {
+      out.push(tokens[i]);
+      i += 1;
+    }
+  }
+  return out;
+}
+
+/**
+ * Generate furigana tokens for a sentence, with optional user reading overrides. Returns `null` on
+ * empty text or if the analyzer fails (generation is best-effort and must never block saving a
+ * sentence). A returned array with no `r` fields simply means "no kanji to annotate".
+ */
+export async function generateFurigana(
+  text: string,
+  overrides?: Map<string, string>,
+): Promise<FuriToken[] | null> {
   if (!text.trim()) return null;
   try {
     const kuroshiro = await getKuroshiro();
@@ -87,7 +128,9 @@ export async function generateFurigana(text: string): Promise<FuriToken[] | null
       mode: "furigana",
       to: "hiragana",
     });
-    const tokens = parse(html);
+    const tokens = overrides && overrides.size > 0
+      ? applyOverrides(parse(html), overrides)
+      : parse(html);
     // If nothing needed a reading, store the tokens anyway so the row counts as "generated".
     return tokens.length > 0 ? tokens : null;
   }
