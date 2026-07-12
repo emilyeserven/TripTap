@@ -18,6 +18,21 @@ test("POST /api/practice-sentences rejects a payload missing required fields", a
   await app.close();
 });
 
+test("POST /api/practice-sentences rejects an unknown comprehension bucket", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/practice-sentences",
+    payload: {
+      text: "バイトも休めないし、マジで頭が痛い。",
+      language: "Japanese",
+      comprehension: "mostly", // not in the allowed enum
+    },
+  });
+  assert.equal(res.statusCode, 400);
+  await app.close();
+});
+
 test("POST /api/practice-sentences rejects an unknown target kind", async () => {
   const app = await buildApp();
   const res = await app.inject({

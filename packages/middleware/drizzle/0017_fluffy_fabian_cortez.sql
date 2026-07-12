@@ -1,0 +1,1 @@
+ALTER TABLE "practice_sentences" ADD COLUMN "terms" jsonb;

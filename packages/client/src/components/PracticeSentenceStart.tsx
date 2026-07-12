@@ -28,7 +28,7 @@ export function PracticeSentenceStart() {
   const go = async (input: CreatePracticeSentenceInput) => {
     const created = await create.mutateAsync(input);
     await navigate({
-      to: "/practice/$id",
+      to: "/practice/$id/edit",
       params: {
         id: created.id,
       },

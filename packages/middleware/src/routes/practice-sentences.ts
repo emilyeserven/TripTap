@@ -86,6 +86,37 @@ const passesSchema = {
   },
 } as const;
 
+const termsSchema = {
+  type: ["array", "null"],
+  items: {
+    type: "object",
+    additionalProperties: false,
+    required: ["id", "name", "kind", "sourceId", "sourceLabel"],
+    properties: {
+      id: {
+        type: "string",
+      },
+      name: {
+        type: "string",
+      },
+      kind: {
+        type: "string",
+        enum: ["tag", "taxonomy"],
+      },
+      sourceId: {
+        type: "string",
+      },
+      sourceLabel: {
+        type: "string",
+      },
+      category: {
+        type: "string",
+        enum: ["vocabulary", "grammar", "general"],
+      },
+    },
+  },
+} as const;
+
 const createPracticeSentenceBody = {
   type: "object",
   required: ["text", "language"],
@@ -112,6 +143,10 @@ const createPracticeSentenceBody = {
       type: ["string", "null"],
       enum: ["word", "grammar", "idiom", "collocation", "reading", null],
     },
+    comprehension: {
+      type: ["string", "null"],
+      enum: ["ready", "studying", "skip", null],
+    },
     guess: {
       type: ["string", "null"],
     },
@@ -126,6 +161,7 @@ const createPracticeSentenceBody = {
     },
     words: wordsSchema,
     grammar: grammarSchema,
+    terms: termsSchema,
     passes: passesSchema,
     sourceId: {
       type: ["string", "null"],

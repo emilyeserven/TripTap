@@ -8,6 +8,9 @@
  * (initially hidden) `correction` field. Consumed by both the Fastify API and the React client.
  */
 
+// Type-only import (erased at build) — `SentenceTermRef` lives in the barrel; no runtime cycle.
+import type { SentenceTermRef } from "./index.js";
+
 /** One unknown word logged on a practice sentence: the word, its reading, and its meaning. */
 export interface PracticeWord {
   /** The word/term, e.g. "頭". */
@@ -35,6 +38,12 @@ export type PracticePasses = Partial<Record<PracticePassKey, boolean>>;
 /** What kind of thing the sentence's single "target" is. Validated at the route layer. */
 export type PracticeTargetKind = "word" | "grammar" | "idiom" | "collocation" | "reading";
 
+/**
+ * How well the learner understands the sentence, à la Tofugu's curation gate: `ready` (~80%+ — good to
+ * card into an SRS), `studying` (under 80% — study the component parts first), `skip` (under 50% — defer).
+ */
+export type PracticeComprehension = "ready" | "studying" | "skip";
+
 /** A single practice sentence: a richly-annotated study card. */
 export interface PracticeSentence {
   id: string;
@@ -50,6 +59,8 @@ export interface PracticeSentence {
   target: string | null;
   /** What kind of target it is; null if not set. */
   targetKind: PracticeTargetKind | null;
+  /** How well the learner understands the sentence (Tofugu curation gate); null until assessed. */
+  comprehension: PracticeComprehension | null;
   /** The learner's pre-lookup guess at the meaning; null if none. */
   guess: string | null;
   /** Literal/structural gloss, recorded only when the structure surprised the learner; null if none. */
@@ -62,6 +73,8 @@ export interface PracticeSentence {
   words: PracticeWord[] | null;
   /** Grammar points logged for study; null if none. */
   grammar: PracticeGrammar[] | null;
+  /** Structured tags from the bookmarks channels (Vocabulary / Grammar / General); null if none. */
+  terms: SentenceTermRef[] | null;
   /** Completed study passes; null if none tracked yet. */
   passes: PracticePasses | null;
   /** The taxonomy source this sentence came from (copied from its origin), or null. */
@@ -88,12 +101,14 @@ export interface CreatePracticeSentenceInput {
   translation?: string | null;
   target?: string | null;
   targetKind?: PracticeTargetKind | null;
+  comprehension?: PracticeComprehension | null;
   guess?: string | null;
   literal?: string | null;
   register?: string | null;
   nuance?: string | null;
   words?: PracticeWord[] | null;
   grammar?: PracticeGrammar[] | null;
+  terms?: SentenceTermRef[] | null;
   passes?: PracticePasses | null;
   sourceId?: string | null;
   page?: string | null;

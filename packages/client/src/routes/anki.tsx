@@ -15,6 +15,7 @@ import {
 import { Combobox } from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { usePracticeSentences } from "@/hooks/usePracticeSentences";
 import { useSentences } from "@/hooks/useSentences";
 import { useSources } from "@/hooks/useSources";
 import { useVocab } from "@/hooks/useVocab";
@@ -311,10 +312,13 @@ function AnkiPage() {
     data: vocab,
   } = useVocab();
   const {
+    data: practiceSentences,
+  } = usePracticeSentences();
+  const {
     data: sources,
   } = useSources();
 
-  const [mode, setMode] = useState<"sentences" | "vocab">("sentences");
+  const [mode, setMode] = useState<"sentences" | "vocab" | "practice">("sentences");
 
   const sentenceItems: ExportItem[] = useMemo(() => (sentences ?? []).map(s => ({
     id: s.id,
@@ -338,6 +342,18 @@ function AnkiPage() {
     searchExtra: [v.meaning, v.tags, v.notes],
   })), [vocab]);
 
+  const practiceItems: ExportItem[] = useMemo(() => (practiceSentences ?? []).map(p => ({
+    id: p.id,
+    label: p.text,
+    sublabel: p.translation ?? "",
+    secondary: p.translation,
+    // Practice `reading` is already a plain string (not FuriToken[]), so no conversion is needed.
+    tertiary: p.reading,
+    eligible: isAnkiSentenceEligible(p),
+    sourceId: p.sourceId,
+    searchExtra: [p.target, p.nuance],
+  })), [practiceSentences]);
+
   return (
     <section className="space-y-6">
       <div>
@@ -354,7 +370,22 @@ function AnkiPage() {
       </div>
 
       <div className="flex gap-2">
-        {(["sentences", "vocab"] as const).map(m => (
+        {([
+          {
+            m: "sentences",
+            label: "Sentences",
+          },
+          {
+            m: "vocab",
+            label: "Vocab",
+          },
+          {
+            m: "practice",
+            label: "Practice",
+          },
+        ] as const).map(({
+          m, label,
+        }) => (
           <Button
             key={m}
             type="button"
@@ -362,7 +393,7 @@ function AnkiPage() {
             variant={mode === m ? "default" : "outline"}
             onClick={() => setMode(m)}
           >
-            {m === "sentences" ? "Sentences" : "Vocab"}
+            {label}
           </Button>
         ))}
       </div>
@@ -382,7 +413,9 @@ function AnkiPage() {
               })))}
           />
         )
-        : (
+        : null}
+      {mode === "vocab"
+        ? (
           <ExportPanel
             items={vocabItems}
             sources={sources}
@@ -395,7 +428,24 @@ function AnkiPage() {
                 meaning: i.tertiary,
               })))}
           />
-        )}
+        )
+        : null}
+      {mode === "practice"
+        ? (
+          <ExportPanel
+            items={practiceItems}
+            sources={sources}
+            storageKey="anki-export-practice"
+            pickerHint="Practice sentences with a translation. Use Anki's reversed note type for E→J cards."
+            toText={selected =>
+              toAnkiSentenceText(selected.map(i => ({
+                text: i.label,
+                translation: i.secondary,
+                reading: i.tertiary,
+              })))}
+          />
+        )
+        : null}
     </section>
   );
 }

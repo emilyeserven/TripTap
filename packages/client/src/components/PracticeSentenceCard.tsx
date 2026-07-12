@@ -11,6 +11,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
+/** Short labels for the comprehension badge. */
+const COMPREHENSION_LABEL = {
+  ready: "Ready to card",
+  studying: "Studying",
+  skip: "Skip",
+} as const;
+
 /** The study passes, in order, with short labels for the card summary. */
 const PASS_LABELS: { k: keyof NonNullable<PracticeSentence["passes"]>;
   short: string; }[] = [
@@ -73,7 +80,18 @@ export function PracticeSentenceCard({
             >
               <Volume2 className="size-4" />
             </Button>
-            <p className="text-lg font-semibold">{ps.text}</p>
+            <Link
+              to="/practice/$id"
+              params={{
+                id: ps.id,
+              }}
+              className="
+                text-lg font-semibold
+                hover:underline
+              "
+            >
+              {ps.text}
+            </Link>
           </div>
           <div className="flex shrink-0 items-center gap-1">
             <Button
@@ -84,7 +102,7 @@ export function PracticeSentenceCard({
               aria-label="Edit"
             >
               <Link
-                to="/practice/$id"
+                to="/practice/$id/edit"
                 params={{
                   id: ps.id,
                 }}
@@ -137,6 +155,16 @@ export function PracticeSentenceCard({
           "
         >
           <Badge variant="secondary">{ps.language}</Badge>
+          {ps.comprehension
+            ? (
+              <Badge
+                variant={ps.comprehension === "ready" ? "default" : "outline"}
+                title="How well you understand this sentence (Tofugu curation)"
+              >
+                {COMPREHENSION_LABEL[ps.comprehension]}
+              </Badge>
+            )
+            : null}
           {ps.needsCorrection
             ? (
               <Badge
@@ -212,6 +240,15 @@ export function PracticeSentenceCard({
               </Link>
             )
             : null}
+          {(ps.terms ?? []).map(term => (
+            <Badge
+              key={`${term.sourceId}:${term.id}`}
+              variant="outline"
+              title={`${term.category ?? "vocabulary"}${term.sourceLabel ? ` · ${term.sourceLabel}` : ""}`}
+            >
+              {term.name}
+            </Badge>
+          ))}
         </div>
 
         {ps.nuance ? <p className="text-sm">{ps.nuance}</p> : null}

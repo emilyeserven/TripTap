@@ -1,23 +1,13 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 
-import { PracticeSentenceEditor } from "@/components/PracticeSentenceEditor";
-import { usePracticeSentence } from "@/hooks/usePracticeSentences";
-
+/**
+ * Layout for a single practice sentence. It only renders its child route — the read-only view
+ * (`/practice/$id/`) or the tabbed editor (`/practice/$id/edit`).
+ */
 export const Route = createFileRoute("/practice/$id")({
-  component: EditPracticePage,
+  component: PracticeIdLayout,
 });
 
-function EditPracticePage() {
-  const {
-    id,
-  } = Route.useParams();
-  const {
-    data, isLoading, error,
-  } = usePracticeSentence(id);
-
-  if (isLoading) return <p className="text-muted-foreground">Loading…</p>;
-  if (error) return <p className="text-destructive">{error.message}</p>;
-  if (!data) return <p className="text-muted-foreground">Practice sentence not found.</p>;
-
-  return <PracticeSentenceEditor practiceSentence={data} />;
+function PracticeIdLayout() {
+  return <Outlet />;
 }

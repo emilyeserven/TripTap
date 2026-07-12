@@ -145,6 +145,9 @@ export const practiceSentences = pgTable("practice_sentences", {
   // purpose; `target_kind` is constrained to a set at the route layer, not the DB.
   target: text("target"),
   targetKind: text("target_kind"),
+  // How well the learner understands the sentence (Tofugu curation gate): "ready" | "studying" | "skip".
+  // Free-text on purpose; the allowed set is validated at the route layer, not the DB. Null until assessed.
+  comprehension: text("comprehension"),
   // The learner's pre-lookup guess at the meaning.
   guess: text("guess"),
   // Literal/structural gloss, recorded only when the structure surprised the learner.
@@ -156,6 +159,9 @@ export const practiceSentences = pgTable("practice_sentences", {
   words: jsonb("words").$type<PracticeWord[]>(),
   grammar: jsonb("grammar").$type<PracticeGrammar[]>(),
   passes: jsonb("passes").$type<PracticePasses>(),
+  // Structured tags from the bookmarks channels (Vocabulary / Grammar / General). Denormalized so
+  // display never needs a live bookmarks call. Null until any are attached.
+  terms: jsonb("terms").$type<SentenceTermRef[]>(),
   // Provenance. `source_id` is copied from the origin for filtering; the capture/sentence this was
   // imported from are nulled (not deleted) if that origin is removed.
   sourceId: uuid("source_id").references(() => sources.id, {
