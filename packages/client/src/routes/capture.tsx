@@ -121,7 +121,7 @@ function CapturePage() {
         </Link>
         <h1 className="text-2xl font-bold">Capture text</h1>
         <p className="text-sm text-muted-foreground">
-          Photograph or upload a page and extract its Japanese and English text.
+          Take a photo or choose an image, and extract its Japanese and English text.
         </p>
       </div>
 
@@ -129,7 +129,8 @@ function CapturePage() {
         <CardHeader>
           <CardTitle>Image</CardTitle>
           <CardDescription>
-            On a phone this opens the camera; on desktop it opens a file picker.
+            On a phone you can take a photo or pick one from your library; on desktop it opens a file
+            picker.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -137,7 +138,6 @@ function CapturePage() {
             ref={inputRef}
             type="file"
             accept="image/*"
-            capture="environment"
             className="hidden"
             onChange={onSelect}
           />

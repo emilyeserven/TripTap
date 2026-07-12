@@ -1,7 +1,17 @@
 import type { Sentence } from "@sentence-bank/types";
 
+import { useState } from "react";
+
 import { Link } from "@tanstack/react-router";
-import { Camera } from "lucide-react";
+import { Camera, ChevronDown, Database, Layers, Volume2 } from "lucide-react";
+
+import { speak } from "./lesson/speak";
+import { VocabHoverPill } from "./VocabHoverPill";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { useSentenceVocab } from "@/hooks/useSentences";
 
 interface SentenceCardProps {
   sentence: Sentence;
@@ -14,84 +24,168 @@ interface SentenceCardProps {
 export function SentenceCard({
   sentence, showTranslation = true, sourceName, onDelete,
 }: SentenceCardProps) {
+  const [revealed, setRevealed] = useState(false);
+  const [showBreak, setShowBreak] = useState(false);
+  // Lazily fetch the sentence's linked vocab only when the breakdown is opened.
+  const {
+    data: linkedVocab,
+  } = useSentenceVocab(sentence.id, showBreak);
+
   const tags = (sentence.tags ?? "")
     .split(",")
     .map(tag => tag.trim())
     .filter(Boolean);
 
   // Prefer the resolved taxonomy source name; fall back to the legacy free-text `source` for old rows.
-  const displaySource = sentence.sourceId ? sourceName ?? null : sentence.source;
-  const sourceLabel = [displaySource, sentence.page ? `p. ${sentence.page}` : null]
-    .filter(Boolean)
-    .join(" · ");
+  const sourceId = sentence.sourceId;
+  const displaySource = sourceId ? sourceName ?? null : sentence.source;
+  const pageLabel = sentence.page ? `p. ${sentence.page}` : null;
 
   return (
-    <article
-      className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
-    >
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-lg font-semibold">{sentence.text}</p>
-          {showTranslation && sentence.translation
-            ? <p className="mt-1 text-sm text-slate-600">{sentence.translation}</p>
+    <Card>
+      <CardContent className="space-y-3 p-4">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex items-start gap-2">
+            <Button
+              size="icon"
+              variant="ghost"
+              className="size-6 shrink-0"
+              aria-label="Hear"
+              onClick={() => speak(sentence.text)}
+            >
+              <Volume2 className="size-4" />
+            </Button>
+            <p className="text-lg font-semibold">{sentence.text}</p>
+          </div>
+          {onDelete
+            ? (
+              <button
+                type="button"
+                onClick={() => onDelete(sentence.id)}
+                className="
+                  shrink-0 text-sm text-red-600
+                  hover:underline
+                "
+              >
+                Delete
+              </button>
+            )
             : null}
         </div>
-        {onDelete
+
+        {sentence.translation
           ? (
-            <button
-              type="button"
-              onClick={() => onDelete(sentence.id)}
-              className="
-                text-sm text-red-600
-                hover:underline
-              "
-            >
-              Delete
-            </button>
+            showTranslation
+              ? <p className="text-sm text-muted-foreground">{sentence.translation}</p>
+              : (
+                <button
+                  type="button"
+                  onClick={() => setRevealed(v => !v)}
+                  className="
+                    w-full rounded-md border bg-muted/40 px-3 py-2 text-left
+                    text-sm
+                    hover:bg-muted
+                  "
+                >
+                  {revealed ? sentence.translation : "Reveal translation"}
+                </button>
+              )
           )
           : null}
-      </div>
-      <div
-        className="
-          mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-500
-        "
-      >
-        <span
+
+        <div
           className="
-            rounded-full bg-slate-100 px-2 py-0.5 font-medium text-slate-600
+            flex flex-wrap items-center gap-2 text-xs text-muted-foreground
           "
         >
-          {sentence.language}
-        </span>
-        {sourceLabel ? <span>{sourceLabel}</span> : null}
-        {sentence.captureId
-          ? (
-            <Link
-              to="/captures/$id"
-              params={{
-                id: sentence.captureId,
-              }}
-              className="
-                inline-flex items-center gap-1 rounded-full bg-slate-100 px-2
-                py-0.5 font-medium text-slate-600
-                hover:text-blue-700
-              "
+          <Badge variant="secondary">{sentence.language}</Badge>
+          {sourceId && displaySource
+            ? (
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+                className="h-6 gap-1 px-2"
+              >
+                <Link
+                  to="/captures"
+                  search={{
+                    source: sourceId,
+                  }}
+                >
+                  <Database className="size-3" />
+                  {displaySource}
+                </Link>
+              </Button>
+            )
+            : displaySource
+              ? <span>{displaySource}</span>
+              : null}
+          {pageLabel ? <span>{pageLabel}</span> : null}
+          {sentence.captureId
+            ? (
+              <Link
+                to="/captures/$id"
+                params={{
+                  id: sentence.captureId,
+                }}
+                className="
+                  inline-flex items-center gap-1
+                  hover:text-blue-700
+                "
+              >
+                <Camera className="size-3" />
+                Capture
+              </Link>
+            )
+            : null}
+          {tags.map(tag => (
+            <span
+              key={tag}
+              className="rounded-full bg-blue-50 px-2 py-0.5 text-blue-700"
             >
-              <Camera className="size-3" />
-              Capture
-            </Link>
-          )
-          : null}
-        {tags.map(tag => (
-          <span
-            key={tag}
-            className="rounded-full bg-blue-50 px-2 py-0.5 text-blue-700"
+              {tag}
+            </span>
+          ))}
+        </div>
+
+        {sentence.notes ? <p className="text-sm">{sentence.notes}</p> : null}
+
+        <div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowBreak(v => !v)}
           >
-            {tag}
-          </span>
-        ))}
-      </div>
-      {sentence.notes ? <p className="mt-2 text-sm text-slate-700">{sentence.notes}</p> : null}
-    </article>
+            <Layers className="size-4" />
+            {showBreak ? "Hide breakdown" : "Break it down"}
+            <ChevronDown
+              className={`
+                size-4 transition-transform
+                ${showBreak ? "rotate-180" : ""}
+              `}
+            />
+          </Button>
+          {showBreak
+            ? (
+              <div className="mt-2 rounded-md border p-3">
+                {linkedVocab && linkedVocab.length > 0
+                  ? (
+                    <div className="flex flex-wrap gap-1.5">
+                      {linkedVocab.map(v => (
+                        <VocabHoverPill
+                          key={v.id}
+                          vocab={v}
+                        />
+                      ))}
+                    </div>
+                  )
+                  : <p className="text-sm text-muted-foreground">No linked vocab.</p>}
+              </div>
+            )
+            : null}
+        </div>
+      </CardContent>
+    </Card>
   );
 }

@@ -18,7 +18,7 @@ import { useCaptures } from "@/hooks/useCaptures";
 import { useSentences } from "@/hooks/useSentences";
 import { useCreateSource, useDeleteSource, useSources, useUpdateSource } from "@/hooks/useSources";
 
-export const Route = createFileRoute("/sources")({
+export const Route = createFileRoute("/sources/")({
   component: SourcesPage,
 });
 

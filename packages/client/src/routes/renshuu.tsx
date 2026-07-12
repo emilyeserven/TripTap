@@ -1,5 +1,3 @@
-import type { Sentence } from "@sentence-bank/types";
-
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { createFileRoute } from "@tanstack/react-router";
@@ -19,18 +17,33 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useSentences } from "@/hooks/useSentences";
 import { useSources } from "@/hooks/useSources";
-import { isRenshuuEligible, toRenshuuText } from "@/lib/renshuu";
+import { useVocab } from "@/hooks/useVocab";
+import { isRenshuuEligible, toRenshuuText, toRenshuuVocabText } from "@/lib/renshuu";
 
 export const Route = createFileRoute("/renshuu")({
   component: RenshuuPage,
 });
 
-const STORAGE_KEY = "renshuu-export";
+/** One selectable row, mode-agnostic. `secondary` is the export's second field (translation/reading). */
+interface ExportItem {
+  id: string;
+  label: string;
+  sublabel: string;
+  secondary: string | null;
+  eligible: boolean;
+  sourceId: string | null;
+  /** Extra fields (meaning, tags, notes) folded into the search. */
+  searchExtra: (string | null)[];
+}
 
-/** Load the saved id list from localStorage (best-effort). */
-function loadIds(): string[] {
+interface Source {
+  id: string;
+  name: string;
+}
+
+function loadIds(key: string): string[] {
   try {
-    const raw = globalThis.localStorage?.getItem(STORAGE_KEY);
+    const raw = globalThis.localStorage?.getItem(key);
     const parsed = raw ? JSON.parse(raw) : [];
     return Array.isArray(parsed) ? parsed.filter((v): v is string => typeof v === "string") : [];
   }
@@ -39,39 +52,39 @@ function loadIds(): string[] {
   }
 }
 
-function RenshuuPage() {
-  const {
-    data: sentences,
-  } = useSentences();
-  const {
-    data: sources,
-  } = useSources();
-
-  const [ids, setIds] = useState<string[]>(() => loadIds());
+/** The picker + export-list + output for one mode; owns its own localStorage-backed id list. */
+function ExportPanel({
+  items,
+  sources,
+  storageKey,
+  toText,
+  pickerHint,
+}: {
+  items: ExportItem[];
+  sources: Source[] | undefined;
+  storageKey: string;
+  toText: (selected: ExportItem[]) => string;
+  pickerHint: string;
+}) {
+  const [ids, setIds] = useState<string[]>(() => loadIds(storageKey));
   const [search, setSearch] = useState("");
   const [sourceFilter, setSourceFilter] = useState("all");
   const [copied, setCopied] = useState(false);
   const outputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Persist the export list.
   useEffect(() => {
     try {
-      globalThis.localStorage?.setItem(STORAGE_KEY, JSON.stringify(ids));
+      globalThis.localStorage?.setItem(storageKey, JSON.stringify(ids));
     }
     catch {
       // ignore storage failures (private mode, etc.)
     }
-  }, [ids]);
+  }, [ids, storageKey]);
 
-  const byId = useMemo(() => {
-    const map = new Map<string, Sentence>();
-    for (const s of sentences ?? []) map.set(s.id, s);
-    return map;
-  }, [sentences]);
-
+  const byId = useMemo(() => new Map(items.map(i => [i.id, i])), [items]);
   const inList = new Set(ids);
-  const listed = ids.map(id => byId.get(id)).filter((s): s is Sentence => Boolean(s));
-  const output = toRenshuuText(listed);
+  const listed = ids.map(id => byId.get(id)).filter((i): i is ExportItem => Boolean(i));
+  const output = toText(listed);
 
   const sourceOptions = useMemo(() => [
     {
@@ -84,12 +97,11 @@ function RenshuuPage() {
     })),
   ], [sources]);
 
-  const candidates = (sentences ?? []).filter(s =>
-    !inList.has(s.id)
-    && (sourceFilter === "all" || s.sourceId === sourceFilter)
-    && matches(search, s.text, s.translation, s.tags, s.notes));
-  // Only exportable rows can be bulk-added (they need a translation).
-  const addableIds = candidates.filter(isRenshuuEligible).map(s => s.id);
+  const candidates = items.filter(i =>
+    !inList.has(i.id)
+    && (sourceFilter === "all" || i.sourceId === sourceFilter)
+    && matches(search, i.label, i.sublabel, ...i.searchExtra));
+  const addableIds = candidates.filter(i => i.eligible).map(i => i.id);
 
   function add(id: string) {
     setIds(prev => (prev.includes(id) ? prev : [...prev, id]));
@@ -103,7 +115,7 @@ function RenshuuPage() {
     setIds(prev => prev.filter(x => x !== id));
     setCopied(false);
   }
-  function clear() {
+  function removeAll() {
     setIds([]);
     setCopied(false);
   }
@@ -134,174 +146,249 @@ function RenshuuPage() {
   }
 
   return (
+    <div
+      className="
+        grid items-start gap-6
+        lg:grid-cols-2
+      "
+    >
+      {/* Picker */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-start justify-between gap-2">
+            <div className="space-y-1.5">
+              <CardTitle>Add</CardTitle>
+              <CardDescription>{pickerHint}</CardDescription>
+            </div>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={addAll}
+              disabled={addableIds.length === 0}
+              title="Add all matching"
+            >
+              Add all (
+              {addableIds.length}
+              )
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <Input
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search…"
+              aria-label="Search"
+              className="flex-1"
+            />
+            {sources && sources.length > 0
+              ? (
+                <Combobox
+                  value={sourceFilter}
+                  onChange={setSourceFilter}
+                  options={sourceOptions}
+                  ariaLabel="Filter by source"
+                  searchPlaceholder="Search sources…"
+                  className="w-44"
+                />
+              )
+              : null}
+          </div>
+          <div className="max-h-[55vh] space-y-1.5 overflow-y-auto">
+            {candidates.length === 0
+              ? <p className="text-sm text-muted-foreground">Nothing to add.</p>
+              : candidates.map(i => (
+                <div
+                  key={i.id}
+                  className="
+                    flex items-center gap-2 rounded-md border border-input p-2
+                    text-sm
+                  "
+                >
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate font-medium">{i.label}</div>
+                    <div className="truncate text-muted-foreground">
+                      {i.sublabel || "— no translation —"}
+                    </div>
+                  </div>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    disabled={!i.eligible}
+                    title={i.eligible ? "Add" : "Needs a translation"}
+                    onClick={() => add(i.id)}
+                  >
+                    <Plus className="size-4" />
+                  </Button>
+                </div>
+              ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Export list + output */}
+      <Card>
+        <CardHeader>
+          <CardTitle>
+            Export list —
+            {" "}
+            {listed.length}
+          </CardTitle>
+          <CardDescription>Saved in this browser; paste the output into Renshuu.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="max-h-[40vh] space-y-1.5 overflow-y-auto">
+            {listed.length === 0
+              ? <p className="text-sm text-muted-foreground">Nothing added yet.</p>
+              : listed.map(i => (
+                <div
+                  key={i.id}
+                  className="
+                    flex items-center gap-2 rounded-md border border-input p-2
+                    text-sm
+                  "
+                >
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate font-medium">{i.label}</div>
+                    <div className="truncate text-muted-foreground">{i.sublabel}</div>
+                  </div>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    title="Remove"
+                    onClick={() => removeId(i.id)}
+                  >
+                    <X className="size-4" />
+                  </Button>
+                </div>
+              ))}
+          </div>
+
+          <Textarea
+            ref={outputRef}
+            readOnly
+            value={output}
+            rows={8}
+            className="font-mono text-xs"
+            aria-label="Renshuu export text"
+          />
+
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              onClick={() => void copy()}
+              disabled={output.length === 0}
+            >
+              {copied ? "Copied!" : "Copy"}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={removeAll}
+              disabled={ids.length === 0}
+            >
+              Remove all
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function RenshuuPage() {
+  const {
+    data: sentences,
+  } = useSentences();
+  const {
+    data: vocab,
+  } = useVocab();
+  const {
+    data: sources,
+  } = useSources();
+
+  const [mode, setMode] = useState<"sentences" | "vocab">("sentences");
+
+  const sentenceItems: ExportItem[] = useMemo(() => (sentences ?? []).map(s => ({
+    id: s.id,
+    label: s.text,
+    sublabel: s.translation ?? "",
+    secondary: s.translation,
+    eligible: isRenshuuEligible(s),
+    sourceId: s.sourceId,
+    searchExtra: [s.tags, s.notes],
+  })), [sentences]);
+
+  const vocabItems: ExportItem[] = useMemo(() => (vocab ?? []).map(v => ({
+    id: v.id,
+    label: v.term,
+    sublabel: [v.reading, v.meaning].filter(Boolean).join(" · "),
+    secondary: v.reading,
+    eligible: Boolean(v.term.trim()),
+    sourceId: v.sourceId,
+    searchExtra: [v.meaning, v.tags, v.notes],
+  })), [vocab]);
+
+  return (
     <section className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Renshuu export</h1>
         <p className="text-sm text-muted-foreground">
-          Build a list of sentences and copy it as
+          Build a list and copy it to paste into a Renshuu lesson — sentences as
           {" "}
           <code>{"<japanese>⇥<english>"}</code>
+          , words as
           {" "}
-          lines to paste into a Renshuu sentence lesson.
+          <code>term/reading</code>
+          .
         </p>
       </div>
 
-      <div
-        className="
-          grid items-start gap-6
-          lg:grid-cols-2
-        "
-      >
-        {/* Picker */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-start justify-between gap-2">
-              <div className="space-y-1.5">
-                <CardTitle>Add sentences</CardTitle>
-                <CardDescription>
-                  Only sentences with a translation can be exported.
-                </CardDescription>
-              </div>
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={addAll}
-                disabled={addableIds.length === 0}
-                title="Add all matching sentences"
-              >
-                Add all (
-                {addableIds.length}
-                )
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex flex-wrap items-center gap-2">
-              <Input
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                placeholder="Search sentences…"
-                aria-label="Search sentences"
-                className="flex-1"
-              />
-              {sources && sources.length > 0
-                ? (
-                  <Combobox
-                    value={sourceFilter}
-                    onChange={setSourceFilter}
-                    options={sourceOptions}
-                    ariaLabel="Filter by source"
-                    searchPlaceholder="Search sources…"
-                    className="w-44"
-                  />
-                )
-                : null}
-            </div>
-            <div className="max-h-[55vh] space-y-1.5 overflow-y-auto">
-              {candidates.length === 0
-                ? <p className="text-sm text-muted-foreground">No sentences to add.</p>
-                : candidates.map((s) => {
-                  const eligible = isRenshuuEligible(s);
-                  return (
-                    <div
-                      key={s.id}
-                      className="
-                        flex items-center gap-2 rounded-md border border-input
-                        p-2 text-sm
-                      "
-                    >
-                      <div className="min-w-0 flex-1">
-                        <div className="truncate font-medium">{s.text}</div>
-                        <div className="truncate text-muted-foreground">
-                          {s.translation ?? "— no translation —"}
-                        </div>
-                      </div>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        disabled={!eligible}
-                        title={eligible ? "Add to list" : "Needs a translation"}
-                        onClick={() => add(s.id)}
-                      >
-                        <Plus className="size-4" />
-                      </Button>
-                    </div>
-                  );
-                })}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Export list + output */}
-        <Card>
-          <CardHeader>
-            <CardTitle>
-              Export list —
-              {" "}
-              {listed.length}
-            </CardTitle>
-            <CardDescription>Saved in this browser; paste the output into Renshuu.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="max-h-[40vh] space-y-1.5 overflow-y-auto">
-              {listed.length === 0
-                ? <p className="text-sm text-muted-foreground">Nothing added yet.</p>
-                : listed.map(s => (
-                  <div
-                    key={s.id}
-                    className="
-                      flex items-center gap-2 rounded-md border border-input p-2
-                      text-sm
-                    "
-                  >
-                    <div className="min-w-0 flex-1">
-                      <div className="truncate font-medium">{s.text}</div>
-                      <div className="truncate text-muted-foreground">{s.translation}</div>
-                    </div>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="ghost"
-                      title="Remove"
-                      onClick={() => removeId(s.id)}
-                    >
-                      <X className="size-4" />
-                    </Button>
-                  </div>
-                ))}
-            </div>
-
-            <Textarea
-              ref={outputRef}
-              readOnly
-              value={output}
-              rows={8}
-              className="font-mono text-xs"
-              aria-label="Renshuu export text"
-            />
-
-            <div className="flex flex-wrap items-center gap-2">
-              <Button
-                type="button"
-                onClick={() => void copy()}
-                disabled={output.length === 0}
-              >
-                {copied ? "Copied!" : "Copy"}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={clear}
-                disabled={ids.length === 0}
-              >
-                Clear
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="flex gap-2">
+        {(["sentences", "vocab"] as const).map(m => (
+          <Button
+            key={m}
+            type="button"
+            size="sm"
+            variant={mode === m ? "default" : "outline"}
+            onClick={() => setMode(m)}
+          >
+            {m === "sentences" ? "Sentences" : "Vocab"}
+          </Button>
+        ))}
       </div>
+
+      {mode === "sentences"
+        ? (
+          <ExportPanel
+            items={sentenceItems}
+            sources={sources}
+            storageKey="renshuu-export"
+            pickerHint="Only sentences with a translation can be exported."
+            toText={selected =>
+              toRenshuuText(selected.map(i => ({
+                text: i.label,
+                translation: i.secondary,
+              })))}
+          />
+        )
+        : (
+          <ExportPanel
+            items={vocabItems}
+            sources={sources}
+            storageKey="renshuu-export-vocab"
+            pickerHint="Exported one per line as term/reading."
+            toText={selected =>
+              toRenshuuVocabText(selected.map(i => ({
+                term: i.label,
+                reading: i.secondary,
+              })))}
+          />
+        )}
     </section>
   );
 }
