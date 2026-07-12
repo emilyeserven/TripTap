@@ -52,6 +52,8 @@ export interface Sentence {
    * non-Japanese text). Rendered as ruby when the furigana toggle is on.
    */
   reading: FuriToken[] | null;
+  /** Message from the last failed furigana generation, or null when it succeeded. */
+  readingError: string | null;
   /** The meaning in the user's own language; null when mined text-only and not yet translated. */
   translation: string | null;
   /** Target language, e.g. "Japanese". */

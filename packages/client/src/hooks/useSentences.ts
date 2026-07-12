@@ -1,6 +1,7 @@
-import type { CreateSentenceInput, UpdateSentenceInput } from "@sentence-bank/types";
+import type { CreateSentenceInput, Sentence, UpdateSentenceInput } from "@sentence-bank/types";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 import { sentencesApi } from "../lib/api";
 
@@ -17,6 +18,18 @@ function useSentenceInvalidator() {
       queryKey: ["captures"],
     });
   };
+}
+
+/** Toast if any created/updated sentence came back with a furigana generation error. */
+function toastReadingErrors(result: Sentence | Sentence[]) {
+  const errored = (Array.isArray(result) ? result : [result]).filter(s => s.readingError);
+  if (errored.length === 0) return;
+  toast.error(
+    errored.length === 1 ? "Furigana generation failed" : `Furigana failed for ${errored.length} sentences`,
+    {
+      description: errored[0].readingError ?? undefined,
+    },
+  );
 }
 
 export function useSentences() {
@@ -39,7 +52,10 @@ export function useCreateSentence() {
   const invalidate = useSentenceInvalidator();
   return useMutation({
     mutationFn: (input: CreateSentenceInput) => sentencesApi.create(input),
-    onSuccess: invalidate,
+    onSuccess: (sentence) => {
+      invalidate();
+      toastReadingErrors(sentence);
+    },
   });
 }
 
@@ -47,7 +63,10 @@ export function useCreateSentencesMany() {
   const invalidate = useSentenceInvalidator();
   return useMutation({
     mutationFn: (inputs: CreateSentenceInput[]) => sentencesApi.createMany(inputs),
-    onSuccess: invalidate,
+    onSuccess: (created) => {
+      invalidate();
+      toastReadingErrors(created);
+    },
   });
 }
 
@@ -59,7 +78,10 @@ export function useUpdateSentence() {
     }: { id: string;
       input: UpdateSentenceInput; }) =>
       sentencesApi.update(id, input),
-    onSuccess: invalidate,
+    onSuccess: (sentence) => {
+      invalidate();
+      toastReadingErrors(sentence);
+    },
   });
 }
 
@@ -76,7 +98,17 @@ export function useBackfillFurigana() {
   const invalidate = useSentenceInvalidator();
   return useMutation({
     mutationFn: () => sentencesApi.backfillFurigana(),
-    onSuccess: invalidate,
+    onSuccess: ({
+      updated, errors,
+    }) => {
+      invalidate();
+      if (errors > 0) toast.error(`Furigana failed for ${errors} sentence(s)`);
+      if (updated > 0) toast.success(`Generated furigana for ${updated} sentence(s)`);
+      if (updated === 0 && errors === 0) toast("No sentences needed furigana");
+    },
+    onError: err => toast.error("Couldn't generate furigana", {
+      description: err instanceof Error ? err.message : undefined,
+    }),
   });
 }
 
@@ -85,6 +117,12 @@ export function useRegenerateFurigana() {
   const invalidate = useSentenceInvalidator();
   return useMutation({
     mutationFn: (id: string) => sentencesApi.regenerateFurigana(id),
-    onSuccess: invalidate,
+    onSuccess: (sentence) => {
+      invalidate();
+      toastReadingErrors(sentence);
+    },
+    onError: err => toast.error("Couldn't generate furigana", {
+      description: err instanceof Error ? err.message : undefined,
+    }),
   });
 }

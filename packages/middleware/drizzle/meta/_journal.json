@@ -78,6 +78,13 @@
       "when": 1783815403669,
       "tag": "0010_thick_gravity",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1783824207042,
+      "tag": "0011_spicy_dexter_bennett",
+      "breakpoints": true
     }
   ]
 }

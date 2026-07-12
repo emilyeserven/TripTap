@@ -175,12 +175,7 @@ export async function sentenceRoutes(app: FastifyInstance): Promise<void> {
     schema: {
       tags: ["sentences"],
     },
-  }, async () => {
-    const updated = await backfillFurigana();
-    return {
-      updated,
-    };
-  });
+  }, async () => backfillFurigana());
 
   app.post("/api/sentences/:id/furigana", {
     schema: {

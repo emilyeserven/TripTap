@@ -91,7 +91,8 @@ export const sentencesApi = {
       }),
     }),
   backfillFurigana: () =>
-    request<{ updated: number }>("/sentences/furigana/backfill", {
+    request<{ updated: number;
+      errors: number; }>("/sentences/furigana/backfill", {
       method: "POST",
     }),
   regenerateFurigana: (id: string) =>
