@@ -101,7 +101,7 @@ const actionItems = [
     icon: PenLineIcon,
   },
   {
-    title: "Listen and Shadow",
+    title: "Listening Sessions",
     to: "/listen-shadow",
     icon: HeadphonesIcon,
   },
