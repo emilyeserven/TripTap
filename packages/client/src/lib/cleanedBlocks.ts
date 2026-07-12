@@ -46,6 +46,46 @@ export function isPureKana(text: string): boolean {
   return /^[぀-ヿㇰ-ㇿｦ-ﾟ]+$/.test(stripped);
 }
 
+/**
+ * Character ranges treated as CJK for script segmentation: CJK punctuation, kana (incl. phonetic
+ * extensions + halfwidth), Han (unified + ext-A + compatibility), and Hangul. The ideographic space
+ * (U+3000) is intentionally excluded so it falls through to `\s` and is dropped between runs.
+ */
+const CJK_CLASS
+  = "\\u3001-\\u303f\\u3040-\\u30ff\\u31f0-\\u31ff\\u3400-\\u4dbf\\u4e00-\\u9fff\\uf900-\\ufaff\\uac00-\\ud7af\\uff66-\\uff9f";
+const CJK_HEAD = new RegExp(`^[${CJK_CLASS}]`);
+/** Language codes retained on a CJK segment; anything else defaults CJK segments to Japanese. */
+const CJK_LANG_CODES = new Set(["ja", "zh", "zh-Hans", "zh-Hant", "ko"]);
+
+/**
+ * Split text into maximal runs of CJK vs non-CJK, dropping the whitespace between runs. A block like
+ * `"heel 脚后銀"` → `[{ text: "heel", cjk: false }, { text: "脚后銀", cjk: true }]`.
+ */
+export function segmentByScript(text: string): { text: string;
+  cjk: boolean; }[] {
+  const re = new RegExp(`[${CJK_CLASS}]+|[^${CJK_CLASS}\\s]+`, "g");
+  return [...text.matchAll(re)].map(m => ({
+    text: m[0],
+    cjk: CJK_HEAD.test(m[0]),
+  }));
+}
+
+/** True when the text mixes scripts, so {@link splitLineByScript} would break it apart. */
+export function hasScriptBoundary(text: string): boolean {
+  return segmentByScript(text).length > 1;
+}
+
+/**
+ * Best-guess language code for a script segment: pure kana is always Japanese; a CJK run keeps the
+ * parent line's code when it's already a CJK language, else defaults to Japanese; anything else is
+ * treated as English. The user can correct it with the per-line language selector.
+ */
+export function guessLang(segmentText: string, cjk: boolean, parentLang: string): string {
+  if (isPureKana(segmentText)) return "ja";
+  if (cjk) return CJK_LANG_CODES.has(parentLang) ? parentLang : "ja";
+  return "en";
+}
+
 /** Resolve a line's language code to a display name, falling back to the batch default. */
 export function langNameFor(code: string, fallback: string): string {
   return LANG_NAMES[code] ?? fallback;
@@ -411,6 +451,85 @@ export function unstitchLines(cb: CleanedBlocks, ids: string[]): CleanedBlocks {
     lines,
     groups: [...cb.groups, ...added],
   }));
+}
+
+/**
+ * Replace `target` in place with one new standalone line per piece — each in its own fresh singleton
+ * `sentence` stitch (mirroring {@link unstitchLines}), so the pieces derive as separate items. A
+ * piece's role is inherited from the parent unless it's pure kana (→ `furigana`, matching
+ * {@link seedCleanedBlocks}). Position is preserved by splicing the pieces where the line was.
+ */
+function splitInto(
+  cb: CleanedBlocks,
+  target: CleanedLine,
+  pieces: { text: string;
+    lang: string; }[],
+): CleanedBlocks {
+  const added: CleanedBlocks["groups"] = [];
+  const replacement: CleanedLine[] = pieces.map((piece) => {
+    const group = newId();
+    added.push({
+      id: group,
+      kind: "sentence",
+      link: null,
+    });
+    return {
+      id: newId(),
+      text: piece.text,
+      lang: piece.lang,
+      role: isPureKana(piece.text) ? "furigana" : target.role,
+      group,
+    };
+  });
+  const lines = cb.lines.flatMap(l => (l.id === target.id ? replacement : [l]));
+  return normalizeOrder(pruneGroups({
+    ...cb,
+    lines,
+    groups: [...cb.groups, ...added],
+  }));
+}
+
+/**
+ * Split one line whose text mixes scripts (e.g. an English gloss run together with CJK, `"heel
+ * 脚后銀"`) into one standalone line per script run, each with a guessed language. No-op when the
+ * line has only a single script run.
+ */
+export function splitLineByScript(cb: CleanedBlocks, id: string): CleanedBlocks {
+  const target = cb.lines.find(l => l.id === id);
+  if (!target) return cb;
+  const segments = segmentByScript(target.text);
+  if (segments.length < 2) return cb;
+  return splitInto(
+    cb,
+    target,
+    segments.map(seg => ({
+      text: seg.text,
+      lang: guessLang(seg.text, seg.cjk, target.lang),
+    })),
+  );
+}
+
+/**
+ * Split one line into two at character offset `index` (typically the text caret), each half trimmed
+ * into its own fresh standalone stitch. Both halves keep the parent's language. No-op when either
+ * half is empty (caret at or beyond an edge).
+ */
+export function splitLineAt(cb: CleanedBlocks, id: string, index: number): CleanedBlocks {
+  const target = cb.lines.find(l => l.id === id);
+  if (!target) return cb;
+  const left = target.text.slice(0, index).trim();
+  const right = target.text.slice(index).trim();
+  if (!left || !right) return cb;
+  return splitInto(cb, target, [
+    {
+      text: left,
+      lang: target.lang,
+    },
+    {
+      text: right,
+      lang: target.lang,
+    },
+  ]);
 }
 
 /**
