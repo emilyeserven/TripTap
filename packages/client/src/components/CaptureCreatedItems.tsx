@@ -333,7 +333,10 @@ function SentenceRow({
   const [generalTerms, setGeneralTerms] = useState<SentenceTermRef[]>(
     () => groupTermsByCategory(sentence.terms ?? []).general,
   );
-  const terms = [...vocabTerms, ...grammarTerms, ...generalTerms];
+  const [resourceTerms, setResourceTerms] = useState<SentenceTermRef[]>(
+    () => groupTermsByCategory(sentence.terms ?? []).resource,
+  );
+  const terms = [...vocabTerms, ...grammarTerms, ...generalTerms, ...resourceTerms];
 
   const dirty
     = text !== sentence.text
@@ -389,7 +392,7 @@ function SentenceRow({
       <div
         className="
           grid gap-3
-          sm:grid-cols-3
+          sm:grid-cols-2
         "
       >
         <TermPicker
@@ -409,6 +412,12 @@ function SentenceRow({
           label="General tags"
           value={generalTerms}
           onChange={setGeneralTerms}
+        />
+        <TermPicker
+          category="resource"
+          label="Textbook / Worksheet"
+          value={resourceTerms}
+          onChange={setResourceTerms}
         />
       </div>
     </div>

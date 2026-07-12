@@ -112,6 +112,7 @@ export const BOOKMARKS_KEYS = {
   source: "bookmarks.source",
   grammarSource: "bookmarks.grammarSource",
   generalSource: "bookmarks.generalSource",
+  resourceSource: "bookmarks.resourceSource",
 } as const;
 
 /** Optional `termId`/`termLabel` off a stored source: keep only when a string or explicit null. */
@@ -154,6 +155,7 @@ export async function getBookmarksSettings(): Promise<BookmarksSettings> {
     source: parseBookmarksSource(stored[BOOKMARKS_KEYS.source] ?? null),
     grammarSource: parseBookmarksSource(stored[BOOKMARKS_KEYS.grammarSource] ?? null),
     generalSource: parseBookmarksSource(stored[BOOKMARKS_KEYS.generalSource] ?? null),
+    resourceSource: parseBookmarksSource(stored[BOOKMARKS_KEYS.resourceSource] ?? null),
   };
 }
 
@@ -175,6 +177,9 @@ export async function updateBookmarksSettings(
   }
   if (input.generalSource !== undefined) {
     await setSetting(BOOKMARKS_KEYS.generalSource, input.generalSource ? JSON.stringify(input.generalSource) : null);
+  }
+  if (input.resourceSource !== undefined) {
+    await setSetting(BOOKMARKS_KEYS.resourceSource, input.resourceSource ? JSON.stringify(input.resourceSource) : null);
   }
   return getBookmarksSettings();
 }

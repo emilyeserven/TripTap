@@ -95,9 +95,10 @@ Deploy via Coolify using only `DATABASE_URL` (see `README.md`).
 | `OCR_PROVIDERS` | middleware | Comma-separated OCR backend order/selection (`self-hosted`, `ocr-space`, `google-vision`). Unset → all configured backends, self-hosted first. |
 | `BOOKMARKS_API_URL` | middleware | Base URL of the external bookmarks tag/taxonomy API borrowed to tag sentences. Overridden by the Settings-page value stored in the DB; unset falls back to a built-in default. Must be reachable from the middleware (e.g. same Tailnet). |
 
-The bookmarks integration borrows vocabularies from the external app across **three independent
-channels** — Vocabulary, Grammar, and General (`SentenceTermCategory`), each with its own configured
-source stored under `bookmarks.source` / `bookmarks.grammarSource` / `bookmarks.generalSource`
+The bookmarks integration borrows vocabularies from the external app across **four independent
+channels** — Vocabulary, Grammar, General, and Textbooks & Worksheets (the `resource` channel)
+(`SentenceTermCategory`), each with its own configured source stored under `bookmarks.source` /
+`bookmarks.grammarSource` / `bookmarks.generalSource` / `bookmarks.resourceSource`
 (`services/settings.ts`). A source is a parent tag (its children are the choices) or a taxonomy (its
 terms are the choices); a taxonomy source may optionally **drill into one parent term** (`termId`/
 `termLabel`), so only that term's children are offered and new terms nest under it. Sentences store the

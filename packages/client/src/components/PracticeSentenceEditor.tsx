@@ -746,6 +746,12 @@ export function PracticeSentenceEditor({
               value={termsFor("general")}
               onChange={n => setTermsFor("general", n)}
             />
+            <TermPicker
+              category="resource"
+              label="Textbook / Worksheet"
+              value={termsFor("resource")}
+              onChange={n => setTermsFor("resource", n)}
+            />
           </div>
           {stepFooter("categorize")}
         </TabsContent>

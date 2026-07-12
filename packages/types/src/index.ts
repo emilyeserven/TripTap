@@ -323,8 +323,9 @@ export interface UpdateOcrSettingsInput {
  * A borrowed vocabulary from the external "eeSimple Bookmarks" app. The user configures an endpoint
  * plus one source per channel — either a parent tag (whose children become the vocabulary) or a
  * taxonomy (whose terms become the vocabulary) — then tags sentences with terms drawn from it.
- * There are three independent channels ({@link SentenceTermCategory}): Vocabulary, Grammar, and a
- * catch-all General channel (e.g. politeness level, situational context). A taxonomy source may
+ * There are four independent channels ({@link SentenceTermCategory}): Vocabulary, Grammar, a
+ * catch-all General channel (e.g. politeness level, situational context), and Textbooks &
+ * Worksheets (the `resource` channel, for tagging by source material). A taxonomy source may
  * optionally drill into a parent term, so only that term's children become the vocabulary. All calls
  * to the bookmarks host go server-side through the middleware proxy.
  */
@@ -337,7 +338,7 @@ export type BookmarksSourceKind = "tag" | "taxonomy";
  * and its own sentence-form picker. Older stored terms predate this field — default them to
  * `"vocabulary"` when absent.
  */
-export type SentenceTermCategory = "vocabulary" | "grammar" | "general";
+export type SentenceTermCategory = "vocabulary" | "grammar" | "general" | "resource";
 
 /** The configured vocabulary source: a chosen parent tag or taxonomy in the bookmarks app. */
 export interface BookmarksSource {
@@ -368,6 +369,8 @@ export interface BookmarksSettings {
   grammarSource: BookmarksSource | null;
   /** The selected General source, or null when unconfigured. */
   generalSource: BookmarksSource | null;
+  /** The selected Textbooks & Worksheets source, or null when unconfigured. */
+  resourceSource: BookmarksSource | null;
 }
 
 /**
@@ -379,6 +382,7 @@ export interface UpdateBookmarksSettingsInput {
   source?: BookmarksSource | null;
   grammarSource?: BookmarksSource | null;
   generalSource?: BookmarksSource | null;
+  resourceSource?: BookmarksSource | null;
 }
 
 /**

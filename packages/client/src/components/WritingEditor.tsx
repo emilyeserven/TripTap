@@ -183,7 +183,7 @@ export function WritingEditor({
         <div
           className="
             grid gap-4
-            sm:grid-cols-3
+            sm:grid-cols-2
           "
         >
           <TermPicker
@@ -203,6 +203,12 @@ export function WritingEditor({
             label="General tags"
             value={termsFor("general")}
             onChange={next => setTermsFor("general", next)}
+          />
+          <TermPicker
+            category="resource"
+            label="Textbook / Worksheet"
+            value={termsFor("resource")}
+            onChange={next => setTermsFor("resource", next)}
           />
         </div>
 

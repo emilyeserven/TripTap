@@ -48,6 +48,7 @@ export function SentenceForm({
   const [vocabTerms, setVocabTerms] = useState<SentenceTermRef[]>([]);
   const [grammarTerms, setGrammarTerms] = useState<SentenceTermRef[]>([]);
   const [generalTerms, setGeneralTerms] = useState<SentenceTermRef[]>([]);
+  const [resourceTerms, setResourceTerms] = useState<SentenceTermRef[]>([]);
 
   const form = useForm({
     defaultValues: {
@@ -64,7 +65,7 @@ export function SentenceForm({
     onSubmit: async ({
       value,
     }) => {
-      const terms = [...vocabTerms, ...grammarTerms, ...generalTerms];
+      const terms = [...vocabTerms, ...grammarTerms, ...generalTerms, ...resourceTerms];
       await createSentence.mutateAsync({
         text: value.text,
         translation: value.translation || null,
@@ -82,6 +83,7 @@ export function SentenceForm({
       setVocabTerms([]);
       setGrammarTerms([]);
       setGeneralTerms([]);
+      setResourceTerms([]);
       onSuccess?.();
     },
   });
@@ -166,7 +168,7 @@ export function SentenceForm({
       <div
         className="
           grid gap-4
-          sm:col-span-2 sm:grid-cols-3
+          sm:col-span-2 sm:grid-cols-2
         "
       >
         <TermPicker
@@ -186,6 +188,12 @@ export function SentenceForm({
           label="General tags"
           value={generalTerms}
           onChange={setGeneralTerms}
+        />
+        <TermPicker
+          category="resource"
+          label="Textbook / Worksheet"
+          value={resourceTerms}
+          onChange={setResourceTerms}
         />
       </div>
 
