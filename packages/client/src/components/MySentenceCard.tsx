@@ -123,7 +123,10 @@ export function MySentenceCard({
           {ms.writingId
             ? (
               <Link
-                to="/my-writing"
+                to="/my-writing/$id"
+                params={{
+                  id: ms.writingId,
+                }}
                 className="
                   inline-flex items-center gap-1
                   hover:text-foreground

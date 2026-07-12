@@ -1,14 +1,14 @@
 import { useMemo, useState } from "react";
 
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { PlusIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { WritingEditor } from "@/components/WritingEditor";
+import { WritingCard } from "@/components/WritingCard";
 import { useCreateWriting, useDeleteWriting, useWritings } from "@/hooks/useWritings";
 
-export const Route = createFileRoute("/my-writing")({
+export const Route = createFileRoute("/my-writing/")({
   component: MyWritingPage,
 });
 
@@ -18,6 +18,7 @@ function MyWritingPage() {
   } = useWritings();
   const createWriting = useCreateWriting();
   const deleteWriting = useDeleteWriting();
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [onlyReady, setOnlyReady] = useState(false);
 
@@ -34,6 +35,25 @@ function MyWritingPage() {
 
   const nothing = !isLoading && shown.length === 0;
 
+  const startWriting = () => {
+    createWriting.mutate(
+      {
+        text: "",
+        language: "Japanese",
+        readyToReview: false,
+      },
+      {
+        onSuccess: writing =>
+          navigate({
+            to: "/my-writing/$id",
+            params: {
+              id: writing.id,
+            },
+          }),
+      },
+    );
+  };
+
   return (
     <section className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -41,17 +61,12 @@ function MyWritingPage() {
           <h1 className="text-2xl font-bold">My Writing</h1>
           <p className="text-sm text-muted-foreground">
             Write freely in Japanese. Note what you meant, add comments, tag what you were targeting,
-            and flag it ready to review. Turn on correction mode to fix a sentence and send it to
-            My Sentences.
+            and flag it ready to review. Open an entry to edit it or turn on correction mode to fix a
+            sentence and send it to My Sentences.
           </p>
         </div>
         <Button
-          onClick={() =>
-            createWriting.mutate({
-              text: "",
-              language: "Japanese",
-              readyToReview: false,
-            })}
+          onClick={startWriting}
           disabled={createWriting.isPending}
         >
           <PlusIcon className="size-4" />
@@ -87,9 +102,9 @@ function MyWritingPage() {
         )
         : null}
 
-      <div className="space-y-6">
+      <div className="space-y-4">
         {shown.map(writing => (
-          <WritingEditor
+          <WritingCard
             key={writing.id}
             writing={writing}
             onDelete={id => deleteWriting.mutate(id)}
