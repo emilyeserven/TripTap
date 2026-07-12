@@ -108,9 +108,9 @@ export function SentenceCard({
                 className="h-6 gap-1 px-2"
               >
                 <Link
-                  to="/captures"
-                  search={{
-                    source: sourceId,
+                  to="/sources/$id"
+                  params={{
+                    id: sourceId,
                   }}
                 >
                   <Database className="size-3" />
