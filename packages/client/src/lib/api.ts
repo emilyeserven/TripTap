@@ -37,6 +37,9 @@ import type {
   Writing,
   CreateWritingInput,
   UpdateWritingInput,
+  WritingPrompt,
+  CreateWritingPromptInput,
+  UpdateWritingPromptInput,
 } from "@sentence-bank/types";
 
 /** Patchable capture fields (mirror of the middleware's `UpdateCaptureInput`). */
@@ -192,6 +195,24 @@ export const writingsApi = {
       body: JSON.stringify(input),
     }),
   remove: (id: string) => request<undefined>(`/writings/${id}`, {
+    method: "DELETE",
+  }),
+};
+
+export const writingPromptsApi = {
+  list: () => request<WritingPrompt[]>("/writing-prompts"),
+  get: (id: string) => request<WritingPrompt>(`/writing-prompts/${id}`),
+  create: (input: CreateWritingPromptInput) =>
+    request<WritingPrompt>("/writing-prompts", {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+  update: (id: string, input: UpdateWritingPromptInput) =>
+    request<WritingPrompt>(`/writing-prompts/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    }),
+  remove: (id: string) => request<undefined>(`/writing-prompts/${id}`, {
     method: "DELETE",
   }),
 };

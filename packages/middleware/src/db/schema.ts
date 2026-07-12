@@ -265,6 +265,9 @@ export const writings = pgTable("writings", {
   readyToReview: boolean("ready_to_review").notNull().default(false),
   terms: jsonb("terms").$type<SentenceTermRef[]>(),
   corrections: jsonb("corrections").$type<WritingCorrection[]>(),
+  /** Snapshot of the writing prompt this entry was started from; null if freeform. */
+  promptTitle: text("prompt_title"),
+  promptText: text("prompt_text"),
   createdAt: timestamp("created_at", {
     withTimezone: true,
   }).notNull().defaultNow(),
@@ -275,6 +278,26 @@ export const writings = pgTable("writings", {
 
 export type WritingRow = typeof writings.$inferSelect;
 export type NewWritingRow = typeof writings.$inferInsert;
+
+/**
+ * `writing_prompts` — reusable prompts the learner saves to spark a free-write. Each is a `title`
+ * plus prompt `text`. When starting a My Writing entry the learner can pick one; the chosen prompt is
+ * snapshotted onto the writing (`writings.prompt_title` / `writings.prompt_text`).
+ */
+export const writingPrompts = pgTable("writing_prompts", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  title: text("title").notNull(),
+  text: text("text").notNull(),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+});
+
+export type WritingPromptRow = typeof writingPrompts.$inferSelect;
+export type NewWritingPromptRow = typeof writingPrompts.$inferInsert;
 
 /** `parse_templates` — saved capture-parsing templates the user can reuse. */
 export const parseTemplates = pgTable("parse_templates", {
