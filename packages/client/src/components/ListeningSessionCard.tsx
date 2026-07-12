@@ -14,7 +14,7 @@ export function ListeningSessionCard({
   const noteCount = session.entries?.length ?? 0;
   return (
     <Link
-      to="/listen-shadow/$id"
+      to="/listening-sessions/$id"
       params={{
         id: session.id,
       }}

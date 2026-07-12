@@ -4,7 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { ListeningSessionForm } from "@/components/ListeningSessionForm";
 import { Button } from "@/components/ui/button";
 
-export const Route = createFileRoute("/listen-shadow/new")({
+export const Route = createFileRoute("/listening-sessions/new")({
   component: NewListeningSessionPage,
 });
 
@@ -18,7 +18,7 @@ function NewListeningSessionPage() {
         variant="ghost"
         size="sm"
       >
-        <Link to="/listen-shadow">
+        <Link to="/listening-sessions">
           <ArrowLeft className="size-4" />
           All sessions
         </Link>
@@ -32,7 +32,7 @@ function NewListeningSessionPage() {
       <ListeningSessionForm
         onSuccess={id =>
           navigate({
-            to: "/listen-shadow/$id",
+            to: "/listening-sessions/$id",
             params: {
               id,
             },

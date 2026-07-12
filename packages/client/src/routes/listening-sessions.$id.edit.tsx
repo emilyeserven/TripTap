@@ -5,7 +5,7 @@ import { ListeningSessionForm } from "@/components/ListeningSessionForm";
 import { Button } from "@/components/ui/button";
 import { useListeningSession } from "@/hooks/useListeningSessions";
 
-export const Route = createFileRoute("/listen-shadow/$id/edit")({
+export const Route = createFileRoute("/listening-sessions/$id/edit")({
   component: EditListeningSessionPage,
 });
 
@@ -30,7 +30,7 @@ function EditListeningSessionPage() {
         size="sm"
       >
         <Link
-          to="/listen-shadow/$id"
+          to="/listening-sessions/$id"
           params={{
             id,
           }}
@@ -46,7 +46,7 @@ function EditListeningSessionPage() {
         session={data}
         onSuccess={() =>
           navigate({
-            to: "/listen-shadow/$id",
+            to: "/listening-sessions/$id",
             params: {
               id,
             },

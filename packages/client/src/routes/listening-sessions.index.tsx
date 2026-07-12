@@ -5,7 +5,7 @@ import { ListeningSessionCard } from "@/components/ListeningSessionCard";
 import { Button } from "@/components/ui/button";
 import { useListeningSessions } from "@/hooks/useListeningSessions";
 
-export const Route = createFileRoute("/listen-shadow/")({
+export const Route = createFileRoute("/listening-sessions/")({
   component: ListenShadowIndexPage,
 });
 
@@ -26,7 +26,7 @@ function ListenShadowIndexPage() {
         <Button
           asChild
         >
-          <Link to="/listen-shadow/new">
+          <Link to="/listening-sessions/new">
             <Plus className="size-4" />
             New session
           </Link>

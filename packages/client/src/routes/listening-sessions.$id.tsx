@@ -2,9 +2,9 @@ import { createFileRoute, Outlet } from "@tanstack/react-router";
 
 /**
  * Layout for a single listening session. It only renders its child route — the interactive view
- * (`/listen-shadow/$id/`) or the edit form (`/listen-shadow/$id/edit`).
+ * (`/listening-sessions/$id/`) or the edit form (`/listening-sessions/$id/edit`).
  */
-export const Route = createFileRoute("/listen-shadow/$id")({
+export const Route = createFileRoute("/listening-sessions/$id")({
   component: ListeningSessionIdLayout,
 });
 

@@ -24,7 +24,7 @@ import { Route as ShadowingIndexRouteImport } from './routes/shadowing.index'
 import { Route as PracticeIndexRouteImport } from './routes/practice.index'
 import { Route as MyWritingIndexRouteImport } from './routes/my-writing.index'
 import { Route as MySentencesIndexRouteImport } from './routes/my-sentences.index'
-import { Route as ListenShadowIndexRouteImport } from './routes/listen-shadow.index'
+import { Route as ListeningSessionsIndexRouteImport } from './routes/listening-sessions.index'
 import { Route as LessonsIndexRouteImport } from './routes/lessons.index'
 import { Route as CapturesIndexRouteImport } from './routes/captures.index'
 import { Route as SourcesIdRouteImport } from './routes/sources.$id'
@@ -35,19 +35,19 @@ import { Route as PracticeIdRouteImport } from './routes/practice.$id'
 import { Route as MyWritingIdRouteImport } from './routes/my-writing.$id'
 import { Route as MySentencesNewRouteImport } from './routes/my-sentences.new'
 import { Route as MySentencesIdRouteImport } from './routes/my-sentences.$id'
-import { Route as ListenShadowNewRouteImport } from './routes/listen-shadow.new'
-import { Route as ListenShadowIdRouteImport } from './routes/listen-shadow.$id'
+import { Route as ListeningSessionsNewRouteImport } from './routes/listening-sessions.new'
+import { Route as ListeningSessionsIdRouteImport } from './routes/listening-sessions.$id'
 import { Route as LessonsNewRouteImport } from './routes/lessons.new'
 import { Route as LessonsSlugRouteImport } from './routes/lessons.$slug'
 import { Route as CapturesIdRouteImport } from './routes/captures.$id'
 import { Route as ShadowingIdIndexRouteImport } from './routes/shadowing.$id.index'
 import { Route as PracticeIdIndexRouteImport } from './routes/practice.$id.index'
 import { Route as MySentencesIdIndexRouteImport } from './routes/my-sentences.$id.index'
-import { Route as ListenShadowIdIndexRouteImport } from './routes/listen-shadow.$id.index'
+import { Route as ListeningSessionsIdIndexRouteImport } from './routes/listening-sessions.$id.index'
 import { Route as ShadowingIdEditRouteImport } from './routes/shadowing.$id.edit'
 import { Route as PracticeIdEditRouteImport } from './routes/practice.$id.edit'
 import { Route as MySentencesIdEditRouteImport } from './routes/my-sentences.$id.edit'
-import { Route as ListenShadowIdEditRouteImport } from './routes/listen-shadow.$id.edit'
+import { Route as ListeningSessionsIdEditRouteImport } from './routes/listening-sessions.$id.edit'
 
 const VocabularyRoute = VocabularyRouteImport.update({
   id: '/vocabulary',
@@ -124,9 +124,9 @@ const MySentencesIndexRoute = MySentencesIndexRouteImport.update({
   path: '/my-sentences/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ListenShadowIndexRoute = ListenShadowIndexRouteImport.update({
-  id: '/listen-shadow/',
-  path: '/listen-shadow/',
+const ListeningSessionsIndexRoute = ListeningSessionsIndexRouteImport.update({
+  id: '/listening-sessions/',
+  path: '/listening-sessions/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LessonsIndexRoute = LessonsIndexRouteImport.update({
@@ -179,14 +179,14 @@ const MySentencesIdRoute = MySentencesIdRouteImport.update({
   path: '/my-sentences/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ListenShadowNewRoute = ListenShadowNewRouteImport.update({
-  id: '/listen-shadow/new',
-  path: '/listen-shadow/new',
+const ListeningSessionsNewRoute = ListeningSessionsNewRouteImport.update({
+  id: '/listening-sessions/new',
+  path: '/listening-sessions/new',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ListenShadowIdRoute = ListenShadowIdRouteImport.update({
-  id: '/listen-shadow/$id',
-  path: '/listen-shadow/$id',
+const ListeningSessionsIdRoute = ListeningSessionsIdRouteImport.update({
+  id: '/listening-sessions/$id',
+  path: '/listening-sessions/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LessonsNewRoute = LessonsNewRouteImport.update({
@@ -219,11 +219,12 @@ const MySentencesIdIndexRoute = MySentencesIdIndexRouteImport.update({
   path: '/',
   getParentRoute: () => MySentencesIdRoute,
 } as any)
-const ListenShadowIdIndexRoute = ListenShadowIdIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => ListenShadowIdRoute,
-} as any)
+const ListeningSessionsIdIndexRoute =
+  ListeningSessionsIdIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => ListeningSessionsIdRoute,
+  } as any)
 const ShadowingIdEditRoute = ShadowingIdEditRouteImport.update({
   id: '/edit',
   path: '/edit',
@@ -239,10 +240,10 @@ const MySentencesIdEditRoute = MySentencesIdEditRouteImport.update({
   path: '/edit',
   getParentRoute: () => MySentencesIdRoute,
 } as any)
-const ListenShadowIdEditRoute = ListenShadowIdEditRouteImport.update({
+const ListeningSessionsIdEditRoute = ListeningSessionsIdEditRouteImport.update({
   id: '/edit',
   path: '/edit',
-  getParentRoute: () => ListenShadowIdRoute,
+  getParentRoute: () => ListeningSessionsIdRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -259,8 +260,8 @@ export interface FileRoutesByFullPath {
   '/captures/$id': typeof CapturesIdRoute
   '/lessons/$slug': typeof LessonsSlugRoute
   '/lessons/new': typeof LessonsNewRoute
-  '/listen-shadow/$id': typeof ListenShadowIdRouteWithChildren
-  '/listen-shadow/new': typeof ListenShadowNewRoute
+  '/listening-sessions/$id': typeof ListeningSessionsIdRouteWithChildren
+  '/listening-sessions/new': typeof ListeningSessionsNewRoute
   '/my-sentences/$id': typeof MySentencesIdRouteWithChildren
   '/my-sentences/new': typeof MySentencesNewRoute
   '/my-writing/$id': typeof MyWritingIdRoute
@@ -271,17 +272,17 @@ export interface FileRoutesByFullPath {
   '/sources/$id': typeof SourcesIdRoute
   '/captures/': typeof CapturesIndexRoute
   '/lessons/': typeof LessonsIndexRoute
-  '/listen-shadow/': typeof ListenShadowIndexRoute
+  '/listening-sessions/': typeof ListeningSessionsIndexRoute
   '/my-sentences/': typeof MySentencesIndexRoute
   '/my-writing/': typeof MyWritingIndexRoute
   '/practice/': typeof PracticeIndexRoute
   '/shadowing/': typeof ShadowingIndexRoute
   '/sources/': typeof SourcesIndexRoute
-  '/listen-shadow/$id/edit': typeof ListenShadowIdEditRoute
+  '/listening-sessions/$id/edit': typeof ListeningSessionsIdEditRoute
   '/my-sentences/$id/edit': typeof MySentencesIdEditRoute
   '/practice/$id/edit': typeof PracticeIdEditRoute
   '/shadowing/$id/edit': typeof ShadowingIdEditRoute
-  '/listen-shadow/$id/': typeof ListenShadowIdIndexRoute
+  '/listening-sessions/$id/': typeof ListeningSessionsIdIndexRoute
   '/my-sentences/$id/': typeof MySentencesIdIndexRoute
   '/practice/$id/': typeof PracticeIdIndexRoute
   '/shadowing/$id/': typeof ShadowingIdIndexRoute
@@ -300,7 +301,7 @@ export interface FileRoutesByTo {
   '/captures/$id': typeof CapturesIdRoute
   '/lessons/$slug': typeof LessonsSlugRoute
   '/lessons/new': typeof LessonsNewRoute
-  '/listen-shadow/new': typeof ListenShadowNewRoute
+  '/listening-sessions/new': typeof ListeningSessionsNewRoute
   '/my-sentences/new': typeof MySentencesNewRoute
   '/my-writing/$id': typeof MyWritingIdRoute
   '/practice/new': typeof PracticeNewRoute
@@ -308,17 +309,17 @@ export interface FileRoutesByTo {
   '/sources/$id': typeof SourcesIdRoute
   '/captures': typeof CapturesIndexRoute
   '/lessons': typeof LessonsIndexRoute
-  '/listen-shadow': typeof ListenShadowIndexRoute
+  '/listening-sessions': typeof ListeningSessionsIndexRoute
   '/my-sentences': typeof MySentencesIndexRoute
   '/my-writing': typeof MyWritingIndexRoute
   '/practice': typeof PracticeIndexRoute
   '/shadowing': typeof ShadowingIndexRoute
   '/sources': typeof SourcesIndexRoute
-  '/listen-shadow/$id/edit': typeof ListenShadowIdEditRoute
+  '/listening-sessions/$id/edit': typeof ListeningSessionsIdEditRoute
   '/my-sentences/$id/edit': typeof MySentencesIdEditRoute
   '/practice/$id/edit': typeof PracticeIdEditRoute
   '/shadowing/$id/edit': typeof ShadowingIdEditRoute
-  '/listen-shadow/$id': typeof ListenShadowIdIndexRoute
+  '/listening-sessions/$id': typeof ListeningSessionsIdIndexRoute
   '/my-sentences/$id': typeof MySentencesIdIndexRoute
   '/practice/$id': typeof PracticeIdIndexRoute
   '/shadowing/$id': typeof ShadowingIdIndexRoute
@@ -338,8 +339,8 @@ export interface FileRoutesById {
   '/captures/$id': typeof CapturesIdRoute
   '/lessons/$slug': typeof LessonsSlugRoute
   '/lessons/new': typeof LessonsNewRoute
-  '/listen-shadow/$id': typeof ListenShadowIdRouteWithChildren
-  '/listen-shadow/new': typeof ListenShadowNewRoute
+  '/listening-sessions/$id': typeof ListeningSessionsIdRouteWithChildren
+  '/listening-sessions/new': typeof ListeningSessionsNewRoute
   '/my-sentences/$id': typeof MySentencesIdRouteWithChildren
   '/my-sentences/new': typeof MySentencesNewRoute
   '/my-writing/$id': typeof MyWritingIdRoute
@@ -350,17 +351,17 @@ export interface FileRoutesById {
   '/sources/$id': typeof SourcesIdRoute
   '/captures/': typeof CapturesIndexRoute
   '/lessons/': typeof LessonsIndexRoute
-  '/listen-shadow/': typeof ListenShadowIndexRoute
+  '/listening-sessions/': typeof ListeningSessionsIndexRoute
   '/my-sentences/': typeof MySentencesIndexRoute
   '/my-writing/': typeof MyWritingIndexRoute
   '/practice/': typeof PracticeIndexRoute
   '/shadowing/': typeof ShadowingIndexRoute
   '/sources/': typeof SourcesIndexRoute
-  '/listen-shadow/$id/edit': typeof ListenShadowIdEditRoute
+  '/listening-sessions/$id/edit': typeof ListeningSessionsIdEditRoute
   '/my-sentences/$id/edit': typeof MySentencesIdEditRoute
   '/practice/$id/edit': typeof PracticeIdEditRoute
   '/shadowing/$id/edit': typeof ShadowingIdEditRoute
-  '/listen-shadow/$id/': typeof ListenShadowIdIndexRoute
+  '/listening-sessions/$id/': typeof ListeningSessionsIdIndexRoute
   '/my-sentences/$id/': typeof MySentencesIdIndexRoute
   '/practice/$id/': typeof PracticeIdIndexRoute
   '/shadowing/$id/': typeof ShadowingIdIndexRoute
@@ -381,8 +382,8 @@ export interface FileRouteTypes {
     | '/captures/$id'
     | '/lessons/$slug'
     | '/lessons/new'
-    | '/listen-shadow/$id'
-    | '/listen-shadow/new'
+    | '/listening-sessions/$id'
+    | '/listening-sessions/new'
     | '/my-sentences/$id'
     | '/my-sentences/new'
     | '/my-writing/$id'
@@ -393,17 +394,17 @@ export interface FileRouteTypes {
     | '/sources/$id'
     | '/captures/'
     | '/lessons/'
-    | '/listen-shadow/'
+    | '/listening-sessions/'
     | '/my-sentences/'
     | '/my-writing/'
     | '/practice/'
     | '/shadowing/'
     | '/sources/'
-    | '/listen-shadow/$id/edit'
+    | '/listening-sessions/$id/edit'
     | '/my-sentences/$id/edit'
     | '/practice/$id/edit'
     | '/shadowing/$id/edit'
-    | '/listen-shadow/$id/'
+    | '/listening-sessions/$id/'
     | '/my-sentences/$id/'
     | '/practice/$id/'
     | '/shadowing/$id/'
@@ -422,7 +423,7 @@ export interface FileRouteTypes {
     | '/captures/$id'
     | '/lessons/$slug'
     | '/lessons/new'
-    | '/listen-shadow/new'
+    | '/listening-sessions/new'
     | '/my-sentences/new'
     | '/my-writing/$id'
     | '/practice/new'
@@ -430,17 +431,17 @@ export interface FileRouteTypes {
     | '/sources/$id'
     | '/captures'
     | '/lessons'
-    | '/listen-shadow'
+    | '/listening-sessions'
     | '/my-sentences'
     | '/my-writing'
     | '/practice'
     | '/shadowing'
     | '/sources'
-    | '/listen-shadow/$id/edit'
+    | '/listening-sessions/$id/edit'
     | '/my-sentences/$id/edit'
     | '/practice/$id/edit'
     | '/shadowing/$id/edit'
-    | '/listen-shadow/$id'
+    | '/listening-sessions/$id'
     | '/my-sentences/$id'
     | '/practice/$id'
     | '/shadowing/$id'
@@ -459,8 +460,8 @@ export interface FileRouteTypes {
     | '/captures/$id'
     | '/lessons/$slug'
     | '/lessons/new'
-    | '/listen-shadow/$id'
-    | '/listen-shadow/new'
+    | '/listening-sessions/$id'
+    | '/listening-sessions/new'
     | '/my-sentences/$id'
     | '/my-sentences/new'
     | '/my-writing/$id'
@@ -471,17 +472,17 @@ export interface FileRouteTypes {
     | '/sources/$id'
     | '/captures/'
     | '/lessons/'
-    | '/listen-shadow/'
+    | '/listening-sessions/'
     | '/my-sentences/'
     | '/my-writing/'
     | '/practice/'
     | '/shadowing/'
     | '/sources/'
-    | '/listen-shadow/$id/edit'
+    | '/listening-sessions/$id/edit'
     | '/my-sentences/$id/edit'
     | '/practice/$id/edit'
     | '/shadowing/$id/edit'
-    | '/listen-shadow/$id/'
+    | '/listening-sessions/$id/'
     | '/my-sentences/$id/'
     | '/practice/$id/'
     | '/shadowing/$id/'
@@ -501,8 +502,8 @@ export interface RootRouteChildren {
   CapturesIdRoute: typeof CapturesIdRoute
   LessonsSlugRoute: typeof LessonsSlugRoute
   LessonsNewRoute: typeof LessonsNewRoute
-  ListenShadowIdRoute: typeof ListenShadowIdRouteWithChildren
-  ListenShadowNewRoute: typeof ListenShadowNewRoute
+  ListeningSessionsIdRoute: typeof ListeningSessionsIdRouteWithChildren
+  ListeningSessionsNewRoute: typeof ListeningSessionsNewRoute
   MySentencesIdRoute: typeof MySentencesIdRouteWithChildren
   MySentencesNewRoute: typeof MySentencesNewRoute
   MyWritingIdRoute: typeof MyWritingIdRoute
@@ -513,7 +514,7 @@ export interface RootRouteChildren {
   SourcesIdRoute: typeof SourcesIdRoute
   CapturesIndexRoute: typeof CapturesIndexRoute
   LessonsIndexRoute: typeof LessonsIndexRoute
-  ListenShadowIndexRoute: typeof ListenShadowIndexRoute
+  ListeningSessionsIndexRoute: typeof ListeningSessionsIndexRoute
   MySentencesIndexRoute: typeof MySentencesIndexRoute
   MyWritingIndexRoute: typeof MyWritingIndexRoute
   PracticeIndexRoute: typeof PracticeIndexRoute
@@ -628,11 +629,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MySentencesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/listen-shadow/': {
-      id: '/listen-shadow/'
-      path: '/listen-shadow'
-      fullPath: '/listen-shadow/'
-      preLoaderRoute: typeof ListenShadowIndexRouteImport
+    '/listening-sessions/': {
+      id: '/listening-sessions/'
+      path: '/listening-sessions'
+      fullPath: '/listening-sessions/'
+      preLoaderRoute: typeof ListeningSessionsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/lessons/': {
@@ -705,18 +706,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MySentencesIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/listen-shadow/new': {
-      id: '/listen-shadow/new'
-      path: '/listen-shadow/new'
-      fullPath: '/listen-shadow/new'
-      preLoaderRoute: typeof ListenShadowNewRouteImport
+    '/listening-sessions/new': {
+      id: '/listening-sessions/new'
+      path: '/listening-sessions/new'
+      fullPath: '/listening-sessions/new'
+      preLoaderRoute: typeof ListeningSessionsNewRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/listen-shadow/$id': {
-      id: '/listen-shadow/$id'
-      path: '/listen-shadow/$id'
-      fullPath: '/listen-shadow/$id'
-      preLoaderRoute: typeof ListenShadowIdRouteImport
+    '/listening-sessions/$id': {
+      id: '/listening-sessions/$id'
+      path: '/listening-sessions/$id'
+      fullPath: '/listening-sessions/$id'
+      preLoaderRoute: typeof ListeningSessionsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/lessons/new': {
@@ -761,12 +762,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MySentencesIdIndexRouteImport
       parentRoute: typeof MySentencesIdRoute
     }
-    '/listen-shadow/$id/': {
-      id: '/listen-shadow/$id/'
+    '/listening-sessions/$id/': {
+      id: '/listening-sessions/$id/'
       path: '/'
-      fullPath: '/listen-shadow/$id/'
-      preLoaderRoute: typeof ListenShadowIdIndexRouteImport
-      parentRoute: typeof ListenShadowIdRoute
+      fullPath: '/listening-sessions/$id/'
+      preLoaderRoute: typeof ListeningSessionsIdIndexRouteImport
+      parentRoute: typeof ListeningSessionsIdRoute
     }
     '/shadowing/$id/edit': {
       id: '/shadowing/$id/edit'
@@ -789,29 +790,28 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MySentencesIdEditRouteImport
       parentRoute: typeof MySentencesIdRoute
     }
-    '/listen-shadow/$id/edit': {
-      id: '/listen-shadow/$id/edit'
+    '/listening-sessions/$id/edit': {
+      id: '/listening-sessions/$id/edit'
       path: '/edit'
-      fullPath: '/listen-shadow/$id/edit'
-      preLoaderRoute: typeof ListenShadowIdEditRouteImport
-      parentRoute: typeof ListenShadowIdRoute
+      fullPath: '/listening-sessions/$id/edit'
+      preLoaderRoute: typeof ListeningSessionsIdEditRouteImport
+      parentRoute: typeof ListeningSessionsIdRoute
     }
   }
 }
 
-interface ListenShadowIdRouteChildren {
-  ListenShadowIdEditRoute: typeof ListenShadowIdEditRoute
-  ListenShadowIdIndexRoute: typeof ListenShadowIdIndexRoute
+interface ListeningSessionsIdRouteChildren {
+  ListeningSessionsIdEditRoute: typeof ListeningSessionsIdEditRoute
+  ListeningSessionsIdIndexRoute: typeof ListeningSessionsIdIndexRoute
 }
 
-const ListenShadowIdRouteChildren: ListenShadowIdRouteChildren = {
-  ListenShadowIdEditRoute: ListenShadowIdEditRoute,
-  ListenShadowIdIndexRoute: ListenShadowIdIndexRoute,
+const ListeningSessionsIdRouteChildren: ListeningSessionsIdRouteChildren = {
+  ListeningSessionsIdEditRoute: ListeningSessionsIdEditRoute,
+  ListeningSessionsIdIndexRoute: ListeningSessionsIdIndexRoute,
 }
 
-const ListenShadowIdRouteWithChildren = ListenShadowIdRoute._addFileChildren(
-  ListenShadowIdRouteChildren,
-)
+const ListeningSessionsIdRouteWithChildren =
+  ListeningSessionsIdRoute._addFileChildren(ListeningSessionsIdRouteChildren)
 
 interface MySentencesIdRouteChildren {
   MySentencesIdEditRoute: typeof MySentencesIdEditRoute
@@ -869,8 +869,8 @@ const rootRouteChildren: RootRouteChildren = {
   CapturesIdRoute: CapturesIdRoute,
   LessonsSlugRoute: LessonsSlugRoute,
   LessonsNewRoute: LessonsNewRoute,
-  ListenShadowIdRoute: ListenShadowIdRouteWithChildren,
-  ListenShadowNewRoute: ListenShadowNewRoute,
+  ListeningSessionsIdRoute: ListeningSessionsIdRouteWithChildren,
+  ListeningSessionsNewRoute: ListeningSessionsNewRoute,
   MySentencesIdRoute: MySentencesIdRouteWithChildren,
   MySentencesNewRoute: MySentencesNewRoute,
   MyWritingIdRoute: MyWritingIdRoute,
@@ -881,7 +881,7 @@ const rootRouteChildren: RootRouteChildren = {
   SourcesIdRoute: SourcesIdRoute,
   CapturesIndexRoute: CapturesIndexRoute,
   LessonsIndexRoute: LessonsIndexRoute,
-  ListenShadowIndexRoute: ListenShadowIndexRoute,
+  ListeningSessionsIndexRoute: ListeningSessionsIndexRoute,
   MySentencesIndexRoute: MySentencesIndexRoute,
   MyWritingIndexRoute: MyWritingIndexRoute,
   PracticeIndexRoute: PracticeIndexRoute,

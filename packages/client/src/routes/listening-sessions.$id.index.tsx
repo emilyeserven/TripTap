@@ -5,7 +5,7 @@ import { ListeningSessionView } from "@/components/ListeningSessionView";
 import { Button } from "@/components/ui/button";
 import { useDeleteListeningSession, useListeningSession } from "@/hooks/useListeningSessions";
 
-export const Route = createFileRoute("/listen-shadow/$id/")({
+export const Route = createFileRoute("/listening-sessions/$id/")({
   component: ViewListeningSessionPage,
 });
 
@@ -27,7 +27,7 @@ function ViewListeningSessionPage() {
     remove.mutate(id, {
       onSuccess: () =>
         navigate({
-          to: "/listen-shadow",
+          to: "/listening-sessions",
         }),
     });
   };
@@ -40,7 +40,7 @@ function ViewListeningSessionPage() {
           variant="ghost"
           size="sm"
         >
-          <Link to="/listen-shadow">
+          <Link to="/listening-sessions">
             <ArrowLeft className="size-4" />
             All sessions
           </Link>
@@ -52,7 +52,7 @@ function ViewListeningSessionPage() {
             size="sm"
           >
             <Link
-              to="/listen-shadow/$id/edit"
+              to="/listening-sessions/$id/edit"
               params={{
                 id,
               }}

@@ -102,7 +102,7 @@ const actionItems = [
   },
   {
     title: "Listening Sessions",
-    to: "/listen-shadow",
+    to: "/listening-sessions",
     icon: HeadphonesIcon,
   },
   {
