@@ -15,6 +15,8 @@ import {
   setGroupKind,
   setKindForLines,
   setLinesRole,
+  splitLineAt,
+  splitLineByScript,
   stitchLines,
   toggleIgnoredLang,
   unlinkGroups,
@@ -334,6 +336,66 @@ describe("reducers", () => {
     expect(new Set(next.lines.map(l => l.group)).size).toBe(2);
     expect(next.groups).toHaveLength(2);
     expect(next.groups.every(g => g.link === null)).toBe(true);
+  });
+
+  it("splitLineByScript separates a mixed-language block into per-script standalone lines", () => {
+    const cb: CleanedBlocks = {
+      lines: [
+        ln("a", "heel 脚后銀", "ja", "text", "g1"),
+        ln("b", "next", "en", "text", "g2"),
+      ],
+      groups: [grp("g1", "sentence"), grp("g2", "sentence")],
+      ignoredLangs: [],
+    };
+    const next = splitLineByScript(cb, "a");
+    // The mixed line becomes two lines, spliced in place ahead of the untouched "next" line.
+    expect(next.lines.map(l => l.text)).toEqual(["heel", "脚后銀", "next"]);
+    expect(next.lines.map(l => l.lang)).toEqual(["en", "ja", "en"]);
+    // Each piece is its own fresh standalone group; the untouched line keeps g2.
+    const [p1, p2, rest] = next.lines;
+    expect(p1.group).not.toBe(p2.group);
+    expect(rest.group).toBe("g2");
+    expect(next.groups.every(g => g.link === null)).toBe(true);
+  });
+
+  it("splitLineByScript is a no-op on a single-script line", () => {
+    const cb = twoStitches();
+    expect(splitLineByScript(cb, "a")).toBe(cb);
+  });
+
+  it("splitLineByScript marks a pure-kana segment as furigana", () => {
+    const cb: CleanedBlocks = {
+      lines: [ln("a", "犬 いぬ", "ja", "text", "g1")],
+      groups: [grp("g1", "sentence")],
+      ignoredLangs: [],
+    };
+    const next = splitLineByScript(cb, "a");
+    expect(next.lines.map(l => l.role)).toEqual(["text", "furigana"]);
+  });
+
+  it("splitLineAt breaks one line into two at the caret, preserving order", () => {
+    const cb: CleanedBlocks = {
+      lines: [
+        ln("a", "abc123", "en", "text", "g1"),
+        ln("b", "tail", "en", "text", "g2"),
+      ],
+      groups: [grp("g1", "sentence"), grp("g2", "sentence")],
+      ignoredLangs: [],
+    };
+    const next = splitLineAt(cb, "a", 3);
+    expect(next.lines.map(l => l.text)).toEqual(["abc", "123", "tail"]);
+    expect(next.lines[0].group).not.toBe(next.lines[1].group);
+    expect(next.lines[2].group).toBe("g2");
+  });
+
+  it("splitLineAt is a no-op when a half would be empty", () => {
+    const cb: CleanedBlocks = {
+      lines: [ln("a", "abc", "en", "text", "g1")],
+      groups: [grp("g1", "sentence")],
+      ignoredLangs: [],
+    };
+    expect(splitLineAt(cb, "a", 0)).toBe(cb);
+    expect(splitLineAt(cb, "a", 3)).toBe(cb);
   });
 
   it("linkGroups links the two stitches into one item with synced kind", () => {

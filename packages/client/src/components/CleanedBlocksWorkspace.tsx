@@ -24,6 +24,7 @@ import {
   deleteLine,
   deleteLines,
   deriveItems,
+  hasScriptBoundary,
   LANG_NAMES,
   linkGroups,
   moveItem,
@@ -31,6 +32,8 @@ import {
   setGroupKind,
   setKindForLines,
   setLinesRole,
+  splitLineAt,
+  splitLineByScript,
   stitchLines,
   toggleIgnoredLang,
   unlinkGroups,
@@ -105,6 +108,10 @@ export function CleanedBlocksWorkspace({
   // Transient multi-select (not persisted). `anchorIndex` drives Shift-range selection.
   const [selected, setSelected] = useState<Set<string>>(() => new Set());
   const [anchorIndex, setAnchorIndex] = useState<number | null>(null);
+
+  // Caret position in the focused line's text input, driving the "split at cursor" control.
+  const [caret, setCaret] = useState<{ id: string;
+    index: number; } | null>(null);
 
   const {
     data: vocab,
@@ -304,7 +311,16 @@ export function CleanedBlocksWorkspace({
             {" "}
             <strong>Link</strong>
             {" "}
-            a text block to its translation so they combine into one item. Switch items to
+            a text block to its translation so they combine into one item. Split a block that mixes
+            languages with
+            {" "}
+            <strong>あ/A</strong>
+            {" "}
+            (by script) or
+            {" "}
+            <strong>✂</strong>
+            {" "}
+            (at the cursor). Switch items to
             {" "}
             <strong>Vocab</strong>
             , mark page furniture as “Structure”, set junk lines to “Ignore”, or ignore a whole
@@ -549,6 +565,11 @@ export function CleanedBlocksWorkspace({
                     `}
                     value={line.text}
                     onChange={e => setDraft(d => updateLineText(d, line.id, e.target.value))}
+                    onSelect={e =>
+                      setCaret({
+                        id: line.id,
+                        index: e.currentTarget.selectionStart ?? 0,
+                      })}
                     aria-label="Line text"
                   />
 
@@ -583,6 +604,32 @@ export function CleanedBlocksWorkspace({
                       </option>
                     ))}
                   </select>
+
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setDraft(d => splitLineByScript(d, line.id))}
+                    disabled={!hasScriptBoundary(line.text)}
+                    title="Split into separate lines by language/script"
+                  >
+                    あ/A
+                  </Button>
+
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => {
+                      if (caret) setDraft(d => splitLineAt(d, line.id, caret.index));
+                    }}
+                    disabled={
+                      caret?.id !== line.id || caret.index <= 0 || caret.index >= line.text.length
+                    }
+                    title="Split this line into two at the cursor"
+                  >
+                    ✂
+                  </Button>
 
                   <Button
                     type="button"
