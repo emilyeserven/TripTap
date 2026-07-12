@@ -141,7 +141,6 @@ export function SourceCard({
                           yomi={v.y}
                         />
                       </span>
-                      <span className="text-muted-foreground">{v.y}</span>
                       <span>{v.m}</span>
                       <LevelBadge lvl={v.lvl} />
                     </li>

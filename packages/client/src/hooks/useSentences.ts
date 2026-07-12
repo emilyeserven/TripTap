@@ -26,6 +26,15 @@ export function useSentences() {
   });
 }
 
+/** The bank vocab linked to a sentence ("break it down"). Pass `enabled: false` to defer the fetch. */
+export function useSentenceVocab(id: string, enabled = true) {
+  return useQuery({
+    queryKey: [...SENTENCES_KEY, id, "vocab"],
+    queryFn: () => sentencesApi.getVocab(id),
+    enabled,
+  });
+}
+
 export function useCreateSentence() {
   const invalidate = useSentenceInvalidator();
   return useMutation({

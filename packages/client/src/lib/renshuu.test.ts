@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { isRenshuuEligible, toRenshuuText } from "./renshuu";
+import { isRenshuuEligible, toRenshuuText, toRenshuuVocabText } from "./renshuu";
 
 describe("isRenshuuEligible", () => {
   it("requires both a Japanese line and a translation", () => {
@@ -47,5 +47,29 @@ describe("toRenshuuText", () => {
       text: "犬",
       translation: null,
     }])).toBe("");
+  });
+});
+
+describe("toRenshuuVocabText", () => {
+  it("joins term/reading lines, bare term when no reading, skipping empty terms", () => {
+    const text = toRenshuuVocabText([
+      {
+        term: "行く",
+        reading: "いく",
+      },
+      {
+        term: "犬",
+        reading: null,
+      },
+      {
+        term: "  好き  ",
+        reading: "  すき  ",
+      },
+      {
+        term: "  ",
+        reading: "x",
+      },
+    ]);
+    expect(text).toBe("行く/いく\n犬\n好き/すき");
   });
 });

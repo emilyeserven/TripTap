@@ -22,3 +22,25 @@ export function toRenshuuText(rows: RenshuuRow[]): string {
   }
   return lines.join("\n");
 }
+
+/** A vocab row for Renshuu word import: the term, plus an optional reading. */
+export interface RenshuuVocabRow {
+  term: string;
+  reading: string | null;
+}
+
+/**
+ * Format vocab as Renshuu word-import lines — one `term/reading` per line (Renshuu's convention for
+ * disambiguating a reading, e.g. `行く/いく`), or just the term when there's no reading. Rows without a
+ * term are skipped.
+ */
+export function toRenshuuVocabText(rows: RenshuuVocabRow[]): string {
+  const lines: string[] = [];
+  for (const row of rows) {
+    const term = row.term.trim();
+    if (!term) continue;
+    const reading = row.reading?.trim();
+    lines.push(reading ? `${term}/${reading}` : term);
+  }
+  return lines.join("\n");
+}

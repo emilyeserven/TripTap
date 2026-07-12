@@ -1,9 +1,17 @@
 import type { Sentence } from "@sentence-bank/types";
+import type { ReactElement } from "react";
 
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import { SentenceCard } from "./SentenceCard";
+
+/** SentenceCard uses a react-query hook (linked-vocab breakdown), so it needs a QueryClient. */
+function renderCard(ui: ReactElement) {
+  const client = new QueryClient();
+  return render(<QueryClientProvider client={client}>{ui}</QueryClientProvider>);
+}
 
 const sentence: Sentence = {
   id: "11111111-1111-1111-1111-111111111111",
@@ -21,13 +29,13 @@ const sentence: Sentence = {
 
 describe("SentenceCard", () => {
   it("renders the sentence text and translation", () => {
-    render(<SentenceCard sentence={sentence} />);
+    renderCard(<SentenceCard sentence={sentence} />);
     expect(screen.getByText("毎朝コーヒーを飲みます。")).toBeInTheDocument();
     expect(screen.getByText("I drink coffee every morning.")).toBeInTheDocument();
   });
 
   it("hides the translation when showTranslation is false", () => {
-    render(
+    renderCard(
       <SentenceCard
         sentence={sentence}
         showTranslation={false}
@@ -39,7 +47,7 @@ describe("SentenceCard", () => {
 
   it("calls onDelete with the sentence id when the delete button is clicked", () => {
     const onDelete = vi.fn();
-    render(
+    renderCard(
       <SentenceCard
         sentence={sentence}
         onDelete={onDelete}

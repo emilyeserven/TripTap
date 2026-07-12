@@ -11,7 +11,6 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VocabularyRouteImport } from './routes/vocabulary'
 import { Route as VocabRouteImport } from './routes/vocab'
-import { Route as SourcesRouteImport } from './routes/sources'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SentencesRouteImport } from './routes/sentences'
 import { Route as RenshuuRouteImport } from './routes/renshuu'
@@ -19,6 +18,7 @@ import { Route as GrammarRouteImport } from './routes/grammar'
 import { Route as CultureRouteImport } from './routes/culture'
 import { Route as CaptureRouteImport } from './routes/capture'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SourcesIndexRouteImport } from './routes/sources.index'
 import { Route as LessonsIndexRouteImport } from './routes/lessons.index'
 import { Route as CapturesIndexRouteImport } from './routes/captures.index'
 import { Route as SourcesIdRouteImport } from './routes/sources.$id'
@@ -34,11 +34,6 @@ const VocabularyRoute = VocabularyRouteImport.update({
 const VocabRoute = VocabRouteImport.update({
   id: '/vocab',
   path: '/vocab',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SourcesRoute = SourcesRouteImport.update({
-  id: '/sources',
-  path: '/sources',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SettingsRoute = SettingsRouteImport.update({
@@ -76,6 +71,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SourcesIndexRoute = SourcesIndexRouteImport.update({
+  id: '/sources/',
+  path: '/sources/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LessonsIndexRoute = LessonsIndexRouteImport.update({
   id: '/lessons/',
   path: '/lessons/',
@@ -87,9 +87,9 @@ const CapturesIndexRoute = CapturesIndexRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const SourcesIdRoute = SourcesIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => SourcesRoute,
+  id: '/sources/$id',
+  path: '/sources/$id',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const LessonsNewRoute = LessonsNewRouteImport.update({
   id: '/lessons/new',
@@ -115,7 +115,6 @@ export interface FileRoutesByFullPath {
   '/renshuu': typeof RenshuuRoute
   '/sentences': typeof SentencesRoute
   '/settings': typeof SettingsRoute
-  '/sources': typeof SourcesRouteWithChildren
   '/vocab': typeof VocabRoute
   '/vocabulary': typeof VocabularyRoute
   '/captures/$id': typeof CapturesIdRoute
@@ -124,6 +123,7 @@ export interface FileRoutesByFullPath {
   '/sources/$id': typeof SourcesIdRoute
   '/captures/': typeof CapturesIndexRoute
   '/lessons/': typeof LessonsIndexRoute
+  '/sources/': typeof SourcesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -133,7 +133,6 @@ export interface FileRoutesByTo {
   '/renshuu': typeof RenshuuRoute
   '/sentences': typeof SentencesRoute
   '/settings': typeof SettingsRoute
-  '/sources': typeof SourcesRouteWithChildren
   '/vocab': typeof VocabRoute
   '/vocabulary': typeof VocabularyRoute
   '/captures/$id': typeof CapturesIdRoute
@@ -142,6 +141,7 @@ export interface FileRoutesByTo {
   '/sources/$id': typeof SourcesIdRoute
   '/captures': typeof CapturesIndexRoute
   '/lessons': typeof LessonsIndexRoute
+  '/sources': typeof SourcesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -152,7 +152,6 @@ export interface FileRoutesById {
   '/renshuu': typeof RenshuuRoute
   '/sentences': typeof SentencesRoute
   '/settings': typeof SettingsRoute
-  '/sources': typeof SourcesRouteWithChildren
   '/vocab': typeof VocabRoute
   '/vocabulary': typeof VocabularyRoute
   '/captures/$id': typeof CapturesIdRoute
@@ -161,6 +160,7 @@ export interface FileRoutesById {
   '/sources/$id': typeof SourcesIdRoute
   '/captures/': typeof CapturesIndexRoute
   '/lessons/': typeof LessonsIndexRoute
+  '/sources/': typeof SourcesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -172,7 +172,6 @@ export interface FileRouteTypes {
     | '/renshuu'
     | '/sentences'
     | '/settings'
-    | '/sources'
     | '/vocab'
     | '/vocabulary'
     | '/captures/$id'
@@ -181,6 +180,7 @@ export interface FileRouteTypes {
     | '/sources/$id'
     | '/captures/'
     | '/lessons/'
+    | '/sources/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -190,7 +190,6 @@ export interface FileRouteTypes {
     | '/renshuu'
     | '/sentences'
     | '/settings'
-    | '/sources'
     | '/vocab'
     | '/vocabulary'
     | '/captures/$id'
@@ -199,6 +198,7 @@ export interface FileRouteTypes {
     | '/sources/$id'
     | '/captures'
     | '/lessons'
+    | '/sources'
   id:
     | '__root__'
     | '/'
@@ -208,7 +208,6 @@ export interface FileRouteTypes {
     | '/renshuu'
     | '/sentences'
     | '/settings'
-    | '/sources'
     | '/vocab'
     | '/vocabulary'
     | '/captures/$id'
@@ -217,6 +216,7 @@ export interface FileRouteTypes {
     | '/sources/$id'
     | '/captures/'
     | '/lessons/'
+    | '/sources/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -227,14 +227,15 @@ export interface RootRouteChildren {
   RenshuuRoute: typeof RenshuuRoute
   SentencesRoute: typeof SentencesRoute
   SettingsRoute: typeof SettingsRoute
-  SourcesRoute: typeof SourcesRouteWithChildren
   VocabRoute: typeof VocabRoute
   VocabularyRoute: typeof VocabularyRoute
   CapturesIdRoute: typeof CapturesIdRoute
   LessonsSlugRoute: typeof LessonsSlugRoute
   LessonsNewRoute: typeof LessonsNewRoute
+  SourcesIdRoute: typeof SourcesIdRoute
   CapturesIndexRoute: typeof CapturesIndexRoute
   LessonsIndexRoute: typeof LessonsIndexRoute
+  SourcesIndexRoute: typeof SourcesIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -251,13 +252,6 @@ declare module '@tanstack/react-router' {
       path: '/vocab'
       fullPath: '/vocab'
       preLoaderRoute: typeof VocabRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/sources': {
-      id: '/sources'
-      path: '/sources'
-      fullPath: '/sources'
-      preLoaderRoute: typeof SourcesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/settings': {
@@ -309,6 +303,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/sources/': {
+      id: '/sources/'
+      path: '/sources'
+      fullPath: '/sources/'
+      preLoaderRoute: typeof SourcesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/lessons/': {
       id: '/lessons/'
       path: '/lessons'
@@ -325,10 +326,10 @@ declare module '@tanstack/react-router' {
     }
     '/sources/$id': {
       id: '/sources/$id'
-      path: '/$id'
+      path: '/sources/$id'
       fullPath: '/sources/$id'
       preLoaderRoute: typeof SourcesIdRouteImport
-      parentRoute: typeof SourcesRoute
+      parentRoute: typeof rootRouteImport
     }
     '/lessons/new': {
       id: '/lessons/new'
@@ -354,17 +355,6 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface SourcesRouteChildren {
-  SourcesIdRoute: typeof SourcesIdRoute
-}
-
-const SourcesRouteChildren: SourcesRouteChildren = {
-  SourcesIdRoute: SourcesIdRoute,
-}
-
-const SourcesRouteWithChildren =
-  SourcesRoute._addFileChildren(SourcesRouteChildren)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CaptureRoute: CaptureRoute,
@@ -373,14 +363,15 @@ const rootRouteChildren: RootRouteChildren = {
   RenshuuRoute: RenshuuRoute,
   SentencesRoute: SentencesRoute,
   SettingsRoute: SettingsRoute,
-  SourcesRoute: SourcesRouteWithChildren,
   VocabRoute: VocabRoute,
   VocabularyRoute: VocabularyRoute,
   CapturesIdRoute: CapturesIdRoute,
   LessonsSlugRoute: LessonsSlugRoute,
   LessonsNewRoute: LessonsNewRoute,
+  SourcesIdRoute: SourcesIdRoute,
   CapturesIndexRoute: CapturesIndexRoute,
   LessonsIndexRoute: LessonsIndexRoute,
+  SourcesIndexRoute: SourcesIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
