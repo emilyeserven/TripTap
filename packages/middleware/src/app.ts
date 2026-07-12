@@ -7,12 +7,14 @@ import { bookmarksRoutes } from "@/routes/bookmarks";
 import { captureRoutes } from "@/routes/captures";
 import { healthRoutes } from "@/routes/health";
 import { lessonRoutes } from "@/routes/lessons";
+import { listeningSessionsRoutes } from "@/routes/listening-sessions";
 import { mySentenceRoutes } from "@/routes/my-sentences";
 import { ocrRoutes } from "@/routes/ocr";
 import { parseTemplateRoutes } from "@/routes/parse-templates";
 import { practiceSentenceRoutes } from "@/routes/practice-sentences";
 import { sentenceRoutes } from "@/routes/sentences";
 import { settingsRoutes } from "@/routes/settings";
+import { shadowingSessionsRoutes } from "@/routes/shadowing-sessions";
 import { sourceRoutes } from "@/routes/sources";
 import { vocabRoutes } from "@/routes/vocab";
 import { writingRoutes } from "@/routes/writings";
@@ -58,6 +60,14 @@ export async function buildApp(): Promise<FastifyInstance> {
         {
           name: "writings",
           description: "Free-form learner writing with inline corrections",
+        },
+        {
+          name: "listening-sessions",
+          description: "Listen and Shadow sessions — video + timestamped notes",
+        },
+        {
+          name: "shadowing-sessions",
+          description: "Shadowing practice sessions — looped video segments + notes",
         },
         {
           name: "lessons",
@@ -108,6 +118,8 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(practiceSentenceRoutes);
   await app.register(mySentenceRoutes);
   await app.register(writingRoutes);
+  await app.register(listeningSessionsRoutes);
+  await app.register(shadowingSessionsRoutes);
   await app.register(sourceRoutes);
   await app.register(vocabRoutes);
   await app.register(captureRoutes);

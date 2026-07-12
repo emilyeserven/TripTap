@@ -111,7 +111,7 @@ const termsSchema = {
       },
       category: {
         type: "string",
-        enum: ["vocabulary", "grammar", "general"],
+        enum: ["vocabulary", "grammar", "general", "resource", "listening"],
       },
     },
   },
