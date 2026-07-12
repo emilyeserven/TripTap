@@ -3,6 +3,9 @@ import type {
   FuriToken,
   GrammarExample,
   OcrBlock,
+  PracticeGrammar,
+  PracticePasses,
+  PracticeWord,
   SentenceTermRef,
   SourceGrammar,
   SourceVocab,
@@ -123,6 +126,114 @@ export const sentenceVocab = pgTable(
 );
 
 export type SentenceVocabRow = typeof sentenceVocab.$inferSelect;
+
+/**
+ * `practice_sentences` — richly-annotated study cards (the genericized sentence-mining worksheet).
+ * Distinct from `sentences`: typically imported from a capture or an existing sentence (both linked
+ * for provenance), and *not* professionally written — every row starts flagged `needs_correction`,
+ * with a nullable `correction` stored for a later display feature. Intra-card lists (word/grammar
+ * breakdowns, study passes) live inline as JSONB; they are never queried independently.
+ */
+export const practiceSentences = pgTable("practice_sentences", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  text: text("text").notNull(),
+  // Free-text reading of the tricky parts (worksheet-style), not generated furigana. Null if none.
+  reading: text("reading"),
+  translation: text("translation"),
+  language: text("language").notNull(),
+  // The single thing this sentence teaches (the "one target") and what kind it is. Free-text on
+  // purpose; `target_kind` is constrained to a set at the route layer, not the DB.
+  target: text("target"),
+  targetKind: text("target_kind"),
+  // How well the learner understands the sentence (Tofugu curation gate): "ready" | "studying" | "skip".
+  // Free-text on purpose; the allowed set is validated at the route layer, not the DB. Null until assessed.
+  comprehension: text("comprehension"),
+  // The learner's pre-lookup guess at the meaning.
+  guess: text("guess"),
+  // Literal/structural gloss, recorded only when the structure surprised the learner.
+  literal: text("literal"),
+  // Politeness/register label, free-text (e.g. "casual (タメ口)").
+  register: text("register"),
+  nuance: text("nuance"),
+  // Study breakdowns, embedded (never queried on their own). Null until the learner adds any.
+  words: jsonb("words").$type<PracticeWord[]>(),
+  grammar: jsonb("grammar").$type<PracticeGrammar[]>(),
+  passes: jsonb("passes").$type<PracticePasses>(),
+  // Structured tags from the bookmarks channels (Vocabulary / Grammar / General). Denormalized so
+  // display never needs a live bookmarks call. Null until any are attached.
+  terms: jsonb("terms").$type<SentenceTermRef[]>(),
+  // Provenance. `source_id` is copied from the origin for filtering; the capture/sentence this was
+  // imported from are nulled (not deleted) if that origin is removed.
+  sourceId: uuid("source_id").references(() => sources.id, {
+    onDelete: "set null",
+  }),
+  page: text("page"),
+  captureId: uuid("capture_id").references((): AnyPgColumn => captures.id, {
+    onDelete: "set null",
+  }),
+  sentenceId: uuid("sentence_id").references(() => sentences.id, {
+    onDelete: "set null",
+  }),
+  // These sentences are not professionally written; every row starts as "needs review". The corrected
+  // text is stored here but not yet surfaced in the UI (a deliberate follow-up feature).
+  needsCorrection: boolean("needs_correction").notNull().default(true),
+  correction: text("correction"),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+});
+
+export type PracticeSentenceRow = typeof practiceSentences.$inferSelect;
+export type NewPracticeSentenceRow = typeof practiceSentences.$inferInsert;
+
+/**
+ * `practice_sentence_vocab` — many-to-many link between a practice sentence and the bank vocab created
+ * for it (e.g. the words the learner couldn't read aloud). Parallel to `sentence_vocab`, but bound to
+ * `practice_sentences` instead of `sentences`.
+ */
+export const practiceSentenceVocab = pgTable(
+  "practice_sentence_vocab",
+  {
+    practiceSentenceId: uuid("practice_sentence_id")
+      .notNull()
+      .references(() => practiceSentences.id, {
+        onDelete: "cascade",
+      }),
+    vocabId: uuid("vocab_id")
+      .notNull()
+      .references(() => vocab.id, {
+        onDelete: "cascade",
+      }),
+  },
+  t => [primaryKey({
+    columns: [t.practiceSentenceId, t.vocabId],
+  })],
+);
+
+export type PracticeSentenceVocabRow = typeof practiceSentenceVocab.$inferSelect;
+
+/**
+ * `my_sentences` — sentences the learner produced themselves (the "Output" step of the practice
+ * worksheet). Not professionally written: every row starts flagged `needs_correction`, with a nullable
+ * `correction` filled in later. Links back to the practice sentence it was produced from.
+ */
+export const mySentences = pgTable("my_sentences", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  text: text("text").notNull(),
+  translation: text("translation"),
+  language: text("language").notNull(),
+  practiceSentenceId: uuid("practice_sentence_id").references((): AnyPgColumn => practiceSentences.id, {
+    onDelete: "set null",
+  }),
+  needsCorrection: boolean("needs_correction").notNull().default(true),
+  correction: text("correction"),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+});
+
+export type MySentenceRow = typeof mySentences.$inferSelect;
+export type NewMySentenceRow = typeof mySentences.$inferInsert;
 
 /** `parse_templates` — saved capture-parsing templates the user can reuse. */
 export const parseTemplates = pgTable("parse_templates", {

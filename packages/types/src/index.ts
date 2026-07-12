@@ -6,6 +6,8 @@
  */
 
 export * from "./lesson.js";
+export * from "./my-sentence.js";
+export * from "./practice-sentence.js";
 
 /** A reusable origin for sentences (a book, show, article, …) — the "source taxonomy". */
 export interface Source {
