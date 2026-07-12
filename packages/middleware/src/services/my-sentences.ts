@@ -17,6 +17,9 @@ export function toMySentence(row: MySentenceRow): MySentence {
     practiceSentenceId: row.practiceSentenceId,
     needsCorrection: row.needsCorrection,
     correction: row.correction,
+    actualMeaning: row.actualMeaning,
+    explanation: row.explanation,
+    terms: row.terms ?? null,
     createdAt:
       row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
   };
@@ -31,6 +34,9 @@ function toInsert(input: CreateMySentenceInput) {
     practiceSentenceId: input.practiceSentenceId ?? null,
     needsCorrection: input.needsCorrection ?? true,
     correction: input.correction ?? null,
+    actualMeaning: input.actualMeaning ?? null,
+    explanation: input.explanation ?? null,
+    terms: input.terms ?? null,
   };
 }
 
@@ -54,6 +60,15 @@ export async function getMySentence(id: string): Promise<MySentence | null> {
 export async function createMySentence(input: CreateMySentenceInput): Promise<MySentence> {
   const [row] = await db.insert(mySentences).values(toInsert(input)).returning();
   return toMySentence(row);
+}
+
+/** Create many my-sentences in a single insert (used by the bulk-paste import flow). */
+export async function createMySentencesMany(
+  inputs: CreateMySentenceInput[],
+): Promise<MySentence[]> {
+  if (inputs.length === 0) return [];
+  const rows = await db.insert(mySentences).values(inputs.map(toInsert)).returning();
+  return rows.map(toMySentence);
 }
 
 export async function updateMySentence(

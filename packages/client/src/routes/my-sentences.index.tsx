@@ -1,12 +1,15 @@
 import { useMemo, useState } from "react";
 
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Plus } from "lucide-react";
 
+import { MySentenceBulkDialog } from "@/components/MySentenceBulkDialog";
 import { MySentenceCard } from "@/components/MySentenceCard";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useDeleteMySentence, useMySentences } from "@/hooks/useMySentences";
 
-export const Route = createFileRoute("/my-sentences")({
+export const Route = createFileRoute("/my-sentences/")({
   component: MySentencesPage,
 });
 
@@ -33,12 +36,23 @@ function MySentencesPage() {
 
   return (
     <section className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">My Sentences</h1>
-        <p className="text-sm text-muted-foreground">
-          Sentences you produced in the practice worksheet. They aren&apos;t professionally written —
-          correct them here when you&apos;re ready.
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold">My Sentences</h1>
+          <p className="text-sm text-muted-foreground">
+            Sentences you produced yourself — from the practice worksheet or logged here (e.g. ones you
+            got wrong in a lesson). Diff them against a correction and attach an explanation.
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button asChild>
+            <Link to="/my-sentences/new">
+              <Plus className="size-4" />
+              New sentence
+            </Link>
+          </Button>
+          <MySentenceBulkDialog />
+        </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-4">
@@ -64,7 +78,8 @@ function MySentencesPage() {
       {nothing
         ? (
           <p className="text-muted-foreground">
-            No sentences yet. Write your own on the Output tab of a practice sentence.
+            No sentences yet. Add one with “New sentence”, paste several with “Bulk add”, or write your
+            own on the Output tab of a practice sentence.
           </p>
         )
         : null}

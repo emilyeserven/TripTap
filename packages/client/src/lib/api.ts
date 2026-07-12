@@ -152,10 +152,18 @@ export const mySentencesApi = {
         ? `/my-sentences?practiceSentenceId=${practiceSentenceId}`
         : "/my-sentences",
     ),
+  get: (id: string) => request<MySentence>(`/my-sentences/${id}`),
   create: (input: CreateMySentenceInput) =>
     request<MySentence>("/my-sentences", {
       method: "POST",
       body: JSON.stringify(input),
+    }),
+  createMany: (inputs: CreateMySentenceInput[]) =>
+    request<MySentence[]>("/my-sentences/bulk", {
+      method: "POST",
+      body: JSON.stringify({
+        mySentences: inputs,
+      }),
     }),
   update: (id: string, input: UpdateMySentenceInput) =>
     request<MySentence>(`/my-sentences/${id}`, {

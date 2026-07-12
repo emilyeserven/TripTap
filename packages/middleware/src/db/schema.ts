@@ -220,6 +220,7 @@ export type PracticeSentenceVocabRow = typeof practiceSentenceVocab.$inferSelect
 export const mySentences = pgTable("my_sentences", {
   id: uuid("id").primaryKey().defaultRandom(),
   text: text("text").notNull(),
+  // What the learner meant to say (the intended meaning).
   translation: text("translation"),
   language: text("language").notNull(),
   practiceSentenceId: uuid("practice_sentence_id").references((): AnyPgColumn => practiceSentences.id, {
@@ -227,6 +228,13 @@ export const mySentences = pgTable("my_sentences", {
   }),
   needsCorrection: boolean("needs_correction").notNull().default(true),
   correction: text("correction"),
+  // What the sentence, as written, actually says — the mismatch with `translation`.
+  actualMeaning: text("actual_meaning"),
+  // A prose note explaining the correction (e.g. from a tutoring lesson).
+  explanation: text("explanation"),
+  // Structured tags from the bookmarks channels (Vocabulary / Grammar / General). Denormalized so
+  // display never needs a live bookmarks call. Null until any are attached.
+  terms: jsonb("terms").$type<SentenceTermRef[]>(),
   createdAt: timestamp("created_at", {
     withTimezone: true,
   }).notNull().defaultNow(),
