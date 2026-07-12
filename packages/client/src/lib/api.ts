@@ -34,6 +34,9 @@ import type {
   Vocab,
   VocabItem,
   VocabRenshuuUpdate,
+  Writing,
+  CreateWritingInput,
+  UpdateWritingInput,
 } from "@sentence-bank/types";
 
 /** Patchable capture fields (mirror of the middleware's `UpdateCaptureInput`). */
@@ -171,6 +174,24 @@ export const mySentencesApi = {
       body: JSON.stringify(input),
     }),
   remove: (id: string) => request<undefined>(`/my-sentences/${id}`, {
+    method: "DELETE",
+  }),
+};
+
+export const writingsApi = {
+  list: () => request<Writing[]>("/writings"),
+  get: (id: string) => request<Writing>(`/writings/${id}`),
+  create: (input: CreateWritingInput) =>
+    request<Writing>("/writings", {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+  update: (id: string, input: UpdateWritingInput) =>
+    request<Writing>(`/writings/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    }),
+  remove: (id: string) => request<undefined>(`/writings/${id}`, {
     method: "DELETE",
   }),
 };

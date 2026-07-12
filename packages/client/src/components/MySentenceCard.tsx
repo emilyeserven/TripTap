@@ -1,7 +1,7 @@
 import type { MySentence } from "@sentence-bank/types";
 
 import { Link } from "@tanstack/react-router";
-import { NotebookPen, TriangleAlert } from "lucide-react";
+import { NotebookPen, PenLine, TriangleAlert } from "lucide-react";
 
 import { CorrectionDiff } from "../lib/sentenceDiff";
 import { groupTermsByCategory, TERM_CATEGORIES } from "../lib/terms";
@@ -117,6 +117,20 @@ export function MySentenceCard({
               >
                 <NotebookPen className="size-3" />
                 From practice
+              </Link>
+            )
+            : null}
+          {ms.writingId
+            ? (
+              <Link
+                to="/my-writing"
+                className="
+                  inline-flex items-center gap-1
+                  hover:text-foreground
+                "
+              >
+                <PenLine className="size-3" />
+                From writing
               </Link>
             )
             : null}

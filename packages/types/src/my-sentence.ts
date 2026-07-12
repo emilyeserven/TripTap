@@ -22,6 +22,8 @@ export interface MySentence {
   language: string;
   /** The practice sentence this was produced from, or null. */
   practiceSentenceId: string | null;
+  /** The writing this sentence was promoted from (via a correction), or null. */
+  writingId: string | null;
   /** Whether it still needs correction (starts true — not professionally written). */
   needsCorrection: boolean;
   /** A corrected version of {@link text}, filled in later; null until corrected. */
@@ -42,6 +44,7 @@ export interface CreateMySentenceInput {
   language: string;
   translation?: string | null;
   practiceSentenceId?: string | null;
+  writingId?: string | null;
   /** Defaults to true server-side when omitted. */
   needsCorrection?: boolean;
   correction?: string | null;

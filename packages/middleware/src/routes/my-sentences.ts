@@ -82,6 +82,10 @@ const createMySentenceBody = {
       type: ["string", "null"],
       format: "uuid",
     },
+    writingId: {
+      type: ["string", "null"],
+      format: "uuid",
+    },
     needsCorrection: {
       type: "boolean",
     },

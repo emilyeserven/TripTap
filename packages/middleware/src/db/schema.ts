@@ -9,6 +9,7 @@ import type {
   SentenceTermRef,
   SourceGrammar,
   SourceVocab,
+  WritingCorrection,
 } from "@sentence-bank/types";
 import { type AnyPgColumn, boolean, customType, integer, jsonb, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 
@@ -226,6 +227,10 @@ export const mySentences = pgTable("my_sentences", {
   practiceSentenceId: uuid("practice_sentence_id").references((): AnyPgColumn => practiceSentences.id, {
     onDelete: "set null",
   }),
+  /** The writing this sentence was promoted from (via a correction), or null. */
+  writingId: uuid("writing_id").references((): AnyPgColumn => writings.id, {
+    onDelete: "set null",
+  }),
   needsCorrection: boolean("needs_correction").notNull().default(true),
   correction: text("correction"),
   // What the sentence, as written, actually says — the mismatch with `translation`.
@@ -242,6 +247,34 @@ export const mySentences = pgTable("my_sentences", {
 
 export type MySentenceRow = typeof mySentences.$inferSelect;
 export type NewMySentenceRow = typeof mySentences.$inferInsert;
+
+/**
+ * `writings` — free-form blocks the learner wrote themselves (a paragraph, a journal entry, several
+ * sentences). Carries the intended `meaning` and `comments`, the vocab/grammar/general `terms` they
+ * were targeting, a `ready_to_review` flag, and inline `corrections`. Each correction can be
+ * "officially added" to My Sentences (see `my_sentences.writing_id`).
+ */
+export const writings = pgTable("writings", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  text: text("text").notNull(),
+  /** What the learner intended to say; null if none. */
+  meaning: text("meaning"),
+  /** Additional comments/notes; null if none. */
+  comments: text("comments"),
+  language: text("language").notNull(),
+  readyToReview: boolean("ready_to_review").notNull().default(false),
+  terms: jsonb("terms").$type<SentenceTermRef[]>(),
+  corrections: jsonb("corrections").$type<WritingCorrection[]>(),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+});
+
+export type WritingRow = typeof writings.$inferSelect;
+export type NewWritingRow = typeof writings.$inferInsert;
 
 /** `parse_templates` — saved capture-parsing templates the user can reuse. */
 export const parseTemplates = pgTable("parse_templates", {
