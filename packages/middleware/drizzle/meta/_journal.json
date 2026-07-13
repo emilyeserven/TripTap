@@ -155,6 +155,20 @@
       "when": 1783899779511,
       "tag": "0021_premium_penance",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1783900637402,
+      "tag": "0022_parched_titanium_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1783902148172,
+      "tag": "0023_living_thunderbolt_ross",
+      "breakpoints": true
     }
   ]
 }

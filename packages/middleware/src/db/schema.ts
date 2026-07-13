@@ -1,4 +1,5 @@
 import type {
+  AnswerSheetEntry,
   CleanedBlocks,
   FuriToken,
   GrammarExample,
@@ -7,6 +8,8 @@ import type {
   PracticeGrammar,
   PracticePasses,
   PracticeWord,
+  QuestionSheetGrid,
+  QuestionSheetQuestion,
   SentenceTermRef,
   ShadowingSegment,
   SourceGrammar,
@@ -280,6 +283,56 @@ export const writings = pgTable("writings", {
 
 export type WritingRow = typeof writings.$inferSelect;
 export type NewWritingRow = typeof writings.$inferInsert;
+
+/**
+ * `question_sheets` — reusable templates of textbook/worksheet questions with no answer key. A
+ * `layout` of "list" uses the `questions` JSONB (each question, and each of its parts, is an
+ * answerable slot); "grid" uses the `grid` JSONB (each row×column cell is a slot). `resource_terms`
+ * tags the sheet with the Textbooks & Worksheets bookmarks channel.
+ */
+export const questionSheets = pgTable("question_sheets", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  title: text("title").notNull(),
+  notes: text("notes"),
+  page: text("page"),
+  resourceTerms: jsonb("resource_terms").$type<SentenceTermRef[]>(),
+  layout: text("layout").notNull().default("list"),
+  questions: jsonb("questions").$type<QuestionSheetQuestion[]>(),
+  grid: jsonb("grid").$type<QuestionSheetGrid>(),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+});
+
+export type QuestionSheetRow = typeof questionSheets.$inferSelect;
+export type NewQuestionSheetRow = typeof questionSheets.$inferInsert;
+
+/**
+ * `answer_sheets` — one filled-in attempt at a {@link questionSheets question sheet}. Many answer
+ * sheets may reference the same question sheet (the "reusable" part), so `question_sheet_id` carries
+ * no uniqueness constraint; it uses `onDelete: "restrict"` so a question sheet can't be deleted while
+ * answers exist. `entries` stores one record per answered slot, including inline correction fields.
+ */
+export const answerSheets = pgTable("answer_sheets", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  questionSheetId: uuid("question_sheet_id").notNull().references((): AnyPgColumn => questionSheets.id, {
+    onDelete: "restrict",
+  }),
+  title: text("title"),
+  entries: jsonb("entries").$type<AnswerSheetEntry[]>(),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+});
+
+export type AnswerSheetRow = typeof answerSheets.$inferSelect;
+export type NewAnswerSheetRow = typeof answerSheets.$inferInsert;
 
 /**
  * `listening_sessions` — a "Listen and Shadow" session: a YouTube video (usually one of the learner's

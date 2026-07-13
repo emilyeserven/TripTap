@@ -38,6 +38,8 @@ export interface QuestionSheet {
   id: string;
   title: string;
   notes: string | null;
+  /** Free-text location within the source, e.g. "p. 12–13", "ch. 3". */
+  page: string | null;
   /** Tags drawn from the "resource" (Textbooks & Worksheets) bookmarks channel. */
   resourceTerms: SentenceTermRef[] | null;
   layout: QuestionSheetLayout;
@@ -53,6 +55,7 @@ export interface CreateQuestionSheetInput {
   title: string;
   layout: QuestionSheetLayout;
   notes?: string | null;
+  page?: string | null;
   resourceTerms?: SentenceTermRef[] | null;
   questions?: QuestionSheetQuestion[];
   grid?: QuestionSheetGrid | null;

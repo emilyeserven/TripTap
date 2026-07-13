@@ -44,6 +44,12 @@ import type {
   Writing,
   CreateWritingInput,
   UpdateWritingInput,
+  QuestionSheet,
+  CreateQuestionSheetInput,
+  UpdateQuestionSheetInput,
+  AnswerSheet,
+  CreateAnswerSheetInput,
+  UpdateAnswerSheetInput,
   WritingPrompt,
   CreateWritingPromptInput,
   UpdateWritingPromptInput,
@@ -206,6 +212,24 @@ export const writingsApi = {
   }),
 };
 
+export const questionSheetsApi = {
+  list: () => request<QuestionSheet[]>("/question-sheets"),
+  get: (id: string) => request<QuestionSheet>(`/question-sheets/${id}`),
+  create: (input: CreateQuestionSheetInput) =>
+    request<QuestionSheet>("/question-sheets", {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+  update: (id: string, input: UpdateQuestionSheetInput) =>
+    request<QuestionSheet>(`/question-sheets/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    }),
+  remove: (id: string) => request<undefined>(`/question-sheets/${id}`, {
+    method: "DELETE",
+  }),
+};
+
 export const listeningSessionsApi = {
   list: () => request<ListeningSession[]>("/listening-sessions"),
   get: (id: string) => request<ListeningSession>(`/listening-sessions/${id}`),
@@ -220,6 +244,24 @@ export const listeningSessionsApi = {
       body: JSON.stringify(input),
     }),
   remove: (id: string) => request<undefined>(`/listening-sessions/${id}`, {
+    method: "DELETE",
+  }),
+};
+
+export const answerSheetsApi = {
+  list: () => request<AnswerSheet[]>("/answer-sheets"),
+  get: (id: string) => request<AnswerSheet>(`/answer-sheets/${id}`),
+  create: (input: CreateAnswerSheetInput) =>
+    request<AnswerSheet>("/answer-sheets", {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+  update: (id: string, input: UpdateAnswerSheetInput) =>
+    request<AnswerSheet>(`/answer-sheets/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    }),
+  remove: (id: string) => request<undefined>(`/answer-sheets/${id}`, {
     method: "DELETE",
   }),
 };
