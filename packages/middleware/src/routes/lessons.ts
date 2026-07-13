@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import { lessonImportJsonSchema, type LessonImportInput } from "@sentence-bank/types";
-import type { VocabRenshuuUpdate } from "@sentence-bank/types";
+import type { GrammarTermsUpdate, VocabRenshuuUpdate } from "@sentence-bank/types";
 import {
   createLessonFromImport,
   deleteLesson,
@@ -8,6 +8,8 @@ import {
   getLessonContent,
   LessonSlugConflictError,
   listLessons,
+  updateLessonGrammarTerms,
+  updateSourceSentenceTerms,
   updateVocabRenshuu,
 } from "@/services/lessons";
 
@@ -42,6 +44,44 @@ const vocabRenshuuBody = {
     },
     renshuuList: {
       type: ["string", "null"],
+    },
+  },
+} as const;
+
+const grammarTermsBody = {
+  type: "object",
+  additionalProperties: false,
+  required: ["grammarTerms"],
+  properties: {
+    grammarTerms: {
+      type: ["array", "null"],
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["id", "name", "kind", "sourceId", "sourceLabel"],
+        properties: {
+          id: {
+            type: "string",
+          },
+          name: {
+            type: "string",
+          },
+          kind: {
+            type: "string",
+            enum: ["tag", "taxonomy"],
+          },
+          sourceId: {
+            type: "string",
+          },
+          sourceLabel: {
+            type: "string",
+          },
+          category: {
+            type: "string",
+            enum: ["vocabulary", "grammar", "general", "resource", "listening"],
+          },
+        },
+      },
     },
   },
 } as const;
@@ -111,6 +151,48 @@ export async function lessonRoutes(app: FastifyInstance): Promise<void> {
     const updated = await updateVocabRenshuu(id, req.body as VocabRenshuuUpdate);
     if (!updated) return reply.code(404).send({
       message: "Vocab item not found",
+    });
+    return updated;
+  });
+
+  // Set the Grammar source tags on a grammar item.
+  app.patch("/api/lesson-grammar/:id", {
+    schema: {
+      tags: ["lessons"],
+      params: idParams,
+      body: grammarTermsBody,
+    },
+  }, async (req, reply) => {
+    const {
+      id,
+    } = req.params as { id: string };
+    const {
+      grammarTerms,
+    } = req.body as GrammarTermsUpdate;
+    const updated = await updateLessonGrammarTerms(id, grammarTerms);
+    if (!updated) return reply.code(404).send({
+      message: "Grammar item not found",
+    });
+    return updated;
+  });
+
+  // Set the Grammar source tags on a source sentence.
+  app.patch("/api/lesson-source-sentences/:id", {
+    schema: {
+      tags: ["lessons"],
+      params: idParams,
+      body: grammarTermsBody,
+    },
+  }, async (req, reply) => {
+    const {
+      id,
+    } = req.params as { id: string };
+    const {
+      grammarTerms,
+    } = req.body as GrammarTermsUpdate;
+    const updated = await updateSourceSentenceTerms(id, grammarTerms);
+    if (!updated) return reply.code(404).send({
+      message: "Source sentence not found",
     });
     return updated;
   });

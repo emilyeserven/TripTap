@@ -22,10 +22,12 @@ interface SentenceCardProps {
   /** Resolved taxonomy source name, when the sentence references one. */
   sourceName?: string | null;
   onDelete?: (id: string) => void;
+  /** When provided, grammar-tag badges become filter buttons (surfaces the grammar↔sentence link). */
+  onGrammarTagClick?: (termId: string) => void;
 }
 
 export function SentenceCard({
-  sentence, showTranslation = true, sourceName, onDelete,
+  sentence, showTranslation = true, sourceName, onDelete, onGrammarTagClick,
 }: SentenceCardProps) {
   const [revealed, setRevealed] = useState(false);
   const [showBreak, setShowBreak] = useState(false);
@@ -170,15 +172,35 @@ export function SentenceCard({
                 className="inline-flex flex-wrap items-center gap-1"
               >
                 <span className="text-xs text-muted-foreground">{label}:</span>
-                {terms.map(term => (
-                  <Badge
-                    key={`${term.sourceId}:${term.id}`}
-                    variant="outline"
-                    title={term.sourceLabel ? `${term.sourceLabel} (${term.kind})` : undefined}
-                  >
-                    {term.name}
-                  </Badge>
-                ))}
+                {terms.map(term =>
+                  category === "grammar" && onGrammarTagClick
+                    ? (
+                      <button
+                        key={`${term.sourceId}:${term.id}`}
+                        type="button"
+                        onClick={() => onGrammarTagClick(term.id)}
+                        title={`Filter by ${term.name}`}
+                      >
+                        <Badge
+                          variant="outline"
+                          className="
+                            cursor-pointer
+                            hover:bg-muted
+                          "
+                        >
+                          {term.name}
+                        </Badge>
+                      </button>
+                    )
+                    : (
+                      <Badge
+                        key={`${term.sourceId}:${term.id}`}
+                        variant="outline"
+                        title={term.sourceLabel ? `${term.sourceLabel} (${term.kind})` : undefined}
+                      >
+                        {term.name}
+                      </Badge>
+                    ))}
               </span>
             );
           })}

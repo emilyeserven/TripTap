@@ -183,6 +183,13 @@
       "when": 1783946229535,
       "tag": "0025_slippery_hannibal_king",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1783948490584,
+      "tag": "0026_workable_thundra",
+      "breakpoints": true
     }
   ]
 }

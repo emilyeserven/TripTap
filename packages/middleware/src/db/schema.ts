@@ -559,6 +559,8 @@ export const lessonGrammar = pgTable("lesson_grammar", {
   note: text("note").notNull(),
   examples: jsonb("examples").$type<GrammarExample[]>().notNull(),
   sortOrder: integer("sort_order").notNull(),
+  // App-set annotation (not part of the import contract): associated Grammar source tags.
+  grammarTerms: jsonb("grammar_terms").$type<SentenceTermRef[]>(),
 });
 
 /** `lesson_source_sentences` — real sentences with per-sentence breakdown (JSONB). */
@@ -577,6 +579,8 @@ export const lessonSourceSentences = pgTable("lesson_source_sentences", {
   grammar: jsonb("grammar").$type<SourceGrammar[]>().notNull(),
   vocab: jsonb("vocab").$type<SourceVocab[]>().notNull(),
   sortOrder: integer("sort_order").notNull(),
+  // App-set annotation (not part of the import contract): associated Grammar source tags.
+  grammarTerms: jsonb("grammar_terms").$type<SentenceTermRef[]>(),
 });
 
 /** `lesson_culture` — short cultural-context cards; terms embedded as JSONB. */

@@ -94,12 +94,14 @@ export const lessonDetailFixture: LessonDetail = {
     ...g,
     id: `gra-${i}`,
     sortOrder: i,
+    grammarTerms: null,
   })),
   source: lessonImportFixture.source.map((s, i) => ({
     ...s,
     id: `src-${i}`,
     sortOrder: i,
     url: s.url ?? null,
+    grammarTerms: null,
   })),
   culture: lessonImportFixture.culture.map((c, i) => ({
     ...c,

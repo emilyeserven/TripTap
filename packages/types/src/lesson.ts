@@ -39,6 +39,8 @@
  * JLPT badge; anything else ("travel", "local", "food", ...) renders as a plain tag.
  */
 
+import type { SentenceTermRef } from "./index.js";
+
 import { z } from "zod";
 
 /**
@@ -231,14 +233,28 @@ export type VocabItem = Persisted<VocabInput> & {
   renshuuList: string | null;
 };
 export type CategoryItem = Persisted<CategoryInput>;
-export type GrammarItem = Persisted<GrammarInput>;
-export type SourceSentenceItem = Persisted<SourceSentenceInput>;
+/**
+ * A persisted grammar pattern. `grammarTerms` are Grammar source tags associated via the app (NOT
+ * part of the import contract), null when never tagged.
+ */
+export type GrammarItem = Persisted<GrammarInput> & {
+  grammarTerms: SentenceTermRef[] | null;
+};
+/** A persisted source sentence, with app-set Grammar source tags (`grammarTerms`). */
+export type SourceSentenceItem = Persisted<SourceSentenceInput> & {
+  grammarTerms: SentenceTermRef[] | null;
+};
 export type CultureItem = Persisted<CultureInput>;
 
 /** Payload for updating a vocab item's Renshuu annotation. */
 export interface VocabRenshuuUpdate {
   renshuuAdded?: boolean;
   renshuuList?: string | null;
+}
+
+/** Payload for updating the Grammar source tags on a lesson grammar item or source sentence. */
+export interface GrammarTermsUpdate {
+  grammarTerms: SentenceTermRef[] | null;
 }
 
 /** A full lesson with all children, assembled for the viewer. */

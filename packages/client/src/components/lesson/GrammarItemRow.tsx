@@ -1,21 +1,27 @@
 import type { LessonRef } from "./LessonBadge";
+import type { LinkedSentence } from "@/lib/grammar-links";
 import type { GrammarItem } from "@sentence-bank/types";
 
 import { useState } from "react";
 
 import { Volume2 } from "lucide-react";
 
+import { GrammarTagsEditor } from "./GrammarTagsEditor";
 import { LessonBadge } from "./LessonBadge";
 import { speak } from "./speak";
 
 import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
+import { useUpdateLessonGrammarTerms } from "@/hooks/useLessons";
 
 /** One grammar pattern as an accordion item. Render inside an <Accordion>. */
 export function GrammarItemRow({
-  grammar: g, lesson,
+  grammar: g, lesson, onTagClick, linkedSentences,
 }: { grammar: GrammarItem;
-  lesson?: LessonRef; }) {
+  lesson?: LessonRef;
+  onTagClick?: (termId: string) => void;
+  linkedSentences?: LinkedSentence[]; }) {
+  const updateTerms = useUpdateLessonGrammarTerms();
   const [revealed, setRevealed] = useState<Set<number>>(() => new Set());
   const toggle = (i: number) =>
     setRevealed((prev) => {
@@ -42,6 +48,17 @@ export function GrammarItemRow({
       </AccordionTrigger>
       <AccordionContent className="space-y-4">
         <p className="text-sm/relaxed">{g.note}</p>
+
+        <GrammarTagsEditor
+          value={g.grammarTerms}
+          isPending={updateTerms.isPending}
+          onTagClick={onTagClick}
+          onSave={grammarTerms => updateTerms.mutate({
+            id: g.id,
+            grammarTerms,
+          })}
+        />
+
         <ul className="space-y-3">
           {g.ex.map((e, ei) => {
             const show = revealed.has(ei);
@@ -79,6 +96,39 @@ export function GrammarItemRow({
             );
           })}
         </ul>
+
+        {linkedSentences && linkedSentences.length > 0
+          ? (
+            <div className="space-y-2 rounded-md border p-3">
+              <h4
+                className="
+                  text-xs font-semibold tracking-wide text-muted-foreground
+                  uppercase
+                "
+              >
+                Sentences using this grammar (
+                {linkedSentences.length}
+                )
+              </h4>
+              <ul className="space-y-2">
+                {linkedSentences.map(s => (
+                  <li
+                    key={s.id}
+                    className="space-y-0.5 border-l-2 pl-3 text-sm"
+                  >
+                    <p>{s.text}</p>
+                    {s.translation
+                      ? <p className="text-muted-foreground">{s.translation}</p>
+                      : null}
+                    {s.lessonTitle
+                      ? <p className="text-xs text-muted-foreground">{s.lessonTitle}</p>
+                      : null}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )
+          : null}
       </AccordionContent>
     </AccordionItem>
   );

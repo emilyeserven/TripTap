@@ -18,10 +18,13 @@ import type {
   ShadowingSession,
   UpdateListeningSessionInput,
   UpdateShadowingSessionInput,
+  GrammarItem,
   LessonContent,
   LessonDetail,
   LessonImportInput,
   LessonSummary,
+  SentenceTermRef,
+  SourceSentenceItem,
   MySentence,
   OcrResult,
   OcrSettings,
@@ -475,5 +478,19 @@ export const lessonsApi = {
     request<VocabItem>(`/lesson-vocab/${id}`, {
       method: "PATCH",
       body: JSON.stringify(patch),
+    }),
+  updateGrammarTerms: (id: string, grammarTerms: SentenceTermRef[] | null) =>
+    request<GrammarItem>(`/lesson-grammar/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify({
+        grammarTerms,
+      }),
+    }),
+  updateSourceSentenceTerms: (id: string, grammarTerms: SentenceTermRef[] | null) =>
+    request<SourceSentenceItem>(`/lesson-source-sentences/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify({
+        grammarTerms,
+      }),
     }),
 };

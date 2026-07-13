@@ -30,6 +30,13 @@ export function termCategory(term: SentenceTermRef): SentenceTermCategory {
   return (term.category as SentenceTermCategory | undefined) ?? "vocabulary";
 }
 
+/** True when two term lists differ (order-insensitive, by id). */
+export function termsChanged(a: SentenceTermRef[], b: SentenceTermRef[]): boolean {
+  if (a.length !== b.length) return true;
+  const ids = new Set(b.map(t => t.id));
+  return a.some(t => !ids.has(t.id));
+}
+
 /** Split a sentence's terms into per-channel buckets (each bucket may be empty). */
 export function groupTermsByCategory(
   terms: SentenceTermRef[],

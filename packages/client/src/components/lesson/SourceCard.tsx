@@ -6,18 +6,22 @@ import { useState } from "react";
 import { ChevronDown, ExternalLink, Layers, ScrollText, Volume2 } from "lucide-react";
 
 import { Furi } from "./Furi";
+import { GrammarTagsEditor } from "./GrammarTagsEditor";
 import { LessonBadge } from "./LessonBadge";
 import { LevelBadge } from "./LevelBadge";
 import { speak } from "./speak";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { useUpdateSourceSentenceTerms } from "@/hooks/useLessons";
 
 /** A single source sentence with reveal + grammar/vocab breakdown. */
 export function SourceCard({
-  sentence: s, lesson,
+  sentence: s, lesson, onTagClick,
 }: { sentence: SourceSentenceItem;
-  lesson?: LessonRef; }) {
+  lesson?: LessonRef;
+  onTagClick?: (termId: string) => void; }) {
+  const updateTerms = useUpdateSourceSentenceTerms();
   const [showEn, setShowEn] = useState(false);
   const [showBreak, setShowBreak] = useState(false);
 
@@ -77,6 +81,16 @@ export function SourceCard({
         >
           {showEn ? s.en : "Reveal translation"}
         </button>
+
+        <GrammarTagsEditor
+          value={s.grammarTerms}
+          isPending={updateTerms.isPending}
+          onTagClick={onTagClick}
+          onSave={grammarTerms => updateTerms.mutate({
+            id: s.id,
+            grammarTerms,
+          })}
+        />
 
         <Button
           variant="ghost"
