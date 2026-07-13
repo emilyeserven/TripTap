@@ -32,21 +32,23 @@ export function questionSheetSlots(qs: QuestionSheet): QuestionSheetSlot[] {
   }
 
   const slots: QuestionSheetSlot[] = [];
-  for (const question of qs.questions) {
+  qs.questions.forEach((question, index) => {
+    // Blank prompts (e.g. from the "quick fill" count shortcut) fall back to a positional label.
+    const base = question.prompt.trim() || `Question ${index + 1}`;
     if (question.parts && question.parts.length > 0) {
       for (const part of question.parts) {
         slots.push({
           id: part.id,
-          label: `${question.prompt} — ${part.label}`,
+          label: `${base} — ${part.label}`,
         });
       }
     }
     else {
       slots.push({
         id: question.id,
-        label: question.prompt,
+        label: base,
       });
     }
-  }
+  });
   return slots;
 }

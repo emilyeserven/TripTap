@@ -69,9 +69,10 @@ export function QuestionSheetForm({
     }]);
   }
   /**
-   * Quick-fill: replace the questions with `n` auto-numbered placeholders ("Question 1"…"Question n").
-   * Lets the user say "there are 12 questions" without typing each one — the answer sheet then renders
-   * the right number of inputs. Existing questions are replaced (the count is authoritative).
+   * Quick-fill: replace the questions with `n` blank slots. Lets the user say "there are 12 questions"
+   * without typing each one — the answer sheet then renders the right number of inputs, each labelled
+   * "Question N" via {@link questionSheetSlots}'s positional fallback. Existing questions are replaced
+   * (the count is authoritative).
    */
   function quickFill() {
     const n = Math.floor(Number(quickCount));
@@ -79,9 +80,9 @@ export function QuestionSheetForm({
     setQuestions(
       Array.from({
         length: Math.min(n, 200),
-      }, (_, i) => ({
+      }, () => ({
         id: newId("q"),
-        prompt: `Question ${i + 1}`,
+        prompt: "",
       })),
     );
   }
