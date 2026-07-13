@@ -20,6 +20,8 @@ describe("DisplayOptions", () => {
       focusMode: false,
       superFocus: false,
       superFocusSpace: "s",
+      slideMode: false,
+      slideProgress: "line",
       containerWidth: "normal",
     });
   });
@@ -44,6 +46,9 @@ describe("DisplayOptions", () => {
     })).toBeInTheDocument();
     expect(screen.getByRole("switch", {
       name: "Super focus mode",
+    })).toBeInTheDocument();
+    expect(screen.getByRole("switch", {
+      name: "Slide mode",
     })).toBeInTheDocument();
     expect(screen.getByRole("switch", {
       name: "Wide content",
@@ -115,6 +120,41 @@ describe("DisplayOptions", () => {
       name: "L",
     }));
     expect(useDisplayStore.getState().superFocusSpace).toBe("l");
+  });
+
+  it("enables slide mode via its toggle", () => {
+    openPopover();
+    fireEvent.click(screen.getByRole("switch", {
+      name: "Slide mode",
+    }));
+    expect(useDisplayStore.getState().slideMode).toBe(true);
+  });
+
+  it("reveals the Progress bar control only when slide mode is on", () => {
+    openPopover();
+    expect(screen.queryByRole("group", {
+      name: "Progress bar",
+    })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("switch", {
+      name: "Slide mode",
+    }));
+    expect(screen.getByRole("group", {
+      name: "Progress bar",
+    })).toBeInTheDocument();
+  });
+
+  it("sets the slide progress indicator", () => {
+    useDisplayStore.setState({
+      slideMode: true,
+    });
+    openPopover();
+    const progress = screen.getByRole("group", {
+      name: "Progress bar",
+    });
+    fireEvent.click(within(progress).getByRole("button", {
+      name: "Boxes",
+    }));
+    expect(useDisplayStore.getState().slideProgress).toBe("boxes");
   });
 
   it("widens the content via the Wide content toggle", () => {

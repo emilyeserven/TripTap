@@ -10,11 +10,14 @@ export type TextSize = "regular" | "large" | "xl" | "xxl";
 /** Content column width: `normal` keeps the centered max-width column, `wide` goes full-bleed. */
 export type ContainerWidth = "normal" | "wide";
 
+/** Space between fields in super focus mode: increasing gaps. */
+export type SuperFocusSpace = "s" | "m" | "l";
+
 /**
- * Space between fields in super focus mode: `s`/`m`/`l` are increasing gaps; `xl` gives each field its
- * own full-screen panel (slideshow style).
+ * Progress indicator shown at the bottom in slide mode: `none` hides it, `line` is a filling bar,
+ * `boxes` is one box per field filled up to the current slide.
  */
-export type SuperFocusSpace = "s" | "m" | "l" | "xl";
+export type SlideProgress = "none" | "line" | "boxes";
 
 interface DisplayState {
   /** Light/dark theme; `system` tracks the OS preference until the user picks explicitly. */
@@ -29,9 +32,18 @@ interface DisplayState {
   /** Escalated focus: hides the sidebar and restyles form fields to full width with extra spacing. */
   superFocus: boolean;
   setSuperFocus: (on: boolean) => void;
-  /** How much space super focus mode puts between fields (or full-screen panels at `xl`). */
+  /** How much space super focus mode puts between fields. */
   superFocusSpace: SuperFocusSpace;
   setSuperFocusSpace: (space: SuperFocusSpace) => void;
+  /**
+   * Slide mode: full-width stacked fields, one field per full-screen panel with scroll snapping,
+   * Tab/arrow navigation, and an optional progress indicator. Independent of super focus.
+   */
+  slideMode: boolean;
+  setSlideMode: (on: boolean) => void;
+  /** Which progress indicator slide mode shows at the bottom. */
+  slideProgress: SlideProgress;
+  setSlideProgress: (progress: SlideProgress) => void;
   /** Whether the content column is constrained (`normal`) or spans the full width (`wide`). */
   containerWidth: ContainerWidth;
   setContainerWidth: (width: ContainerWidth) => void;
@@ -65,6 +77,14 @@ export const useDisplayStore = create<DisplayState>()(
       setSuperFocusSpace: space => set({
         superFocusSpace: space,
       }),
+      slideMode: false,
+      setSlideMode: on => set({
+        slideMode: on,
+      }),
+      slideProgress: "line",
+      setSlideProgress: progress => set({
+        slideProgress: progress,
+      }),
       containerWidth: "normal",
       setContainerWidth: width => set({
         containerWidth: width,
@@ -73,6 +93,18 @@ export const useDisplayStore = create<DisplayState>()(
     {
       name: "triptap-display",
       storage: createJSONStorage(() => globalThis.localStorage),
+      version: 1,
+      // v0 stored the slideshow behaviour as superFocusSpace: "xl"; it is now the dedicated slide mode.
+      migrate: (persisted, version) => {
+        const state = {
+          ...(persisted as Record<string, unknown>),
+        };
+        if (version < 1 && state.superFocusSpace === "xl") {
+          state.superFocusSpace = "s";
+          state.slideMode = true;
+        }
+        return state as unknown as DisplayState;
+      },
     },
   ),
 );
