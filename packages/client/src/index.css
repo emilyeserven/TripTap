@@ -126,3 +126,47 @@
 [data-text-size="xl"] {
   zoom: 1.3;
 }
+[data-text-size="xxl"] {
+  zoom: 1.5;
+}
+
+/*
+ * Wide content — many route pages cap their own top-level <section> at max-w-3xl / max-w-4xl, which
+ * masks the root wrapper's max-w swap. Neutralize those inner caps when wide is on. The compound
+ * selector's specificity (0,2,1) beats Tailwind's max-w-* utilities (0,1,0), so no !important needed.
+ */
+[data-container-width="wide"] section[class*="max-w-"] {
+  max-width: none;
+}
+
+/*
+ * Super focus mode — force every form field + its label to full width, stack multi-column rows into
+ * one column, and add generous spacing between fields. !important overrides Tailwind's utility widths
+ * and the w-fit select trigger. Raw <input>/<textarea>/<label> (SentenceForm) are covered by the bare
+ * element selectors; shadcn primitives via their stable data-slot hooks. Modals/popovers are portaled
+ * to <body>, outside this wrapper, so they're untouched.
+ */
+[data-super-focus="on"] form :is([data-slot="input"], [data-slot="textarea"], [data-slot="select-trigger"]),
+[data-super-focus="on"] form :is(input, textarea, select) {
+  width: 100% !important;
+  max-width: none !important;
+}
+[data-super-focus="on"] form :is([data-slot="label"], label) {
+  display: block;
+  width: 100%;
+}
+/* Remove inner width caps (e.g. sm:max-w-xs on a field wrapper) so it can span the column. */
+[data-super-focus="on"] form [class*="max-w-"] {
+  max-width: none !important;
+}
+/* Stack multi-column grids and wrapping field rows into a single full-width column. */
+[data-super-focus="on"] form [class*="grid-cols"],
+[data-super-focus="on"] form > .flex-wrap {
+  display: block !important;
+}
+/* Generous spacing between the stacked fields. */
+[data-super-focus="on"] form > * + *,
+[data-super-focus="on"] form [class*="grid-cols"] > * + *,
+[data-super-focus="on"] form > .flex-wrap > * + * {
+  margin-top: 2rem !important;
+}

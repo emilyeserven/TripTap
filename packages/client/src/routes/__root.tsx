@@ -45,16 +45,20 @@ function RootComponent() {
   const theme = useDisplayStore(s => s.theme);
   const textSize = useDisplayStore(s => s.textSize);
   const focusMode = useDisplayStore(s => s.focusMode);
+  const superFocus = useDisplayStore(s => s.superFocus);
   const containerWidth = useDisplayStore(s => s.containerWidth);
 
   useThemeSync(theme);
 
+  // Super focus mode is an escalation of focus mode: it also hides the sidebar.
+  const hideSidebar = focusMode || superFocus;
+
   return (
     <SidebarProvider>
-      {focusMode ? null : <AppSidebar />}
+      {hideSidebar ? null : <AppSidebar />}
       <SidebarInset>
         <header className="flex h-12 shrink-0 items-center gap-2 border-b px-4">
-          {focusMode ? null : <SidebarTrigger className="-ml-1" />}
+          {hideSidebar ? null : <SidebarTrigger className="-ml-1" />}
           <span className="text-lg font-semibold">sentence-bank</span>
           <div className="ml-auto flex items-center gap-2">
             <DisplayOptions />
@@ -62,6 +66,8 @@ function RootComponent() {
         </header>
         <div
           data-text-size={textSize}
+          data-container-width={containerWidth}
+          data-super-focus={superFocus ? "on" : undefined}
           className={cn(
             "mx-auto w-full px-4 py-8",
             containerWidth === "wide" ? "max-w-none" : "max-w-6xl",

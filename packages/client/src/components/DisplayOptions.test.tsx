@@ -18,6 +18,7 @@ describe("DisplayOptions", () => {
       theme: "light",
       textSize: "regular",
       focusMode: false,
+      superFocus: false,
       containerWidth: "normal",
     });
   });
@@ -29,7 +30,7 @@ describe("DisplayOptions", () => {
     })).toBeInTheDocument();
   });
 
-  it("shows the four display controls when opened", () => {
+  it("shows the display controls when opened", () => {
     openPopover();
     expect(screen.getByRole("group", {
       name: "Text size",
@@ -39,6 +40,9 @@ describe("DisplayOptions", () => {
     })).toBeInTheDocument();
     expect(screen.getByRole("switch", {
       name: "Focus mode",
+    })).toBeInTheDocument();
+    expect(screen.getByRole("switch", {
+      name: "Super focus mode",
     })).toBeInTheDocument();
     expect(screen.getByRole("switch", {
       name: "Wide content",
@@ -51,6 +55,14 @@ describe("DisplayOptions", () => {
       name: "XL",
     }));
     expect(useDisplayStore.getState().textSize).toBe("xl");
+  });
+
+  it("sets the text size to XXL", () => {
+    openPopover();
+    fireEvent.click(screen.getByRole("button", {
+      name: "XXL",
+    }));
+    expect(useDisplayStore.getState().textSize).toBe("xxl");
   });
 
   it("switches to dark theme via the Dark mode toggle", () => {
@@ -67,6 +79,14 @@ describe("DisplayOptions", () => {
       name: "Focus mode",
     }));
     expect(useDisplayStore.getState().focusMode).toBe(true);
+  });
+
+  it("enables super focus mode via its toggle", () => {
+    openPopover();
+    fireEvent.click(screen.getByRole("switch", {
+      name: "Super focus mode",
+    }));
+    expect(useDisplayStore.getState().superFocus).toBe(true);
   });
 
   it("widens the content via the Wide content toggle", () => {
