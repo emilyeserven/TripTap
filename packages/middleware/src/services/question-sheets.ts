@@ -13,6 +13,7 @@ export function toQuestionSheet(row: QuestionSheetRow): QuestionSheet {
     id: row.id,
     title: row.title,
     notes: row.notes,
+    page: row.page,
     resourceTerms: row.resourceTerms ?? null,
     layout: row.layout === "grid" ? "grid" : "list",
     questions: row.questions ?? [],
@@ -29,6 +30,7 @@ function toInsert(input: CreateQuestionSheetInput) {
   return {
     title: input.title,
     notes: input.notes ?? null,
+    page: input.page ?? null,
     resourceTerms: input.resourceTerms ?? null,
     layout: input.layout,
     questions: input.questions ?? null,

@@ -294,6 +294,7 @@ export const questionSheets = pgTable("question_sheets", {
   id: uuid("id").primaryKey().defaultRandom(),
   title: text("title").notNull(),
   notes: text("notes"),
+  page: text("page"),
   resourceTerms: jsonb("resource_terms").$type<SentenceTermRef[]>(),
   layout: text("layout").notNull().default("list"),
   questions: jsonb("questions").$type<QuestionSheetQuestion[]>(),

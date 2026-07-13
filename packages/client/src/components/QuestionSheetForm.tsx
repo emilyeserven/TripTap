@@ -44,7 +44,9 @@ export function QuestionSheetForm({
 
   const [title, setTitle] = useState(questionSheet?.title ?? "");
   const [notes, setNotes] = useState(questionSheet?.notes ?? "");
+  const [page, setPage] = useState(questionSheet?.page ?? "");
   const [layout, setLayout] = useState<QuestionSheetLayout>(questionSheet?.layout ?? "list");
+  const [quickCount, setQuickCount] = useState("");
   const [resourceTerms, setResourceTerms] = useState<SentenceTermRef[]>(
     questionSheet?.resourceTerms ?? [],
   );
@@ -53,6 +55,8 @@ export function QuestionSheetForm({
   );
   const [columns, setColumns] = useState<string[]>(questionSheet?.grid?.columns ?? [""]);
   const [rows, setRows] = useState<QuestionSheetGridRow[]>(questionSheet?.grid?.rows ?? []);
+  const [bulkColumns, setBulkColumns] = useState("");
+  const [bulkRows, setBulkRows] = useState("");
 
   const pending = create.isPending || update.isPending;
   const canSubmit = title.trim().length > 0 && !pending;
@@ -63,6 +67,23 @@ export function QuestionSheetForm({
       id: newId("q"),
       prompt: "",
     }]);
+  }
+  /**
+   * Quick-fill: replace the questions with `n` auto-numbered placeholders ("Question 1"…"Question n").
+   * Lets the user say "there are 12 questions" without typing each one — the answer sheet then renders
+   * the right number of inputs. Existing questions are replaced (the count is authoritative).
+   */
+  function quickFill() {
+    const n = Math.floor(Number(quickCount));
+    if (!Number.isFinite(n) || n < 1) return;
+    setQuestions(
+      Array.from({
+        length: Math.min(n, 200),
+      }, (_, i) => ({
+        id: newId("q"),
+        prompt: `Question ${i + 1}`,
+      })),
+    );
   }
   function updateQuestion(id: string, patch: Partial<QuestionSheetQuestion>) {
     setQuestions(qs => qs.map(q => (q.id === id
@@ -147,6 +168,23 @@ export function QuestionSheetForm({
   function removeRow(id: string) {
     setRows(r => r.filter(row => row.id !== id));
   }
+  /** Append column headers from a pasted list (one per line), dropping blanks. */
+  function applyBulkColumns() {
+    const lines = bulkColumns.split("\n").map(l => l.trim()).filter(l => l.length > 0);
+    if (lines.length === 0) return;
+    setColumns(c => [...c.filter(x => x.trim().length > 0), ...lines]);
+    setBulkColumns("");
+  }
+  /** Append row labels from a pasted list (one per line), dropping blanks. */
+  function applyBulkRows() {
+    const lines = bulkRows.split("\n").map(l => l.trim()).filter(l => l.length > 0);
+    if (lines.length === 0) return;
+    setRows(r => [...r, ...lines.map(label => ({
+      id: newId("r"),
+      label,
+    }))]);
+    setBulkRows("");
+  }
 
   const submit = async () => {
     if (!canSubmit) return;
@@ -155,6 +193,7 @@ export function QuestionSheetForm({
       title: title.trim(),
       layout,
       notes: notes.trim() || null,
+      page: page.trim() || null,
       resourceTerms: resourceTerms.length > 0 ? resourceTerms : null,
       questions: layout === "list" ? questions : [],
       grid: layout === "grid"
@@ -191,15 +230,32 @@ export function QuestionSheetForm({
         />
       </div>
 
-      <div className="space-y-1.5">
-        <Label htmlFor="qs-notes">Notes</Label>
-        <Textarea
-          id="qs-notes"
-          value={notes}
-          onChange={e => setNotes(e.target.value)}
-          placeholder="Anything to remember about this exercise set (optional)"
-          rows={2}
-        />
+      <div
+        className="
+          grid gap-4
+          sm:grid-cols-[1fr_auto]
+        "
+      >
+        <div className="space-y-1.5">
+          <Label htmlFor="qs-notes">Notes</Label>
+          <Textarea
+            id="qs-notes"
+            value={notes}
+            onChange={e => setNotes(e.target.value)}
+            placeholder="Anything to remember about this exercise set (optional)"
+            rows={2}
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="qs-page">Page</Label>
+          <Input
+            id="qs-page"
+            value={page}
+            onChange={e => setPage(e.target.value)}
+            placeholder="p. 12–13"
+            className="sm:w-32"
+          />
+        </div>
       </div>
 
       <TermPicker
@@ -225,6 +281,36 @@ export function QuestionSheetForm({
       {layout === "list"
         ? (
           <div className="space-y-4">
+            <div
+              className="
+                flex flex-wrap items-end gap-2 rounded-md border border-dashed
+                p-3
+              "
+            >
+              <div className="space-y-1.5">
+                <Label htmlFor="qs-quick-count">Quick fill — number of questions</Label>
+                <Input
+                  id="qs-quick-count"
+                  type="number"
+                  min={1}
+                  value={quickCount}
+                  onChange={e => setQuickCount(e.target.value)}
+                  placeholder="12"
+                  className="w-24"
+                />
+              </div>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={quickFill}
+              >
+                Set questions
+              </Button>
+              <p className="w-full text-xs text-muted-foreground">
+                Generates that many numbered questions so the answer sheet has the right number of
+                inputs — you don’t have to type each one. Editing below still works.
+              </p>
+            </div>
             {questions.map((q, index) => (
               <div
                 key={q.id}
@@ -337,6 +423,30 @@ export function QuestionSheetForm({
           >
             <div className="space-y-2">
               <Label>Columns</Label>
+              <div className="space-y-1.5 rounded-md border border-dashed p-3">
+                <Label
+                  htmlFor="qs-bulk-columns"
+                  className="text-xs text-muted-foreground"
+                >
+                  Bulk add — one column header per line
+                </Label>
+                <Textarea
+                  id="qs-bulk-columns"
+                  value={bulkColumns}
+                  onChange={e => setBulkColumns(e.target.value)}
+                  placeholder={"dictionary\nます\nて\nない"}
+                  rows={3}
+                />
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={applyBulkColumns}
+                >
+                  <Plus className="size-4" />
+                  Add columns
+                </Button>
+              </div>
               {columns.map((col, index) => (
                 <div
                   key={index}
@@ -373,6 +483,30 @@ export function QuestionSheetForm({
 
             <div className="space-y-2">
               <Label>Rows</Label>
+              <div className="space-y-1.5 rounded-md border border-dashed p-3">
+                <Label
+                  htmlFor="qs-bulk-rows"
+                  className="text-xs text-muted-foreground"
+                >
+                  Bulk add — one row label per line
+                </Label>
+                <Textarea
+                  id="qs-bulk-rows"
+                  value={bulkRows}
+                  onChange={e => setBulkRows(e.target.value)}
+                  placeholder={"食べる\n飲む\n見る"}
+                  rows={3}
+                />
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={applyBulkRows}
+                >
+                  <Plus className="size-4" />
+                  Add rows
+                </Button>
+              </div>
               {rows.map((row, index) => (
                 <div
                   key={row.id}

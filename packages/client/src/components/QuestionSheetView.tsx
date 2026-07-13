@@ -24,6 +24,7 @@ export function QuestionSheetView({
             "
           >
             <Badge variant="secondary">{qs.layout === "grid" ? "Grid" : "List"}</Badge>
+            {qs.page ? <Badge variant="outline">Page {qs.page}</Badge> : null}
             {resourceTerms.length > 0
               ? (
                 <span className="inline-flex flex-wrap items-center gap-1">

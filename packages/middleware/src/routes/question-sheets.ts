@@ -132,6 +132,9 @@ const createQuestionSheetBody = {
     notes: {
       type: ["string", "null"],
     },
+    page: {
+      type: ["string", "null"],
+    },
     resourceTerms: resourceTermsSchema,
     questions: questionsSchema,
     grid: gridSchema,

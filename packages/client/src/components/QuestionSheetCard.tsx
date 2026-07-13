@@ -51,6 +51,7 @@ export function QuestionSheetCard({
           "
         >
           <Badge variant="secondary">{qs.layout === "grid" ? "Grid" : "List"}</Badge>
+          {qs.page ? <Badge variant="outline">Page {qs.page}</Badge> : null}
           <span>{slotCount} {slotCount === 1 ? "slot" : "slots"}</span>
           {resourceTerms.map(term => (
             <Badge
