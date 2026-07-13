@@ -3,6 +3,7 @@ import type {
   CreateWritingPromptInput,
   UpdateWritingPromptInput,
   WritingPrompt,
+  WritingPromptDifficulty,
 } from "@sentence-bank/types";
 import { db } from "@/db";
 import { writingPrompts, type WritingPromptRow } from "@/db/schema";
@@ -11,8 +12,9 @@ import { writingPrompts, type WritingPromptRow } from "@/db/schema";
 export function toWritingPrompt(row: WritingPromptRow): WritingPrompt {
   return {
     id: row.id,
-    title: row.title,
     text: row.text,
+    textEn: row.textEn ?? null,
+    difficulty: (row.difficulty as WritingPromptDifficulty) ?? "Other",
     createdAt:
       row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
     updatedAt:
@@ -23,8 +25,9 @@ export function toWritingPrompt(row: WritingPromptRow): WritingPrompt {
 /** Drizzle insert shape for one writing-prompt row, from the create input. */
 function toInsert(input: CreateWritingPromptInput) {
   return {
-    title: input.title,
     text: input.text,
+    textEn: input.textEn ?? null,
+    difficulty: input.difficulty ?? "Other",
   };
 }
 
@@ -44,6 +47,15 @@ export async function createWritingPrompt(
 ): Promise<WritingPrompt> {
   const [row] = await db.insert(writingPrompts).values(toInsert(input)).returning();
   return toWritingPrompt(row);
+}
+
+/** Create many writing prompts in a single insert (used by the bulk-paste import flow). */
+export async function createWritingPromptsMany(
+  inputs: CreateWritingPromptInput[],
+): Promise<WritingPrompt[]> {
+  if (inputs.length === 0) return [];
+  const rows = await db.insert(writingPrompts).values(inputs.map(toInsert)).returning();
+  return rows.map(toWritingPrompt);
 }
 
 export async function updateWritingPrompt(

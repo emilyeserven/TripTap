@@ -41,6 +41,17 @@ export function useCreateWritingPrompt() {
   });
 }
 
+export function useCreateWritingPromptsMany() {
+  const invalidate = useWritingPromptInvalidator();
+  return useMutation({
+    mutationFn: (inputs: CreateWritingPromptInput[]) => writingPromptsApi.createMany(inputs),
+    onSuccess: invalidate,
+    onError: err => toast.error("Couldn't add your prompts", {
+      description: err instanceof Error ? err.message : undefined,
+    }),
+  });
+}
+
 export function useUpdateWritingPrompt() {
   const invalidate = useWritingPromptInvalidator();
   return useMutation({

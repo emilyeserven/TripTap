@@ -1,0 +1,1 @@
+ALTER TABLE "writing_prompts" DROP COLUMN "title";
