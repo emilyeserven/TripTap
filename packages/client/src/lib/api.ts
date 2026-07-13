@@ -292,6 +292,13 @@ export const writingPromptsApi = {
       method: "POST",
       body: JSON.stringify(input),
     }),
+  createMany: (inputs: CreateWritingPromptInput[]) =>
+    request<WritingPrompt[]>("/writing-prompts/bulk", {
+      method: "POST",
+      body: JSON.stringify({
+        writingPrompts: inputs,
+      }),
+    }),
   update: (id: string, input: UpdateWritingPromptInput) =>
     request<WritingPrompt>(`/writing-prompts/${id}`, {
       method: "PATCH",

@@ -185,14 +185,16 @@ function PromptPicker({
         <button
           key={prompt.id}
           type="button"
-          onClick={() => onPick(prompt.title, prompt.text)}
+          onClick={() => onPick(prompt.text, prompt.textEn ?? prompt.text)}
           className="
             w-full rounded-md border p-3 text-left
             hover:bg-accent
           "
         >
-          <p className="font-semibold">{prompt.title}</p>
-          <p className="line-clamp-2 text-sm text-muted-foreground">{prompt.text}</p>
+          <p className="font-semibold">{prompt.text}</p>
+          {prompt.textEn
+            ? <p className="line-clamp-2 text-sm text-muted-foreground">{prompt.textEn}</p>
+            : null}
         </button>
       ))}
     </div>
