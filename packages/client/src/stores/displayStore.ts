@@ -5,10 +5,16 @@ import { createJSONStorage, persist } from "zustand/middleware";
 export type Theme = "system" | "light" | "dark";
 
 /** Reading text size for the main content area (chrome stays fixed). */
-export type TextSize = "regular" | "large" | "xl";
+export type TextSize = "regular" | "large" | "xl" | "xxl";
 
 /** Content column width: `normal` keeps the centered max-width column, `wide` goes full-bleed. */
 export type ContainerWidth = "normal" | "wide";
+
+/**
+ * Space between fields in super focus mode: `s`/`m`/`l` are increasing gaps; `xl` gives each field its
+ * own full-screen panel (slideshow style).
+ */
+export type SuperFocusSpace = "s" | "m" | "l" | "xl";
 
 interface DisplayState {
   /** Light/dark theme; `system` tracks the OS preference until the user picks explicitly. */
@@ -20,6 +26,12 @@ interface DisplayState {
   /** When on, the sidebar is hidden entirely for a distraction-free view. */
   focusMode: boolean;
   setFocusMode: (on: boolean) => void;
+  /** Escalated focus: hides the sidebar and restyles form fields to full width with extra spacing. */
+  superFocus: boolean;
+  setSuperFocus: (on: boolean) => void;
+  /** How much space super focus mode puts between fields (or full-screen panels at `xl`). */
+  superFocusSpace: SuperFocusSpace;
+  setSuperFocusSpace: (space: SuperFocusSpace) => void;
   /** Whether the content column is constrained (`normal`) or spans the full width (`wide`). */
   containerWidth: ContainerWidth;
   setContainerWidth: (width: ContainerWidth) => void;
@@ -44,6 +56,14 @@ export const useDisplayStore = create<DisplayState>()(
       focusMode: false,
       setFocusMode: on => set({
         focusMode: on,
+      }),
+      superFocus: false,
+      setSuperFocus: on => set({
+        superFocus: on,
+      }),
+      superFocusSpace: "s",
+      setSuperFocusSpace: space => set({
+        superFocusSpace: space,
       }),
       containerWidth: "normal",
       setContainerWidth: width => set({
