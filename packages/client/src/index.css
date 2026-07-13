@@ -146,28 +146,25 @@
  * element selectors; shadcn primitives via their stable data-slot hooks. Modals/popovers are portaled
  * to <body>, outside this wrapper, so they're untouched.
  */
-[data-super-focus="on"] form :is([data-slot="input"], [data-slot="textarea"], [data-slot="select-trigger"]),
-[data-super-focus="on"] form :is(input, textarea, select) {
+:is([data-super-focus="on"], [data-slide-mode="on"]) form :is([data-slot="input"], [data-slot="textarea"], [data-slot="select-trigger"]),
+:is([data-super-focus="on"], [data-slide-mode="on"]) form :is(input, textarea, select) {
   width: 100% !important;
   max-width: none !important;
 }
-[data-super-focus="on"] form :is([data-slot="label"], label) {
+:is([data-super-focus="on"], [data-slide-mode="on"]) form :is([data-slot="label"], label) {
   display: block;
   width: 100%;
 }
 /* Remove inner width caps (e.g. sm:max-w-xs on a field wrapper) so it can span the column. */
-[data-super-focus="on"] form [class*="max-w-"] {
+:is([data-super-focus="on"], [data-slide-mode="on"]) form [class*="max-w-"] {
   max-width: none !important;
 }
 /* Stack multi-column grids and wrapping field rows into a single full-width column. */
-[data-super-focus="on"] form [class*="grid-cols"],
-[data-super-focus="on"] form > .flex-wrap {
+:is([data-super-focus="on"], [data-slide-mode="on"]) form [class*="grid-cols"],
+:is([data-super-focus="on"], [data-slide-mode="on"]) form > .flex-wrap {
   display: block !important;
 }
-/*
- * Spacing between the stacked fields, chosen via the Field spacing control (S / M / L). XL is handled
- * separately below as a full-screen "slideshow" panel per field.
- */
+/* Spacing between the stacked fields, chosen via the Field spacing control (S / M / L). */
 [data-super-focus-space="s"] form > * + *,
 [data-super-focus-space="s"] form [class*="grid-cols"] > * + *,
 [data-super-focus-space="s"] form > .flex-wrap > * + * {
@@ -185,16 +182,22 @@
 }
 
 /*
- * XL — dedicate a full screen to each field, slideshow-style: every top-level field (and each field of
- * a stacked row) fills the viewport height and is vertically centered, so scrolling moves one field at
- * a time.
+ * Slide mode — dedicate a full screen to each field, slideshow-style. Every top-level field (and each
+ * field of a stacked row) fills the viewport, is vertically centered, and is a scroll-snap target. The
+ * whole document scrolls (no inner overflow container in the layout), so the snap container is <html>,
+ * toggled via the `slide-mode` class on documentElement by the SlideMode controller.
  */
-[data-super-focus-space="xl"] form > *,
-[data-super-focus-space="xl"] form [class*="grid-cols"] > *,
-[data-super-focus-space="xl"] form > .flex-wrap > * {
+html.slide-mode {
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
+}
+[data-slide-mode="on"] form > *,
+[data-slide-mode="on"] form [class*="grid-cols"] > *,
+[data-slide-mode="on"] form > .flex-wrap > * {
   display: flex !important;
   min-height: 100vh;
   flex-direction: column;
   justify-content: center;
+  scroll-snap-align: start;
   margin-top: 0 !important;
 }

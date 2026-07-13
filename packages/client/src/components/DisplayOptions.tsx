@@ -1,4 +1,4 @@
-import type { SuperFocusSpace, TextSize } from "@/stores/displayStore";
+import type { SlideProgress, SuperFocusSpace, TextSize } from "@/stores/displayStore";
 
 import { useSyncExternalStore } from "react";
 
@@ -47,9 +47,21 @@ const SPACE_OPTIONS: { value: SuperFocusSpace;
     value: "l",
     label: "L",
   },
+];
+
+const PROGRESS_OPTIONS: { value: SlideProgress;
+  label: string; }[] = [
   {
-    value: "xl",
-    label: "XL",
+    value: "none",
+    label: "None",
+  },
+  {
+    value: "line",
+    label: "Line",
+  },
+  {
+    value: "boxes",
+    label: "Boxes",
   },
 ];
 
@@ -76,6 +88,10 @@ export function DisplayOptions() {
   const setSuperFocus = useDisplayStore(s => s.setSuperFocus);
   const superFocusSpace = useDisplayStore(s => s.superFocusSpace);
   const setSuperFocusSpace = useDisplayStore(s => s.setSuperFocusSpace);
+  const slideMode = useDisplayStore(s => s.slideMode);
+  const setSlideMode = useDisplayStore(s => s.setSlideMode);
+  const slideProgress = useDisplayStore(s => s.slideProgress);
+  const setSlideProgress = useDisplayStore(s => s.setSlideProgress);
   const containerWidth = useDisplayStore(s => s.containerWidth);
   const setContainerWidth = useDisplayStore(s => s.setContainerWidth);
 
@@ -173,6 +189,42 @@ export function DisplayOptions() {
                   className="flex-1 rounded-none"
                   aria-pressed={superFocusSpace === value}
                   onClick={() => setSuperFocusSpace(value)}
+                >
+                  {label}
+                </Button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <label className="flex items-center justify-between gap-2 text-sm">
+          Slide mode
+          <Switch
+            checked={slideMode}
+            onCheckedChange={setSlideMode}
+            aria-label="Slide mode"
+          />
+        </label>
+
+        {slideMode && (
+          <div className="space-y-2">
+            <span className="text-sm font-medium">Progress bar</span>
+            <div
+              className="flex overflow-hidden rounded-md border"
+              role="group"
+              aria-label="Progress bar"
+            >
+              {PROGRESS_OPTIONS.map(({
+                value, label,
+              }) => (
+                <Button
+                  key={value}
+                  type="button"
+                  size="sm"
+                  variant={slideProgress === value ? "default" : "ghost"}
+                  className="flex-1 rounded-none"
+                  aria-pressed={slideProgress === value}
+                  onClick={() => setSlideProgress(value)}
                 >
                   {label}
                 </Button>

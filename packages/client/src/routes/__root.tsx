@@ -8,6 +8,7 @@ import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 
 import { AppSidebar } from "@/components/app-sidebar";
 import { DisplayOptions } from "@/components/DisplayOptions";
+import { SlideMode } from "@/components/SlideMode";
 import {
   SidebarInset,
   SidebarProvider,
@@ -47,18 +48,26 @@ function RootComponent() {
   const focusMode = useDisplayStore(s => s.focusMode);
   const superFocus = useDisplayStore(s => s.superFocus);
   const superFocusSpace = useDisplayStore(s => s.superFocusSpace);
+  const slideMode = useDisplayStore(s => s.slideMode);
   const containerWidth = useDisplayStore(s => s.containerWidth);
 
   useThemeSync(theme);
 
-  // Super focus mode is an escalation of focus mode: it also hides the sidebar.
-  const hideSidebar = focusMode || superFocus;
+  // Super focus and slide mode both hide the sidebar for a distraction-free / full-screen view.
+  const hideSidebar = focusMode || superFocus || slideMode;
 
   return (
     <SidebarProvider>
       {hideSidebar ? null : <AppSidebar />}
       <SidebarInset>
-        <header className="flex h-12 shrink-0 items-center gap-2 border-b px-4">
+        <header
+          className={cn(
+            "flex h-12 shrink-0 items-center gap-2 border-b px-4",
+            // In slide mode the sidebar is hidden and content snap-scrolls past the top, so pin the
+            // header to keep the Display Options control reachable (fields are centered, not hidden).
+            slideMode && "sticky top-0 z-30 bg-background",
+          )}
+        >
           {hideSidebar ? null : <SidebarTrigger className="-ml-1" />}
           <span className="text-lg font-semibold">sentence-bank</span>
           <div className="ml-auto flex items-center gap-2">
@@ -70,6 +79,7 @@ function RootComponent() {
           data-container-width={containerWidth}
           data-super-focus={superFocus ? "on" : undefined}
           data-super-focus-space={superFocus ? superFocusSpace : undefined}
+          data-slide-mode={slideMode ? "on" : undefined}
           className={cn(
             "mx-auto w-full px-4 py-8",
             containerWidth === "wide" ? "max-w-none" : "max-w-6xl",
@@ -78,6 +88,7 @@ function RootComponent() {
           <Outlet />
         </div>
       </SidebarInset>
+      <SlideMode />
       <Toaster />
       {import.meta.env.DEV ? <TanStackRouterDevtools /> : null}
     </SidebarProvider>
