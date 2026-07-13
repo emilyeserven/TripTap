@@ -216,10 +216,18 @@ export function AnswerSheetForm({
                     key={slot.id}
                     className="space-y-3 rounded-md border p-4"
                   >
-                    <div>
-                      <p className="text-sm font-medium">{slot.label}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {entry.value.trim() || <span className="italic">No answer yet</span>}
+                    <div className="space-y-0.5">
+                      <p className="text-xs text-muted-foreground">{slot.label}</p>
+                      <p className="text-lg font-semibold">
+                        {entry.value.trim() || (
+                          <span
+                            className="
+                              text-base font-normal text-muted-foreground italic
+                            "
+                          >
+                            No answer yet
+                          </span>
+                        )}
                       </p>
                     </div>
                     <label className="flex items-center gap-2 text-sm">
