@@ -173,8 +173,15 @@
     {
       "idx": 24,
       "version": "7",
-      "when": 1783947468583,
-      "tag": "0024_bizarre_kabuki",
+      "when": 1783946215356,
+      "tag": "0024_solid_franklin_richards",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1783946229535,
+      "tag": "0025_slippery_hannibal_king",
       "breakpoints": true
     }
   ]

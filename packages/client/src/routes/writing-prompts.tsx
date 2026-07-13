@@ -1,8 +1,11 @@
+import type { WritingPromptDifficulty } from "@sentence-bank/types";
+
 import { useMemo, useState } from "react";
 
 import { createFileRoute } from "@tanstack/react-router";
 import { PlusIcon } from "lucide-react";
 
+import { DifficultySelect } from "@/components/DifficultySelect";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -14,13 +17,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { WritingPromptBulkDialog } from "@/components/WritingPromptBulkDialog";
 import { WritingPromptCard } from "@/components/WritingPromptCard";
-import {
-  useCreateWritingPrompt,
-  useDeleteWritingPrompt,
-  useUpdateWritingPrompt,
-  useWritingPrompts,
-} from "@/hooks/useWritingPrompts";
+import { useCreateWritingPrompt, useWritingPrompts } from "@/hooks/useWritingPrompts";
 
 export const Route = createFileRoute("/writing-prompts")({
   component: WritingPromptsPage,
@@ -30,8 +29,6 @@ function WritingPromptsPage() {
   const {
     data: prompts, isLoading, error,
   } = useWritingPrompts();
-  const updatePrompt = useUpdateWritingPrompt();
-  const deletePrompt = useDeleteWritingPrompt();
 
   const [search, setSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -40,7 +37,7 @@ function WritingPromptsPage() {
     const q = search.trim().toLowerCase();
     return (prompts ?? []).filter((p) => {
       if (!q) return true;
-      return p.title.toLowerCase().includes(q) || p.text.toLowerCase().includes(q);
+      return p.text.toLowerCase().includes(q) || (p.textEn ?? "").toLowerCase().includes(q);
     });
   }, [prompts, search]);
 
@@ -56,23 +53,26 @@ function WritingPromptsPage() {
             pull one up to write against.
           </p>
         </div>
-        <Dialog
-          open={dialogOpen}
-          onOpenChange={setDialogOpen}
-        >
-          <DialogTrigger asChild>
-            <Button>
-              <PlusIcon className="size-4" />
-              New prompt
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>New prompt</DialogTitle>
-            </DialogHeader>
-            <NewPromptForm onDone={() => setDialogOpen(false)} />
-          </DialogContent>
-        </Dialog>
+        <div className="flex flex-wrap items-center gap-2">
+          <WritingPromptBulkDialog />
+          <Dialog
+            open={dialogOpen}
+            onOpenChange={setDialogOpen}
+          >
+            <DialogTrigger asChild>
+              <Button>
+                <PlusIcon className="size-4" />
+                New prompt
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>New prompt</DialogTitle>
+              </DialogHeader>
+              <NewPromptForm onDone={() => setDialogOpen(false)} />
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       <Input
@@ -98,11 +98,6 @@ function WritingPromptsPage() {
           <WritingPromptCard
             key={prompt.id}
             prompt={prompt}
-            onSave={input => updatePrompt.mutate({
-              id: prompt.id,
-              input,
-            })}
-            onDelete={id => deletePrompt.mutate(id)}
           />
         ))}
       </div>
@@ -116,17 +111,18 @@ function NewPromptForm({
   onDone: () => void;
 }) {
   const createPrompt = useCreateWritingPrompt();
-  const [title, setTitle] = useState("");
   const [text, setText] = useState("");
+  const [textEn, setTextEn] = useState("");
+  const [difficulty, setDifficulty] = useState<WritingPromptDifficulty>("Other");
 
   const submit = () => {
-    const nextTitle = title.trim();
     const nextText = text.trim();
-    if (!nextTitle || !nextText) return;
+    if (!nextText) return;
     createPrompt.mutate(
       {
-        title: nextTitle,
         text: nextText,
+        textEn: textEn.trim() || null,
+        difficulty,
       },
       {
         onSuccess: onDone,
@@ -137,26 +133,34 @@ function NewPromptForm({
   return (
     <div className="space-y-4">
       <div className="space-y-1.5">
-        <Label className="text-sm">Title</Label>
-        <Input
-          value={title}
-          onChange={e => setTitle(e.target.value)}
-          placeholder="A short label, e.g. “Morning routine”"
-        />
-      </div>
-      <div className="space-y-1.5">
-        <Label className="text-sm">Prompt</Label>
+        <Label className="text-sm">Japanese</Label>
         <Textarea
           value={text}
           onChange={e => setText(e.target.value)}
-          placeholder="What to write about…"
-          rows={4}
+          placeholder="日本語のプロンプト…"
+          rows={3}
+        />
+      </div>
+      <div className="space-y-1.5">
+        <Label className="text-sm">English</Label>
+        <Textarea
+          value={textEn}
+          onChange={e => setTextEn(e.target.value)}
+          placeholder="English version (optional)…"
+          rows={3}
+        />
+      </div>
+      <div className="space-y-1.5">
+        <Label className="text-sm">Difficulty</Label>
+        <DifficultySelect
+          value={difficulty}
+          onChange={setDifficulty}
         />
       </div>
       <div className="flex justify-end">
         <Button
           onClick={submit}
-          disabled={!title.trim() || !text.trim() || createPrompt.isPending}
+          disabled={!text.trim() || createPrompt.isPending}
         >
           Add prompt
         </Button>

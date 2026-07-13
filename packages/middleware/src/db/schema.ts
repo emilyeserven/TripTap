@@ -391,14 +391,16 @@ export type ShadowingSessionRow = typeof shadowingSessions.$inferSelect;
 export type NewShadowingSessionRow = typeof shadowingSessions.$inferInsert;
 
 /**
- * `writing_prompts` — reusable prompts the learner saves to spark a free-write. Each is a `title`
- * plus prompt `text`. When starting a My Writing entry the learner can pick one; the chosen prompt is
- * snapshotted onto the writing (`writings.prompt_title` / `writings.prompt_text`).
+ * `writing_prompts` — reusable prompts the learner saves to spark a free-write. Each has a Japanese
+ * version (`text`, shown by default and used as the display title), an optional English version
+ * (`text_en`), and a `difficulty` tag. When starting a My Writing entry the learner can pick one; the
+ * chosen prompt is snapshotted onto the writing (`writings.prompt_title` / `writings.prompt_text`).
  */
 export const writingPrompts = pgTable("writing_prompts", {
   id: uuid("id").primaryKey().defaultRandom(),
-  title: text("title").notNull(),
   text: text("text").notNull(),
+  textEn: text("text_en"),
+  difficulty: text("difficulty").notNull().default("Other"),
   createdAt: timestamp("created_at", {
     withTimezone: true,
   }).notNull().defaultNow(),

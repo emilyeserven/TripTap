@@ -2,14 +2,16 @@ import type * as React from "react";
 
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
+  BookMarkedIcon,
   BookOpenIcon,
   CameraIcon,
+  ChevronRightIcon,
   ClipboardCheckIcon,
   ClipboardListIcon,
   DatabaseIcon,
+  DrillIcon,
   GraduationCapIcon,
   HeadphonesIcon,
-  HomeIcon,
   ImagesIcon,
   LandmarkIcon,
   LanguagesIcon,
@@ -26,6 +28,11 @@ import {
 } from "lucide-react";
 
 import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
@@ -33,18 +40,17 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
+  SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
 
 /** { Captures, Lessons } — source material to mine from. */
-const libraryItems = [
-  {
-    title: "Home",
-    to: "/",
-    icon: HomeIcon,
-  },
+const collectionsItems = [
   {
     title: "Lessons",
     to: "/lessons",
@@ -63,7 +69,7 @@ const libraryItems = [
 ] as const;
 
 /** The study bank itself. */
-const studyItems = [
+const libraryItems = [
   {
     title: "Culture",
     to: "/culture",
@@ -94,29 +100,38 @@ const studyItems = [
 /** Tools that act on the bank (exports, etc.). */
 const actionItems = [
   {
-    title: "Practice Sentences",
+    title: "Study Sentences",
     to: "/practice",
     icon: NotebookPenIcon,
-  },
-  {
-    title: "My Sentences",
-    to: "/my-sentences",
-    icon: PencilRulerIcon,
   },
   {
     title: "My Writing",
     to: "/my-writing",
     icon: PenLineIcon,
+    children: [
+      {
+        title: "My Sentences",
+        to: "/my-sentences",
+        icon: PencilRulerIcon,
+      },
+    ],
   },
   {
-    title: "Question Sheets",
-    to: "/question-sheets",
-    icon: ClipboardListIcon,
-  },
-  {
-    title: "Answer Sheets",
-    to: "/answer-sheets",
-    icon: ClipboardCheckIcon,
+    title: "Book Exercises",
+    to: "/book-exercises",
+    icon: BookMarkedIcon,
+    children: [
+      {
+        title: "Question Sheets",
+        to: "/question-sheets",
+        icon: ClipboardListIcon,
+      },
+      {
+        title: "Answer Sheets",
+        to: "/answer-sheets",
+        icon: ClipboardCheckIcon,
+      },
+    ],
   },
   {
     title: "Listening Sessions",
@@ -129,14 +144,20 @@ const actionItems = [
     icon: Repeat2Icon,
   },
   {
-    title: "Renshuu export",
-    to: "/renshuu",
-    icon: SendIcon,
-  },
-  {
-    title: "Anki export",
-    to: "/anki",
-    icon: LayersIcon,
+    title: "Drills",
+    icon: DrillIcon,
+    children: [
+      {
+        title: "Renshuu export",
+        to: "/renshuu",
+        icon: SendIcon,
+      },
+      {
+        title: "Anki export",
+        to: "/anki",
+        icon: LayersIcon,
+      },
+    ],
   },
 ] as const;
 
@@ -168,6 +189,93 @@ function NavItem({
         </Link>
       </SidebarMenuButton>
     </SidebarMenuItem>
+  );
+}
+
+function NavNestedItem({
+  item,
+  pathname,
+}: {
+  item: {
+    title: string;
+    to?: string;
+    icon: React.ComponentType;
+    children: readonly { title: string;
+      to: string;
+      icon: React.ComponentType; }[];
+  };
+  pathname: string;
+}) {
+  const isChildActive = item.children.some(child => isItemActive(pathname, child.to));
+
+  return (
+    <Collapsible
+      defaultOpen={isChildActive}
+      className="group/collapsible"
+    >
+      <SidebarMenuItem>
+        {item.to
+          ? (
+            <>
+              <SidebarMenuButton
+                asChild
+                isActive={isItemActive(pathname, item.to)}
+                tooltip={item.title}
+              >
+                <Link to={item.to}>
+                  <item.icon />
+                  <span>{item.title}</span>
+                </Link>
+              </SidebarMenuButton>
+              <CollapsibleTrigger asChild>
+                <SidebarMenuAction
+                  className="
+                    transition-transform
+                    group-data-[state=open]/collapsible:rotate-90
+                  "
+                >
+                  <ChevronRightIcon />
+                  <span className="sr-only">
+                    Toggle
+                    {item.title}
+                  </span>
+                </SidebarMenuAction>
+              </CollapsibleTrigger>
+            </>
+          )
+          : (
+            <CollapsibleTrigger asChild>
+              <SidebarMenuButton tooltip={item.title}>
+                <item.icon />
+                <span>{item.title}</span>
+                <ChevronRightIcon
+                  className="
+                    ml-auto transition-transform
+                    group-data-[state=open]/collapsible:rotate-90
+                  "
+                />
+              </SidebarMenuButton>
+            </CollapsibleTrigger>
+          )}
+        <CollapsibleContent>
+          <SidebarMenuSub>
+            {item.children.map(child => (
+              <SidebarMenuSubItem key={child.to}>
+                <SidebarMenuSubButton
+                  asChild
+                  isActive={isItemActive(pathname, child.to)}
+                >
+                  <Link to={child.to}>
+                    <child.icon />
+                    <span>{child.title}</span>
+                  </Link>
+                </SidebarMenuSubButton>
+              </SidebarMenuSubItem>
+            ))}
+          </SidebarMenuSub>
+        </CollapsibleContent>
+      </SidebarMenuItem>
+    </Collapsible>
   );
 }
 
@@ -235,35 +343,44 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
         </SidebarGroup>
 
         <SidebarGroup>
+          <SidebarGroupLabel>Action</SidebarGroupLabel>
+          <SidebarMenu>
+            {actionItems.map(item =>
+              "children" in item
+                ? (
+                  <NavNestedItem
+                    key={item.title}
+                    item={item}
+                    pathname={pathname}
+                  />
+                )
+                : (
+                  <NavItem
+                    key={item.to}
+                    item={item}
+                    pathname={pathname}
+                  />
+                ))}
+          </SidebarMenu>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Collections</SidebarGroupLabel>
+          <SidebarMenu>
+            {collectionsItems.map(item => (
+              <NavItem
+                key={item.to}
+                item={item}
+                pathname={pathname}
+              />
+            ))}
+          </SidebarMenu>
+        </SidebarGroup>
+
+        <SidebarGroup>
           <SidebarGroupLabel>Library</SidebarGroupLabel>
           <SidebarMenu>
             {libraryItems.map(item => (
-              <NavItem
-                key={item.to}
-                item={item}
-                pathname={pathname}
-              />
-            ))}
-          </SidebarMenu>
-        </SidebarGroup>
-
-        <SidebarGroup>
-          <SidebarGroupLabel>Study</SidebarGroupLabel>
-          <SidebarMenu>
-            {studyItems.map(item => (
-              <NavItem
-                key={item.to}
-                item={item}
-                pathname={pathname}
-              />
-            ))}
-          </SidebarMenu>
-        </SidebarGroup>
-
-        <SidebarGroup>
-          <SidebarGroupLabel>Action</SidebarGroupLabel>
-          <SidebarMenu>
-            {actionItems.map(item => (
               <NavItem
                 key={item.to}
                 item={item}

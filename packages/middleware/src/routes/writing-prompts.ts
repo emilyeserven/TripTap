@@ -1,7 +1,9 @@
 import type { FastifyInstance } from "fastify";
 import type { CreateWritingPromptInput, UpdateWritingPromptInput } from "@sentence-bank/types";
+import { WRITING_PROMPT_DIFFICULTIES } from "@sentence-bank/types";
 import {
   createWritingPrompt,
+  createWritingPromptsMany,
   deleteWritingPrompt,
   getWritingPrompt,
   listWritingPrompts,
@@ -21,16 +23,19 @@ const writingPromptParams = {
 
 const createWritingPromptBody = {
   type: "object",
-  required: ["title", "text"],
+  required: ["text"],
   additionalProperties: false,
   properties: {
-    title: {
-      type: "string",
-      minLength: 1,
-    },
     text: {
       type: "string",
       minLength: 1,
+    },
+    textEn: {
+      type: ["string", "null"],
+    },
+    difficulty: {
+      type: "string",
+      enum: WRITING_PROMPT_DIFFICULTIES,
     },
   },
 } as const;
@@ -40,6 +45,18 @@ const updateWritingPromptBody = {
   additionalProperties: false,
   properties: {
     ...createWritingPromptBody.properties,
+  },
+} as const;
+
+const bulkWritingPromptsBody = {
+  type: "object",
+  required: ["writingPrompts"],
+  additionalProperties: false,
+  properties: {
+    writingPrompts: {
+      type: "array",
+      items: createWritingPromptBody,
+    },
   },
 } as const;
 
@@ -75,6 +92,19 @@ export async function writingPromptRoutes(app: FastifyInstance): Promise<void> {
   }, async (req, reply) => {
     const input = req.body as CreateWritingPromptInput;
     const created = await createWritingPrompt(input);
+    return reply.code(201).send(created);
+  });
+
+  app.post("/api/writing-prompts/bulk", {
+    schema: {
+      tags: ["writing-prompts"],
+      body: bulkWritingPromptsBody,
+    },
+  }, async (req, reply) => {
+    const {
+      writingPrompts: inputs,
+    } = req.body as { writingPrompts: CreateWritingPromptInput[] };
+    const created = await createWritingPromptsMany(inputs);
     return reply.code(201).send(created);
   });
 

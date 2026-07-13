@@ -1,6 +1,6 @@
 {
-  "id": "ef2196d9-e92e-472e-8e55-b5c46652c5d0",
-  "prevId": "15e36880-29ed-4973-b6cf-ac250fcce08d",
+  "id": "39b0409e-ebb4-438c-b9d5-666d791de06f",
+  "prevId": "ef2196d9-e92e-472e-8e55-b5c46652c5d0",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -1787,12 +1787,6 @@
           "primaryKey": true,
           "notNull": true,
           "default": "gen_random_uuid()"
-        },
-        "title": {
-          "name": "title",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
         },
         "text": {
           "name": "text",

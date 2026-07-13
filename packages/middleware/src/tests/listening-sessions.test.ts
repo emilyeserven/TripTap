@@ -101,3 +101,28 @@ test("POST /api/listening-sessions accepts a valid payload with an entry and a t
   assert.notEqual(res.statusCode, 400);
   await app.close();
 });
+
+test("POST /api/listening-sessions accepts a kana entry carrying English context", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/listening-sessions",
+    payload: {
+      title: "Terrace House ep. 1",
+      language: "Japanese",
+      entries: [
+        {
+          id: "e1",
+          text: "そうなんだ",
+          context: "I see / is that so",
+          timestampMs: 12345,
+          mode: "typing-start",
+          source: "video",
+        },
+      ],
+    },
+  });
+  // The optional `context` field is part of the schema, so this must not be rejected.
+  assert.notEqual(res.statusCode, 400);
+  await app.close();
+});

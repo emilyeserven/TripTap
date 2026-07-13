@@ -29,7 +29,9 @@ import { Route as MySentencesIndexRouteImport } from './routes/my-sentences.inde
 import { Route as ListeningSessionsIndexRouteImport } from './routes/listening-sessions.index'
 import { Route as LessonsIndexRouteImport } from './routes/lessons.index'
 import { Route as CapturesIndexRouteImport } from './routes/captures.index'
+import { Route as BookExercisesIndexRouteImport } from './routes/book-exercises.index'
 import { Route as AnswerSheetsIndexRouteImport } from './routes/answer-sheets.index'
+import { Route as WritingPromptsIdRouteImport } from './routes/writing-prompts.$id'
 import { Route as SourcesIdRouteImport } from './routes/sources.$id'
 import { Route as ShadowingNewRouteImport } from './routes/shadowing.new'
 import { Route as ShadowingIdRouteImport } from './routes/shadowing.$id'
@@ -160,10 +162,20 @@ const CapturesIndexRoute = CapturesIndexRouteImport.update({
   path: '/captures/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BookExercisesIndexRoute = BookExercisesIndexRouteImport.update({
+  id: '/book-exercises/',
+  path: '/book-exercises/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AnswerSheetsIndexRoute = AnswerSheetsIndexRouteImport.update({
   id: '/answer-sheets/',
   path: '/answer-sheets/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const WritingPromptsIdRoute = WritingPromptsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => WritingPromptsRoute,
 } as any)
 const SourcesIdRoute = SourcesIdRouteImport.update({
   id: '/sources/$id',
@@ -323,7 +335,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRoute
   '/vocab': typeof VocabRoute
   '/vocabulary': typeof VocabularyRoute
-  '/writing-prompts': typeof WritingPromptsRoute
+  '/writing-prompts': typeof WritingPromptsRouteWithChildren
   '/answer-sheets/$id': typeof AnswerSheetsIdRouteWithChildren
   '/answer-sheets/new': typeof AnswerSheetsNewRoute
   '/captures/$id': typeof CapturesIdRoute
@@ -341,7 +353,9 @@ export interface FileRoutesByFullPath {
   '/shadowing/$id': typeof ShadowingIdRouteWithChildren
   '/shadowing/new': typeof ShadowingNewRoute
   '/sources/$id': typeof SourcesIdRoute
+  '/writing-prompts/$id': typeof WritingPromptsIdRoute
   '/answer-sheets/': typeof AnswerSheetsIndexRoute
+  '/book-exercises/': typeof BookExercisesIndexRoute
   '/captures/': typeof CapturesIndexRoute
   '/lessons/': typeof LessonsIndexRoute
   '/listening-sessions/': typeof ListeningSessionsIndexRoute
@@ -375,7 +389,7 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/vocab': typeof VocabRoute
   '/vocabulary': typeof VocabularyRoute
-  '/writing-prompts': typeof WritingPromptsRoute
+  '/writing-prompts': typeof WritingPromptsRouteWithChildren
   '/answer-sheets/new': typeof AnswerSheetsNewRoute
   '/captures/$id': typeof CapturesIdRoute
   '/lessons/$slug': typeof LessonsSlugRoute
@@ -387,7 +401,9 @@ export interface FileRoutesByTo {
   '/question-sheets/new': typeof QuestionSheetsNewRoute
   '/shadowing/new': typeof ShadowingNewRoute
   '/sources/$id': typeof SourcesIdRoute
+  '/writing-prompts/$id': typeof WritingPromptsIdRoute
   '/answer-sheets': typeof AnswerSheetsIndexRoute
+  '/book-exercises': typeof BookExercisesIndexRoute
   '/captures': typeof CapturesIndexRoute
   '/lessons': typeof LessonsIndexRoute
   '/listening-sessions': typeof ListeningSessionsIndexRoute
@@ -422,7 +438,7 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRoute
   '/vocab': typeof VocabRoute
   '/vocabulary': typeof VocabularyRoute
-  '/writing-prompts': typeof WritingPromptsRoute
+  '/writing-prompts': typeof WritingPromptsRouteWithChildren
   '/answer-sheets/$id': typeof AnswerSheetsIdRouteWithChildren
   '/answer-sheets/new': typeof AnswerSheetsNewRoute
   '/captures/$id': typeof CapturesIdRoute
@@ -440,7 +456,9 @@ export interface FileRoutesById {
   '/shadowing/$id': typeof ShadowingIdRouteWithChildren
   '/shadowing/new': typeof ShadowingNewRoute
   '/sources/$id': typeof SourcesIdRoute
+  '/writing-prompts/$id': typeof WritingPromptsIdRoute
   '/answer-sheets/': typeof AnswerSheetsIndexRoute
+  '/book-exercises/': typeof BookExercisesIndexRoute
   '/captures/': typeof CapturesIndexRoute
   '/lessons/': typeof LessonsIndexRoute
   '/listening-sessions/': typeof ListeningSessionsIndexRoute
@@ -494,7 +512,9 @@ export interface FileRouteTypes {
     | '/shadowing/$id'
     | '/shadowing/new'
     | '/sources/$id'
+    | '/writing-prompts/$id'
     | '/answer-sheets/'
+    | '/book-exercises/'
     | '/captures/'
     | '/lessons/'
     | '/listening-sessions/'
@@ -540,7 +560,9 @@ export interface FileRouteTypes {
     | '/question-sheets/new'
     | '/shadowing/new'
     | '/sources/$id'
+    | '/writing-prompts/$id'
     | '/answer-sheets'
+    | '/book-exercises'
     | '/captures'
     | '/lessons'
     | '/listening-sessions'
@@ -592,7 +614,9 @@ export interface FileRouteTypes {
     | '/shadowing/$id'
     | '/shadowing/new'
     | '/sources/$id'
+    | '/writing-prompts/$id'
     | '/answer-sheets/'
+    | '/book-exercises/'
     | '/captures/'
     | '/lessons/'
     | '/listening-sessions/'
@@ -627,7 +651,7 @@ export interface RootRouteChildren {
   SettingsRoute: typeof SettingsRoute
   VocabRoute: typeof VocabRoute
   VocabularyRoute: typeof VocabularyRoute
-  WritingPromptsRoute: typeof WritingPromptsRoute
+  WritingPromptsRoute: typeof WritingPromptsRouteWithChildren
   AnswerSheetsIdRoute: typeof AnswerSheetsIdRouteWithChildren
   AnswerSheetsNewRoute: typeof AnswerSheetsNewRoute
   CapturesIdRoute: typeof CapturesIdRoute
@@ -646,6 +670,7 @@ export interface RootRouteChildren {
   ShadowingNewRoute: typeof ShadowingNewRoute
   SourcesIdRoute: typeof SourcesIdRoute
   AnswerSheetsIndexRoute: typeof AnswerSheetsIndexRoute
+  BookExercisesIndexRoute: typeof BookExercisesIndexRoute
   CapturesIndexRoute: typeof CapturesIndexRoute
   LessonsIndexRoute: typeof LessonsIndexRoute
   ListeningSessionsIndexRoute: typeof ListeningSessionsIndexRoute
@@ -799,12 +824,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CapturesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/book-exercises/': {
+      id: '/book-exercises/'
+      path: '/book-exercises'
+      fullPath: '/book-exercises/'
+      preLoaderRoute: typeof BookExercisesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/answer-sheets/': {
       id: '/answer-sheets/'
       path: '/answer-sheets'
       fullPath: '/answer-sheets/'
       preLoaderRoute: typeof AnswerSheetsIndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/writing-prompts/$id': {
+      id: '/writing-prompts/$id'
+      path: '/$id'
+      fullPath: '/writing-prompts/$id'
+      preLoaderRoute: typeof WritingPromptsIdRouteImport
+      parentRoute: typeof WritingPromptsRoute
     }
     '/sources/$id': {
       id: '/sources/$id'
@@ -1012,6 +1051,18 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface WritingPromptsRouteChildren {
+  WritingPromptsIdRoute: typeof WritingPromptsIdRoute
+}
+
+const WritingPromptsRouteChildren: WritingPromptsRouteChildren = {
+  WritingPromptsIdRoute: WritingPromptsIdRoute,
+}
+
+const WritingPromptsRouteWithChildren = WritingPromptsRoute._addFileChildren(
+  WritingPromptsRouteChildren,
+)
+
 interface AnswerSheetsIdRouteChildren {
   AnswerSheetsIdEditRoute: typeof AnswerSheetsIdEditRoute
   AnswerSheetsIdIndexRoute: typeof AnswerSheetsIdIndexRoute
@@ -1105,7 +1156,7 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRoute: SettingsRoute,
   VocabRoute: VocabRoute,
   VocabularyRoute: VocabularyRoute,
-  WritingPromptsRoute: WritingPromptsRoute,
+  WritingPromptsRoute: WritingPromptsRouteWithChildren,
   AnswerSheetsIdRoute: AnswerSheetsIdRouteWithChildren,
   AnswerSheetsNewRoute: AnswerSheetsNewRoute,
   CapturesIdRoute: CapturesIdRoute,
@@ -1124,6 +1175,7 @@ const rootRouteChildren: RootRouteChildren = {
   ShadowingNewRoute: ShadowingNewRoute,
   SourcesIdRoute: SourcesIdRoute,
   AnswerSheetsIndexRoute: AnswerSheetsIndexRoute,
+  BookExercisesIndexRoute: BookExercisesIndexRoute,
   CapturesIndexRoute: CapturesIndexRoute,
   LessonsIndexRoute: LessonsIndexRoute,
   ListeningSessionsIndexRoute: ListeningSessionsIndexRoute,
