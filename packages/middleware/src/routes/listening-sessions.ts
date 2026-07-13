@@ -66,6 +66,9 @@ const entriesSchema = {
       text: {
         type: "string",
       },
+      context: {
+        type: "string",
+      },
       timestampMs: {
         type: "number",
         minimum: 0,

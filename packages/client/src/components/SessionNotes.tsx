@@ -3,6 +3,7 @@ import type { ListeningEntry } from "@sentence-bank/types";
 import { useState } from "react";
 
 import { Keyboard, Pencil, Send, Trash2, X } from "lucide-react";
+import { toKana } from "wanakana";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +16,10 @@ import { useUiStore } from "@/stores/uiStore";
  * with the current playback position and a table of captured notes. `getCurrentTimeMs` reads the live
  * player position; `source` records whether it came from the video or the stopwatch fallback. The
  * typing-start snapshot fires on the empty→non-empty transition (per the global timestamp-mode pref).
+ *
+ * In kana-only entry mode the note field converts typed romaji to kana (never kanji), and a second
+ * untranslated English-context field appears; Enter in either field submits, and the typing-start stamp
+ * is taken from whichever field the learner touches first.
  */
 export function SessionNotes({
   entries,
@@ -28,22 +33,50 @@ export function SessionNotes({
   source: "video" | "stopwatch";
 }) {
   const timestampMode = useUiStore(s => s.timestampMode);
+  const kanaEntry = useUiStore(s => s.kanaEntry);
+  const kanaScript = useUiStore(s => s.kanaScript);
   const [inputValue, setInputValue] = useState("");
+  const [contextValue, setContextValue] = useState("");
   const [typingStartMs, setTypingStartMs] = useState<number | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
+  const [editContext, setEditContext] = useState("");
   const [editTime, setEditTime] = useState("");
 
-  const handleInputChange = (value: string) => {
-    if (inputValue === "" && value !== "" && timestampMode === "typing-start") {
+  const toKanaInput = (raw: string) =>
+    toKana(raw, {
+      IMEMode: kanaScript === "katakana" ? "toKatakana" : "toHiragana",
+    });
+
+  // Snapshot the playback position the moment the learner starts composing a note. With two fields
+  // enabled we stamp on the first keystroke into whichever field is touched first: fire only when both
+  // fields were empty before this change and the field is now non-empty.
+  const maybeMarkTypingStart = (nextNonEmpty: boolean) => {
+    if (
+      timestampMode === "typing-start"
+      && inputValue === ""
+      && contextValue === ""
+      && nextNonEmpty
+    ) {
       setTypingStartMs(getCurrentTimeMs());
     }
+  };
+
+  const handleInputChange = (raw: string) => {
+    const value = kanaEntry ? toKanaInput(raw) : raw;
+    maybeMarkTypingStart(value !== "");
     setInputValue(value);
+  };
+
+  const handleContextChange = (value: string) => {
+    maybeMarkTypingStart(value !== "");
+    setContextValue(value);
   };
 
   const submit = () => {
     const text = inputValue.trim();
     if (!text) return;
+    const context = kanaEntry ? contextValue.trim() : "";
     const timestampMs = timestampMode === "typing-start" && typingStartMs !== null
       ? typingStartMs
       : getCurrentTimeMs();
@@ -52,30 +85,46 @@ export function SessionNotes({
       {
         id: newId(),
         text,
+        ...(context
+          ? {
+            context,
+          }
+          : {}),
         timestampMs,
         mode: timestampMode,
         source,
       },
     ]);
     setInputValue("");
+    setContextValue("");
     setTypingStartMs(null);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      submit();
+    }
   };
 
   const startEdit = (entry: ListeningEntry) => {
     setEditingId(entry.id);
     setEditText(entry.text);
+    setEditContext(entry.context ?? "");
     setEditTime(formatTime(entry.timestampMs));
   };
 
   const saveEdit = () => {
     const text = editText.trim();
     if (!editingId || !text) return;
+    const context = editContext.trim();
     const parsed = parseSectionTime(editTime);
     onChange(entries.map(e =>
       e.id === editingId
         ? {
           ...e,
           text,
+          context: context || undefined,
           timestampMs: parsed ?? e.timestampMs,
         }
         : e));
@@ -89,17 +138,24 @@ export function SessionNotes({
   return (
     <div className="space-y-3">
       <div className="flex gap-2">
-        <Input
-          value={inputValue}
-          onChange={e => handleInputChange(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              submit();
-            }
-          }}
-          placeholder="Type a note and press Enter…"
-        />
+        <div className="flex flex-1 flex-col gap-2">
+          <Input
+            value={inputValue}
+            onChange={e => handleInputChange(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder={kanaEntry
+              ? "Type romaji — converts to kana — and press Enter…"
+              : "Type a note and press Enter…"}
+          />
+          {kanaEntry && (
+            <Input
+              value={contextValue}
+              onChange={e => handleContextChange(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="English context (optional, kept as-is)"
+            />
+          )}
+        </div>
         <Button
           type="button"
           onClick={submit}
@@ -132,6 +188,15 @@ export function SessionNotes({
                         onChange={e => setEditText(e.target.value)}
                         className="flex-1"
                       />
+                      {(kanaEntry || editContext !== "") && (
+                        <Input
+                          value={editContext}
+                          onChange={e => setEditContext(e.target.value)}
+                          className="flex-1"
+                          placeholder="English context"
+                          aria-label="Context"
+                        />
+                      )}
                       <Input
                         value={editTime}
                         onChange={e => setEditTime(e.target.value)}
@@ -175,7 +240,14 @@ export function SessionNotes({
                       >
                         {formatTime(entry.timestampMs)}
                       </span>
-                      <span className="flex-1 wrap-break-word">{entry.text}</span>
+                      <span className="flex-1 wrap-break-word">
+                        {entry.text}
+                        {entry.context && (
+                          <span className="ml-2 text-sm text-muted-foreground">
+                            {entry.context}
+                          </span>
+                        )}
+                      </span>
                       <Button
                         type="button"
                         size="sm"

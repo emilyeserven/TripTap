@@ -17,7 +17,13 @@ import type { SentenceTermRef } from "./index.js";
 export interface ListeningEntry {
   /** Stable client-generated id for this note (via `crypto.randomUUID()`). */
   id: string;
+  /** The note body. In kana-only entry mode this holds the converted kana prompt. */
   text: string;
+  /**
+   * Optional untranslated English context attached to a kana-only prompt, kept out of the kana
+   * conversion so the learner can note meaning/hints without it becoming kana. Absent on older notes.
+   */
+  context?: string;
   /** Playback/stopwatch position when the note was stamped, in milliseconds. */
   timestampMs: number;
   /** Whether the stamp was captured at typing-start or at submit. */

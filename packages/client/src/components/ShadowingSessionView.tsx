@@ -5,6 +5,7 @@ import { useRef, useState } from "react";
 
 import { ExternalLink, Play, RotateCcw, SkipForward, Square } from "lucide-react";
 
+import { KanaEntryToggle } from "@/components/KanaEntryToggle";
 import { SessionNotes } from "@/components/SessionNotes";
 import { StopwatchPlayer } from "@/components/StopwatchPlayer";
 import { TimestampModeToggle } from "@/components/TimestampModeToggle";
@@ -185,9 +186,12 @@ export function ShadowingSessionView({
           )}
       </div>
 
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-lg font-semibold">Notes</h2>
-        <TimestampModeToggle />
+        <div className="flex flex-wrap items-center gap-4">
+          <KanaEntryToggle />
+          <TimestampModeToggle />
+        </div>
       </div>
 
       <SessionNotes

@@ -98,3 +98,28 @@ test("POST /api/shadowing-sessions accepts a valid payload with segments and def
   assert.notEqual(res.statusCode, 400);
   await app.close();
 });
+
+test("POST /api/shadowing-sessions accepts a kana entry carrying English context", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/shadowing-sessions",
+    payload: {
+      title: "Shadowing drill",
+      language: "Japanese",
+      entries: [
+        {
+          id: "e1",
+          text: "むずかしい",
+          context: "difficult",
+          timestampMs: 2000,
+          mode: "typing-start",
+          source: "video",
+        },
+      ],
+    },
+  });
+  // The optional `context` field is part of the schema, so this must not be rejected.
+  assert.notEqual(res.statusCode, 400);
+  await app.close();
+});
