@@ -10,10 +10,12 @@ import type {
   PracticeWord,
   QuestionSheetGrid,
   QuestionSheetQuestion,
+  ReadingLine,
   SentenceTermRef,
   ShadowingSegment,
   SourceGrammar,
   SourceVocab,
+  WordNote,
   WritingCorrection,
 } from "@sentence-bank/types";
 import { type AnyPgColumn, boolean, customType, integer, jsonb, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
@@ -389,6 +391,38 @@ export const shadowingSessions = pgTable("shadowing_sessions", {
 
 export type ShadowingSessionRow = typeof shadowingSessions.$inferSelect;
 export type NewShadowingSessionRow = typeof shadowingSessions.$inferInsert;
+
+/**
+ * `reading_sessions` — a reading session: the learner works through a passage (from a taxonomy
+ * `source` at some `page`), translating it either as one freeform block (`freeform_translation`) or
+ * `line_by_line` (`lines`, each with its own translation/summary/correction). An optional whole-passage
+ * `summary` covers the case where a literal translation isn't worth it. `word_notes` is a flat list of
+ * words the learner was shaky on / didn't know, each optionally flagged for a flashcard list later.
+ */
+export const readingSessions = pgTable("reading_sessions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  title: text("title").notNull(),
+  language: text("language").notNull(),
+  sourceId: uuid("source_id").references((): AnyPgColumn => sources.id, {
+    onDelete: "set null",
+  }),
+  page: text("page"),
+  mode: text("mode").notNull().default("freeform"),
+  passage: text("passage"),
+  freeformTranslation: text("freeform_translation"),
+  summary: text("summary"),
+  lines: jsonb("lines").$type<ReadingLine[]>(),
+  wordNotes: jsonb("word_notes").$type<WordNote[]>(),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+});
+
+export type ReadingSessionRow = typeof readingSessions.$inferSelect;
+export type NewReadingSessionRow = typeof readingSessions.$inferInsert;
 
 /**
  * `writing_prompts` — reusable prompts the learner saves to spark a free-write. Each has a Japanese

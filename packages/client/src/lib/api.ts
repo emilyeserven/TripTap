@@ -13,10 +13,13 @@ import type {
   CreateVocabInput,
   CreateMySentenceInput,
   CreateListeningSessionInput,
+  CreateReadingSessionInput,
   CreateShadowingSessionInput,
   ListeningSession,
+  ReadingSession,
   ShadowingSession,
   UpdateListeningSessionInput,
+  UpdateReadingSessionInput,
   UpdateShadowingSessionInput,
   GrammarItem,
   LessonContent,
@@ -247,6 +250,24 @@ export const listeningSessionsApi = {
       body: JSON.stringify(input),
     }),
   remove: (id: string) => request<undefined>(`/listening-sessions/${id}`, {
+    method: "DELETE",
+  }),
+};
+
+export const readingSessionsApi = {
+  list: () => request<ReadingSession[]>("/reading-sessions"),
+  get: (id: string) => request<ReadingSession>(`/reading-sessions/${id}`),
+  create: (input: CreateReadingSessionInput) =>
+    request<ReadingSession>("/reading-sessions", {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+  update: (id: string, input: UpdateReadingSessionInput) =>
+    request<ReadingSession>(`/reading-sessions/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    }),
+  remove: (id: string) => request<undefined>(`/reading-sessions/${id}`, {
     method: "DELETE",
   }),
 };

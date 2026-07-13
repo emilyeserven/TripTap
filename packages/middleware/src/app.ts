@@ -14,6 +14,7 @@ import { ocrRoutes } from "@/routes/ocr";
 import { parseTemplateRoutes } from "@/routes/parse-templates";
 import { practiceSentenceRoutes } from "@/routes/practice-sentences";
 import { questionSheetRoutes } from "@/routes/question-sheets";
+import { readingSessionsRoutes } from "@/routes/reading-sessions";
 import { sentenceRoutes } from "@/routes/sentences";
 import { settingsRoutes } from "@/routes/settings";
 import { shadowingSessionsRoutes } from "@/routes/shadowing-sessions";
@@ -81,6 +82,10 @@ export async function buildApp(): Promise<FastifyInstance> {
           description: "Shadowing practice sessions — looped video segments + notes",
         },
         {
+          name: "reading-sessions",
+          description: "Reading sessions — passage translation, corrections, word notes",
+        },
+        {
           name: "writing-prompts",
           description: "Reusable prompts to spark a free-write",
         },
@@ -137,6 +142,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(answerSheetRoutes);
   await app.register(listeningSessionsRoutes);
   await app.register(shadowingSessionsRoutes);
+  await app.register(readingSessionsRoutes);
   await app.register(writingPromptRoutes);
   await app.register(sourceRoutes);
   await app.register(vocabRoutes);
