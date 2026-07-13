@@ -18,7 +18,7 @@ function ListenShadowIndexPage() {
     <section className="max-w-4xl space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h1 className="text-2xl font-bold">Listen and Shadow</h1>
+          <h1 className="text-2xl font-bold">Listening Sessions</h1>
           <p className="text-sm text-muted-foreground">
             Play a video and take notes stamped with the playback time.
           </p>
