@@ -38,7 +38,7 @@ import { useCaptureSentences, useCaptureVocab, useReorderCaptureSentences } from
 import { useDeleteSentence, useUpdateSentence } from "@/hooks/useSentences";
 import { useSources } from "@/hooks/useSources";
 import { useDeleteVocab, useUpdateVocab } from "@/hooks/useVocab";
-import { groupTermsByCategory } from "@/lib/terms";
+import { groupTermsByCategory, termsChanged } from "@/lib/terms";
 import { cn } from "@/lib/utils";
 import { vocabToCardItem } from "@/lib/vocab-card";
 
@@ -308,13 +308,6 @@ function SortableSentenceRow({
       </div>
     </div>
   );
-}
-
-/** True when two term lists differ (order-insensitive, by id). */
-function termsChanged(a: SentenceTermRef[], b: SentenceTermRef[]): boolean {
-  if (a.length !== b.length) return true;
-  const ids = new Set(b.map(t => t.id));
-  return a.some(t => !ids.has(t.id));
 }
 
 function SentenceRow({

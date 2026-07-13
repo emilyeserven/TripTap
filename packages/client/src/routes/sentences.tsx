@@ -23,6 +23,7 @@ import { Input } from "@/components/ui/input";
 import { useLessonContent } from "@/hooks/useLessons";
 import { useBackfillFurigana, useDeleteSentence, useSentences } from "@/hooks/useSentences";
 import { useSources } from "@/hooks/useSources";
+import { dedupeGrammarTags, grammarTermsOf } from "@/lib/grammar-links";
 import { useUiStore } from "@/stores/uiStore";
 
 export const Route = createFileRoute("/sentences")({
@@ -60,8 +61,27 @@ function SentencesPage() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all"); // "all" | "mine" | lesson slug
   const [sourceFilter, setSourceFilter] = useState(sourceParam ?? "all");
+  const [grammarTag, setGrammarTag] = useState("all"); // "all" | grammar-tag id
 
   const manual = sentences ?? [];
+
+  // Grammar-tag filter options: every Grammar source tag in use across manual + lesson sentences.
+  const grammarTagOptions = useMemo(() => {
+    const tags = dedupeGrammarTags([
+      ...manual.flatMap(grammarTermsOf),
+      ...lessonSentences.flatMap(s => s.grammarTerms ?? []),
+    ]);
+    return [
+      {
+        value: "all",
+        label: "All grammar tags",
+      },
+      ...tags.map(t => ({
+        value: t.id,
+        label: t.name,
+      })),
+    ];
+  }, [manual, lessonSentences]);
 
   const lessonOptions = useMemo(() => {
     const opts = [{
@@ -95,8 +115,13 @@ function SentencesPage() {
   ], [sources]);
 
   const bySource = (id: string | null) => sourceFilter === "all" || id === sourceFilter;
+  const byGrammarTag = (terms: { id: string }[]) =>
+    grammarTag === "all" || terms.some(t => t.id === grammarTag);
   const manualShown = filter === "all" || filter === "mine"
-    ? manual.filter(s => bySource(s.sourceId) && matches(search, s.text, s.translation, s.source, s.tags, s.notes))
+    ? manual.filter(s =>
+      bySource(s.sourceId)
+      && byGrammarTag(grammarTermsOf(s))
+      && matches(search, s.text, s.translation, s.source, s.tags, s.notes))
     : [];
   // Lesson-mined sentences carry no source, so a specific source filter hides them.
   const lessonShown = (sourceFilter !== "all"
@@ -104,7 +129,7 @@ function SentencesPage() {
     : filter === "mine"
       ? []
       : filter === "all" ? lessonSentences : lessonSentences.filter(s => s.lessonSlug === filter))
-    .filter(s => matches(search, s.jp, s.en, s.where));
+    .filter(s => byGrammarTag(s.grammarTerms ?? []) && matches(search, s.jp, s.en, s.where));
 
   const nothing = !isLoading && manualShown.length === 0 && lessonShown.length === 0;
 
@@ -187,6 +212,18 @@ function SentencesPage() {
           searchPlaceholder="Search sources…"
           className="w-52"
         />
+        {grammarTagOptions.length > 1
+          ? (
+            <Combobox
+              value={grammarTag}
+              onChange={setGrammarTag}
+              options={grammarTagOptions}
+              ariaLabel="Filter by grammar tag"
+              searchPlaceholder="Search grammar tags…"
+              className="w-52"
+            />
+          )
+          : null}
       </div>
 
       {error ? <p className="text-destructive">{error.message}</p> : null}
@@ -202,6 +239,7 @@ function SentencesPage() {
               showTranslation={showTranslations}
               sourceName={sourceName(s.sourceId)}
               onDelete={id => deleteSentence.mutate(id)}
+              onGrammarTagClick={setGrammarTag}
             />
           ))}
           {lessonShown.map(s => (
@@ -212,6 +250,7 @@ function SentencesPage() {
                 slug: s.lessonSlug,
                 title: s.lessonTitle,
               }}
+              onTagClick={setGrammarTag}
             />
           ))}
         </div>

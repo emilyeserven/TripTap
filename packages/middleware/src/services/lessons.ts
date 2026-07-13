@@ -8,6 +8,7 @@ import type {
   LessonImportInput,
   LessonRecord,
   LessonSummary,
+  SentenceTermRef,
   SourceSentenceItem,
   VocabItem,
   VocabRenshuuUpdate,
@@ -93,6 +94,7 @@ function toGrammar(row: LessonGrammarRow): GrammarItem {
     gloss: row.gloss,
     note: row.note,
     ex: row.examples,
+    grammarTerms: row.grammarTerms ?? null,
   };
 }
 
@@ -106,6 +108,7 @@ function toSourceSentence(row: LessonSourceSentenceRow): SourceSentenceItem {
     url: row.url,
     grammar: row.grammar,
     vocab: row.vocab,
+    grammarTerms: row.grammarTerms ?? null,
   };
 }
 
@@ -333,6 +336,36 @@ export async function updateVocabRenshuu(
   }
   const [row] = await db.update(lessonVocab).set(set).where(eq(lessonVocab.id, id)).returning();
   return row ? toVocab(row) : null;
+}
+
+/** Set the Grammar source tags on a lesson grammar item. Returns the updated item, or null if no such id. */
+export async function updateLessonGrammarTerms(
+  id: string,
+  grammarTerms: SentenceTermRef[] | null,
+): Promise<GrammarItem | null> {
+  const [row] = await db
+    .update(lessonGrammar)
+    .set({
+      grammarTerms: grammarTerms ?? null,
+    })
+    .where(eq(lessonGrammar.id, id))
+    .returning();
+  return row ? toGrammar(row) : null;
+}
+
+/** Set the Grammar source tags on a lesson source sentence. Returns the updated item, or null if no such id. */
+export async function updateSourceSentenceTerms(
+  id: string,
+  grammarTerms: SentenceTermRef[] | null,
+): Promise<SourceSentenceItem | null> {
+  const [row] = await db
+    .update(lessonSourceSentences)
+    .set({
+      grammarTerms: grammarTerms ?? null,
+    })
+    .where(eq(lessonSourceSentences.id, id))
+    .returning();
+  return row ? toSourceSentence(row) : null;
 }
 
 /** Delete a lesson (children cascade). Returns false if no such id. */

@@ -49,6 +49,23 @@ test("POST /api/lessons/import rejects a malformed nested item (generated nested
   await app.close();
 });
 
+test("PATCH /api/lesson-grammar/:id rejects a malformed grammar term", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "PATCH",
+    url: "/api/lesson-grammar/00000000-0000-0000-0000-000000000000",
+    // Missing the required kind/sourceId/sourceLabel — proves body validation is active.
+    payload: {
+      grammarTerms: [{
+        id: "x",
+        name: "y",
+      }],
+    },
+  });
+  assert.equal(res.statusCode, 400);
+  await app.close();
+});
+
 test(
   "POST /api/lessons/import then GET round-trips the nested shape and preserves order",
   {
@@ -124,6 +141,62 @@ test(
     const patchedVocab = refetched.json().vocab.find((v: { id: string }) => v.id === vocabId);
     assert.equal(patchedVocab.renshuuAdded, true);
     assert.equal(patchedVocab.renshuuList, "Test list");
+
+    // Grammar source tags persist via PATCH on both a grammar item and a source sentence.
+    const term = {
+      id: "gt-1",
+      name: "〜ています",
+      kind: "tag",
+      sourceId: "grammar-src",
+      sourceLabel: "Grammar",
+      category: "grammar",
+    };
+    assert.equal(detail.grammar[0].grammarTerms, null);
+    const grammarId = detail.grammar[0].id;
+    const gPatched = await app.inject({
+      method: "PATCH",
+      url: `/api/lesson-grammar/${grammarId}`,
+      payload: {
+        grammarTerms: [term],
+      },
+    });
+    assert.equal(gPatched.statusCode, 200);
+    assert.equal(gPatched.json().grammarTerms[0].id, "gt-1");
+
+    const sourceId = detail.source[0].id;
+    const sPatched = await app.inject({
+      method: "PATCH",
+      url: `/api/lesson-source-sentences/${sourceId}`,
+      payload: {
+        grammarTerms: [term],
+      },
+    });
+    assert.equal(sPatched.statusCode, 200);
+    assert.equal(sPatched.json().grammarTerms[0].name, "〜ています");
+
+    // Both come back on the lesson detail.
+    const withTags = (await app.inject({
+      method: "GET",
+      url: `/api/lessons/${slug}`,
+    })).json();
+    assert.equal(
+      withTags.grammar.find((g: { id: string }) => g.id === grammarId).grammarTerms[0].id,
+      "gt-1",
+    );
+    assert.equal(
+      withTags.source.find((s: { id: string }) => s.id === sourceId).grammarTerms[0].id,
+      "gt-1",
+    );
+
+    // An unknown id is a 404.
+    const missing = await app.inject({
+      method: "PATCH",
+      url: "/api/lesson-grammar/00000000-0000-0000-0000-000000000000",
+      payload: {
+        grammarTerms: [],
+      },
+    });
+    assert.equal(missing.statusCode, 404);
 
     // Cleanup: delete cascades children.
     const del = await app.inject({

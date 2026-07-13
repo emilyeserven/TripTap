@@ -1,4 +1,4 @@
-import type { LessonImportInput, VocabRenshuuUpdate } from "@sentence-bank/types";
+import type { LessonImportInput, SentenceTermRef, VocabRenshuuUpdate } from "@sentence-bank/types";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -55,6 +55,44 @@ export function useUpdateVocabRenshuu() {
     }: { id: string;
       patch: VocabRenshuuUpdate; }) =>
       lessonsApi.updateVocab(id, patch),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["lesson-content"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: LESSONS_KEY,
+      });
+    },
+  });
+}
+
+export function useUpdateLessonGrammarTerms() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id, grammarTerms,
+    }: { id: string;
+      grammarTerms: SentenceTermRef[] | null; }) =>
+      lessonsApi.updateGrammarTerms(id, grammarTerms),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["lesson-content"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: LESSONS_KEY,
+      });
+    },
+  });
+}
+
+export function useUpdateSourceSentenceTerms() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id, grammarTerms,
+    }: { id: string;
+      grammarTerms: SentenceTermRef[] | null; }) =>
+      lessonsApi.updateSourceSentenceTerms(id, grammarTerms),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["lesson-content"],
