@@ -29,6 +29,7 @@ import { Route as MySentencesIndexRouteImport } from './routes/my-sentences.inde
 import { Route as ListeningSessionsIndexRouteImport } from './routes/listening-sessions.index'
 import { Route as LessonsIndexRouteImport } from './routes/lessons.index'
 import { Route as CapturesIndexRouteImport } from './routes/captures.index'
+import { Route as BookExercisesIndexRouteImport } from './routes/book-exercises.index'
 import { Route as AnswerSheetsIndexRouteImport } from './routes/answer-sheets.index'
 import { Route as SourcesIdRouteImport } from './routes/sources.$id'
 import { Route as ShadowingNewRouteImport } from './routes/shadowing.new'
@@ -158,6 +159,11 @@ const LessonsIndexRoute = LessonsIndexRouteImport.update({
 const CapturesIndexRoute = CapturesIndexRouteImport.update({
   id: '/captures/',
   path: '/captures/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BookExercisesIndexRoute = BookExercisesIndexRouteImport.update({
+  id: '/book-exercises/',
+  path: '/book-exercises/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AnswerSheetsIndexRoute = AnswerSheetsIndexRouteImport.update({
@@ -342,6 +348,7 @@ export interface FileRoutesByFullPath {
   '/shadowing/new': typeof ShadowingNewRoute
   '/sources/$id': typeof SourcesIdRoute
   '/answer-sheets/': typeof AnswerSheetsIndexRoute
+  '/book-exercises/': typeof BookExercisesIndexRoute
   '/captures/': typeof CapturesIndexRoute
   '/lessons/': typeof LessonsIndexRoute
   '/listening-sessions/': typeof ListeningSessionsIndexRoute
@@ -388,6 +395,7 @@ export interface FileRoutesByTo {
   '/shadowing/new': typeof ShadowingNewRoute
   '/sources/$id': typeof SourcesIdRoute
   '/answer-sheets': typeof AnswerSheetsIndexRoute
+  '/book-exercises': typeof BookExercisesIndexRoute
   '/captures': typeof CapturesIndexRoute
   '/lessons': typeof LessonsIndexRoute
   '/listening-sessions': typeof ListeningSessionsIndexRoute
@@ -441,6 +449,7 @@ export interface FileRoutesById {
   '/shadowing/new': typeof ShadowingNewRoute
   '/sources/$id': typeof SourcesIdRoute
   '/answer-sheets/': typeof AnswerSheetsIndexRoute
+  '/book-exercises/': typeof BookExercisesIndexRoute
   '/captures/': typeof CapturesIndexRoute
   '/lessons/': typeof LessonsIndexRoute
   '/listening-sessions/': typeof ListeningSessionsIndexRoute
@@ -495,6 +504,7 @@ export interface FileRouteTypes {
     | '/shadowing/new'
     | '/sources/$id'
     | '/answer-sheets/'
+    | '/book-exercises/'
     | '/captures/'
     | '/lessons/'
     | '/listening-sessions/'
@@ -541,6 +551,7 @@ export interface FileRouteTypes {
     | '/shadowing/new'
     | '/sources/$id'
     | '/answer-sheets'
+    | '/book-exercises'
     | '/captures'
     | '/lessons'
     | '/listening-sessions'
@@ -593,6 +604,7 @@ export interface FileRouteTypes {
     | '/shadowing/new'
     | '/sources/$id'
     | '/answer-sheets/'
+    | '/book-exercises/'
     | '/captures/'
     | '/lessons/'
     | '/listening-sessions/'
@@ -646,6 +658,7 @@ export interface RootRouteChildren {
   ShadowingNewRoute: typeof ShadowingNewRoute
   SourcesIdRoute: typeof SourcesIdRoute
   AnswerSheetsIndexRoute: typeof AnswerSheetsIndexRoute
+  BookExercisesIndexRoute: typeof BookExercisesIndexRoute
   CapturesIndexRoute: typeof CapturesIndexRoute
   LessonsIndexRoute: typeof LessonsIndexRoute
   ListeningSessionsIndexRoute: typeof ListeningSessionsIndexRoute
@@ -797,6 +810,13 @@ declare module '@tanstack/react-router' {
       path: '/captures'
       fullPath: '/captures/'
       preLoaderRoute: typeof CapturesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/book-exercises/': {
+      id: '/book-exercises/'
+      path: '/book-exercises'
+      fullPath: '/book-exercises/'
+      preLoaderRoute: typeof BookExercisesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/answer-sheets/': {
@@ -1124,6 +1144,7 @@ const rootRouteChildren: RootRouteChildren = {
   ShadowingNewRoute: ShadowingNewRoute,
   SourcesIdRoute: SourcesIdRoute,
   AnswerSheetsIndexRoute: AnswerSheetsIndexRoute,
+  BookExercisesIndexRoute: BookExercisesIndexRoute,
   CapturesIndexRoute: CapturesIndexRoute,
   LessonsIndexRoute: LessonsIndexRoute,
   ListeningSessionsIndexRoute: ListeningSessionsIndexRoute,

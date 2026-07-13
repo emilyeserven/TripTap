@@ -9,6 +9,7 @@ import {
   ClipboardCheckIcon,
   ClipboardListIcon,
   DatabaseIcon,
+  DrillIcon,
   GraduationCapIcon,
   HeadphonesIcon,
   ImagesIcon,
@@ -39,6 +40,7 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
+  SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
@@ -98,22 +100,25 @@ const libraryItems = [
 /** Tools that act on the bank (exports, etc.). */
 const actionItems = [
   {
-    title: "Practice Sentences",
+    title: "Study Sentences",
     to: "/practice",
     icon: NotebookPenIcon,
-  },
-  {
-    title: "My Sentences",
-    to: "/my-sentences",
-    icon: PencilRulerIcon,
   },
   {
     title: "My Writing",
     to: "/my-writing",
     icon: PenLineIcon,
+    children: [
+      {
+        title: "My Sentences",
+        to: "/my-sentences",
+        icon: PencilRulerIcon,
+      },
+    ],
   },
   {
     title: "Book Exercises",
+    to: "/book-exercises",
     icon: BookMarkedIcon,
     children: [
       {
@@ -138,19 +143,21 @@ const actionItems = [
     to: "/shadowing",
     icon: Repeat2Icon,
   },
-] as const;
-
-/** External drill tools that export the bank into other study apps. */
-const extDrillsItems = [
   {
-    title: "Renshuu export",
-    to: "/renshuu",
-    icon: SendIcon,
-  },
-  {
-    title: "Anki export",
-    to: "/anki",
-    icon: LayersIcon,
+    title: "Drills",
+    icon: DrillIcon,
+    children: [
+      {
+        title: "Renshuu export",
+        to: "/renshuu",
+        icon: SendIcon,
+      },
+      {
+        title: "Anki export",
+        to: "/anki",
+        icon: LayersIcon,
+      },
+    ],
   },
 ] as const;
 
@@ -185,12 +192,13 @@ function NavItem({
   );
 }
 
-function NavCollapsibleItem({
+function NavNestedItem({
   item,
   pathname,
 }: {
   item: {
     title: string;
+    to?: string;
     icon: React.ComponentType;
     children: readonly { title: string;
       to: string;
@@ -206,18 +214,49 @@ function NavCollapsibleItem({
       className="group/collapsible"
     >
       <SidebarMenuItem>
-        <CollapsibleTrigger asChild>
-          <SidebarMenuButton tooltip={item.title}>
-            <item.icon />
-            <span>{item.title}</span>
-            <ChevronRightIcon
-              className="
-                ml-auto transition-transform
-                group-data-[state=open]/collapsible:rotate-90
-              "
-            />
-          </SidebarMenuButton>
-        </CollapsibleTrigger>
+        {item.to
+          ? (
+            <>
+              <SidebarMenuButton
+                asChild
+                isActive={isItemActive(pathname, item.to)}
+                tooltip={item.title}
+              >
+                <Link to={item.to}>
+                  <item.icon />
+                  <span>{item.title}</span>
+                </Link>
+              </SidebarMenuButton>
+              <CollapsibleTrigger asChild>
+                <SidebarMenuAction
+                  className="
+                    transition-transform
+                    group-data-[state=open]/collapsible:rotate-90
+                  "
+                >
+                  <ChevronRightIcon />
+                  <span className="sr-only">
+                    Toggle
+                    {item.title}
+                  </span>
+                </SidebarMenuAction>
+              </CollapsibleTrigger>
+            </>
+          )
+          : (
+            <CollapsibleTrigger asChild>
+              <SidebarMenuButton tooltip={item.title}>
+                <item.icon />
+                <span>{item.title}</span>
+                <ChevronRightIcon
+                  className="
+                    ml-auto transition-transform
+                    group-data-[state=open]/collapsible:rotate-90
+                  "
+                />
+              </SidebarMenuButton>
+            </CollapsibleTrigger>
+          )}
         <CollapsibleContent>
           <SidebarMenuSub>
             {item.children.map(child => (
@@ -309,7 +348,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
             {actionItems.map(item =>
               "children" in item
                 ? (
-                  <NavCollapsibleItem
+                  <NavNestedItem
                     key={item.title}
                     item={item}
                     pathname={pathname}
@@ -322,19 +361,6 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                     pathname={pathname}
                   />
                 ))}
-          </SidebarMenu>
-        </SidebarGroup>
-
-        <SidebarGroup>
-          <SidebarGroupLabel>Ext Drills</SidebarGroupLabel>
-          <SidebarMenu>
-            {extDrillsItems.map(item => (
-              <NavItem
-                key={item.to}
-                item={item}
-                pathname={pathname}
-              />
-            ))}
           </SidebarMenu>
         </SidebarGroup>
 
