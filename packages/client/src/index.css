@@ -164,9 +164,37 @@
 [data-super-focus="on"] form > .flex-wrap {
   display: block !important;
 }
-/* Generous spacing between the stacked fields. */
-[data-super-focus="on"] form > * + *,
-[data-super-focus="on"] form [class*="grid-cols"] > * + *,
-[data-super-focus="on"] form > .flex-wrap > * + * {
+/*
+ * Spacing between the stacked fields, chosen via the Field spacing control (S / M / L). XL is handled
+ * separately below as a full-screen "slideshow" panel per field.
+ */
+[data-super-focus-space="s"] form > * + *,
+[data-super-focus-space="s"] form [class*="grid-cols"] > * + *,
+[data-super-focus-space="s"] form > .flex-wrap > * + * {
   margin-top: 2rem !important;
+}
+[data-super-focus-space="m"] form > * + *,
+[data-super-focus-space="m"] form [class*="grid-cols"] > * + *,
+[data-super-focus-space="m"] form > .flex-wrap > * + * {
+  margin-top: 4rem !important;
+}
+[data-super-focus-space="l"] form > * + *,
+[data-super-focus-space="l"] form [class*="grid-cols"] > * + *,
+[data-super-focus-space="l"] form > .flex-wrap > * + * {
+  margin-top: 12rem !important;
+}
+
+/*
+ * XL — dedicate a full screen to each field, slideshow-style: every top-level field (and each field of
+ * a stacked row) fills the viewport height and is vertically centered, so scrolling moves one field at
+ * a time.
+ */
+[data-super-focus-space="xl"] form > *,
+[data-super-focus-space="xl"] form [class*="grid-cols"] > *,
+[data-super-focus-space="xl"] form > .flex-wrap > * {
+  display: flex !important;
+  min-height: 100vh;
+  flex-direction: column;
+  justify-content: center;
+  margin-top: 0 !important;
 }

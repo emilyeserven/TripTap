@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it } from "vitest";
 
 import { DisplayOptions } from "./DisplayOptions";
@@ -19,6 +19,7 @@ describe("DisplayOptions", () => {
       textSize: "regular",
       focusMode: false,
       superFocus: false,
+      superFocusSpace: "s",
       containerWidth: "normal",
     });
   });
@@ -87,6 +88,33 @@ describe("DisplayOptions", () => {
       name: "Super focus mode",
     }));
     expect(useDisplayStore.getState().superFocus).toBe(true);
+  });
+
+  it("reveals the Field spacing control only when super focus is on", () => {
+    openPopover();
+    expect(screen.queryByRole("group", {
+      name: "Field spacing",
+    })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("switch", {
+      name: "Super focus mode",
+    }));
+    expect(screen.getByRole("group", {
+      name: "Field spacing",
+    })).toBeInTheDocument();
+  });
+
+  it("sets the super focus field spacing", () => {
+    useDisplayStore.setState({
+      superFocus: true,
+    });
+    openPopover();
+    const spacing = screen.getByRole("group", {
+      name: "Field spacing",
+    });
+    fireEvent.click(within(spacing).getByRole("button", {
+      name: "L",
+    }));
+    expect(useDisplayStore.getState().superFocusSpace).toBe("l");
   });
 
   it("widens the content via the Wide content toggle", () => {

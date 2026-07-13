@@ -46,6 +46,7 @@ function RootComponent() {
   const textSize = useDisplayStore(s => s.textSize);
   const focusMode = useDisplayStore(s => s.focusMode);
   const superFocus = useDisplayStore(s => s.superFocus);
+  const superFocusSpace = useDisplayStore(s => s.superFocusSpace);
   const containerWidth = useDisplayStore(s => s.containerWidth);
 
   useThemeSync(theme);
@@ -68,6 +69,7 @@ function RootComponent() {
           data-text-size={textSize}
           data-container-width={containerWidth}
           data-super-focus={superFocus ? "on" : undefined}
+          data-super-focus-space={superFocus ? superFocusSpace : undefined}
           className={cn(
             "mx-auto w-full px-4 py-8",
             containerWidth === "wide" ? "max-w-none" : "max-w-6xl",

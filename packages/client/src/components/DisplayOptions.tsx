@@ -1,4 +1,4 @@
-import type { TextSize } from "@/stores/displayStore";
+import type { SuperFocusSpace, TextSize } from "@/stores/displayStore";
 
 import { useSyncExternalStore } from "react";
 
@@ -33,6 +33,26 @@ const TEXT_SIZES: { value: TextSize;
   },
 ];
 
+const SPACE_OPTIONS: { value: SuperFocusSpace;
+  label: string; }[] = [
+  {
+    value: "s",
+    label: "S",
+  },
+  {
+    value: "m",
+    label: "M",
+  },
+  {
+    value: "l",
+    label: "L",
+  },
+  {
+    value: "xl",
+    label: "XL",
+  },
+];
+
 /** Subscribe to OS `prefers-color-scheme` so the Dark switch reflects the resolved value under `system`. */
 function subscribeSystemTheme(callback: () => void) {
   const mql = globalThis.matchMedia?.("(prefers-color-scheme: dark)");
@@ -54,6 +74,8 @@ export function DisplayOptions() {
   const setFocusMode = useDisplayStore(s => s.setFocusMode);
   const superFocus = useDisplayStore(s => s.superFocus);
   const setSuperFocus = useDisplayStore(s => s.setSuperFocus);
+  const superFocusSpace = useDisplayStore(s => s.superFocusSpace);
+  const setSuperFocusSpace = useDisplayStore(s => s.setSuperFocusSpace);
   const containerWidth = useDisplayStore(s => s.containerWidth);
   const setContainerWidth = useDisplayStore(s => s.setContainerWidth);
 
@@ -131,6 +153,33 @@ export function DisplayOptions() {
             aria-label="Super focus mode"
           />
         </label>
+
+        {superFocus && (
+          <div className="space-y-2">
+            <span className="text-sm font-medium">Field spacing</span>
+            <div
+              className="flex overflow-hidden rounded-md border"
+              role="group"
+              aria-label="Field spacing"
+            >
+              {SPACE_OPTIONS.map(({
+                value, label,
+              }) => (
+                <Button
+                  key={value}
+                  type="button"
+                  size="sm"
+                  variant={superFocusSpace === value ? "default" : "ghost"}
+                  className="flex-1 rounded-none"
+                  aria-pressed={superFocusSpace === value}
+                  onClick={() => setSuperFocusSpace(value)}
+                >
+                  {label}
+                </Button>
+              ))}
+            </div>
+          </div>
+        )}
 
         <label className="flex items-center justify-between gap-2 text-sm">
           Wide content
