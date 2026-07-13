@@ -22,6 +22,7 @@ import { Route as AnkiRouteImport } from './routes/anki'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SourcesIndexRouteImport } from './routes/sources.index'
 import { Route as ShadowingIndexRouteImport } from './routes/shadowing.index'
+import { Route as ReadingSessionsIndexRouteImport } from './routes/reading-sessions.index'
 import { Route as QuestionSheetsIndexRouteImport } from './routes/question-sheets.index'
 import { Route as PracticeIndexRouteImport } from './routes/practice.index'
 import { Route as MyWritingIndexRouteImport } from './routes/my-writing.index'
@@ -35,6 +36,8 @@ import { Route as WritingPromptsIdRouteImport } from './routes/writing-prompts.$
 import { Route as SourcesIdRouteImport } from './routes/sources.$id'
 import { Route as ShadowingNewRouteImport } from './routes/shadowing.new'
 import { Route as ShadowingIdRouteImport } from './routes/shadowing.$id'
+import { Route as ReadingSessionsNewRouteImport } from './routes/reading-sessions.new'
+import { Route as ReadingSessionsIdRouteImport } from './routes/reading-sessions.$id'
 import { Route as QuestionSheetsNewRouteImport } from './routes/question-sheets.new'
 import { Route as QuestionSheetsIdRouteImport } from './routes/question-sheets.$id'
 import { Route as PracticeNewRouteImport } from './routes/practice.new'
@@ -50,12 +53,14 @@ import { Route as CapturesIdRouteImport } from './routes/captures.$id'
 import { Route as AnswerSheetsNewRouteImport } from './routes/answer-sheets.new'
 import { Route as AnswerSheetsIdRouteImport } from './routes/answer-sheets.$id'
 import { Route as ShadowingIdIndexRouteImport } from './routes/shadowing.$id.index'
+import { Route as ReadingSessionsIdIndexRouteImport } from './routes/reading-sessions.$id.index'
 import { Route as QuestionSheetsIdIndexRouteImport } from './routes/question-sheets.$id.index'
 import { Route as PracticeIdIndexRouteImport } from './routes/practice.$id.index'
 import { Route as MySentencesIdIndexRouteImport } from './routes/my-sentences.$id.index'
 import { Route as ListeningSessionsIdIndexRouteImport } from './routes/listening-sessions.$id.index'
 import { Route as AnswerSheetsIdIndexRouteImport } from './routes/answer-sheets.$id.index'
 import { Route as ShadowingIdEditRouteImport } from './routes/shadowing.$id.edit'
+import { Route as ReadingSessionsIdEditRouteImport } from './routes/reading-sessions.$id.edit'
 import { Route as QuestionSheetsIdEditRouteImport } from './routes/question-sheets.$id.edit'
 import { Route as PracticeIdEditRouteImport } from './routes/practice.$id.edit'
 import { Route as MySentencesIdEditRouteImport } from './routes/my-sentences.$id.edit'
@@ -127,6 +132,11 @@ const ShadowingIndexRoute = ShadowingIndexRouteImport.update({
   path: '/shadowing/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ReadingSessionsIndexRoute = ReadingSessionsIndexRouteImport.update({
+  id: '/reading-sessions/',
+  path: '/reading-sessions/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const QuestionSheetsIndexRoute = QuestionSheetsIndexRouteImport.update({
   id: '/question-sheets/',
   path: '/question-sheets/',
@@ -190,6 +200,16 @@ const ShadowingNewRoute = ShadowingNewRouteImport.update({
 const ShadowingIdRoute = ShadowingIdRouteImport.update({
   id: '/shadowing/$id',
   path: '/shadowing/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReadingSessionsNewRoute = ReadingSessionsNewRouteImport.update({
+  id: '/reading-sessions/new',
+  path: '/reading-sessions/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReadingSessionsIdRoute = ReadingSessionsIdRouteImport.update({
+  id: '/reading-sessions/$id',
+  path: '/reading-sessions/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const QuestionSheetsNewRoute = QuestionSheetsNewRouteImport.update({
@@ -267,6 +287,11 @@ const ShadowingIdIndexRoute = ShadowingIdIndexRouteImport.update({
   path: '/',
   getParentRoute: () => ShadowingIdRoute,
 } as any)
+const ReadingSessionsIdIndexRoute = ReadingSessionsIdIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ReadingSessionsIdRoute,
+} as any)
 const QuestionSheetsIdIndexRoute = QuestionSheetsIdIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -297,6 +322,11 @@ const ShadowingIdEditRoute = ShadowingIdEditRouteImport.update({
   id: '/edit',
   path: '/edit',
   getParentRoute: () => ShadowingIdRoute,
+} as any)
+const ReadingSessionsIdEditRoute = ReadingSessionsIdEditRouteImport.update({
+  id: '/edit',
+  path: '/edit',
+  getParentRoute: () => ReadingSessionsIdRoute,
 } as any)
 const QuestionSheetsIdEditRoute = QuestionSheetsIdEditRouteImport.update({
   id: '/edit',
@@ -350,6 +380,8 @@ export interface FileRoutesByFullPath {
   '/practice/new': typeof PracticeNewRoute
   '/question-sheets/$id': typeof QuestionSheetsIdRouteWithChildren
   '/question-sheets/new': typeof QuestionSheetsNewRoute
+  '/reading-sessions/$id': typeof ReadingSessionsIdRouteWithChildren
+  '/reading-sessions/new': typeof ReadingSessionsNewRoute
   '/shadowing/$id': typeof ShadowingIdRouteWithChildren
   '/shadowing/new': typeof ShadowingNewRoute
   '/sources/$id': typeof SourcesIdRoute
@@ -363,6 +395,7 @@ export interface FileRoutesByFullPath {
   '/my-writing/': typeof MyWritingIndexRoute
   '/practice/': typeof PracticeIndexRoute
   '/question-sheets/': typeof QuestionSheetsIndexRoute
+  '/reading-sessions/': typeof ReadingSessionsIndexRoute
   '/shadowing/': typeof ShadowingIndexRoute
   '/sources/': typeof SourcesIndexRoute
   '/answer-sheets/$id/edit': typeof AnswerSheetsIdEditRoute
@@ -370,12 +403,14 @@ export interface FileRoutesByFullPath {
   '/my-sentences/$id/edit': typeof MySentencesIdEditRoute
   '/practice/$id/edit': typeof PracticeIdEditRoute
   '/question-sheets/$id/edit': typeof QuestionSheetsIdEditRoute
+  '/reading-sessions/$id/edit': typeof ReadingSessionsIdEditRoute
   '/shadowing/$id/edit': typeof ShadowingIdEditRoute
   '/answer-sheets/$id/': typeof AnswerSheetsIdIndexRoute
   '/listening-sessions/$id/': typeof ListeningSessionsIdIndexRoute
   '/my-sentences/$id/': typeof MySentencesIdIndexRoute
   '/practice/$id/': typeof PracticeIdIndexRoute
   '/question-sheets/$id/': typeof QuestionSheetsIdIndexRoute
+  '/reading-sessions/$id/': typeof ReadingSessionsIdIndexRoute
   '/shadowing/$id/': typeof ShadowingIdIndexRoute
 }
 export interface FileRoutesByTo {
@@ -399,6 +434,7 @@ export interface FileRoutesByTo {
   '/my-writing/$id': typeof MyWritingIdRoute
   '/practice/new': typeof PracticeNewRoute
   '/question-sheets/new': typeof QuestionSheetsNewRoute
+  '/reading-sessions/new': typeof ReadingSessionsNewRoute
   '/shadowing/new': typeof ShadowingNewRoute
   '/sources/$id': typeof SourcesIdRoute
   '/writing-prompts/$id': typeof WritingPromptsIdRoute
@@ -411,6 +447,7 @@ export interface FileRoutesByTo {
   '/my-writing': typeof MyWritingIndexRoute
   '/practice': typeof PracticeIndexRoute
   '/question-sheets': typeof QuestionSheetsIndexRoute
+  '/reading-sessions': typeof ReadingSessionsIndexRoute
   '/shadowing': typeof ShadowingIndexRoute
   '/sources': typeof SourcesIndexRoute
   '/answer-sheets/$id/edit': typeof AnswerSheetsIdEditRoute
@@ -418,12 +455,14 @@ export interface FileRoutesByTo {
   '/my-sentences/$id/edit': typeof MySentencesIdEditRoute
   '/practice/$id/edit': typeof PracticeIdEditRoute
   '/question-sheets/$id/edit': typeof QuestionSheetsIdEditRoute
+  '/reading-sessions/$id/edit': typeof ReadingSessionsIdEditRoute
   '/shadowing/$id/edit': typeof ShadowingIdEditRoute
   '/answer-sheets/$id': typeof AnswerSheetsIdIndexRoute
   '/listening-sessions/$id': typeof ListeningSessionsIdIndexRoute
   '/my-sentences/$id': typeof MySentencesIdIndexRoute
   '/practice/$id': typeof PracticeIdIndexRoute
   '/question-sheets/$id': typeof QuestionSheetsIdIndexRoute
+  '/reading-sessions/$id': typeof ReadingSessionsIdIndexRoute
   '/shadowing/$id': typeof ShadowingIdIndexRoute
 }
 export interface FileRoutesById {
@@ -453,6 +492,8 @@ export interface FileRoutesById {
   '/practice/new': typeof PracticeNewRoute
   '/question-sheets/$id': typeof QuestionSheetsIdRouteWithChildren
   '/question-sheets/new': typeof QuestionSheetsNewRoute
+  '/reading-sessions/$id': typeof ReadingSessionsIdRouteWithChildren
+  '/reading-sessions/new': typeof ReadingSessionsNewRoute
   '/shadowing/$id': typeof ShadowingIdRouteWithChildren
   '/shadowing/new': typeof ShadowingNewRoute
   '/sources/$id': typeof SourcesIdRoute
@@ -466,6 +507,7 @@ export interface FileRoutesById {
   '/my-writing/': typeof MyWritingIndexRoute
   '/practice/': typeof PracticeIndexRoute
   '/question-sheets/': typeof QuestionSheetsIndexRoute
+  '/reading-sessions/': typeof ReadingSessionsIndexRoute
   '/shadowing/': typeof ShadowingIndexRoute
   '/sources/': typeof SourcesIndexRoute
   '/answer-sheets/$id/edit': typeof AnswerSheetsIdEditRoute
@@ -473,12 +515,14 @@ export interface FileRoutesById {
   '/my-sentences/$id/edit': typeof MySentencesIdEditRoute
   '/practice/$id/edit': typeof PracticeIdEditRoute
   '/question-sheets/$id/edit': typeof QuestionSheetsIdEditRoute
+  '/reading-sessions/$id/edit': typeof ReadingSessionsIdEditRoute
   '/shadowing/$id/edit': typeof ShadowingIdEditRoute
   '/answer-sheets/$id/': typeof AnswerSheetsIdIndexRoute
   '/listening-sessions/$id/': typeof ListeningSessionsIdIndexRoute
   '/my-sentences/$id/': typeof MySentencesIdIndexRoute
   '/practice/$id/': typeof PracticeIdIndexRoute
   '/question-sheets/$id/': typeof QuestionSheetsIdIndexRoute
+  '/reading-sessions/$id/': typeof ReadingSessionsIdIndexRoute
   '/shadowing/$id/': typeof ShadowingIdIndexRoute
 }
 export interface FileRouteTypes {
@@ -509,6 +553,8 @@ export interface FileRouteTypes {
     | '/practice/new'
     | '/question-sheets/$id'
     | '/question-sheets/new'
+    | '/reading-sessions/$id'
+    | '/reading-sessions/new'
     | '/shadowing/$id'
     | '/shadowing/new'
     | '/sources/$id'
@@ -522,6 +568,7 @@ export interface FileRouteTypes {
     | '/my-writing/'
     | '/practice/'
     | '/question-sheets/'
+    | '/reading-sessions/'
     | '/shadowing/'
     | '/sources/'
     | '/answer-sheets/$id/edit'
@@ -529,12 +576,14 @@ export interface FileRouteTypes {
     | '/my-sentences/$id/edit'
     | '/practice/$id/edit'
     | '/question-sheets/$id/edit'
+    | '/reading-sessions/$id/edit'
     | '/shadowing/$id/edit'
     | '/answer-sheets/$id/'
     | '/listening-sessions/$id/'
     | '/my-sentences/$id/'
     | '/practice/$id/'
     | '/question-sheets/$id/'
+    | '/reading-sessions/$id/'
     | '/shadowing/$id/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -558,6 +607,7 @@ export interface FileRouteTypes {
     | '/my-writing/$id'
     | '/practice/new'
     | '/question-sheets/new'
+    | '/reading-sessions/new'
     | '/shadowing/new'
     | '/sources/$id'
     | '/writing-prompts/$id'
@@ -570,6 +620,7 @@ export interface FileRouteTypes {
     | '/my-writing'
     | '/practice'
     | '/question-sheets'
+    | '/reading-sessions'
     | '/shadowing'
     | '/sources'
     | '/answer-sheets/$id/edit'
@@ -577,12 +628,14 @@ export interface FileRouteTypes {
     | '/my-sentences/$id/edit'
     | '/practice/$id/edit'
     | '/question-sheets/$id/edit'
+    | '/reading-sessions/$id/edit'
     | '/shadowing/$id/edit'
     | '/answer-sheets/$id'
     | '/listening-sessions/$id'
     | '/my-sentences/$id'
     | '/practice/$id'
     | '/question-sheets/$id'
+    | '/reading-sessions/$id'
     | '/shadowing/$id'
   id:
     | '__root__'
@@ -611,6 +664,8 @@ export interface FileRouteTypes {
     | '/practice/new'
     | '/question-sheets/$id'
     | '/question-sheets/new'
+    | '/reading-sessions/$id'
+    | '/reading-sessions/new'
     | '/shadowing/$id'
     | '/shadowing/new'
     | '/sources/$id'
@@ -624,6 +679,7 @@ export interface FileRouteTypes {
     | '/my-writing/'
     | '/practice/'
     | '/question-sheets/'
+    | '/reading-sessions/'
     | '/shadowing/'
     | '/sources/'
     | '/answer-sheets/$id/edit'
@@ -631,12 +687,14 @@ export interface FileRouteTypes {
     | '/my-sentences/$id/edit'
     | '/practice/$id/edit'
     | '/question-sheets/$id/edit'
+    | '/reading-sessions/$id/edit'
     | '/shadowing/$id/edit'
     | '/answer-sheets/$id/'
     | '/listening-sessions/$id/'
     | '/my-sentences/$id/'
     | '/practice/$id/'
     | '/question-sheets/$id/'
+    | '/reading-sessions/$id/'
     | '/shadowing/$id/'
   fileRoutesById: FileRoutesById
 }
@@ -666,6 +724,8 @@ export interface RootRouteChildren {
   PracticeNewRoute: typeof PracticeNewRoute
   QuestionSheetsIdRoute: typeof QuestionSheetsIdRouteWithChildren
   QuestionSheetsNewRoute: typeof QuestionSheetsNewRoute
+  ReadingSessionsIdRoute: typeof ReadingSessionsIdRouteWithChildren
+  ReadingSessionsNewRoute: typeof ReadingSessionsNewRoute
   ShadowingIdRoute: typeof ShadowingIdRouteWithChildren
   ShadowingNewRoute: typeof ShadowingNewRoute
   SourcesIdRoute: typeof SourcesIdRoute
@@ -678,6 +738,7 @@ export interface RootRouteChildren {
   MyWritingIndexRoute: typeof MyWritingIndexRoute
   PracticeIndexRoute: typeof PracticeIndexRoute
   QuestionSheetsIndexRoute: typeof QuestionSheetsIndexRoute
+  ReadingSessionsIndexRoute: typeof ReadingSessionsIndexRoute
   ShadowingIndexRoute: typeof ShadowingIndexRoute
   SourcesIndexRoute: typeof SourcesIndexRoute
 }
@@ -775,6 +836,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShadowingIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/reading-sessions/': {
+      id: '/reading-sessions/'
+      path: '/reading-sessions'
+      fullPath: '/reading-sessions/'
+      preLoaderRoute: typeof ReadingSessionsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/question-sheets/': {
       id: '/question-sheets/'
       path: '/question-sheets'
@@ -864,6 +932,20 @@ declare module '@tanstack/react-router' {
       path: '/shadowing/$id'
       fullPath: '/shadowing/$id'
       preLoaderRoute: typeof ShadowingIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reading-sessions/new': {
+      id: '/reading-sessions/new'
+      path: '/reading-sessions/new'
+      fullPath: '/reading-sessions/new'
+      preLoaderRoute: typeof ReadingSessionsNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reading-sessions/$id': {
+      id: '/reading-sessions/$id'
+      path: '/reading-sessions/$id'
+      fullPath: '/reading-sessions/$id'
+      preLoaderRoute: typeof ReadingSessionsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/question-sheets/new': {
@@ -971,6 +1053,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShadowingIdIndexRouteImport
       parentRoute: typeof ShadowingIdRoute
     }
+    '/reading-sessions/$id/': {
+      id: '/reading-sessions/$id/'
+      path: '/'
+      fullPath: '/reading-sessions/$id/'
+      preLoaderRoute: typeof ReadingSessionsIdIndexRouteImport
+      parentRoute: typeof ReadingSessionsIdRoute
+    }
     '/question-sheets/$id/': {
       id: '/question-sheets/$id/'
       path: '/'
@@ -1012,6 +1101,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/shadowing/$id/edit'
       preLoaderRoute: typeof ShadowingIdEditRouteImport
       parentRoute: typeof ShadowingIdRoute
+    }
+    '/reading-sessions/$id/edit': {
+      id: '/reading-sessions/$id/edit'
+      path: '/edit'
+      fullPath: '/reading-sessions/$id/edit'
+      preLoaderRoute: typeof ReadingSessionsIdEditRouteImport
+      parentRoute: typeof ReadingSessionsIdRoute
     }
     '/question-sheets/$id/edit': {
       id: '/question-sheets/$id/edit'
@@ -1131,6 +1227,19 @@ const QuestionSheetsIdRouteChildren: QuestionSheetsIdRouteChildren = {
 const QuestionSheetsIdRouteWithChildren =
   QuestionSheetsIdRoute._addFileChildren(QuestionSheetsIdRouteChildren)
 
+interface ReadingSessionsIdRouteChildren {
+  ReadingSessionsIdEditRoute: typeof ReadingSessionsIdEditRoute
+  ReadingSessionsIdIndexRoute: typeof ReadingSessionsIdIndexRoute
+}
+
+const ReadingSessionsIdRouteChildren: ReadingSessionsIdRouteChildren = {
+  ReadingSessionsIdEditRoute: ReadingSessionsIdEditRoute,
+  ReadingSessionsIdIndexRoute: ReadingSessionsIdIndexRoute,
+}
+
+const ReadingSessionsIdRouteWithChildren =
+  ReadingSessionsIdRoute._addFileChildren(ReadingSessionsIdRouteChildren)
+
 interface ShadowingIdRouteChildren {
   ShadowingIdEditRoute: typeof ShadowingIdEditRoute
   ShadowingIdIndexRoute: typeof ShadowingIdIndexRoute
@@ -1171,6 +1280,8 @@ const rootRouteChildren: RootRouteChildren = {
   PracticeNewRoute: PracticeNewRoute,
   QuestionSheetsIdRoute: QuestionSheetsIdRouteWithChildren,
   QuestionSheetsNewRoute: QuestionSheetsNewRoute,
+  ReadingSessionsIdRoute: ReadingSessionsIdRouteWithChildren,
+  ReadingSessionsNewRoute: ReadingSessionsNewRoute,
   ShadowingIdRoute: ShadowingIdRouteWithChildren,
   ShadowingNewRoute: ShadowingNewRoute,
   SourcesIdRoute: SourcesIdRoute,
@@ -1183,6 +1294,7 @@ const rootRouteChildren: RootRouteChildren = {
   MyWritingIndexRoute: MyWritingIndexRoute,
   PracticeIndexRoute: PracticeIndexRoute,
   QuestionSheetsIndexRoute: QuestionSheetsIndexRoute,
+  ReadingSessionsIndexRoute: ReadingSessionsIndexRoute,
   ShadowingIndexRoute: ShadowingIndexRoute,
   SourcesIndexRoute: SourcesIndexRoute,
 }

@@ -144,6 +144,11 @@ const actionItems = [
     icon: Repeat2Icon,
   },
   {
+    title: "Reading Session",
+    to: "/reading-sessions",
+    icon: BookOpenIcon,
+  },
+  {
     title: "Drills",
     icon: DrillIcon,
     children: [
