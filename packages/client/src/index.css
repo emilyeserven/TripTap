@@ -118,3 +118,11 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Display Options — content-only text scaling (chrome stays fixed). See DisplayOptions.tsx. */
+[data-text-size="large"] {
+  zoom: 1.15;
+}
+[data-text-size="xl"] {
+  zoom: 1.3;
+}

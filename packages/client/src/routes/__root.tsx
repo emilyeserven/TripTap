@@ -1,15 +1,21 @@
+import type { Theme } from "@/stores/displayStore";
 import type { QueryClient } from "@tanstack/react-query";
+
+import { useEffect } from "react";
 
 import { Outlet, createRootRouteWithContext } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 
 import { AppSidebar } from "@/components/app-sidebar";
+import { DisplayOptions } from "@/components/DisplayOptions";
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Toaster } from "@/components/ui/sonner";
+import { cn } from "@/lib/utils";
+import { resolveTheme, useDisplayStore } from "@/stores/displayStore";
 
 export interface RouterContext {
   queryClient: QueryClient;
@@ -19,18 +25,50 @@ export const Route = createRootRouteWithContext<RouterContext>()({
   component: RootComponent,
 });
 
+/** Keep the `.dark` class on <html> in sync with the theme pref, tracking the OS when set to `system`. */
+function useThemeSync(theme: Theme) {
+  useEffect(() => {
+    const apply = () => {
+      document.documentElement.classList.toggle("dark", resolveTheme(theme) === "dark");
+    };
+    apply();
+    if (theme !== "system") {
+      return;
+    }
+    const mql = globalThis.matchMedia?.("(prefers-color-scheme: dark)");
+    mql?.addEventListener("change", apply);
+    return () => mql?.removeEventListener("change", apply);
+  }, [theme]);
+}
+
 function RootComponent() {
+  const theme = useDisplayStore(s => s.theme);
+  const textSize = useDisplayStore(s => s.textSize);
+  const focusMode = useDisplayStore(s => s.focusMode);
+  const containerWidth = useDisplayStore(s => s.containerWidth);
+
+  useThemeSync(theme);
+
   return (
     <SidebarProvider>
-      <AppSidebar />
+      {focusMode ? null : <AppSidebar />}
       <SidebarInset>
         <header className="flex h-12 shrink-0 items-center gap-2 border-b px-4">
-          <SidebarTrigger className="-ml-1" />
+          {focusMode ? null : <SidebarTrigger className="-ml-1" />}
           <span className="text-lg font-semibold">sentence-bank</span>
+          <div className="ml-auto flex items-center gap-2">
+            <DisplayOptions />
+          </div>
         </header>
-        <main className="mx-auto w-full max-w-6xl px-4 py-8">
+        <div
+          data-text-size={textSize}
+          className={cn(
+            "mx-auto w-full px-4 py-8",
+            containerWidth === "wide" ? "max-w-none" : "max-w-6xl",
+          )}
+        >
           <Outlet />
-        </main>
+        </div>
       </SidebarInset>
       <Toaster />
       {import.meta.env.DEV ? <TanStackRouterDevtools /> : null}
