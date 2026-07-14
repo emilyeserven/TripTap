@@ -8,6 +8,7 @@ import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 
 import { AppSidebar } from "@/components/app-sidebar";
 import { DisplayOptions } from "@/components/DisplayOptions";
+import { RefreshButton } from "@/components/RefreshButton";
 import { SlideMode } from "@/components/SlideMode";
 import {
   SidebarInset,
@@ -71,6 +72,7 @@ function RootComponent() {
           {hideSidebar ? null : <SidebarTrigger className="-ml-1" />}
           <span className="truncate text-lg font-semibold">{pageTitle || "sentence-bank"}</span>
           <div className="ml-auto flex items-center gap-2">
+            <RefreshButton />
             <DisplayOptions />
           </div>
         </header>
