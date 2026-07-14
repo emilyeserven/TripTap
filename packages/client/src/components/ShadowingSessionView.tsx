@@ -6,6 +6,7 @@ import { useRef, useState } from "react";
 import { ExternalLink, Play, RotateCcw, SkipForward, Square } from "lucide-react";
 
 import { KanaEntryToggle } from "@/components/KanaEntryToggle";
+import { PinnablePlayer } from "@/components/PinnablePlayer";
 import { SessionNotes } from "@/components/SessionNotes";
 import { StopwatchPlayer } from "@/components/StopwatchPlayer";
 import { TimestampModeToggle } from "@/components/TimestampModeToggle";
@@ -53,16 +54,18 @@ export function ShadowingSessionView({
 
   return (
     <div className="space-y-4">
-      {videoId
-        ? (
-          <YouTubePlayer
-            ref={playerRef}
-            videoId={videoId}
-          />
-        )
-        : (
-          <StopwatchPlayer ref={playerRef} />
-        )}
+      <PinnablePlayer canPin={!!videoId}>
+        {videoId
+          ? (
+            <YouTubePlayer
+              ref={playerRef}
+              videoId={videoId}
+            />
+          )
+          : (
+            <StopwatchPlayer ref={playerRef} />
+          )}
+      </PinnablePlayer>
 
       {session.bookmarkId && session.bookmarkTitle && (
         <p className="text-sm text-muted-foreground">
