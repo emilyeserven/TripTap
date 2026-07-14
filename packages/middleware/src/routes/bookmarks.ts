@@ -9,7 +9,7 @@ import {
   fetchTerms,
   fetchVocabulary,
   getBookmark,
-  listBookmarks,
+  listBookmarksForCategory,
 } from "@/services/bookmarks";
 
 /** Map a bookmarks domain error to its HTTP status; rethrow anything else. */
@@ -67,11 +67,11 @@ const createTermBody = {
 
 const recordsQuery = {
   type: "object",
-  required: ["tagId"],
+  required: ["category"],
   properties: {
-    tagId: {
+    category: {
       type: "string",
-      minLength: 1,
+      enum: CATEGORY_ENUM,
     },
   },
 } as const;
@@ -159,10 +159,10 @@ export async function bookmarksRoutes(app: FastifyInstance): Promise<void> {
     },
   }, async (req, reply) => {
     const {
-      tagId,
-    } = req.query as { tagId: string };
+      category,
+    } = req.query as { category: SentenceTermCategory };
     try {
-      return await listBookmarks(tagId);
+      return await listBookmarksForCategory(category);
     }
     catch (err) {
       return handleError(err, reply);

@@ -139,6 +139,16 @@ test("POST /api/bookmarks/terms returns 503 when the channel has no source confi
   await app.close();
 });
 
+test("GET /api/bookmarks/records requires a category", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "GET",
+    url: "/api/bookmarks/records",
+  });
+  assert.equal(res.statusCode, 400);
+  await app.close();
+});
+
 test("GET /api/bookmarks/tags returns 502 when the configured host is unreachable", async () => {
   // Point the resolver at a closed port so fetch fails fast → BookmarksUnavailableError → 502.
   const prev = process.env.BOOKMARKS_API_URL;
