@@ -1,0 +1,1 @@
+ALTER TABLE "question_sheets" DROP COLUMN "resource_terms";

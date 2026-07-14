@@ -289,15 +289,21 @@ export type NewWritingRow = typeof writings.$inferInsert;
 /**
  * `question_sheets` — reusable templates of textbook/worksheet questions with no answer key. A
  * `layout` of "list" uses the `questions` JSONB (each question, and each of its parts, is an
- * answerable slot); "grid" uses the `grid` JSONB (each row×column cell is a slot). `resource_terms`
- * tags the sheet with the Textbooks & Worksheets bookmarks channel.
+ * answerable slot); "grid" uses the `grid` JSONB (each row×column cell is a slot). `bookmark_id`
+ * links the sheet to a specific bookmark from the Textbooks & Worksheets bookmarks channel;
+ * `due_date` optionally surfaces the sheet on the homepage when it's coming up or overdue.
  */
 export const questionSheets = pgTable("question_sheets", {
   id: uuid("id").primaryKey().defaultRandom(),
   title: text("title").notNull(),
   notes: text("notes"),
   page: text("page"),
-  resourceTerms: jsonb("resource_terms").$type<SentenceTermRef[]>(),
+  bookmarkId: text("bookmark_id"),
+  bookmarkTitle: text("bookmark_title"),
+  bookmarkUrl: text("bookmark_url"),
+  dueDate: timestamp("due_date", {
+    withTimezone: true,
+  }),
   layout: text("layout").notNull().default("list"),
   questions: jsonb("questions").$type<QuestionSheetQuestion[]>(),
   grid: jsonb("grid").$type<QuestionSheetGrid>(),

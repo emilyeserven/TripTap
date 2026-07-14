@@ -1,34 +1,40 @@
-import type { BookmarkRecord } from "@sentence-bank/types";
+import type { BookmarkRecord, SentenceTermCategory } from "@sentence-bank/types";
 
 import { useState } from "react";
 
 import { Combobox } from "@/components/ui/combobox";
 import { Label } from "@/components/ui/label";
-import { useBookmarkRecords, useBookmarksListeningVocabulary } from "@/hooks/useBookmarks";
+import { useBookmarkRecords, useBookmarksVocabulary } from "@/hooks/useBookmarks";
+import { TERM_CATEGORIES } from "@/lib/terms";
 
 /**
- * Two-step bookmark chooser for the Listening Source channel: pick a child tag of the configured
- * Listening source, then pick one of the bookmarks tagged with it. Selecting a bookmark calls `onPick`
- * with the full record (so the form can auto-fill the video URL and keep the bookmark id/title for a
- * back-link). Picking the blank option clears the association.
+ * Two-step bookmark chooser for one channel's configured bookmarks source: pick a child tag, then
+ * pick one of the bookmarks tagged with it. Selecting a bookmark calls `onPick` with the full record
+ * (so the form can auto-fill a URL/title and keep the bookmark id for a back-link). Picking the blank
+ * option clears the association.
  */
 export function BookmarkPicker({
   selectedBookmarkId,
   selectedBookmarkTitle,
   onPick,
+  category = "listening",
+  label = "Bookmark",
 }: {
   selectedBookmarkId: string | null;
   selectedBookmarkTitle: string | null;
   onPick: (record: BookmarkRecord | null) => void;
+  category?: SentenceTermCategory;
+  label?: string;
 }) {
+  const channelLabel = TERM_CATEGORIES.find(c => c.category === category)?.label ?? category;
   const [tagId, setTagId] = useState("");
-  const childTags = useBookmarksListeningVocabulary();
+  const childTags = useBookmarksVocabulary(category);
   const records = useBookmarkRecords(tagId || null);
 
   const tagOptions = [
     {
       value: "",
-      label: "Select a listening tag…",
+      label: "Select a tag…",
     },
     ...(childTags.data ?? []).map(t => ({
       value: t.id,
@@ -56,15 +62,15 @@ export function BookmarkPicker({
 
   return (
     <div className="space-y-2 rounded-md border p-4">
-      <Label>Bookmark</Label>
+      <Label>{label}</Label>
       <p className="text-xs text-muted-foreground">
-        Pick a listening tag, then a bookmark. Its URL fills the video field below.
+        Pick a {channelLabel} tag, then a bookmark.
       </p>
       {childTags.isError
         ? (
           <p className="text-sm text-destructive">
-            Couldn’t reach the bookmarks host. Configure the Listening source in Settings and make sure
-            this server is on the Tailnet.
+            Couldn’t reach the bookmarks host. Configure the {channelLabel} source in Settings and make
+            sure this server is on the Tailnet.
           </p>
         )
         : (
@@ -74,8 +80,8 @@ export function BookmarkPicker({
               onChange={setTagId}
               options={tagOptions}
               className="w-full"
-              ariaLabel="Listening tag"
-              placeholder={childTags.isLoading ? "Loading tags…" : "Select a listening tag…"}
+              ariaLabel={`${channelLabel} tag`}
+              placeholder={childTags.isLoading ? "Loading tags…" : "Select a tag…"}
             />
             <Combobox
               value={selectedBookmarkId ?? ""}

@@ -14,7 +14,10 @@ export function toQuestionSheet(row: QuestionSheetRow): QuestionSheet {
     title: row.title,
     notes: row.notes,
     page: row.page,
-    resourceTerms: row.resourceTerms ?? null,
+    bookmarkId: row.bookmarkId,
+    bookmarkTitle: row.bookmarkTitle,
+    bookmarkUrl: row.bookmarkUrl,
+    dueDate: row.dueDate instanceof Date ? row.dueDate.toISOString() : (row.dueDate ?? null),
     layout: row.layout === "grid" ? "grid" : "list",
     questions: row.questions ?? [],
     grid: row.grid ?? null,
@@ -31,7 +34,10 @@ function toInsert(input: CreateQuestionSheetInput) {
     title: input.title,
     notes: input.notes ?? null,
     page: input.page ?? null,
-    resourceTerms: input.resourceTerms ?? null,
+    bookmarkId: input.bookmarkId ?? null,
+    bookmarkTitle: input.bookmarkTitle ?? null,
+    bookmarkUrl: input.bookmarkUrl ?? null,
+    dueDate: input.dueDate ? new Date(input.dueDate) : null,
     layout: input.layout,
     questions: input.questions ?? null,
     grid: input.grid ?? null,
@@ -64,6 +70,7 @@ export async function updateQuestionSheet(
     .update(questionSheets)
     .set({
       ...input,
+      dueDate: input.dueDate === undefined ? undefined : (input.dueDate ? new Date(input.dueDate) : null),
       updatedAt: new Date(),
     })
     .where(eq(questionSheets.id, id))

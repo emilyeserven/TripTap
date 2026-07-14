@@ -22,37 +22,6 @@ const questionSheetParams = {
   },
 } as const;
 
-const resourceTermsSchema = {
-  type: ["array", "null"],
-  items: {
-    type: "object",
-    additionalProperties: false,
-    required: ["id", "name", "kind", "sourceId", "sourceLabel"],
-    properties: {
-      id: {
-        type: "string",
-      },
-      name: {
-        type: "string",
-      },
-      kind: {
-        type: "string",
-        enum: ["tag", "taxonomy"],
-      },
-      sourceId: {
-        type: "string",
-      },
-      sourceLabel: {
-        type: "string",
-      },
-      category: {
-        type: "string",
-        enum: ["vocabulary", "grammar", "general", "resource"],
-      },
-    },
-  },
-} as const;
-
 const questionsSchema = {
   type: "array",
   items: {
@@ -135,7 +104,18 @@ const createQuestionSheetBody = {
     page: {
       type: ["string", "null"],
     },
-    resourceTerms: resourceTermsSchema,
+    bookmarkId: {
+      type: ["string", "null"],
+    },
+    bookmarkTitle: {
+      type: ["string", "null"],
+    },
+    bookmarkUrl: {
+      type: ["string", "null"],
+    },
+    dueDate: {
+      type: ["string", "null"],
+    },
     questions: questionsSchema,
     grid: gridSchema,
   },

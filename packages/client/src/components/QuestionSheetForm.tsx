@@ -5,14 +5,13 @@ import type {
   QuestionSheetLayout,
   QuestionSheetPart,
   QuestionSheetQuestion,
-  SentenceTermRef,
 } from "@sentence-bank/types";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react";
 
-import { TermPicker } from "@/components/TermPicker";
+import { BookmarkPicker } from "@/components/BookmarkPicker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -37,9 +36,9 @@ function newId(prefix: string): string {
 
 /**
  * Create/edit form for a Question Sheet — the reusable template of textbook/worksheet questions.
- * Collects a title, notes, a Textbooks & Worksheets tag, and either a dynamic list of questions
- * (each with optional labelled parts) or a grid (named columns + labelled rows). Passing
- * `questionSheet` puts it in edit mode; otherwise it creates a new one.
+ * Collects the source bookmark, page, an auto-filled title, notes, an optional due date, and either
+ * a dynamic list of questions (each with optional labelled parts) or a grid (named columns + labelled
+ * rows). Passing `questionSheet` puts it in edit mode; otherwise it creates a new one.
  */
 export function QuestionSheetForm({
   questionSheet,
@@ -52,14 +51,18 @@ export function QuestionSheetForm({
   const update = useUpdateQuestionSheet();
   const editing = questionSheet !== undefined;
 
-  const [title, setTitle] = useState(questionSheet?.title ?? "");
-  const [notes, setNotes] = useState(questionSheet?.notes ?? "");
+  const [bookmarkId, setBookmarkId] = useState(questionSheet?.bookmarkId ?? null);
+  const [bookmarkTitle, setBookmarkTitle] = useState(questionSheet?.bookmarkTitle ?? null);
+  const [bookmarkUrl, setBookmarkUrl] = useState(questionSheet?.bookmarkUrl ?? null);
   const [page, setPage] = useState(questionSheet?.page ?? "");
+  const [dueDate, setDueDate] = useState(questionSheet?.dueDate?.slice(0, 10) ?? "");
+  const [title, setTitle] = useState(questionSheet?.title ?? "");
+  // In edit mode the existing title is never auto-overwritten; in create mode it tracks the
+  // bookmark/page until the user types into it directly.
+  const [titleTouched, setTitleTouched] = useState(editing);
+  const [notes, setNotes] = useState(questionSheet?.notes ?? "");
   const [layout, setLayout] = useState<QuestionSheetLayout>(questionSheet?.layout ?? "list");
   const [quickCount, setQuickCount] = useState("");
-  const [resourceTerms, setResourceTerms] = useState<SentenceTermRef[]>(
-    questionSheet?.resourceTerms ?? [],
-  );
   const [questions, setQuestions] = useState<QuestionSheetQuestion[]>(
     questionSheet?.questions ?? [],
   );
@@ -67,6 +70,12 @@ export function QuestionSheetForm({
   const [rows, setRows] = useState<QuestionSheetGridRow[]>(questionSheet?.grid?.rows ?? []);
   const [bulkColumns, setBulkColumns] = useState("");
   const [bulkRows, setBulkRows] = useState("");
+
+  useEffect(() => {
+    if (titleTouched) return;
+    const derived = [bookmarkTitle, page.trim() || null].filter(Boolean).join(" — ");
+    if (derived) setTitle(derived);
+  }, [bookmarkTitle, page, titleTouched]);
 
   const pending = create.isPending || update.isPending;
   const canSubmit = title.trim().length > 0 && !pending;
@@ -216,7 +225,10 @@ export function QuestionSheetForm({
       layout,
       notes: notes.trim() || null,
       page: page.trim() || null,
-      resourceTerms: resourceTerms.length > 0 ? resourceTerms : null,
+      bookmarkId,
+      bookmarkTitle,
+      bookmarkUrl,
+      dueDate: dueDate ? new Date(dueDate).toISOString() : null,
       questions: layout === "list" ? questions : [],
       grid: layout === "grid"
         ? {
@@ -242,32 +254,23 @@ export function QuestionSheetForm({
         void submit();
       }}
     >
-      <div className="space-y-1.5">
-        <Label htmlFor="qs-title">Title</Label>
-        <Input
-          id="qs-title"
-          value={title}
-          onChange={e => setTitle(e.target.value)}
-          placeholder="Genki I — Lesson 3 workbook"
-        />
-      </div>
-
       <div
         className="
           grid gap-4
-          sm:grid-cols-[1fr_auto]
+          sm:grid-cols-[1fr_auto_auto]
         "
       >
-        <div className="space-y-1.5">
-          <Label htmlFor="qs-notes">Notes</Label>
-          <Textarea
-            id="qs-notes"
-            value={notes}
-            onChange={e => setNotes(e.target.value)}
-            placeholder="Anything to remember about this exercise set (optional)"
-            rows={2}
-          />
-        </div>
+        <BookmarkPicker
+          category="resource"
+          label="Textbook / Worksheet"
+          selectedBookmarkId={bookmarkId}
+          selectedBookmarkTitle={bookmarkTitle}
+          onPick={(record) => {
+            setBookmarkId(record?.id ?? null);
+            setBookmarkTitle(record?.title ?? null);
+            setBookmarkUrl(record?.url ?? null);
+          }}
+        />
         <div className="space-y-1.5">
           <Label htmlFor="qs-page">Page</Label>
           <Input
@@ -278,14 +281,41 @@ export function QuestionSheetForm({
             className="sm:w-32"
           />
         </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="qs-due-date">Due date</Label>
+          <Input
+            id="qs-due-date"
+            type="date"
+            value={dueDate}
+            onChange={e => setDueDate(e.target.value)}
+            className="sm:w-40"
+          />
+        </div>
       </div>
 
-      <TermPicker
-        category="resource"
-        label="Textbook / Worksheet"
-        value={resourceTerms}
-        onChange={setResourceTerms}
-      />
+      <div className="space-y-1.5">
+        <Label htmlFor="qs-title">Title</Label>
+        <Input
+          id="qs-title"
+          value={title}
+          onChange={(e) => {
+            setTitle(e.target.value);
+            setTitleTouched(true);
+          }}
+          placeholder="Genki I — Lesson 3 workbook"
+        />
+      </div>
+
+      <div className="space-y-1.5">
+        <Label htmlFor="qs-notes">Notes</Label>
+        <Textarea
+          id="qs-notes"
+          value={notes}
+          onChange={e => setNotes(e.target.value)}
+          placeholder="Anything to remember about this exercise set (optional)"
+          rows={2}
+        />
+      </div>
 
       <div className="space-y-2">
         <Label>Layout</Label>

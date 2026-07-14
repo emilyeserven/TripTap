@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { questionSheetSlots } from "@/lib/answer-sheets";
+import { formatDueDate, isOverdue } from "@/lib/due-date";
 
 /** Compact list-item for one Question Sheet: title link, layout + slot count, and a Delete action. */
 export function QuestionSheetCard({
@@ -16,7 +17,6 @@ export function QuestionSheetCard({
   onDelete: (id: string) => void;
 }) {
   const slotCount = questionSheetSlots(qs).length;
-  const resourceTerms = qs.resourceTerms ?? [];
 
   return (
     <Card>
@@ -53,14 +53,31 @@ export function QuestionSheetCard({
           <Badge variant="secondary">{qs.layout === "grid" ? "Grid" : "List"}</Badge>
           {qs.page ? <Badge variant="outline">Page {qs.page}</Badge> : null}
           <span>{slotCount} {slotCount === 1 ? "slot" : "slots"}</span>
-          {resourceTerms.map(term => (
-            <Badge
-              key={`${term.sourceId}:${term.id}`}
-              variant="outline"
-            >
-              {term.name}
-            </Badge>
-          ))}
+          {qs.bookmarkTitle
+            ? (
+              <Badge variant="outline">
+                {qs.bookmarkUrl
+                  ? (
+                    <a
+                      href={qs.bookmarkUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="hover:underline"
+                    >
+                      {qs.bookmarkTitle}
+                    </a>
+                  )
+                  : qs.bookmarkTitle}
+              </Badge>
+            )
+            : null}
+          {qs.dueDate
+            ? (
+              <Badge variant={isOverdue(qs.dueDate, new Date()) ? "destructive" : "outline"}>
+                Due {formatDueDate(qs.dueDate)}
+              </Badge>
+            )
+            : null}
         </div>
         <div>
           <Button
