@@ -9,6 +9,7 @@
  */
 
 // Type-only import (erased at build) — `SentenceTermRef` lives in the barrel; no runtime cycle.
+import type { DrillMistakeReasonRef } from "./drill-session.js";
 import type { SentenceTermRef } from "./index.js";
 
 /** A learner-produced sentence, awaiting correction. */
@@ -24,6 +25,8 @@ export interface MySentence {
   practiceSentenceId: string | null;
   /** The writing this sentence was promoted from (via a correction), or null. */
   writingId: string | null;
+  /** The tutoring lesson this sentence was added from, or null. */
+  lessonId: string | null;
   /** Whether it still needs correction (starts true — not professionally written). */
   needsCorrection: boolean;
   /** A corrected version of {@link text}, filled in later; null until corrected. */
@@ -34,6 +37,8 @@ export interface MySentence {
   explanation: string | null;
   /** Structured bookmarks tags (Vocabulary / Grammar / General); null until any are attached. */
   terms: SentenceTermRef[] | null;
+  /** Why it was wrong — references into the shared Drill reason taxonomy; null until any are tagged. */
+  reasons: DrillMistakeReasonRef[] | null;
   /** ISO-8601 timestamp of when the sentence was added. */
   createdAt: string;
 }
@@ -45,12 +50,14 @@ export interface CreateMySentenceInput {
   translation?: string | null;
   practiceSentenceId?: string | null;
   writingId?: string | null;
+  lessonId?: string | null;
   /** Defaults to true server-side when omitted. */
   needsCorrection?: boolean;
   correction?: string | null;
   actualMeaning?: string | null;
   explanation?: string | null;
   terms?: SentenceTermRef[] | null;
+  reasons?: DrillMistakeReasonRef[] | null;
 }
 
 /** Payload for partially updating a my-sentence. */

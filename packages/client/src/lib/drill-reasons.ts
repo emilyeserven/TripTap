@@ -3,15 +3,18 @@ import type { DrillMistakeReasonRef, DrillReasonCategory } from "@sentence-bank/
 /** Separator used when rendering a reason's `Category › Subcategory › Reason` path. */
 export const REASON_PATH_SEP = " › ";
 
-/** A reason flattened out of the taxonomy tree, carrying its full ancestry for labels and options. */
+/**
+ * A reason flattened out of the taxonomy tree, carrying its ancestry for labels and options.
+ * `subcategoryId`/`subcategoryName` are null for reasons attached directly to a category.
+ */
 export interface FlatReason {
   categoryId: string;
   categoryName: string;
-  subcategoryId: string;
-  subcategoryName: string;
+  subcategoryId: string | null;
+  subcategoryName: string | null;
   reasonId: string;
   reasonName: string;
-  /** `Category › Subcategory › Reason`. */
+  /** `Category › Subcategory › Reason`, or `Category › Reason` when there's no subcategory. */
   path: string;
 }
 
@@ -31,6 +34,18 @@ export function flattenReasons(categories: DrillReasonCategory[]): FlatReason[] 
           path: [category.name, sub.name, reason.name].join(REASON_PATH_SEP),
         });
       }
+    }
+    // Reasons attached directly to the category (no subcategory).
+    for (const reason of category.reasons ?? []) {
+      out.push({
+        categoryId: category.id,
+        categoryName: category.name,
+        subcategoryId: null,
+        subcategoryName: null,
+        reasonId: reason.id,
+        reasonName: reason.name,
+        path: [category.name, reason.name].join(REASON_PATH_SEP),
+      });
     }
   }
   return out;
@@ -54,8 +69,10 @@ export function resolveReasonRef(
   const sub = ref.subcategoryId
     ? (category?.subcategories ?? []).find(s => s.id === ref.subcategoryId) ?? null
     : null;
+  // A reason lives in its subcategory, or (when there's no subcategory) directly on the category.
+  const reasonPool = sub ? sub.reasons : (category?.reasons ?? []);
   const reason = ref.reasonId
-    ? (sub?.reasons ?? []).find(r => r.id === ref.reasonId) ?? null
+    ? reasonPool.find(r => r.id === ref.reasonId) ?? null
     : null;
 
   const categoryName = category?.name ?? null;
@@ -65,8 +82,8 @@ export function resolveReasonRef(
   const parts = [categoryName, subcategoryName, reasonName].filter(
     (p): p is string => p !== null,
   );
-  // If the ref pointed at a deeper level than resolved (e.g. a deleted reason), say so.
-  const wantedDepth = (ref.reasonId ? 3 : 0) || (ref.subcategoryId ? 2 : 1);
+  // How many levels the ref names — if fewer resolved, something upstream was deleted.
+  const wantedDepth = 1 + (ref.subcategoryId ? 1 : 0) + (ref.reasonId ? 1 : 0);
   const label = parts.length === 0 || parts.length < wantedDepth
     ? parts.length === 0
       ? "(deleted reason)"

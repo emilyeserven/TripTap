@@ -35,7 +35,19 @@ export function useMySentence(id: string) {
 export function useMySentencesForPractice(practiceSentenceId: string) {
   return useQuery({
     queryKey: [...MY_SENTENCES_KEY, "for-practice", practiceSentenceId],
-    queryFn: () => mySentencesApi.list(practiceSentenceId),
+    queryFn: () => mySentencesApi.list({
+      practiceSentenceId,
+    }),
+  });
+}
+
+/** The my-sentences added from a given tutoring lesson (0 or more). */
+export function useMySentencesForLesson(lessonId: string) {
+  return useQuery({
+    queryKey: [...MY_SENTENCES_KEY, "for-lesson", lessonId],
+    queryFn: () => mySentencesApi.list({
+      lessonId,
+    }),
   });
 }
 

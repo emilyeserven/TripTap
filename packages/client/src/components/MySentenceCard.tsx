@@ -1,7 +1,9 @@
 import type { MySentence } from "@sentence-bank/types";
 
+import { useState } from "react";
+
 import { Link } from "@tanstack/react-router";
-import { NotebookPen, PenLine, TriangleAlert } from "lucide-react";
+import { Eye, EyeOff, NotebookPen, PenLine, TriangleAlert } from "lucide-react";
 
 import { CorrectionDiff } from "../lib/sentenceDiff";
 import { groupTermsByCategory, TERM_CATEGORIES } from "../lib/terms";
@@ -23,6 +25,8 @@ export function MySentenceCard({
   onDelete?: (id: string) => void;
 }) {
   const termGroups = groupTermsByCategory(ms.terms ?? []);
+  const corrected = ms.correction?.trim() ? ms.correction : null;
+  const [showOriginal, setShowOriginal] = useState(false);
 
   return (
     <Card>
@@ -38,7 +42,7 @@ export function MySentenceCard({
               hover:underline
             "
           >
-            {ms.text}
+            {corrected ?? ms.text}
           </Link>
           <div className="flex shrink-0 items-center gap-2">
             <Button
@@ -72,14 +76,35 @@ export function MySentenceCard({
           </div>
         </div>
 
-        {ms.correction
+        {corrected
           ? (
-            <div className="rounded-md border bg-muted/30 p-2">
-              <CorrectionDiff
-                written={ms.text}
-                correct={ms.correction}
-                language={ms.language}
-              />
+            <div className="space-y-1">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowOriginal(v => !v)}
+              >
+                {showOriginal
+                  ? <EyeOff className="size-4" />
+                  : (
+                    <Eye
+                      className="size-4"
+                    />
+                  )}
+                {showOriginal ? "Hide original" : "Show your original"}
+              </Button>
+              {showOriginal
+                ? (
+                  <div className="rounded-md border bg-muted/30 p-2">
+                    <CorrectionDiff
+                      written={ms.text}
+                      correct={corrected}
+                      language={ms.language}
+                    />
+                  </div>
+                )
+                : null}
             </div>
           )
           : null}
@@ -92,7 +117,7 @@ export function MySentenceCard({
           "
         >
           <Badge variant="secondary">{ms.language}</Badge>
-          {ms.needsCorrection
+          {!corrected && ms.needsCorrection
             ? (
               <Badge
                 variant="outline"

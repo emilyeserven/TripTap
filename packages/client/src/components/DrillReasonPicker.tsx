@@ -1,4 +1,4 @@
-import type { DrillMistakeReasonRef, DrillSubcategory } from "@sentence-bank/types";
+import type { DrillMistakeReasonRef, DrillReason, DrillSubcategory } from "@sentence-bank/types";
 
 import { useState } from "react";
 
@@ -24,6 +24,7 @@ import { flattenReasons } from "@/lib/drill-reasons";
 import { newId } from "@/lib/id";
 
 const NEW = "__new";
+const NONE = "__none";
 
 /**
  * Picks the reasons a mistake is tagged with, from the reusable Category → Subcategory → Reason
@@ -56,7 +57,7 @@ export function DrillReasonPicker({
   const [adding, setAdding] = useState(false);
   const [catChoice, setCatChoice] = useState<string>(NEW);
   const [newCatName, setNewCatName] = useState("");
-  const [subChoice, setSubChoice] = useState<string>(NEW);
+  const [subChoice, setSubChoice] = useState<string>(NONE);
   const [newSubName, setNewSubName] = useState("");
   const [reasonName, setReasonName] = useState("");
 
@@ -81,13 +82,13 @@ export function DrillReasonPicker({
     setAdding(false);
     setCatChoice(NEW);
     setNewCatName("");
-    setSubChoice(NEW);
+    setSubChoice(NONE);
     setNewSubName("");
     setReasonName("");
   }
 
   const newCategory = catChoice === NEW;
-  const newSubcategory = newCategory || subChoice === NEW;
+  const newSubcategory = subChoice === NEW;
   const canAdd = reasonName.trim().length > 0
     && (newCategory ? newCatName.trim().length > 0 : true)
     && (newSubcategory ? newSubName.trim().length > 0 : true)
@@ -103,16 +104,23 @@ export function DrillReasonPicker({
 
     try {
       if (newCategory) {
-        // Brand-new category holding a fresh subcategory + the reason.
-        const subId = newId();
-        const created = await createCategory.mutateAsync({
-          name: newCatName.trim(),
-          subcategories: [{
-            id: subId,
-            name: newSubName.trim(),
-            reasons: [reason],
-          }],
-        });
+        // Brand-new category, holding either a fresh subcategory or the reason directly.
+        const subId = newSubcategory ? newId() : null;
+        const created = await createCategory.mutateAsync(
+          newSubcategory
+            ? {
+              name: newCatName.trim(),
+              subcategories: [{
+                id: subId as string,
+                name: newSubName.trim(),
+                reasons: [reason],
+              }],
+            }
+            : {
+              name: newCatName.trim(),
+              reasons: [reason],
+            },
+        );
         onChange([...value, {
           categoryId: created.id,
           subcategoryId: subId,
@@ -120,33 +128,39 @@ export function DrillReasonPicker({
         }]);
       }
       else if (chosenCategory) {
-        // Existing category: append to an existing subcategory or add a new one.
-        const existing = chosenCategory.subcategories ?? [];
-        let subId: string;
-        let nextSubcategories: DrillSubcategory[];
-        if (newSubcategory) {
-          subId = newId();
-          nextSubcategories = [...existing, {
-            id: subId,
-            name: newSubName.trim(),
-            reasons: [reason],
-          }];
+        let subId: string | null;
+        const input: { subcategories?: DrillSubcategory[];
+          reasons?: DrillReason[]; } = {};
+        if (subChoice === NONE) {
+          // Attach the reason directly to the category (no subcategory).
+          subId = null;
+          input.reasons = [...(chosenCategory.reasons ?? []), reason];
         }
         else {
-          subId = subChoice;
-          nextSubcategories = existing.map(s =>
-            s.id === subId
-              ? {
-                ...s,
-                reasons: [...s.reasons, reason],
-              }
-              : s);
+          // Append to an existing subcategory, or add a new one holding the reason.
+          const existing = chosenCategory.subcategories ?? [];
+          if (newSubcategory) {
+            subId = newId();
+            input.subcategories = [...existing, {
+              id: subId,
+              name: newSubName.trim(),
+              reasons: [reason],
+            }];
+          }
+          else {
+            subId = subChoice;
+            input.subcategories = existing.map(s =>
+              s.id === subId
+                ? {
+                  ...s,
+                  reasons: [...s.reasons, reason],
+                }
+                : s);
+          }
         }
         await updateCategory.mutateAsync({
           id: chosenCategory.id,
-          input: {
-            subcategories: nextSubcategories,
-          },
+          input,
         });
         onChange([...value, {
           categoryId: chosenCategory.id,
@@ -190,7 +204,7 @@ export function DrillReasonPicker({
                   value={catChoice}
                   onValueChange={(next) => {
                     setCatChoice(next);
-                    setSubChoice(NEW);
+                    setSubChoice(NONE);
                   }}
                 >
                   <SelectTrigger aria-label="Category">
@@ -221,16 +235,16 @@ export function DrillReasonPicker({
               </div>
 
               <div className="space-y-1.5">
-                <Label>Subcategory</Label>
+                <Label>Subcategory (optional)</Label>
                 <Select
-                  value={newCategory ? NEW : subChoice}
+                  value={subChoice}
                   onValueChange={setSubChoice}
-                  disabled={newCategory}
                 >
                   <SelectTrigger aria-label="Subcategory">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value={NONE}>(No subcategory)</SelectItem>
                     {chosenSubcategories.map(s => (
                       <SelectItem
                         key={s.id}

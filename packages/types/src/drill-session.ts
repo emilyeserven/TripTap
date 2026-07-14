@@ -30,6 +30,8 @@ export interface DrillReasonCategory {
   id: string;
   name: string;
   subcategories: DrillSubcategory[] | null;
+  /** Reasons attached directly to the category, with no subcategory. */
+  reasons: DrillReason[] | null;
   /** ISO-8601 timestamp of when the category was added. */
   createdAt: string;
   /** ISO-8601 timestamp of the last update. */
@@ -40,6 +42,7 @@ export interface DrillReasonCategory {
 export interface CreateDrillReasonCategoryInput {
   name: string;
   subcategories?: DrillSubcategory[] | null;
+  reasons?: DrillReason[] | null;
 }
 
 /** Payload for partially updating a reason category. */
@@ -62,7 +65,9 @@ export interface DrillMistakeReasonRef {
 export interface DrillMistake {
   /** Client-generated id (via `newId()`). */
   id: string;
-  /** What they got wrong — the item, prompt, or the answer they gave. Kept only when non-empty. */
+  /** The question or prompt that was asked. */
+  question?: string | null;
+  /** What they got wrong — the answer they gave. Kept only when non-empty. */
   prompt: string;
   /** The correct answer, when known. */
   correctAnswer?: string | null;

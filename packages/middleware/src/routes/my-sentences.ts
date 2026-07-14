@@ -28,6 +28,30 @@ const listQuery = {
       type: "string",
       format: "uuid",
     },
+    lessonId: {
+      type: "string",
+      format: "uuid",
+    },
+  },
+} as const;
+
+const reasonsSchema = {
+  type: ["array", "null"],
+  items: {
+    type: "object",
+    additionalProperties: false,
+    required: ["categoryId"],
+    properties: {
+      categoryId: {
+        type: "string",
+      },
+      subcategoryId: {
+        type: ["string", "null"],
+      },
+      reasonId: {
+        type: ["string", "null"],
+      },
+    },
   },
 } as const;
 
@@ -86,6 +110,10 @@ const createMySentenceBody = {
       type: ["string", "null"],
       format: "uuid",
     },
+    lessonId: {
+      type: ["string", "null"],
+      format: "uuid",
+    },
     needsCorrection: {
       type: "boolean",
     },
@@ -99,6 +127,7 @@ const createMySentenceBody = {
       type: ["string", "null"],
     },
     terms: termsSchema,
+    reasons: reasonsSchema,
   },
 } as const;
 
@@ -131,9 +160,13 @@ export async function mySentenceRoutes(app: FastifyInstance): Promise<void> {
     },
   }, async (req) => {
     const {
+      practiceSentenceId, lessonId,
+    } = req.query as { practiceSentenceId?: string;
+      lessonId?: string; };
+    return listMySentences({
       practiceSentenceId,
-    } = req.query as { practiceSentenceId?: string };
-    return listMySentences(practiceSentenceId);
+      lessonId,
+    });
   });
 
   app.get("/api/my-sentences/:id", {

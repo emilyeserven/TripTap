@@ -22,6 +22,23 @@ const categoryParams = {
   },
 } as const;
 
+const reasonsSchema = {
+  type: "array",
+  items: {
+    type: "object",
+    additionalProperties: false,
+    required: ["id", "name"],
+    properties: {
+      id: {
+        type: "string",
+      },
+      name: {
+        type: "string",
+      },
+    },
+  },
+} as const;
+
 const subcategoriesSchema = {
   type: ["array", "null"],
   items: {
@@ -35,24 +52,15 @@ const subcategoriesSchema = {
       name: {
         type: "string",
       },
-      reasons: {
-        type: "array",
-        items: {
-          type: "object",
-          additionalProperties: false,
-          required: ["id", "name"],
-          properties: {
-            id: {
-              type: "string",
-            },
-            name: {
-              type: "string",
-            },
-          },
-        },
-      },
+      reasons: reasonsSchema,
     },
   },
+} as const;
+
+/** Reasons attached directly to a category, with no subcategory. */
+const categoryReasonsSchema = {
+  type: ["array", "null"],
+  items: reasonsSchema.items,
 } as const;
 
 const createCategoryBody = {
@@ -65,6 +73,7 @@ const createCategoryBody = {
       minLength: 1,
     },
     subcategories: subcategoriesSchema,
+    reasons: categoryReasonsSchema,
   },
 } as const;
 

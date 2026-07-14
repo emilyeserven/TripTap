@@ -24,6 +24,7 @@ export function DrillMistakes({
   const addMistake = () =>
     onChange([...mistakes, {
       id: newId(),
+      question: null,
       prompt: "",
       correctAnswer: null,
       reflection: null,
@@ -80,6 +81,18 @@ export function DrillMistakes({
                   >
                     <Trash2 className="size-4" />
                   </Button>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label>Question (optional)</Label>
+                  <Input
+                    value={m.question ?? ""}
+                    onChange={e => patch(m.id, {
+                      question: e.target.value,
+                    })}
+                    placeholder="The prompt you were answering, e.g. Conjugate 食べる (potential)"
+                    aria-label="Question"
+                  />
                 </div>
 
                 <div

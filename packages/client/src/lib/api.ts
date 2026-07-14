@@ -183,12 +183,14 @@ export const practiceSentencesApi = {
 };
 
 export const mySentencesApi = {
-  list: (practiceSentenceId?: string) =>
-    request<MySentence[]>(
-      practiceSentenceId
-        ? `/my-sentences?practiceSentenceId=${practiceSentenceId}`
-        : "/my-sentences",
-    ),
+  list: (filters?: { practiceSentenceId?: string;
+    lessonId?: string; }) => {
+    const params = new URLSearchParams();
+    if (filters?.practiceSentenceId) params.set("practiceSentenceId", filters.practiceSentenceId);
+    if (filters?.lessonId) params.set("lessonId", filters.lessonId);
+    const qs = params.toString();
+    return request<MySentence[]>(qs ? `/my-sentences?${qs}` : "/my-sentences");
+  },
   get: (id: string) => request<MySentence>(`/my-sentences/${id}`),
   create: (input: CreateMySentenceInput) =>
     request<MySentence>("/my-sentences", {

@@ -32,6 +32,9 @@ const mistakesSchema = {
       id: {
         type: "string",
       },
+      question: {
+        type: ["string", "null"],
+      },
       prompt: {
         type: "string",
       },
