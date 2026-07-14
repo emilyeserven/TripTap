@@ -3,6 +3,7 @@ import type { QuestionSheet } from "@sentence-bank/types";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { formatDueDate, isOverdue } from "@/lib/due-date";
 
 /** Read-only render of a question sheet's structure — a numbered list (with parts) or a grid. */
 export function QuestionSheetView({
@@ -10,8 +11,6 @@ export function QuestionSheetView({
 }: {
   questionSheet: QuestionSheet;
 }) {
-  const resourceTerms = qs.resourceTerms ?? [];
-
   return (
     <Card>
       <CardContent className="space-y-4 p-4">
@@ -25,20 +24,32 @@ export function QuestionSheetView({
           >
             <Badge variant="secondary">{qs.layout === "grid" ? "Grid" : "List"}</Badge>
             {qs.page ? <Badge variant="outline">Page {qs.page}</Badge> : null}
-            {resourceTerms.length > 0
+            {qs.bookmarkTitle
               ? (
-                <span className="inline-flex flex-wrap items-center gap-1">
-                  <span>Textbooks &amp; Worksheets:</span>
-                  {resourceTerms.map(term => (
-                    <Badge
-                      key={`${term.sourceId}:${term.id}`}
-                      variant="outline"
-                      title={term.sourceLabel ? `${term.sourceLabel} (${term.kind})` : undefined}
-                    >
-                      {term.name}
-                    </Badge>
-                  ))}
+                <span className="inline-flex items-center gap-1">
+                  <span>Textbook / Worksheet:</span>
+                  <Badge variant="outline">
+                    {qs.bookmarkUrl
+                      ? (
+                        <a
+                          href={qs.bookmarkUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="hover:underline"
+                        >
+                          {qs.bookmarkTitle}
+                        </a>
+                      )
+                      : qs.bookmarkTitle}
+                  </Badge>
                 </span>
+              )
+              : null}
+            {qs.dueDate
+              ? (
+                <Badge variant={isOverdue(qs.dueDate, new Date()) ? "destructive" : "outline"}>
+                  Due {formatDueDate(qs.dueDate)}
+                </Badge>
               )
               : null}
           </div>

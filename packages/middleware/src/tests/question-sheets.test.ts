@@ -48,7 +48,7 @@ test("POST /api/question-sheets rejects a question missing a prompt", async () =
   await app.close();
 });
 
-test("POST /api/question-sheets rejects a resource term with an unknown category", async () => {
+test("POST /api/question-sheets rejects a non-string bookmarkId", async () => {
   const app = await buildApp();
   const res = await app.inject({
     method: "POST",
@@ -56,23 +56,16 @@ test("POST /api/question-sheets rejects a resource term with an unknown category
     payload: {
       title: "Chapter 3 drills",
       layout: "list",
-      resourceTerms: [
-        {
-          id: "t1",
-          name: "Genki I",
-          kind: "taxonomy",
-          sourceId: "s1",
-          sourceLabel: "Textbooks",
-          category: "workbook",
-        },
-      ],
+      bookmarkId: {
+        id: "b1",
+      },
     },
   });
   assert.equal(res.statusCode, 400);
   await app.close();
 });
 
-test("POST /api/question-sheets accepts a valid list sheet with parts and a resource tag", async () => {
+test("POST /api/question-sheets accepts a valid list sheet with parts, a bookmark, and a due date", async () => {
   const app = await buildApp();
   const res = await app.inject({
     method: "POST",
@@ -81,16 +74,10 @@ test("POST /api/question-sheets accepts a valid list sheet with parts and a reso
       title: "Genki L3 workbook",
       layout: "list",
       notes: "Section II",
-      resourceTerms: [
-        {
-          id: "t1",
-          name: "Genki I",
-          kind: "taxonomy",
-          sourceId: "s1",
-          sourceLabel: "Textbooks",
-          category: "resource",
-        },
-      ],
+      bookmarkId: "b1",
+      bookmarkTitle: "Genki I — Lesson 3",
+      bookmarkUrl: "https://example.com/genki-l3",
+      dueDate: "2026-08-01T00:00:00.000Z",
       questions: [
         {
           id: "q1",

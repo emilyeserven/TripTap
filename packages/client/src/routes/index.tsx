@@ -1,9 +1,11 @@
+import type { QuestionSheet } from "@sentence-bank/types";
 import type * as React from "react";
 
 import { Link, createFileRoute } from "@tanstack/react-router";
 import {
   BookMarkedIcon,
   BookOpenIcon,
+  CalendarClockIcon,
   CameraIcon,
   ClipboardCheckIcon,
   ClipboardListIcon,
@@ -24,7 +26,20 @@ import {
   SettingsIcon,
 } from "lucide-react";
 
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { usePageTitle } from "@/hooks/usePageTitle";
+import { useQuestionSheets } from "@/hooks/useQuestionSheets";
+import { formatDueDate, isDueSoon, isOverdue } from "@/lib/due-date";
+
+/** How far ahead (in days) a due question sheet counts as "due soon" on the homepage card. */
+const DUE_SOON_DAYS = 7;
+/** Cap on how many due sheets the homepage card shows at once. */
+const DUE_SOON_LIMIT = 5;
+
+function hasDueDate(sheet: QuestionSheet): sheet is QuestionSheet & { dueDate: string } {
+  return sheet.dueDate !== null;
+}
 
 interface Tile {
   title: string;
@@ -236,6 +251,53 @@ function TileCard({
   );
 }
 
+/** Homepage card surfacing question sheets that are overdue or due within {@link DUE_SOON_DAYS} days. */
+function DueSoonCard() {
+  const {
+    data: sheets,
+  } = useQuestionSheets();
+  const now = new Date();
+  const due = (sheets ?? [])
+    .filter(hasDueDate)
+    .filter(s => isDueSoon(s.dueDate, now, DUE_SOON_DAYS))
+    .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
+    .slice(0, DUE_SOON_LIMIT);
+
+  if (due.length === 0) return null;
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-base">
+          <CalendarClockIcon className="size-4" />
+          Question sheets due soon
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-2">
+        {due.map(sheet => (
+          <Link
+            key={sheet.id}
+            to="/question-sheets/$id"
+            params={{
+              id: sheet.id,
+            }}
+            className="
+              flex items-center justify-between gap-2 rounded-md border p-2
+              text-sm transition-colors
+              hover:bg-accent
+            "
+          >
+            <span className="font-medium">{sheet.title}</span>
+            <Badge variant={isOverdue(sheet.dueDate, now) ? "destructive" : "outline"}>
+              Due {formatDueDate(sheet.dueDate)}
+            </Badge>
+          </Link>
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
+
 function HomePage() {
   usePageTitle("Build your sentence bank");
   return (
@@ -244,6 +306,8 @@ function HomePage() {
         sentence-bank is a self-deployable app for building your personal bank of example
         sentences. Jump into any section below to get started.
       </p>
+
+      <DueSoonCard />
 
       {sections.map(section => (
         <section

@@ -1,5 +1,3 @@
-import type { SentenceTermRef } from "./index.js";
-
 /** How a question sheet's answerable slots are laid out. */
 export type QuestionSheetLayout = "list" | "grid";
 
@@ -40,8 +38,12 @@ export interface QuestionSheet {
   notes: string | null;
   /** Free-text location within the source, e.g. "p. 12–13", "ch. 3". */
   page: string | null;
-  /** Tags drawn from the "resource" (Textbooks & Worksheets) bookmarks channel. */
-  resourceTerms: SentenceTermRef[] | null;
+  /** The specific worksheet/textbook bookmark this sheet is drawn from, from the "resource" channel. */
+  bookmarkId: string | null;
+  bookmarkTitle: string | null;
+  bookmarkUrl: string | null;
+  /** When this sheet should be answered by, if any. */
+  dueDate: string | null;
   layout: QuestionSheetLayout;
   /** Used when `layout === "list"`. */
   questions: QuestionSheetQuestion[];
@@ -56,7 +58,10 @@ export interface CreateQuestionSheetInput {
   layout: QuestionSheetLayout;
   notes?: string | null;
   page?: string | null;
-  resourceTerms?: SentenceTermRef[] | null;
+  bookmarkId?: string | null;
+  bookmarkTitle?: string | null;
+  bookmarkUrl?: string | null;
+  dueDate?: string | null;
   questions?: QuestionSheetQuestion[];
   grid?: QuestionSheetGrid | null;
 }
