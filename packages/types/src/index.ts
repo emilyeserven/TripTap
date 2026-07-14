@@ -7,8 +7,10 @@
 
 export * from "./answer-sheet.js";
 export * from "./ai-lesson.js";
+export * from "./lesson.js";
 export * from "./listening-session.js";
 export * from "./my-sentence.js";
+export * from "./tutor.js";
 export * from "./practice-sentence.js";
 export * from "./question-sheet.js";
 export * from "./reading-session.js";

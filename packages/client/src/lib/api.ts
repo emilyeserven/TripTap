@@ -56,6 +56,12 @@ import type {
   AnswerSheet,
   CreateAnswerSheetInput,
   UpdateAnswerSheetInput,
+  Tutor,
+  CreateTutorInput,
+  UpdateTutorInput,
+  Lesson,
+  CreateLessonInput,
+  UpdateLessonInput,
   WritingPrompt,
   CreateWritingPromptInput,
   UpdateWritingPromptInput,
@@ -286,6 +292,43 @@ export const answerSheetsApi = {
       body: JSON.stringify(input),
     }),
   remove: (id: string) => request<undefined>(`/answer-sheets/${id}`, {
+    method: "DELETE",
+  }),
+};
+
+export const tutorsApi = {
+  list: () => request<Tutor[]>("/tutors"),
+  get: (id: string) => request<Tutor>(`/tutors/${id}`),
+  create: (input: CreateTutorInput) =>
+    request<Tutor>("/tutors", {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+  update: (id: string, input: UpdateTutorInput) =>
+    request<Tutor>(`/tutors/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    }),
+  remove: (id: string) => request<undefined>(`/tutors/${id}`, {
+    method: "DELETE",
+  }),
+};
+
+export const lessonsApi = {
+  list: (tutorId?: string) =>
+    request<Lesson[]>(tutorId ? `/lessons?tutorId=${tutorId}` : "/lessons"),
+  get: (id: string) => request<Lesson>(`/lessons/${id}`),
+  create: (input: CreateLessonInput) =>
+    request<Lesson>("/lessons", {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+  update: (id: string, input: UpdateLessonInput) =>
+    request<Lesson>(`/lessons/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    }),
+  remove: (id: string) => request<undefined>(`/lessons/${id}`, {
     method: "DELETE",
   }),
 };

@@ -2,6 +2,7 @@ import type * as React from "react";
 
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
+  BookAIcon,
   BookMarkedIcon,
   BookOpenIcon,
   CameraIcon,
@@ -25,6 +26,7 @@ import {
   ScrollTextIcon,
   SendIcon,
   SettingsIcon,
+  UserRoundIcon,
 } from "lucide-react";
 
 import {
@@ -49,8 +51,18 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 
-/** { Captures, AI Lessons } — source material to mine from. */
+/** { Lessons, AI Lessons, Captures, … } — source material to mine from. */
 const collectionsItems = [
+  {
+    title: "Lessons",
+    to: "/lessons",
+    icon: BookAIcon,
+  },
+  {
+    title: "Tutors",
+    to: "/tutors",
+    icon: UserRoundIcon,
+  },
   {
     title: "AI Lessons",
     to: "/ai-lessons",
@@ -341,6 +353,18 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                 <Link to="/capture">
                   <CameraIcon />
                   <span>Capture</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                tooltip="Start Lesson"
+                isActive={isItemActive(pathname, "/lessons/new")}
+              >
+                <Link to="/lessons/new">
+                  <BookAIcon />
+                  <span>Start Lesson</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>

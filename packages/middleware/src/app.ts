@@ -8,6 +8,7 @@ import { answerSheetRoutes } from "@/routes/answer-sheets";
 import { bookmarksRoutes } from "@/routes/bookmarks";
 import { captureRoutes } from "@/routes/captures";
 import { healthRoutes } from "@/routes/health";
+import { lessonRoutes } from "@/routes/lessons";
 import { listeningSessionsRoutes } from "@/routes/listening-sessions";
 import { mySentenceRoutes } from "@/routes/my-sentences";
 import { ocrRoutes } from "@/routes/ocr";
@@ -19,6 +20,7 @@ import { sentenceRoutes } from "@/routes/sentences";
 import { settingsRoutes } from "@/routes/settings";
 import { shadowingSessionsRoutes } from "@/routes/shadowing-sessions";
 import { sourceRoutes } from "@/routes/sources";
+import { tutorRoutes } from "@/routes/tutors";
 import { vocabRoutes } from "@/routes/vocab";
 import { writingRoutes } from "@/routes/writings";
 import { writingPromptRoutes } from "@/routes/writing-prompts";
@@ -94,6 +96,14 @@ export async function buildApp(): Promise<FastifyInstance> {
           description: "AI Lesson import & viewing",
         },
         {
+          name: "lessons",
+          description: "Tutoring lessons — date, tutor, listening/word notes, answer sheets",
+        },
+        {
+          name: "tutors",
+          description: "Tutors who run lessons",
+        },
+        {
           name: "health",
           description: "Service health",
         },
@@ -144,6 +154,8 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(shadowingSessionsRoutes);
   await app.register(readingSessionsRoutes);
   await app.register(writingPromptRoutes);
+  await app.register(tutorRoutes);
+  await app.register(lessonRoutes);
   await app.register(sourceRoutes);
   await app.register(vocabRoutes);
   await app.register(captureRoutes);

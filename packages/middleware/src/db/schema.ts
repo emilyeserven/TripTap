@@ -3,6 +3,8 @@ import type {
   CleanedBlocks,
   FuriToken,
   GrammarExample,
+  LessonListeningNote,
+  LessonWordNote,
   ListeningEntry,
   OcrBlock,
   PracticeGrammar,
@@ -18,7 +20,7 @@ import type {
   WordNote,
   WritingCorrection,
 } from "@sentence-bank/types";
-import { type AnyPgColumn, boolean, customType, integer, jsonb, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import { type AnyPgColumn, boolean, customType, date, integer, jsonb, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 
 /** Postgres `bytea` column mapped to a Node {@link Buffer}. */
 const bytea = customType<{ data: Buffer }>({
@@ -429,6 +431,55 @@ export const readingSessions = pgTable("reading_sessions", {
 
 export type ReadingSessionRow = typeof readingSessions.$inferSelect;
 export type NewReadingSessionRow = typeof readingSessions.$inferInsert;
+
+/**
+ * `tutors` — the person who ran a {@link lessons lesson}. A lightweight reference entity (name + notes)
+ * that lessons associate with and can be filtered by.
+ */
+export const tutors = pgTable("tutors", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull(),
+  notes: text("notes"),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+});
+
+export type TutorRow = typeof tutors.$inferSelect;
+export type NewTutorRow = typeof tutors.$inferInsert;
+
+/**
+ * `lessons` — a tutoring session: a `date`, a single associated `tutor` (`onDelete: "set null"` so a
+ * lesson survives its tutor's deletion), a running log of `listening_notes` (kana-capable, no
+ * timestamps), a flat list of `word_notes` (every field optional), and `answer_sheet_ids` linking the
+ * answer sheets worked through (denormalized id list; missing ids are ignored when resolving titles).
+ */
+export const lessons = pgTable("lessons", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  title: text("title"),
+  date: date("date", {
+    mode: "string",
+  }).notNull(),
+  language: text("language").notNull(),
+  tutorId: uuid("tutor_id").references((): AnyPgColumn => tutors.id, {
+    onDelete: "set null",
+  }),
+  listeningNotes: jsonb("listening_notes").$type<LessonListeningNote[]>(),
+  wordNotes: jsonb("word_notes").$type<LessonWordNote[]>(),
+  answerSheetIds: jsonb("answer_sheet_ids").$type<string[]>(),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+});
+
+export type LessonRow = typeof lessons.$inferSelect;
+export type NewLessonRow = typeof lessons.$inferInsert;
 
 /**
  * `writing_prompts` — reusable prompts the learner saves to spark a free-write. Each has a Japanese

@@ -3,6 +3,7 @@ import type * as React from "react";
 
 import { Link, createFileRoute } from "@tanstack/react-router";
 import {
+  BookAIcon,
   BookMarkedIcon,
   BookOpenIcon,
   CalendarClockIcon,
@@ -24,6 +25,7 @@ import {
   ScrollTextIcon,
   SendIcon,
   SettingsIcon,
+  UserRoundIcon,
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -143,6 +145,18 @@ const sections: readonly TileSection[] = [
     label: "Collections",
     description: "The source material you mine sentences from.",
     tiles: [
+      {
+        title: "Lessons",
+        to: "/lessons",
+        icon: BookAIcon,
+        description: "Records of your tutoring lessons.",
+      },
+      {
+        title: "Tutors",
+        to: "/tutors",
+        icon: UserRoundIcon,
+        description: "The tutors you take lessons with.",
+      },
       {
         title: "AI Lessons",
         to: "/ai-lessons",
