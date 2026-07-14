@@ -9,10 +9,8 @@ import { useTutors } from "@/hooks/useTutors";
 /** Compact list-item for one lesson: title/date link, tutor, and note counts. */
 export function LessonCard({
   lesson,
-  onDelete,
 }: {
   lesson: Lesson;
-  onDelete: (id: string) => void;
 }) {
   const tutors = useTutors();
   const tutor = (tutors.data ?? []).find(t => t.id === lesson.tutorId);
@@ -23,30 +21,18 @@ export function LessonCard({
   return (
     <Card>
       <CardContent className="space-y-3 p-4">
-        <div className="flex items-start justify-between gap-2">
-          <Link
-            to="/lessons/$id"
-            params={{
-              id: lesson.id,
-            }}
-            className="
-              text-lg font-semibold
-              hover:underline
-            "
-          >
-            {lesson.title ?? lesson.date}
-          </Link>
-          <button
-            type="button"
-            className="
-              text-sm text-destructive
-              hover:underline
-            "
-            onClick={() => onDelete(lesson.id)}
-          >
-            Delete
-          </button>
-        </div>
+        <Link
+          to="/lessons/$id"
+          params={{
+            id: lesson.id,
+          }}
+          className="
+            text-lg font-semibold
+            hover:underline
+          "
+        >
+          {lesson.title ?? lesson.date}
+        </Link>
         <div
           className="
             flex flex-wrap items-center gap-2 text-xs text-muted-foreground

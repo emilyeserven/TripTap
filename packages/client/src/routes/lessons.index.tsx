@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useDeleteLesson, useLessons } from "@/hooks/useLessons";
+import { useLessons } from "@/hooks/useLessons";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useTutors } from "@/hooks/useTutors";
 
@@ -29,7 +29,6 @@ function LessonsPage() {
   const {
     data: lessons, isLoading, error,
   } = useLessons(tutorId ?? undefined);
-  const deleteLesson = useDeleteLesson();
   const tutors = useTutors();
   const [search, setSearch] = useState("");
 
@@ -107,7 +106,6 @@ function LessonsPage() {
           <LessonCard
             key={lesson.id}
             lesson={lesson}
-            onDelete={id => deleteLesson.mutate(id)}
           />
         ))}
       </div>

@@ -1,6 +1,8 @@
 import type {
   AnswerSheetEntry,
   CleanedBlocks,
+  DrillMistake,
+  DrillSubcategory,
   FuriToken,
   GrammarExample,
   LessonListeningNote,
@@ -480,6 +482,52 @@ export const lessons = pgTable("lessons", {
 
 export type LessonRow = typeof lessons.$inferSelect;
 export type NewLessonRow = typeof lessons.$inferInsert;
+
+/**
+ * `drill_reason_categories` — the reusable "Drill Buddy" mistake-reason taxonomy. Each row is one
+ * top-level category (e.g. "Grammar"); its `subcategories` jsonb holds the nested subcategories and
+ * their reasons. Drill-session mistakes reference these by id, so the taxonomy is shared across all
+ * sessions and gives statistics stable buckets.
+ */
+export const drillReasonCategories = pgTable("drill_reason_categories", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull(),
+  subcategories: jsonb("subcategories").$type<DrillSubcategory[]>(),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+});
+
+export type DrillReasonCategoryRow = typeof drillReasonCategories.$inferSelect;
+export type NewDrillReasonCategoryRow = typeof drillReasonCategories.$inferInsert;
+
+/**
+ * `drill_sessions` — a mistake-logging journal entry: a `date`, optional `title`/`notes`, and a flat
+ * list of `mistakes` (each with what was gotten wrong, an optional correct answer, a reflection, and
+ * references into the {@link drillReasonCategories} taxonomy). Standalone — not linked to lessons or
+ * tutors.
+ */
+export const drillSessions = pgTable("drill_sessions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  date: date("date", {
+    mode: "string",
+  }).notNull(),
+  title: text("title"),
+  notes: text("notes"),
+  mistakes: jsonb("mistakes").$type<DrillMistake[]>(),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+});
+
+export type DrillSessionRow = typeof drillSessions.$inferSelect;
+export type NewDrillSessionRow = typeof drillSessions.$inferInsert;
 
 /**
  * `writing_prompts` — reusable prompts the learner saves to spark a free-write. Each has a Japanese

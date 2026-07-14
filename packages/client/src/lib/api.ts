@@ -62,6 +62,12 @@ import type {
   Lesson,
   CreateLessonInput,
   UpdateLessonInput,
+  DrillSession,
+  CreateDrillSessionInput,
+  UpdateDrillSessionInput,
+  DrillReasonCategory,
+  CreateDrillReasonCategoryInput,
+  UpdateDrillReasonCategoryInput,
   WritingPrompt,
   CreateWritingPromptInput,
   UpdateWritingPromptInput,
@@ -329,6 +335,42 @@ export const lessonsApi = {
       body: JSON.stringify(input),
     }),
   remove: (id: string) => request<undefined>(`/lessons/${id}`, {
+    method: "DELETE",
+  }),
+};
+
+export const drillSessionsApi = {
+  list: () => request<DrillSession[]>("/drill-sessions"),
+  get: (id: string) => request<DrillSession>(`/drill-sessions/${id}`),
+  create: (input: CreateDrillSessionInput) =>
+    request<DrillSession>("/drill-sessions", {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+  update: (id: string, input: UpdateDrillSessionInput) =>
+    request<DrillSession>(`/drill-sessions/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    }),
+  remove: (id: string) => request<undefined>(`/drill-sessions/${id}`, {
+    method: "DELETE",
+  }),
+};
+
+export const drillReasonCategoriesApi = {
+  list: () => request<DrillReasonCategory[]>("/drill-reason-categories"),
+  get: (id: string) => request<DrillReasonCategory>(`/drill-reason-categories/${id}`),
+  create: (input: CreateDrillReasonCategoryInput) =>
+    request<DrillReasonCategory>("/drill-reason-categories", {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+  update: (id: string, input: UpdateDrillReasonCategoryInput) =>
+    request<DrillReasonCategory>(`/drill-reason-categories/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    }),
+  remove: (id: string) => request<undefined>(`/drill-reason-categories/${id}`, {
     method: "DELETE",
   }),
 };
