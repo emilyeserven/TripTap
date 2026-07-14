@@ -15,6 +15,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useCaptures } from "@/hooks/useCaptures";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { useSources } from "@/hooks/useSources";
 import { capturesApi } from "@/lib/api";
 
@@ -26,6 +27,7 @@ export const Route = createFileRoute("/captures/")({
 });
 
 function CapturesPage() {
+  usePageTitle("Captures");
   const navigate = useNavigate();
   const {
     data: captures, isLoading, error,
@@ -59,7 +61,6 @@ function CapturesPage() {
     <section className="space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Captures</h1>
           <p className="text-sm text-muted-foreground">
             Saved OCR scans, ready to parse into sentences.
           </p>

@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useLessonContent } from "@/hooks/useLessons";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { useBackfillFurigana, useDeleteSentence, useSentences } from "@/hooks/useSentences";
 import { useSources } from "@/hooks/useSources";
 import { dedupeGrammarTags, grammarTermsOf } from "@/lib/grammar-links";
@@ -34,6 +35,7 @@ export const Route = createFileRoute("/sentences")({
 });
 
 function SentencesPage() {
+  usePageTitle("Sentences");
   const {
     data: sentences, isLoading, error,
   } = useSentences();
@@ -137,7 +139,6 @@ function SentencesPage() {
     <section className="space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Sentences</h1>
           <p className="text-sm text-muted-foreground">Your own sentences and those mined from lessons.</p>
         </div>
         <div className="flex items-center gap-4">

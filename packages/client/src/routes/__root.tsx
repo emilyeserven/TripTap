@@ -17,6 +17,7 @@ import {
 import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
 import { resolveTheme, useDisplayStore } from "@/stores/displayStore";
+import { usePageTitleStore } from "@/stores/pageTitleStore";
 
 export interface RouterContext {
   queryClient: QueryClient;
@@ -50,6 +51,7 @@ function RootComponent() {
   const superFocusSpace = useDisplayStore(s => s.superFocusSpace);
   const slideMode = useDisplayStore(s => s.slideMode);
   const containerWidth = useDisplayStore(s => s.containerWidth);
+  const pageTitle = usePageTitleStore(s => s.title);
 
   useThemeSync(theme);
 
@@ -61,15 +63,13 @@ function RootComponent() {
       {hideSidebar ? null : <AppSidebar />}
       <SidebarInset>
         <header
-          className={cn(
-            "flex h-12 shrink-0 items-center gap-2 border-b px-4",
-            // In slide mode the sidebar is hidden and content snap-scrolls past the top, so pin the
-            // header to keep the Display Options control reachable (fields are centered, not hidden).
-            slideMode && "sticky top-0 z-30 bg-background",
-          )}
+          className="
+            sticky top-0 z-30 flex h-12 shrink-0 items-center gap-2 border-b
+            bg-background px-4
+          "
         >
           {hideSidebar ? null : <SidebarTrigger className="-ml-1" />}
-          <span className="text-lg font-semibold">sentence-bank</span>
+          <span className="truncate text-lg font-semibold">{pageTitle || "sentence-bank"}</span>
           <div className="ml-auto flex items-center gap-2">
             <DisplayOptions />
           </div>

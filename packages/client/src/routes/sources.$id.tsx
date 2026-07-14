@@ -5,6 +5,7 @@ import { FuriganaScope } from "@/components/lesson/FuriganaScope";
 import { FuriganaToggle } from "@/components/lesson/FuriganaToggle";
 import { SentenceCard } from "@/components/SentenceCard";
 import { Card, CardContent } from "@/components/ui/card";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { useDeleteSentence, useSentences } from "@/hooks/useSentences";
 import { useSources } from "@/hooks/useSources";
 import { useDeleteVocab, useVocab } from "@/hooks/useVocab";
@@ -36,6 +37,8 @@ function SourceDetailPage() {
   const sourceSentences = (sentences ?? []).filter(s => s.sourceId === id);
   const sourceVocab = (vocab ?? []).filter(v => v.sourceId === id);
 
+  usePageTitle(source?.name ?? "");
+
   return (
     <section className="space-y-6">
       <div>
@@ -58,10 +61,13 @@ function SourceDetailPage() {
         <>
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0 space-y-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-2xl font-bold">{source.name}</h1>
-                {source.type ? <span className="text-sm text-muted-foreground">{source.type}</span> : null}
-              </div>
+              {source.type
+                ? (
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-sm text-muted-foreground">{source.type}</span>
+                  </div>
+                )
+                : null}
               {source.author ? <p className="text-sm text-muted-foreground">{source.author}</p> : null}
               {source.url
                 ? (

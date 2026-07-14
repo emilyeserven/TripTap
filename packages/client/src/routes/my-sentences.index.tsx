@@ -8,12 +8,14 @@ import { MySentenceCard } from "@/components/MySentenceCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useDeleteMySentence, useMySentences } from "@/hooks/useMySentences";
+import { usePageTitle } from "@/hooks/usePageTitle";
 
 export const Route = createFileRoute("/my-sentences/")({
   component: MySentencesPage,
 });
 
 function MySentencesPage() {
+  usePageTitle("My Sentences");
   const {
     data: mySentences, isLoading, error,
   } = useMySentences();
@@ -38,7 +40,6 @@ function MySentencesPage() {
     <section className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">My Sentences</h1>
           <p className="text-sm text-muted-foreground">
             Sentences you produced yourself — from the practice worksheet or logged here (e.g. ones you
             got wrong in a lesson). Diff them against a correction and attach an explanation.

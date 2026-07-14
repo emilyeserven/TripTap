@@ -15,6 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useCaptures } from "@/hooks/useCaptures";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { useSentences } from "@/hooks/useSentences";
 import { useCreateSource, useDeleteSource, useSources, useUpdateSource } from "@/hooks/useSources";
 
@@ -132,6 +133,7 @@ function SourceForm({
 }
 
 function SourcesPage() {
+  usePageTitle("Sources");
   const {
     data: sources, isLoading, error,
   } = useSources();
@@ -166,7 +168,6 @@ function SourcesPage() {
     <section className="space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Sources</h1>
           <p className="text-sm text-muted-foreground">
             The origins your sentences and captures are tagged with.
           </p>

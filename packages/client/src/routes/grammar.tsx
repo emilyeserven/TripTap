@@ -10,6 +10,7 @@ import { uniqueLessons } from "@/components/lesson/lesson-filter-utils";
 import { Accordion } from "@/components/ui/accordion";
 import { Combobox } from "@/components/ui/combobox";
 import { useLessonContent } from "@/hooks/useLessons";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { useSentences } from "@/hooks/useSentences";
 import { dedupeGrammarTags, sentencesByGrammarTagId } from "@/lib/grammar-links";
 
@@ -18,6 +19,7 @@ export const Route = createFileRoute("/grammar")({
 });
 
 function GrammarPage() {
+  usePageTitle("Grammar");
   const {
     data, isLoading, error,
   } = useLessonContent();
@@ -69,7 +71,6 @@ function GrammarPage() {
   return (
     <section className="space-y-4">
       <div>
-        <h1 className="text-2xl font-bold">Grammar</h1>
         <p className="text-sm text-muted-foreground">{`${items.length} patterns across your lessons.`}</p>
       </div>
       {isLoading ? <p className="text-muted-foreground">Loading…</p> : null}

@@ -3,12 +3,14 @@ import { ArrowLeft } from "lucide-react";
 
 import { MySentenceForm } from "@/components/MySentenceForm";
 import { Button } from "@/components/ui/button";
+import { usePageTitle } from "@/hooks/usePageTitle";
 
 export const Route = createFileRoute("/my-sentences/new")({
   component: NewMySentencePage,
 });
 
 function NewMySentencePage() {
+  usePageTitle("New sentence");
   const navigate = useNavigate();
 
   return (
@@ -24,7 +26,6 @@ function NewMySentencePage() {
         </Link>
       </Button>
       <div>
-        <h1 className="text-2xl font-bold">New sentence</h1>
         <p className="text-sm text-muted-foreground">
           Log a sentence you wrote — its intended meaning, what it actually says, and (optionally) a
           correction with an explanation.

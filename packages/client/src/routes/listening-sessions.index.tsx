@@ -4,12 +4,14 @@ import { Plus } from "lucide-react";
 import { ListeningSessionCard } from "@/components/ListeningSessionCard";
 import { Button } from "@/components/ui/button";
 import { useListeningSessions } from "@/hooks/useListeningSessions";
+import { usePageTitle } from "@/hooks/usePageTitle";
 
 export const Route = createFileRoute("/listening-sessions/")({
   component: ListenShadowIndexPage,
 });
 
 function ListenShadowIndexPage() {
+  usePageTitle("Listening Sessions");
   const {
     data, isLoading, error,
   } = useListeningSessions();
@@ -18,7 +20,6 @@ function ListenShadowIndexPage() {
     <section className="max-w-4xl space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h1 className="text-2xl font-bold">Listening Sessions</h1>
           <p className="text-sm text-muted-foreground">
             Play a video and take notes stamped with the playback time.
           </p>

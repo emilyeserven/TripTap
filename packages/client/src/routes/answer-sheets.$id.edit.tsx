@@ -4,12 +4,14 @@ import { ArrowLeft } from "lucide-react";
 import { AnswerSheetForm } from "@/components/AnswerSheetForm";
 import { Button } from "@/components/ui/button";
 import { useAnswerSheet } from "@/hooks/useAnswerSheets";
+import { usePageTitle } from "@/hooks/usePageTitle";
 
 export const Route = createFileRoute("/answer-sheets/$id/edit")({
   component: EditAnswerSheetPage,
 });
 
 function EditAnswerSheetPage() {
+  usePageTitle("Edit answer sheet");
   const {
     id,
   } = Route.useParams();
@@ -40,7 +42,6 @@ function EditAnswerSheetPage() {
         </Link>
       </Button>
       <div>
-        <h1 className="text-2xl font-bold">Edit answer sheet</h1>
         <p className="text-sm text-muted-foreground">
           Update your answers, or use the Corrections tab to record what went wrong and why.
         </p>

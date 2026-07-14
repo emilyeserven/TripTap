@@ -5,6 +5,7 @@ import { AnswerSheetCard } from "@/components/AnswerSheetCard";
 import { QuestionSheetCard } from "@/components/QuestionSheetCard";
 import { Button } from "@/components/ui/button";
 import { useAnswerSheets, useDeleteAnswerSheet } from "@/hooks/useAnswerSheets";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { useDeleteQuestionSheet, useQuestionSheets } from "@/hooks/useQuestionSheets";
 
 export const Route = createFileRoute("/book-exercises/")({
@@ -12,6 +13,7 @@ export const Route = createFileRoute("/book-exercises/")({
 });
 
 function BookExercisesPage() {
+  usePageTitle("Book Exercises");
   const {
     data: questionSheets, isLoading: questionSheetsLoading, error: questionSheetsError,
   } = useQuestionSheets();
@@ -25,7 +27,6 @@ function BookExercisesPage() {
   return (
     <section className="max-w-4xl space-y-10">
       <div>
-        <h1 className="text-2xl font-bold">Book Exercises</h1>
         <p className="text-sm text-muted-foreground">
           Question sheets and answer sheets for working through textbook exercises.
         </p>

@@ -4,12 +4,14 @@ import { ArrowLeft } from "lucide-react";
 import { ListeningSessionForm } from "@/components/ListeningSessionForm";
 import { Button } from "@/components/ui/button";
 import { useListeningSession } from "@/hooks/useListeningSessions";
+import { usePageTitle } from "@/hooks/usePageTitle";
 
 export const Route = createFileRoute("/listening-sessions/$id/edit")({
   component: EditListeningSessionPage,
 });
 
 function EditListeningSessionPage() {
+  usePageTitle("Edit session");
   const {
     id,
   } = Route.useParams();
@@ -39,9 +41,6 @@ function EditListeningSessionPage() {
           Back to session
         </Link>
       </Button>
-      <div>
-        <h1 className="text-2xl font-bold">Edit session</h1>
-      </div>
       <ListeningSessionForm
         session={data}
         onSuccess={() =>

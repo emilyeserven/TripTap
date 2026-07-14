@@ -3,6 +3,7 @@ import { Plus } from "lucide-react";
 
 import { ShadowingSessionCard } from "@/components/ShadowingSessionCard";
 import { Button } from "@/components/ui/button";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { useShadowingSessions } from "@/hooks/useShadowingSessions";
 
 export const Route = createFileRoute("/shadowing/")({
@@ -10,6 +11,7 @@ export const Route = createFileRoute("/shadowing/")({
 });
 
 function ShadowingIndexPage() {
+  usePageTitle("Shadowing Practice");
   const {
     data, isLoading, error,
   } = useShadowingSessions();
@@ -18,7 +20,6 @@ function ShadowingIndexPage() {
     <section className="max-w-4xl space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h1 className="text-2xl font-bold">Shadowing Practice</h1>
           <p className="text-sm text-muted-foreground">
             Loop video segments to shadow, then take notes stamped with the playback time.
           </p>

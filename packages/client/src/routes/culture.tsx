@@ -9,12 +9,14 @@ import { LessonFilterChips } from "@/components/lesson/lesson-filter";
 import { uniqueLessons } from "@/components/lesson/lesson-filter-utils";
 import { VocabMapContext } from "@/components/lesson/vocab-map-context";
 import { useLessonContent } from "@/hooks/useLessons";
+import { usePageTitle } from "@/hooks/usePageTitle";
 
 export const Route = createFileRoute("/culture")({
   component: CulturePage,
 });
 
 function CulturePage() {
+  usePageTitle("Culture");
   const {
     data, isLoading, error,
   } = useLessonContent();
@@ -35,7 +37,6 @@ function CulturePage() {
         <section className="space-y-4">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold">Culture</h1>
               <p className="text-sm text-muted-foreground">{`${items.length} notes across your lessons.`}</p>
             </div>
             <FuriganaToggle />

@@ -3,12 +3,14 @@ import { ArrowLeft } from "lucide-react";
 
 import { LessonPasteBox } from "@/components/LessonPasteBox";
 import { LessonPromptGenerator } from "@/components/LessonPromptGenerator";
+import { usePageTitle } from "@/hooks/usePageTitle";
 
 export const Route = createFileRoute("/lessons/new")({
   component: NewLessonPage,
 });
 
 function NewLessonPage() {
+  usePageTitle("New lesson");
   return (
     <section className="space-y-6">
       <div>
@@ -22,7 +24,6 @@ function NewLessonPage() {
           <ArrowLeft className="size-3.5" />
           Lessons
         </Link>
-        <h1 className="text-2xl font-bold">New lesson</h1>
         <p className="text-sm text-muted-foreground">
           Generate a prompt, run it in Claude with the lesson skill, then paste the JSON to import.
         </p>
