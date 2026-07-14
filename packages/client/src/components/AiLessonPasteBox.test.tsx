@@ -1,9 +1,9 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { LessonPasteBox } from "./LessonPasteBox";
+import { AiLessonPasteBox } from "./AiLessonPasteBox";
 
-import { lessonImportFixture } from "@/test-utils/lessonFixture";
+import { aiLessonImportFixture } from "@/test-utils/aiLessonFixture";
 
 const {
   mutateAsync, navigate,
@@ -12,8 +12,8 @@ const {
   navigate: vi.fn(),
 }));
 
-vi.mock("@/hooks/useLessons", () => ({
-  useImportLesson: () => ({
+vi.mock("@/hooks/useAiLessons", () => ({
+  useImportAiLesson: () => ({
     mutateAsync,
     isPending: false,
   }),
@@ -22,15 +22,15 @@ vi.mock("@tanstack/react-router", () => ({
   useNavigate: () => navigate,
 }));
 
-describe("LessonPasteBox", () => {
+describe("AiLessonPasteBox", () => {
   beforeEach(() => {
     mutateAsync.mockReset();
     navigate.mockReset();
   });
 
   it("shows an error and does not import when the JSON is invalid", async () => {
-    render(<LessonPasteBox />);
-    fireEvent.change(screen.getByLabelText("Lesson JSON"), {
+    render(<AiLessonPasteBox />);
+    fireEvent.change(screen.getByLabelText("AI Lesson JSON"), {
       target: {
         value: "{ not json",
       },
@@ -44,8 +44,8 @@ describe("LessonPasteBox", () => {
   });
 
   it("shows a validation error when JSON is valid but violates the contract", async () => {
-    render(<LessonPasteBox />);
-    fireEvent.change(screen.getByLabelText("Lesson JSON"), {
+    render(<AiLessonPasteBox />);
+    fireEvent.change(screen.getByLabelText("AI Lesson JSON"), {
       target: {
         value: JSON.stringify({
           slug: "x",
@@ -62,14 +62,14 @@ describe("LessonPasteBox", () => {
 
   it("imports and navigates when the JSON is valid", async () => {
     mutateAsync.mockResolvedValue({
-      ...lessonImportFixture,
+      ...aiLessonImportFixture,
       id: "l1",
       createdAt: "x",
     });
-    render(<LessonPasteBox />);
-    fireEvent.change(screen.getByLabelText("Lesson JSON"), {
+    render(<AiLessonPasteBox />);
+    fireEvent.change(screen.getByLabelText("AI Lesson JSON"), {
       target: {
-        value: JSON.stringify(lessonImportFixture),
+        value: JSON.stringify(aiLessonImportFixture),
       },
     });
     fireEvent.click(screen.getByRole("button", {
@@ -82,7 +82,7 @@ describe("LessonPasteBox", () => {
     }));
     await waitFor(() =>
       expect(navigate).toHaveBeenCalledWith({
-        to: "/lessons/$slug",
+        to: "/ai-lessons/$slug",
         params: {
           slug: "cafe-basics",
         },

@@ -21,9 +21,9 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical } from "lucide-react";
 
-import { FuriganaScope } from "@/components/lesson/FuriganaScope";
-import { FuriganaToggle } from "@/components/lesson/FuriganaToggle";
-import { VocabCard } from "@/components/lesson/VocabCard";
+import { FuriganaScope } from "@/components/ai-lesson/FuriganaScope";
+import { FuriganaToggle } from "@/components/ai-lesson/FuriganaToggle";
+import { VocabCard } from "@/components/ai-lesson/VocabCard";
 import { SentenceCard } from "@/components/SentenceCard";
 import { TermPicker } from "@/components/TermPicker";
 import { Button } from "@/components/ui/button";

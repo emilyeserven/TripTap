@@ -3,11 +3,11 @@ import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
 
-import { FuriganaScope } from "@/components/lesson/FuriganaScope";
-import { FuriganaToggle } from "@/components/lesson/FuriganaToggle";
-import { uniqueLessons } from "@/components/lesson/lesson-filter-utils";
-import { matches } from "@/components/lesson/search";
-import { SourceCard } from "@/components/lesson/SourceCard";
+import { uniqueAiLessons } from "@/components/ai-lesson/ai-lesson-filter-utils";
+import { FuriganaScope } from "@/components/ai-lesson/FuriganaScope";
+import { FuriganaToggle } from "@/components/ai-lesson/FuriganaToggle";
+import { matches } from "@/components/ai-lesson/search";
+import { SourceCard } from "@/components/ai-lesson/SourceCard";
 import { SentenceCard } from "@/components/SentenceCard";
 import { SentenceForm } from "@/components/SentenceForm";
 import { Button } from "@/components/ui/button";
@@ -20,7 +20,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { useLessonContent } from "@/hooks/useLessons";
+import { useAiLessonContent } from "@/hooks/useAiLessons";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useBackfillFurigana, useDeleteSentence, useSentences } from "@/hooks/useSentences";
 import { useSources } from "@/hooks/useSources";
@@ -51,9 +51,9 @@ function SentencesPage() {
 
   const {
     data: content,
-  } = useLessonContent();
-  const lessonSentences = useMemo(() => content?.sentences ?? [], [content]);
-  const lessons = useMemo(() => uniqueLessons(lessonSentences), [lessonSentences]);
+  } = useAiLessonContent();
+  const aiLessonSentences = useMemo(() => content?.sentences ?? [], [content]);
+  const aiLessons = useMemo(() => uniqueAiLessons(aiLessonSentences), [aiLessonSentences]);
 
   const {
     source: sourceParam,
@@ -61,17 +61,17 @@ function SentencesPage() {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState("all"); // "all" | "mine" | lesson slug
+  const [filter, setFilter] = useState("all"); // "all" | "mine" | AI Lesson slug
   const [sourceFilter, setSourceFilter] = useState(sourceParam ?? "all");
   const [grammarTag, setGrammarTag] = useState("all"); // "all" | grammar-tag id
 
   const manual = sentences ?? [];
 
-  // Grammar-tag filter options: every Grammar source tag in use across manual + lesson sentences.
+  // Grammar-tag filter options: every Grammar source tag in use across manual + AI Lesson sentences.
   const grammarTagOptions = useMemo(() => {
     const tags = dedupeGrammarTags([
       ...manual.flatMap(grammarTermsOf),
-      ...lessonSentences.flatMap(s => s.grammarTerms ?? []),
+      ...aiLessonSentences.flatMap(s => s.grammarTerms ?? []),
     ]);
     return [
       {
@@ -83,12 +83,12 @@ function SentencesPage() {
         label: t.name,
       })),
     ];
-  }, [manual, lessonSentences]);
+  }, [manual, aiLessonSentences]);
 
-  const lessonOptions = useMemo(() => {
+  const aiLessonOptions = useMemo(() => {
     const opts = [{
       value: "all",
-      label: "All lessons",
+      label: "All AI Lessons",
     }];
     if (manual.length > 0) {
       opts.push({
@@ -96,14 +96,14 @@ function SentencesPage() {
         label: "Yours",
       });
     }
-    for (const l of lessons) {
+    for (const l of aiLessons) {
       opts.push({
         value: l.slug,
         label: l.title,
       });
     }
     return opts;
-  }, [manual.length, lessons]);
+  }, [manual.length, aiLessons]);
 
   const sourceOptions = useMemo(() => [
     {
@@ -125,21 +125,21 @@ function SentencesPage() {
       && byGrammarTag(grammarTermsOf(s))
       && matches(search, s.text, s.translation, s.source, s.tags, s.notes))
     : [];
-  // Lesson-mined sentences carry no source, so a specific source filter hides them.
-  const lessonShown = (sourceFilter !== "all"
+  // AI-Lesson-mined sentences carry no source, so a specific source filter hides them.
+  const aiLessonShown = (sourceFilter !== "all"
     ? []
     : filter === "mine"
       ? []
-      : filter === "all" ? lessonSentences : lessonSentences.filter(s => s.lessonSlug === filter))
+      : filter === "all" ? aiLessonSentences : aiLessonSentences.filter(s => s.aiLessonSlug === filter))
     .filter(s => byGrammarTag(s.grammarTerms ?? []) && matches(search, s.jp, s.en, s.where));
 
-  const nothing = !isLoading && manualShown.length === 0 && lessonShown.length === 0;
+  const nothing = !isLoading && manualShown.length === 0 && aiLessonShown.length === 0;
 
   return (
     <section className="space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-sm text-muted-foreground">Your own sentences and those mined from lessons.</p>
+          <p className="text-sm text-muted-foreground">Your own sentences and those mined from AI Lessons.</p>
         </div>
         <div className="flex items-center gap-4">
           <label
@@ -193,14 +193,14 @@ function SentencesPage() {
       />
 
       <div className="flex flex-wrap items-center gap-2">
-        {lessonOptions.length > 1
+        {aiLessonOptions.length > 1
           ? (
             <Combobox
               value={filter}
               onChange={setFilter}
-              options={lessonOptions}
-              ariaLabel="Filter by lesson"
-              searchPlaceholder="Search lessons…"
+              options={aiLessonOptions}
+              ariaLabel="Filter by AI Lesson"
+              searchPlaceholder="Search AI Lessons…"
               className="w-52"
             />
           )
@@ -243,13 +243,13 @@ function SentencesPage() {
               onGrammarTagClick={setGrammarTag}
             />
           ))}
-          {lessonShown.map(s => (
+          {aiLessonShown.map(s => (
             <SourceCard
               key={s.id}
               sentence={s}
-              lesson={{
-                slug: s.lessonSlug,
-                title: s.lessonTitle,
+              aiLesson={{
+                slug: s.aiLessonSlug,
+                title: s.aiLessonTitle,
               }}
               onTagClick={setGrammarTag}
             />

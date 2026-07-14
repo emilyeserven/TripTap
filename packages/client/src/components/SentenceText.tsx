@@ -1,6 +1,6 @@
 import type { FuriToken } from "@sentence-bank/types";
 
-import { useFurigana } from "./lesson/furigana-context";
+import { useFurigana } from "./ai-lesson/furigana-context";
 
 /**
  * Render a sentence with auto-generated furigana. Each kanji run shows ruby when the global furigana

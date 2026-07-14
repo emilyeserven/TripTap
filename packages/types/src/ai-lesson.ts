@@ -1,15 +1,15 @@
 /**
- * Canonical "Lesson" contract for sentence-bank.
+ * Canonical "AI Lesson" contract for sentence-bank.
  * =================================================
  *
- * A **Lesson** is a self-contained language-study unit rendered by one reusable template
- * (5 tabs: Culture / Vocab / Grammar / Source / Practice). Lessons are authored as **JSON**,
+ * An **AI Lesson** is a self-contained language-study unit rendered by one reusable template
+ * (5 tabs: Culture / Vocab / Grammar / Source / Practice). AI Lessons are authored as **JSON**,
  * pasted into the app, validated against the schemas below, and persisted with each item as its
- * own row tagged with the parent lesson.
+ * own row tagged with the parent AI Lesson.
  *
  * This file is the single source of truth for that shape. From the Zod schemas we derive:
  *   - the TypeScript types (`z.infer`), consumed by client + middleware, and
- *   - a JSON Schema (`lessonImportJsonSchema`), fed directly to Fastify's route validation,
+ *   - a JSON Schema (`aiLessonImportJsonSchema`), fed directly to Fastify's route validation,
  * so client-side and server-side validation can never drift.
  *
  * NOTE: The `skills/sentence-bank-lesson/SKILL.md` authoring skill is written *from* this contract.
@@ -17,13 +17,13 @@
  *
  * ── The import payload (what you paste) ────────────────────────────────────────────────────────
  * {
- *   "slug": "hagi-e-no-tabi",          // url-safe id, unique per lesson
+ *   "slug": "hagi-e-no-tabi",          // url-safe id, unique per AI Lesson
  *   "title": "萩への旅",                // plain text (no markup)
  *   "eyebrow": "A Japanese Lesson ...",// small kicker above the title
  *   "subtitle": "Hagi, Yamaguchi · ...",
  *   "scrollText": "萩の御厨 高大",        // vertical decorative text in the header
  *   "footerText": "Study aid built from ...",
- *   "targetLevel": "N4",               // the lesson's overall JLPT target
+ *   "targetLevel": "N4",               // the AI Lesson's overall JLPT target
  *   "sourceUrl": "https://...",        // optional — attribution link
  *   "videoUrl": "https://...",         // optional — e.g. a YouTube source
  *   "sourceLabel": "From the inn",     // optional — EN label override for the "Source" tab
@@ -163,8 +163,8 @@ export const cultureInputSchema = z.strictObject({
   terms: z.array(z.string()),
 });
 
-/** Per-lesson header/footer chrome + metadata. */
-export const lessonMetaSchema = z.strictObject({
+/** Per-AI-Lesson header/footer chrome + metadata. */
+export const aiLessonMetaSchema = z.strictObject({
   /** URL-safe unique id. */
   slug: z
     .string()
@@ -183,7 +183,7 @@ export const lessonMetaSchema = z.strictObject({
 });
 
 /** The full import payload. */
-export const lessonImportSchema = lessonMetaSchema.extend({
+export const aiLessonImportSchema = aiLessonMetaSchema.extend({
   categories: z.array(categoryInputSchema),
   vocab: z.array(vocabInputSchema),
   grammar: z.array(grammarInputSchema),
@@ -193,15 +193,15 @@ export const lessonImportSchema = lessonMetaSchema.extend({
 
 /**
  * JSON Schema derived from the Zod contract, targeted at draft-07 for Fastify's Ajv.
- * Used verbatim as the `body` schema of `POST /api/lessons/import`.
+ * Used verbatim as the `body` schema of `POST /api/ai-lessons/import`.
  */
-export const lessonImportJsonSchema = z.toJSONSchema(lessonImportSchema, {
+export const aiLessonImportJsonSchema = z.toJSONSchema(aiLessonImportSchema, {
   target: "draft-7",
 });
 
 /* ── Inferred input types ─────────────────────────────────────────────────────────────────── */
-export type LessonImportInput = z.infer<typeof lessonImportSchema>;
-export type LessonMetaInput = z.infer<typeof lessonMetaSchema>;
+export type AiLessonImportInput = z.infer<typeof aiLessonImportSchema>;
+export type AiLessonMetaInput = z.infer<typeof aiLessonMetaSchema>;
 export type VocabInput = z.infer<typeof vocabInputSchema>;
 export type CategoryInput = z.infer<typeof categoryInputSchema>;
 export type GrammarInput = z.infer<typeof grammarInputSchema>;
@@ -213,14 +213,14 @@ export type CultureInput = z.infer<typeof cultureInputSchema>;
 
 /* ── Persisted / response types ───────────────────────────────────────────────────────────── */
 
-/** The parent lesson row as returned by the API. */
-export interface LessonRecord extends LessonMetaInput {
+/** The parent AI Lesson row as returned by the API. */
+export interface AiLessonRecord extends AiLessonMetaInput {
   id: string;
   /** ISO-8601. */
   createdAt: string;
 }
 
-/** A persisted child item carries its own id and its position within the lesson. */
+/** A persisted child item carries its own id and its position within the AI Lesson. */
 type Persisted<T> = T & { id: string;
   sortOrder: number; };
 
@@ -252,13 +252,13 @@ export interface VocabRenshuuUpdate {
   renshuuList?: string | null;
 }
 
-/** Payload for updating the Grammar source tags on a lesson grammar item or source sentence. */
+/** Payload for updating the Grammar source tags on an AI Lesson grammar item or source sentence. */
 export interface GrammarTermsUpdate {
   grammarTerms: SentenceTermRef[] | null;
 }
 
-/** A full lesson with all children, assembled for the viewer. */
-export interface LessonDetail extends LessonRecord {
+/** A full AI Lesson with all children, assembled for the viewer. */
+export interface AiLessonDetail extends AiLessonRecord {
   categories: CategoryItem[];
   vocab: VocabItem[];
   grammar: GrammarItem[];
@@ -267,7 +267,7 @@ export interface LessonDetail extends LessonRecord {
 }
 
 /** Lightweight list-view shape. */
-export interface LessonSummary {
+export interface AiLessonSummary {
   id: string;
   slug: string;
   title: string;
@@ -283,14 +283,14 @@ export interface LessonSummary {
   };
 }
 
-/** An item tagged with the lesson it belongs to, for cross-lesson browse views. */
-export type WithLesson<T> = T & { lessonSlug: string;
-  lessonTitle: string; };
+/** An item tagged with the AI Lesson it belongs to, for cross-AI-Lesson browse views. */
+export type WithAiLesson<T> = T & { aiLessonSlug: string;
+  aiLessonTitle: string; };
 
-/** All lesson content flattened across lessons, for the global Culture/Vocab/Grammar/Sentences pages. */
-export interface LessonContent {
-  vocab: WithLesson<VocabItem>[];
-  culture: WithLesson<CultureItem>[];
-  grammar: WithLesson<GrammarItem>[];
-  sentences: WithLesson<SourceSentenceItem>[];
+/** All AI Lesson content flattened across AI Lessons, for the global Culture/Vocab/Grammar/Sentences pages. */
+export interface AiLessonContent {
+  vocab: WithAiLesson<VocabItem>[];
+  culture: WithAiLesson<CultureItem>[];
+  grammar: WithAiLesson<GrammarItem>[];
+  sentences: WithAiLesson<SourceSentenceItem>[];
 }

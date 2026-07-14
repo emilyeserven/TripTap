@@ -1,4 +1,4 @@
-import type { LessonDetail } from "@sentence-bank/types";
+import type { AiLessonDetail } from "@sentence-bank/types";
 
 import { useMemo } from "react";
 
@@ -11,13 +11,13 @@ import { VocabMapContext } from "./vocab-map-context";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-/** Renders a full lesson from its data. The fixed scaffold; all content comes from `lesson`. */
-export function LessonTemplate({
-  lesson,
-}: { lesson: LessonDetail }) {
+/** Renders a full AI Lesson from its data. The fixed scaffold; all content comes from `aiLesson`. */
+export function AiLessonTemplate({
+  aiLesson,
+}: { aiLesson: AiLessonDetail }) {
   const vocabMap = useMemo(
-    () => Object.fromEntries(lesson.vocab.map(v => [v.jp, v])),
-    [lesson.vocab],
+    () => Object.fromEntries(aiLesson.vocab.map(v => [v.jp, v])),
+    [aiLesson.vocab],
   );
 
   return (
@@ -33,16 +33,16 @@ export function LessonTemplate({
                     uppercase
                   "
                 >
-                  {lesson.eyebrow}
+                  {aiLesson.eyebrow}
                 </div>
-                <h1 className="text-3xl font-bold">{lesson.title}</h1>
-                <p className="mt-1 text-sm text-muted-foreground">{lesson.subtitle}</p>
+                <h1 className="text-3xl font-bold">{aiLesson.title}</h1>
+                <p className="mt-1 text-sm text-muted-foreground">{aiLesson.subtitle}</p>
               </div>
               <FuriganaToggle />
             </div>
-            {lesson.videoUrl && (
+            {aiLesson.videoUrl && (
               <a
-                href={lesson.videoUrl}
+                href={aiLesson.videoUrl}
                 target="_blank"
                 rel="noreferrer"
                 className="
@@ -84,49 +84,49 @@ export function LessonTemplate({
               value="culture"
               className="mt-4"
             >
-              <CulturePane culture={lesson.culture} />
+              <CulturePane culture={aiLesson.culture} />
             </TabsContent>
             <TabsContent
               value="vocab"
               className="mt-4"
             >
               <VocabPane
-                vocab={lesson.vocab}
-                categories={lesson.categories}
+                vocab={aiLesson.vocab}
+                categories={aiLesson.categories}
               />
             </TabsContent>
             <TabsContent
               value="grammar"
               className="mt-4"
             >
-              <GrammarPane grammar={lesson.grammar} />
+              <GrammarPane grammar={aiLesson.grammar} />
             </TabsContent>
             <TabsContent
               value="source"
               className="mt-4"
             >
-              <SourcePane source={lesson.source} />
+              <SourcePane source={aiLesson.source} />
             </TabsContent>
             <TabsContent
               value="practice"
               className="mt-4"
             >
-              <PracticePane vocab={lesson.vocab} />
+              <PracticePane vocab={aiLesson.vocab} />
             </TabsContent>
           </Tabs>
 
           <footer className="border-t pt-4 text-xs text-muted-foreground">
-            {lesson.footerText}
-            {lesson.sourceUrl && (
+            {aiLesson.footerText}
+            {aiLesson.sourceUrl && (
               <>
                 {" · "}
                 <a
-                  href={lesson.sourceUrl}
+                  href={aiLesson.sourceUrl}
                   target="_blank"
                   rel="noreferrer"
                   className="hover:underline"
                 >
-                  {lesson.sourceUrl}
+                  {aiLesson.sourceUrl}
                 </a>
               </>
             )}

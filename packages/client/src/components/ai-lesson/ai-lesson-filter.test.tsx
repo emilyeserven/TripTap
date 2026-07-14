@@ -1,45 +1,45 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-import { LessonFilterChips } from "./lesson-filter";
-import { uniqueLessons } from "./lesson-filter-utils";
+import { AiLessonFilterChips } from "./ai-lesson-filter";
+import { uniqueAiLessons } from "./ai-lesson-filter-utils";
 
 const items = [
   {
-    lessonSlug: "a",
-    lessonTitle: "Lesson A",
+    aiLessonSlug: "a",
+    aiLessonTitle: "AI Lesson A",
   },
   {
-    lessonSlug: "b",
-    lessonTitle: "Lesson B",
+    aiLessonSlug: "b",
+    aiLessonTitle: "AI Lesson B",
   },
   {
-    lessonSlug: "a",
-    lessonTitle: "Lesson A",
+    aiLessonSlug: "a",
+    aiLessonTitle: "AI Lesson A",
   },
 ];
 
-describe("uniqueLessons", () => {
+describe("uniqueAiLessons", () => {
   it("dedupes by slug, preserving first-seen order", () => {
-    expect(uniqueLessons(items)).toEqual([
+    expect(uniqueAiLessons(items)).toEqual([
       {
         slug: "a",
-        title: "Lesson A",
+        title: "AI Lesson A",
       },
       {
         slug: "b",
-        title: "Lesson B",
+        title: "AI Lesson B",
       },
     ]);
   });
 });
 
-describe("LessonFilterChips", () => {
-  it("renders All + one chip per lesson and reports the chosen slug", () => {
+describe("AiLessonFilterChips", () => {
+  it("renders All + one chip per AI Lesson and reports the chosen slug", () => {
     const onChange = vi.fn();
     render(
-      <LessonFilterChips
-        lessons={uniqueLessons(items)}
+      <AiLessonFilterChips
+        aiLessons={uniqueAiLessons(items)}
         value="all"
         onChange={onChange}
       />,
@@ -48,19 +48,19 @@ describe("LessonFilterChips", () => {
       name: "All",
     })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", {
-      name: "Lesson B",
+      name: "AI Lesson B",
     }));
     expect(onChange).toHaveBeenCalledWith("b");
   });
 
-  it("hides itself when there is only one lesson", () => {
+  it("hides itself when there is only one AI Lesson", () => {
     const {
       container,
     } = render(
-      <LessonFilterChips
-        lessons={[{
+      <AiLessonFilterChips
+        aiLessons={[{
           slug: "a",
-          title: "Lesson A",
+          title: "AI Lesson A",
         }]}
         value="all"
         onChange={vi.fn()}

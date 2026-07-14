@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { termsChanged } from "@/lib/terms";
 
 /**
- * Displays a lesson grammar item's / source sentence's Grammar source tags with an inline edit
+ * Displays an AI Lesson grammar item's / source sentence's Grammar source tags with an inline edit
  * affordance (reusing the shared `TermPicker`). `onTagClick`, when provided, turns each tag badge
  * into a filter button (used on the browse pages to surface the grammar↔sentence connection).
  */

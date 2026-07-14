@@ -5,8 +5,8 @@ import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Camera, ChevronDown, Database, Layers, PenLine, TriangleAlert, Volume2 } from "lucide-react";
 
+import { speak } from "./ai-lesson/speak";
 import { FuriganaEditor } from "./FuriganaEditor";
-import { speak } from "./lesson/speak";
 import { SentenceText } from "./SentenceText";
 import { VocabHoverPill } from "./VocabHoverPill";
 

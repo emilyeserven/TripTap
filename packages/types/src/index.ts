@@ -6,7 +6,7 @@
  */
 
 export * from "./answer-sheet.js";
-export * from "./lesson.js";
+export * from "./ai-lesson.js";
 export * from "./listening-session.js";
 export * from "./my-sentence.js";
 export * from "./practice-sentence.js";

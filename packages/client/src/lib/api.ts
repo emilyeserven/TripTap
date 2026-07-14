@@ -22,10 +22,10 @@ import type {
   UpdateReadingSessionInput,
   UpdateShadowingSessionInput,
   GrammarItem,
-  LessonContent,
-  LessonDetail,
-  LessonImportInput,
-  LessonSummary,
+  AiLessonContent,
+  AiLessonDetail,
+  AiLessonImportInput,
+  AiLessonSummary,
   SentenceTermRef,
   SourceSentenceItem,
   MySentence,
@@ -483,32 +483,32 @@ export const bookmarksApi = {
   record: (id: string) => request<BookmarkRecord>(`/bookmarks/records/${encodeURIComponent(id)}`),
 };
 
-export const lessonsApi = {
-  list: () => request<LessonSummary[]>("/lessons"),
-  content: () => request<LessonContent>("/lesson-content"),
-  getBySlug: (slug: string) => request<LessonDetail>(`/lessons/${slug}`),
-  import: (input: LessonImportInput) =>
-    request<LessonDetail>("/lessons/import", {
+export const aiLessonsApi = {
+  list: () => request<AiLessonSummary[]>("/ai-lessons"),
+  content: () => request<AiLessonContent>("/ai-lesson-content"),
+  getBySlug: (slug: string) => request<AiLessonDetail>(`/ai-lessons/${slug}`),
+  import: (input: AiLessonImportInput) =>
+    request<AiLessonDetail>("/ai-lessons/import", {
       method: "POST",
       body: JSON.stringify(input),
     }),
-  remove: (id: string) => request<undefined>(`/lessons/${id}`, {
+  remove: (id: string) => request<undefined>(`/ai-lessons/${id}`, {
     method: "DELETE",
   }),
   updateVocab: (id: string, patch: VocabRenshuuUpdate) =>
-    request<VocabItem>(`/lesson-vocab/${id}`, {
+    request<VocabItem>(`/ai-lesson-vocab/${id}`, {
       method: "PATCH",
       body: JSON.stringify(patch),
     }),
   updateGrammarTerms: (id: string, grammarTerms: SentenceTermRef[] | null) =>
-    request<GrammarItem>(`/lesson-grammar/${id}`, {
+    request<GrammarItem>(`/ai-lesson-grammar/${id}`, {
       method: "PATCH",
       body: JSON.stringify({
         grammarTerms,
       }),
     }),
   updateSourceSentenceTerms: (id: string, grammarTerms: SentenceTermRef[] | null) =>
-    request<SourceSentenceItem>(`/lesson-source-sentences/${id}`, {
+    request<SourceSentenceItem>(`/ai-lesson-source-sentences/${id}`, {
       method: "PATCH",
       body: JSON.stringify({
         grammarTerms,

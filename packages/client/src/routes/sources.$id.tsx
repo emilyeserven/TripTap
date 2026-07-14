@@ -1,8 +1,8 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { ArrowLeft, Camera, ExternalLink, Images } from "lucide-react";
 
-import { FuriganaScope } from "@/components/lesson/FuriganaScope";
-import { FuriganaToggle } from "@/components/lesson/FuriganaToggle";
+import { FuriganaScope } from "@/components/ai-lesson/FuriganaScope";
+import { FuriganaToggle } from "@/components/ai-lesson/FuriganaToggle";
 import { SentenceCard } from "@/components/SentenceCard";
 import { Card, CardContent } from "@/components/ui/card";
 import { usePageTitle } from "@/hooks/usePageTitle";

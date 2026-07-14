@@ -42,7 +42,7 @@ function MySentencesPage() {
         <div>
           <p className="text-sm text-muted-foreground">
             Sentences you produced yourself — from the practice worksheet or logged here (e.g. ones you
-            got wrong in a lesson). Diff them against a correction and attach an explanation.
+            got wrong in an AI Lesson). Diff them against a correction and attach an explanation.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">

@@ -3,30 +3,30 @@ import { Plus, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { useDeleteLesson, useLessons } from "@/hooks/useLessons";
+import { useAiLessons, useDeleteAiLesson } from "@/hooks/useAiLessons";
 import { usePageTitle } from "@/hooks/usePageTitle";
 
-export const Route = createFileRoute("/lessons/")({
-  component: LessonsPage,
+export const Route = createFileRoute("/ai-lessons/")({
+  component: AiLessonsPage,
 });
 
-function LessonsPage() {
-  usePageTitle("Lessons");
+function AiLessonsPage() {
+  usePageTitle("AI Lessons");
   const {
-    data: lessons, isLoading, error,
-  } = useLessons();
-  const deleteLesson = useDeleteLesson();
+    data: aiLessons, isLoading, error,
+  } = useAiLessons();
+  const deleteAiLesson = useDeleteAiLesson();
 
   return (
     <section className="space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-sm text-muted-foreground">Study a lesson, or create a new one.</p>
+          <p className="text-sm text-muted-foreground">Study an AI Lesson, or create a new one.</p>
         </div>
         <Button asChild>
-          <Link to="/lessons/new">
+          <Link to="/ai-lessons/new">
             <Plus className="size-4" />
-            New lesson
+            New AI Lesson
           </Link>
         </Button>
       </div>
@@ -34,13 +34,13 @@ function LessonsPage() {
       <div className="space-y-3">
         {isLoading ? <p className="text-muted-foreground">Loading…</p> : null}
         {error ? <p className="text-destructive">{error.message}</p> : null}
-        {!isLoading && (lessons ?? []).length === 0
+        {!isLoading && (aiLessons ?? []).length === 0
           ? (
             <p className="text-muted-foreground">
-              No lessons yet.
+              No AI Lessons yet.
               {" "}
               <Link
-                to="/lessons/new"
+                to="/ai-lessons/new"
                 className="
                   text-primary
                   hover:underline
@@ -50,12 +50,12 @@ function LessonsPage() {
             </p>
           )
           : null}
-        {(lessons ?? []).map(l => (
+        {(aiLessons ?? []).map(l => (
           <Card key={l.id}>
             <CardContent className="flex items-start justify-between gap-3 py-4">
               <div className="space-y-1">
                 <Link
-                  to="/lessons/$slug"
+                  to="/ai-lessons/$slug"
                   params={{
                     slug: l.slug,
                   }}
@@ -81,7 +81,7 @@ function LessonsPage() {
                 size="icon"
                 variant="ghost"
                 aria-label={`Delete ${l.title}`}
-                onClick={() => deleteLesson.mutate(l.id)}
+                onClick={() => deleteAiLesson.mutate(l.id)}
               >
                 <Trash2 className="size-4" />
               </Button>

@@ -1,8 +1,8 @@
 import type { Vocab } from "@sentence-bank/types";
 
-import { Furi } from "./lesson/Furi";
-import { useFurigana } from "./lesson/furigana-context";
-import { speak } from "./lesson/speak";
+import { Furi } from "./ai-lesson/Furi";
+import { useFurigana } from "./ai-lesson/furigana-context";
+import { speak } from "./ai-lesson/speak";
 
 import {
   HoverCard,

@@ -1,35 +1,35 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 
-import { LessonPasteBox } from "@/components/LessonPasteBox";
-import { LessonPromptGenerator } from "@/components/LessonPromptGenerator";
+import { AiLessonPasteBox } from "@/components/AiLessonPasteBox";
+import { AiLessonPromptGenerator } from "@/components/AiLessonPromptGenerator";
 import { usePageTitle } from "@/hooks/usePageTitle";
 
-export const Route = createFileRoute("/lessons/new")({
-  component: NewLessonPage,
+export const Route = createFileRoute("/ai-lessons/new")({
+  component: NewAiLessonPage,
 });
 
-function NewLessonPage() {
-  usePageTitle("New lesson");
+function NewAiLessonPage() {
+  usePageTitle("New AI Lesson");
   return (
     <section className="space-y-6">
       <div>
         <Link
-          to="/lessons"
+          to="/ai-lessons"
           className="
             mb-2 inline-flex items-center gap-1 text-sm text-muted-foreground
             hover:underline
           "
         >
           <ArrowLeft className="size-3.5" />
-          Lessons
+          AI Lessons
         </Link>
         <p className="text-sm text-muted-foreground">
-          Generate a prompt, run it in Claude with the lesson skill, then paste the JSON to import.
+          Generate a prompt, run it in Claude with the AI Lesson skill, then paste the JSON to import.
         </p>
       </div>
-      <LessonPromptGenerator />
-      <LessonPasteBox />
+      <AiLessonPromptGenerator />
+      <AiLessonPasteBox />
     </section>
   );
 }

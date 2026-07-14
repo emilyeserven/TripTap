@@ -4,7 +4,7 @@ import { FuriganaContext } from "./furigana-context";
 
 import { useUiStore } from "@/stores/uiStore";
 
-/** Provides the app-wide furigana setting to lesson content rendered inside it. */
+/** Provides the app-wide furigana setting to AI Lesson content rendered inside it. */
 export function FuriganaScope({
   children,
 }: { children: ReactNode }) {

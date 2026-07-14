@@ -15,7 +15,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, ArrowRight, Check, Plus, TriangleAlert, Volume2, X } from "lucide-react";
 
-import { speak } from "./lesson/speak";
+import { speak } from "./ai-lesson/speak";
 import { PracticeOutput } from "./PracticeOutput";
 import { PracticeReadAloudVocab } from "./PracticeReadAloudVocab";
 import { SourcePicker } from "./SourcePicker";

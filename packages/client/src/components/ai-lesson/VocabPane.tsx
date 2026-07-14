@@ -2,7 +2,7 @@ import type { CategoryItem, VocabItem } from "@sentence-bank/types";
 
 import { useMemo, useState } from "react";
 
-import { LessonIcon } from "./icon-map";
+import { AiLessonIcon } from "./icon-map";
 import { VocabCard } from "./VocabCard";
 
 import { Button } from "@/components/ui/button";
@@ -38,7 +38,7 @@ export function VocabPane({
             variant={cat === c.key ? "default" : "outline"}
             onClick={() => setCat(c.key)}
           >
-            <LessonIcon
+            <AiLessonIcon
               name={c.icon}
               className="size-3.5"
             />

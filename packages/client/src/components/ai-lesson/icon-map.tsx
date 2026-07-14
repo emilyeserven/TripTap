@@ -40,7 +40,7 @@ const ICONS: Record<IconKey, LucideIcon> = {
   "map-pin": MapPin,
 };
 
-export function LessonIcon({
+export function AiLessonIcon({
   name, className,
 }: { name: IconKey;
   className?: string; }) {

@@ -49,11 +49,11 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 
-/** { Captures, Lessons } — source material to mine from. */
+/** { Captures, AI Lessons } — source material to mine from. */
 const collectionsItems = [
   {
-    title: "Lessons",
-    to: "/lessons",
+    title: "AI Lessons",
+    to: "/ai-lessons",
     icon: GraduationCapIcon,
   },
   {
@@ -168,7 +168,7 @@ const actionItems = [
 
 function isItemActive(pathname: string, to: string) {
   if (to === "/") return pathname === "/";
-  // `/lessons` shouldn't stay active on `/lessons/new` sub-navigation beyond its own prefix.
+  // `/ai-lessons` shouldn't stay active on `/ai-lessons/new` sub-navigation beyond its own prefix.
   return pathname === to || pathname.startsWith(`${to}/`);
 }
 

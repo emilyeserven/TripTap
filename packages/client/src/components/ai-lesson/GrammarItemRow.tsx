@@ -1,4 +1,4 @@
-import type { LessonRef } from "./LessonBadge";
+import type { AiLessonRef } from "./AiLessonBadge";
 import type { LinkedSentence } from "@/lib/grammar-links";
 import type { GrammarItem } from "@sentence-bank/types";
 
@@ -6,22 +6,22 @@ import { useState } from "react";
 
 import { Volume2 } from "lucide-react";
 
+import { AiLessonBadge } from "./AiLessonBadge";
 import { GrammarTagsEditor } from "./GrammarTagsEditor";
-import { LessonBadge } from "./LessonBadge";
 import { speak } from "./speak";
 
 import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { useUpdateLessonGrammarTerms } from "@/hooks/useLessons";
+import { useUpdateAiLessonGrammarTerms } from "@/hooks/useAiLessons";
 
 /** One grammar pattern as an accordion item. Render inside an <Accordion>. */
 export function GrammarItemRow({
-  grammar: g, lesson, onTagClick, linkedSentences,
+  grammar: g, aiLesson, onTagClick, linkedSentences,
 }: { grammar: GrammarItem;
-  lesson?: LessonRef;
+  aiLesson?: AiLessonRef;
   onTagClick?: (termId: string) => void;
   linkedSentences?: LinkedSentence[]; }) {
-  const updateTerms = useUpdateLessonGrammarTerms();
+  const updateTerms = useUpdateAiLessonGrammarTerms();
   const [revealed, setRevealed] = useState<Set<number>>(() => new Set());
   const toggle = (i: number) =>
     setRevealed((prev) => {
@@ -38,10 +38,10 @@ export function GrammarItemRow({
           <span className="text-base font-medium">{g.pat}</span>
           <span className="text-sm text-muted-foreground">{g.gloss}</span>
         </span>
-        {lesson
+        {aiLesson
           ? (
             <span className="mr-2">
-              <LessonBadge {...lesson} />
+              <AiLessonBadge {...aiLesson} />
             </span>
           )
           : null}
@@ -120,8 +120,8 @@ export function GrammarItemRow({
                     {s.translation
                       ? <p className="text-muted-foreground">{s.translation}</p>
                       : null}
-                    {s.lessonTitle
-                      ? <p className="text-xs text-muted-foreground">{s.lessonTitle}</p>
+                    {s.aiLessonTitle
+                      ? <p className="text-xs text-muted-foreground">{s.aiLessonTitle}</p>
                       : null}
                   </li>
                 ))}

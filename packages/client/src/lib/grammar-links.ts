@@ -2,7 +2,7 @@ import type {
   Sentence,
   SentenceTermRef,
   SourceSentenceItem,
-  WithLesson,
+  WithAiLesson,
 } from "@sentence-bank/types";
 
 import { groupTermsByCategory } from "./terms";
@@ -12,8 +12,8 @@ export interface LinkedSentence {
   id: string;
   text: string;
   translation: string | null;
-  /** The lesson the sentence was mined from, when it is a lesson source sentence. */
-  lessonTitle?: string;
+  /** The AI Lesson the sentence was mined from, when it is an AI Lesson source sentence. */
+  aiLessonTitle?: string;
 }
 
 /** The grammar-channel term refs on a manual/bank sentence. */
@@ -29,12 +29,12 @@ export function dedupeGrammarTags(terms: SentenceTermRef[]): SentenceTermRef[] {
 }
 
 /**
- * Map each grammar-tag id → the sentences (manual + lesson-mined) carrying that tag. Used to render
+ * Map each grammar-tag id → the sentences (manual + AI-Lesson-mined) carrying that tag. Used to render
  * "Sentences using this grammar" under a grammar item that shares the tag.
  */
 export function sentencesByGrammarTagId(
   manual: Sentence[],
-  lessonSentences: WithLesson<SourceSentenceItem>[],
+  aiLessonSentences: WithAiLesson<SourceSentenceItem>[],
 ): Map<string, LinkedSentence[]> {
   const map = new Map<string, LinkedSentence[]>();
   const push = (termId: string, s: LinkedSentence) => {
@@ -51,13 +51,13 @@ export function sentencesByGrammarTagId(
       });
     }
   }
-  for (const s of lessonSentences) {
+  for (const s of aiLessonSentences) {
     for (const t of s.grammarTerms ?? []) {
       push(t.id, {
         id: s.id,
         text: s.jp,
         translation: s.en,
-        lessonTitle: s.lessonTitle,
+        aiLessonTitle: s.aiLessonTitle,
       });
     }
   }

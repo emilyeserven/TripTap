@@ -2,13 +2,13 @@ import { useMemo, useState } from "react";
 
 import { createFileRoute } from "@tanstack/react-router";
 
-import { CultureCard } from "@/components/lesson/CultureCard";
-import { FuriganaScope } from "@/components/lesson/FuriganaScope";
-import { FuriganaToggle } from "@/components/lesson/FuriganaToggle";
-import { LessonFilterChips } from "@/components/lesson/lesson-filter";
-import { uniqueLessons } from "@/components/lesson/lesson-filter-utils";
-import { VocabMapContext } from "@/components/lesson/vocab-map-context";
-import { useLessonContent } from "@/hooks/useLessons";
+import { AiLessonFilterChips } from "@/components/ai-lesson/ai-lesson-filter";
+import { uniqueAiLessons } from "@/components/ai-lesson/ai-lesson-filter-utils";
+import { CultureCard } from "@/components/ai-lesson/CultureCard";
+import { FuriganaScope } from "@/components/ai-lesson/FuriganaScope";
+import { FuriganaToggle } from "@/components/ai-lesson/FuriganaToggle";
+import { VocabMapContext } from "@/components/ai-lesson/vocab-map-context";
+import { useAiLessonContent } from "@/hooks/useAiLessons";
 import { usePageTitle } from "@/hooks/usePageTitle";
 
 export const Route = createFileRoute("/culture")({
@@ -19,17 +19,17 @@ function CulturePage() {
   usePageTitle("Culture");
   const {
     data, isLoading, error,
-  } = useLessonContent();
-  const [lesson, setLesson] = useState("all");
+  } = useAiLessonContent();
+  const [aiLesson, setAiLesson] = useState("all");
 
   const items = useMemo(() => data?.culture ?? [], [data]);
-  const lessons = useMemo(() => uniqueLessons(items), [items]);
-  // Union of all lessons' vocab so culture-note term chips resolve on hover.
+  const aiLessons = useMemo(() => uniqueAiLessons(items), [items]);
+  // Union of all AI Lessons' vocab so culture-note term chips resolve on hover.
   const vocabMap = useMemo(
     () => Object.fromEntries((data?.vocab ?? []).map(v => [v.jp, v])),
     [data],
   );
-  const filtered = lesson === "all" ? items : items.filter(c => c.lessonSlug === lesson);
+  const filtered = aiLesson === "all" ? items : items.filter(c => c.aiLessonSlug === aiLesson);
 
   return (
     <FuriganaScope>
@@ -37,16 +37,16 @@ function CulturePage() {
         <section className="space-y-4">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-sm text-muted-foreground">{`${items.length} notes across your lessons.`}</p>
+              <p className="text-sm text-muted-foreground">{`${items.length} notes across your AI Lessons.`}</p>
             </div>
             <FuriganaToggle />
           </div>
           {isLoading ? <p className="text-muted-foreground">Loading…</p> : null}
           {error ? <p className="text-destructive">{error.message}</p> : null}
-          <LessonFilterChips
-            lessons={lessons}
-            value={lesson}
-            onChange={setLesson}
+          <AiLessonFilterChips
+            aiLessons={aiLessons}
+            value={aiLesson}
+            onChange={setAiLesson}
           />
           <div
             className="
@@ -58,15 +58,15 @@ function CulturePage() {
               <CultureCard
                 key={c.id}
                 culture={c}
-                lesson={{
-                  slug: c.lessonSlug,
-                  title: c.lessonTitle,
+                aiLesson={{
+                  slug: c.aiLessonSlug,
+                  title: c.aiLessonTitle,
                 }}
               />
             ))}
           </div>
           {!isLoading && items.length === 0
-            ? <p className="text-muted-foreground">No culture notes yet. Import a lesson.</p>
+            ? <p className="text-muted-foreground">No culture notes yet. Import an AI Lesson.</p>
             : null}
         </section>
       </VocabMapContext.Provider>
