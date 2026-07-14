@@ -212,16 +212,24 @@ export async function listBookmarks(tagId: string): Promise<BookmarkRecord[]> {
 }
 
 /**
- * All bookmarks across every child tag/term in one channel's configured source, deduped by id and
- * sorted by title. The upstream host only supports listing bookmarks for one specific tag/term id at a
- * time, so this fetches the channel's whole vocabulary and merges each item's bookmarks.
+ * All bookmarks across one channel's configured source, deduped by id and sorted by title. The
+ * upstream host only supports listing bookmarks for one specific tag/term id at a time, so this
+ * fetches every id that could be tagged directly — the source's own drilled-down term/parent tag
+ * id, plus its children from the channel's vocabulary — and merges each id's bookmarks.
  */
 export async function listBookmarksForCategory(
   category: SentenceTermCategory = "vocabulary",
 ): Promise<BookmarkRecord[]> {
-  const items = await fetchVocabulary(category);
-  if (items.length === 0) return [];
-  const lists = await Promise.all(items.map(item => listBookmarks(item.id)));
+  const {
+    sources,
+  } = await resolveBookmarksConfig();
+  const source = sources[category];
+  if (!source) return [];
+  const children = await fetchVocabulary(category);
+  const rootId = source.kind === "taxonomy" ? source.termId : source.id;
+  const ids = [...new Set([...(rootId ? [rootId] : []), ...children.map(item => item.id)])];
+  if (ids.length === 0) return [];
+  const lists = await Promise.all(ids.map(id => listBookmarks(id)));
   const byId = new Map<string, BookmarkRecord>();
   for (const record of lists.flat()) {
     if (!byId.has(record.id)) byId.set(record.id, record);
