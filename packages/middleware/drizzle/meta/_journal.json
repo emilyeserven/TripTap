@@ -218,6 +218,13 @@
       "when": 1784053238317,
       "tag": "0030_rename_lessons_to_ai_lessons",
       "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1784055964690,
+      "tag": "0031_freezing_exiles",
+      "breakpoints": true
     }
   ]
 }
