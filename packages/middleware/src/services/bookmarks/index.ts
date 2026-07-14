@@ -198,11 +198,8 @@ function toBookmarkRecord(raw: unknown, includeSections: boolean): BookmarkRecor
   };
 }
 
-/** Bookmarks tagged with the given tag id, newest-app-order. Sections are not included in the list. */
-export async function listBookmarks(tagId: string): Promise<BookmarkRecord[]> {
-  const {
-    baseUrl,
-  } = await resolveBookmarksConfig();
+/** Bookmarks tagged with the given tag id, using a caller-resolved base URL. Sections omitted. */
+async function listBookmarksByTag(baseUrl: string, tagId: string): Promise<BookmarkRecord[]> {
   const raw = await fetchBookmarksJson<unknown>(
     apiUrl(baseUrl, `/bookmarks?tags=${encodeURIComponent(tagId)}`),
   );
@@ -211,30 +208,89 @@ export async function listBookmarks(tagId: string): Promise<BookmarkRecord[]> {
     : [];
 }
 
+/** One bookmark by id, using a caller-resolved base URL. Sections omitted (list rows don't need them). */
+async function listBookmarkById(baseUrl: string, id: string): Promise<BookmarkRecord | null> {
+  const raw = await fetchBookmarksJson<unknown>(apiUrl(baseUrl, `/bookmarks/${encodeURIComponent(id)}`));
+  return toBookmarkRecord(raw, false);
+}
+
+/** Bookmarks tagged with the given tag id, newest-app-order. Sections are not included in the list. */
+export async function listBookmarks(tagId: string): Promise<BookmarkRecord[]> {
+  const {
+    baseUrl,
+  } = await resolveBookmarksConfig();
+  return listBookmarksByTag(baseUrl, tagId);
+}
+
+/**
+ * The bookmark → assigned-term-id map for one taxonomy (owner type `bookmark`). The upstream host
+ * cannot filter bookmarks by a taxonomy term through `?tags=` (that only matches tags), so a taxonomy
+ * source resolves its bookmarks through these assignments instead. Shape: `{ [bookmarkId]: termId[] }`.
+ */
+async function fetchTaxonomyBookmarkAssignments(
+  baseUrl: string,
+  taxonomyId: string,
+): Promise<Record<string, string[]>> {
+  const raw = await fetchBookmarksJson<unknown>(
+    apiUrl(baseUrl, `/taxonomy-assignments/by-owner-type/${encodeURIComponent(taxonomyId)}/bookmark`),
+  );
+  const out: Record<string, string[]> = {};
+  if (raw && typeof raw === "object" && !Array.isArray(raw)) {
+    for (const [bookmarkId, termIds] of Object.entries(raw as Record<string, unknown>)) {
+      if (Array.isArray(termIds)) {
+        out[bookmarkId] = termIds.filter((t): t is string => typeof t === "string");
+      }
+    }
+  }
+  return out;
+}
+
+/** Dedupe bookmark records by id (first occurrence wins) and sort by title. */
+function dedupeBookmarksByTitle(records: BookmarkRecord[]): BookmarkRecord[] {
+  const byId = new Map<string, BookmarkRecord>();
+  for (const record of records) {
+    if (!byId.has(record.id)) byId.set(record.id, record);
+  }
+  return [...byId.values()].sort((a, b) => a.title.localeCompare(b.title));
+}
+
 /**
  * All bookmarks across one channel's configured source, deduped by id and sorted by title. The
- * upstream host only supports listing bookmarks for one specific tag/term id at a time, so this
- * fetches every id that could be tagged directly — the source's own drilled-down term/parent tag
- * id, plus its children from the channel's vocabulary — and merges each id's bookmarks.
+ * upstream host lists bookmarks per id, but tags and taxonomy terms live in different id spaces, so
+ * the two source kinds resolve differently:
+ *
+ * - **tag** — `?tags=` accepts tag ids directly, so query the parent tag plus each of its child tags.
+ * - **taxonomy** — `?tags=` never matches taxonomy term ids, so gather the terms in scope (the
+ *   drilled-down term plus its children, or the whole taxonomy when there's no drill-down) and pull
+ *   the bookmarks assigned to any of them from the taxonomy assignment map.
  */
 export async function listBookmarksForCategory(
   category: SentenceTermCategory = "vocabulary",
 ): Promise<BookmarkRecord[]> {
   const {
-    sources,
+    baseUrl, sources,
   } = await resolveBookmarksConfig();
   const source = sources[category];
   if (!source) return [];
   const children = await fetchVocabulary(category);
-  const rootId = source.kind === "taxonomy" ? source.termId : source.id;
-  const ids = [...new Set([...(rootId ? [rootId] : []), ...children.map(item => item.id)])];
-  if (ids.length === 0) return [];
-  const lists = await Promise.all(ids.map(id => listBookmarks(id)));
-  const byId = new Map<string, BookmarkRecord>();
-  for (const record of lists.flat()) {
-    if (!byId.has(record.id)) byId.set(record.id, record);
+
+  if (source.kind === "taxonomy") {
+    const targetTerms = new Set<string>([
+      ...(source.termId ? [source.termId] : []),
+      ...children.map(item => item.id),
+    ]);
+    if (targetTerms.size === 0) return [];
+    const assignments = await fetchTaxonomyBookmarkAssignments(baseUrl, source.id);
+    const ids = Object.entries(assignments)
+      .filter(([, termIds]) => termIds.some(termId => targetTerms.has(termId)))
+      .map(([bookmarkId]) => bookmarkId);
+    const records = await Promise.all(ids.map(id => listBookmarkById(baseUrl, id)));
+    return dedupeBookmarksByTitle(records.filter((b): b is BookmarkRecord => b !== null));
   }
-  return [...byId.values()].sort((a, b) => a.title.localeCompare(b.title));
+
+  const ids = [...new Set([source.id, ...children.map(item => item.id)])];
+  const lists = await Promise.all(ids.map(id => listBookmarksByTag(baseUrl, id)));
+  return dedupeBookmarksByTitle(lists.flat());
 }
 
 /** A single bookmark by id, including its flattened timestamp sections. Null when not found/unreadable. */
