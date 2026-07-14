@@ -6,11 +6,13 @@ import {
   BookMarkedIcon,
   BookOpenIcon,
   CameraIcon,
+  ChartColumnIcon,
   ChevronRightIcon,
   ClipboardCheckIcon,
   ClipboardListIcon,
   DatabaseIcon,
   DrillIcon,
+  FolderTreeIcon,
   GraduationCapIcon,
   HeadphonesIcon,
   ImagesIcon,
@@ -26,6 +28,7 @@ import {
   ScrollTextIcon,
   SendIcon,
   SettingsIcon,
+  TargetIcon,
   UserRoundIcon,
 } from "lucide-react";
 
@@ -59,11 +62,6 @@ const collectionsItems = [
     icon: BookAIcon,
   },
   {
-    title: "Tutors",
-    to: "/tutors",
-    icon: UserRoundIcon,
-  },
-  {
     title: "AI Lessons",
     to: "/ai-lessons",
     icon: GraduationCapIcon,
@@ -82,6 +80,11 @@ const collectionsItems = [
 
 /** The study bank itself. */
 const libraryItems = [
+  {
+    title: "Tutors",
+    to: "/tutors",
+    icon: UserRoundIcon,
+  },
   {
     title: "Culture",
     to: "/culture",
@@ -173,6 +176,23 @@ const actionItems = [
         title: "Anki export",
         to: "/anki",
         icon: LayersIcon,
+      },
+    ],
+  },
+  {
+    title: "Drill Sessions",
+    to: "/drill-sessions",
+    icon: TargetIcon,
+    children: [
+      {
+        title: "Mistake Reasons",
+        to: "/drill-sessions/reasons",
+        icon: FolderTreeIcon,
+      },
+      {
+        title: "Statistics",
+        to: "/drill-sessions/stats",
+        icon: ChartColumnIcon,
       },
     ],
   },
@@ -365,6 +385,18 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                 <Link to="/lessons/new">
                   <BookAIcon />
                   <span>Start Lesson</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                tooltip="Start Drills"
+                isActive={isItemActive(pathname, "/drill-sessions/new")}
+              >
+                <Link to="/drill-sessions/new">
+                  <DrillIcon />
+                  <span>Start Drills</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>

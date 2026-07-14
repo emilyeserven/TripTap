@@ -30,6 +30,7 @@ import { Route as MyWritingIndexRouteImport } from './routes/my-writing.index'
 import { Route as MySentencesIndexRouteImport } from './routes/my-sentences.index'
 import { Route as ListeningSessionsIndexRouteImport } from './routes/listening-sessions.index'
 import { Route as LessonsIndexRouteImport } from './routes/lessons.index'
+import { Route as DrillSessionsIndexRouteImport } from './routes/drill-sessions.index'
 import { Route as CapturesIndexRouteImport } from './routes/captures.index'
 import { Route as BookExercisesIndexRouteImport } from './routes/book-exercises.index'
 import { Route as AnswerSheetsIndexRouteImport } from './routes/answer-sheets.index'
@@ -53,6 +54,10 @@ import { Route as ListeningSessionsNewRouteImport } from './routes/listening-ses
 import { Route as ListeningSessionsIdRouteImport } from './routes/listening-sessions.$id'
 import { Route as LessonsNewRouteImport } from './routes/lessons.new'
 import { Route as LessonsIdRouteImport } from './routes/lessons.$id'
+import { Route as DrillSessionsStatsRouteImport } from './routes/drill-sessions.stats'
+import { Route as DrillSessionsReasonsRouteImport } from './routes/drill-sessions.reasons'
+import { Route as DrillSessionsNewRouteImport } from './routes/drill-sessions.new'
+import { Route as DrillSessionsIdRouteImport } from './routes/drill-sessions.$id'
 import { Route as CapturesIdRouteImport } from './routes/captures.$id'
 import { Route as AnswerSheetsNewRouteImport } from './routes/answer-sheets.new'
 import { Route as AnswerSheetsIdRouteImport } from './routes/answer-sheets.$id'
@@ -66,6 +71,7 @@ import { Route as PracticeIdIndexRouteImport } from './routes/practice.$id.index
 import { Route as MySentencesIdIndexRouteImport } from './routes/my-sentences.$id.index'
 import { Route as ListeningSessionsIdIndexRouteImport } from './routes/listening-sessions.$id.index'
 import { Route as LessonsIdIndexRouteImport } from './routes/lessons.$id.index'
+import { Route as DrillSessionsIdIndexRouteImport } from './routes/drill-sessions.$id.index'
 import { Route as AnswerSheetsIdIndexRouteImport } from './routes/answer-sheets.$id.index'
 import { Route as TutorsIdEditRouteImport } from './routes/tutors.$id.edit'
 import { Route as ShadowingIdEditRouteImport } from './routes/shadowing.$id.edit'
@@ -75,6 +81,7 @@ import { Route as PracticeIdEditRouteImport } from './routes/practice.$id.edit'
 import { Route as MySentencesIdEditRouteImport } from './routes/my-sentences.$id.edit'
 import { Route as ListeningSessionsIdEditRouteImport } from './routes/listening-sessions.$id.edit'
 import { Route as LessonsIdEditRouteImport } from './routes/lessons.$id.edit'
+import { Route as DrillSessionsIdEditRouteImport } from './routes/drill-sessions.$id.edit'
 import { Route as AnswerSheetsIdEditRouteImport } from './routes/answer-sheets.$id.edit'
 
 const WritingPromptsRoute = WritingPromptsRouteImport.update({
@@ -180,6 +187,11 @@ const ListeningSessionsIndexRoute = ListeningSessionsIndexRouteImport.update({
 const LessonsIndexRoute = LessonsIndexRouteImport.update({
   id: '/lessons/',
   path: '/lessons/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DrillSessionsIndexRoute = DrillSessionsIndexRouteImport.update({
+  id: '/drill-sessions/',
+  path: '/drill-sessions/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CapturesIndexRoute = CapturesIndexRouteImport.update({
@@ -297,6 +309,26 @@ const LessonsIdRoute = LessonsIdRouteImport.update({
   path: '/lessons/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DrillSessionsStatsRoute = DrillSessionsStatsRouteImport.update({
+  id: '/drill-sessions/stats',
+  path: '/drill-sessions/stats',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DrillSessionsReasonsRoute = DrillSessionsReasonsRouteImport.update({
+  id: '/drill-sessions/reasons',
+  path: '/drill-sessions/reasons',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DrillSessionsNewRoute = DrillSessionsNewRouteImport.update({
+  id: '/drill-sessions/new',
+  path: '/drill-sessions/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DrillSessionsIdRoute = DrillSessionsIdRouteImport.update({
+  id: '/drill-sessions/$id',
+  path: '/drill-sessions/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CapturesIdRoute = CapturesIdRouteImport.update({
   id: '/captures/$id',
   path: '/captures/$id',
@@ -363,6 +395,11 @@ const LessonsIdIndexRoute = LessonsIdIndexRouteImport.update({
   path: '/',
   getParentRoute: () => LessonsIdRoute,
 } as any)
+const DrillSessionsIdIndexRoute = DrillSessionsIdIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DrillSessionsIdRoute,
+} as any)
 const AnswerSheetsIdIndexRoute = AnswerSheetsIdIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -408,6 +445,11 @@ const LessonsIdEditRoute = LessonsIdEditRouteImport.update({
   path: '/edit',
   getParentRoute: () => LessonsIdRoute,
 } as any)
+const DrillSessionsIdEditRoute = DrillSessionsIdEditRouteImport.update({
+  id: '/edit',
+  path: '/edit',
+  getParentRoute: () => DrillSessionsIdRoute,
+} as any)
 const AnswerSheetsIdEditRoute = AnswerSheetsIdEditRouteImport.update({
   id: '/edit',
   path: '/edit',
@@ -431,6 +473,10 @@ export interface FileRoutesByFullPath {
   '/answer-sheets/$id': typeof AnswerSheetsIdRouteWithChildren
   '/answer-sheets/new': typeof AnswerSheetsNewRoute
   '/captures/$id': typeof CapturesIdRoute
+  '/drill-sessions/$id': typeof DrillSessionsIdRouteWithChildren
+  '/drill-sessions/new': typeof DrillSessionsNewRoute
+  '/drill-sessions/reasons': typeof DrillSessionsReasonsRoute
+  '/drill-sessions/stats': typeof DrillSessionsStatsRoute
   '/lessons/$id': typeof LessonsIdRouteWithChildren
   '/lessons/new': typeof LessonsNewRoute
   '/listening-sessions/$id': typeof ListeningSessionsIdRouteWithChildren
@@ -454,6 +500,7 @@ export interface FileRoutesByFullPath {
   '/answer-sheets/': typeof AnswerSheetsIndexRoute
   '/book-exercises/': typeof BookExercisesIndexRoute
   '/captures/': typeof CapturesIndexRoute
+  '/drill-sessions/': typeof DrillSessionsIndexRoute
   '/lessons/': typeof LessonsIndexRoute
   '/listening-sessions/': typeof ListeningSessionsIndexRoute
   '/my-sentences/': typeof MySentencesIndexRoute
@@ -465,6 +512,7 @@ export interface FileRoutesByFullPath {
   '/sources/': typeof SourcesIndexRoute
   '/tutors/': typeof TutorsIndexRoute
   '/answer-sheets/$id/edit': typeof AnswerSheetsIdEditRoute
+  '/drill-sessions/$id/edit': typeof DrillSessionsIdEditRoute
   '/lessons/$id/edit': typeof LessonsIdEditRoute
   '/listening-sessions/$id/edit': typeof ListeningSessionsIdEditRoute
   '/my-sentences/$id/edit': typeof MySentencesIdEditRoute
@@ -474,6 +522,7 @@ export interface FileRoutesByFullPath {
   '/shadowing/$id/edit': typeof ShadowingIdEditRoute
   '/tutors/$id/edit': typeof TutorsIdEditRoute
   '/answer-sheets/$id/': typeof AnswerSheetsIdIndexRoute
+  '/drill-sessions/$id/': typeof DrillSessionsIdIndexRoute
   '/lessons/$id/': typeof LessonsIdIndexRoute
   '/listening-sessions/$id/': typeof ListeningSessionsIdIndexRoute
   '/my-sentences/$id/': typeof MySentencesIdIndexRoute
@@ -499,6 +548,9 @@ export interface FileRoutesByTo {
   '/ai-lessons/new': typeof AiLessonsNewRoute
   '/answer-sheets/new': typeof AnswerSheetsNewRoute
   '/captures/$id': typeof CapturesIdRoute
+  '/drill-sessions/new': typeof DrillSessionsNewRoute
+  '/drill-sessions/reasons': typeof DrillSessionsReasonsRoute
+  '/drill-sessions/stats': typeof DrillSessionsStatsRoute
   '/lessons/new': typeof LessonsNewRoute
   '/listening-sessions/new': typeof ListeningSessionsNewRoute
   '/my-sentences/new': typeof MySentencesNewRoute
@@ -514,6 +566,7 @@ export interface FileRoutesByTo {
   '/answer-sheets': typeof AnswerSheetsIndexRoute
   '/book-exercises': typeof BookExercisesIndexRoute
   '/captures': typeof CapturesIndexRoute
+  '/drill-sessions': typeof DrillSessionsIndexRoute
   '/lessons': typeof LessonsIndexRoute
   '/listening-sessions': typeof ListeningSessionsIndexRoute
   '/my-sentences': typeof MySentencesIndexRoute
@@ -525,6 +578,7 @@ export interface FileRoutesByTo {
   '/sources': typeof SourcesIndexRoute
   '/tutors': typeof TutorsIndexRoute
   '/answer-sheets/$id/edit': typeof AnswerSheetsIdEditRoute
+  '/drill-sessions/$id/edit': typeof DrillSessionsIdEditRoute
   '/lessons/$id/edit': typeof LessonsIdEditRoute
   '/listening-sessions/$id/edit': typeof ListeningSessionsIdEditRoute
   '/my-sentences/$id/edit': typeof MySentencesIdEditRoute
@@ -534,6 +588,7 @@ export interface FileRoutesByTo {
   '/shadowing/$id/edit': typeof ShadowingIdEditRoute
   '/tutors/$id/edit': typeof TutorsIdEditRoute
   '/answer-sheets/$id': typeof AnswerSheetsIdIndexRoute
+  '/drill-sessions/$id': typeof DrillSessionsIdIndexRoute
   '/lessons/$id': typeof LessonsIdIndexRoute
   '/listening-sessions/$id': typeof ListeningSessionsIdIndexRoute
   '/my-sentences/$id': typeof MySentencesIdIndexRoute
@@ -561,6 +616,10 @@ export interface FileRoutesById {
   '/answer-sheets/$id': typeof AnswerSheetsIdRouteWithChildren
   '/answer-sheets/new': typeof AnswerSheetsNewRoute
   '/captures/$id': typeof CapturesIdRoute
+  '/drill-sessions/$id': typeof DrillSessionsIdRouteWithChildren
+  '/drill-sessions/new': typeof DrillSessionsNewRoute
+  '/drill-sessions/reasons': typeof DrillSessionsReasonsRoute
+  '/drill-sessions/stats': typeof DrillSessionsStatsRoute
   '/lessons/$id': typeof LessonsIdRouteWithChildren
   '/lessons/new': typeof LessonsNewRoute
   '/listening-sessions/$id': typeof ListeningSessionsIdRouteWithChildren
@@ -584,6 +643,7 @@ export interface FileRoutesById {
   '/answer-sheets/': typeof AnswerSheetsIndexRoute
   '/book-exercises/': typeof BookExercisesIndexRoute
   '/captures/': typeof CapturesIndexRoute
+  '/drill-sessions/': typeof DrillSessionsIndexRoute
   '/lessons/': typeof LessonsIndexRoute
   '/listening-sessions/': typeof ListeningSessionsIndexRoute
   '/my-sentences/': typeof MySentencesIndexRoute
@@ -595,6 +655,7 @@ export interface FileRoutesById {
   '/sources/': typeof SourcesIndexRoute
   '/tutors/': typeof TutorsIndexRoute
   '/answer-sheets/$id/edit': typeof AnswerSheetsIdEditRoute
+  '/drill-sessions/$id/edit': typeof DrillSessionsIdEditRoute
   '/lessons/$id/edit': typeof LessonsIdEditRoute
   '/listening-sessions/$id/edit': typeof ListeningSessionsIdEditRoute
   '/my-sentences/$id/edit': typeof MySentencesIdEditRoute
@@ -604,6 +665,7 @@ export interface FileRoutesById {
   '/shadowing/$id/edit': typeof ShadowingIdEditRoute
   '/tutors/$id/edit': typeof TutorsIdEditRoute
   '/answer-sheets/$id/': typeof AnswerSheetsIdIndexRoute
+  '/drill-sessions/$id/': typeof DrillSessionsIdIndexRoute
   '/lessons/$id/': typeof LessonsIdIndexRoute
   '/listening-sessions/$id/': typeof ListeningSessionsIdIndexRoute
   '/my-sentences/$id/': typeof MySentencesIdIndexRoute
@@ -632,6 +694,10 @@ export interface FileRouteTypes {
     | '/answer-sheets/$id'
     | '/answer-sheets/new'
     | '/captures/$id'
+    | '/drill-sessions/$id'
+    | '/drill-sessions/new'
+    | '/drill-sessions/reasons'
+    | '/drill-sessions/stats'
     | '/lessons/$id'
     | '/lessons/new'
     | '/listening-sessions/$id'
@@ -655,6 +721,7 @@ export interface FileRouteTypes {
     | '/answer-sheets/'
     | '/book-exercises/'
     | '/captures/'
+    | '/drill-sessions/'
     | '/lessons/'
     | '/listening-sessions/'
     | '/my-sentences/'
@@ -666,6 +733,7 @@ export interface FileRouteTypes {
     | '/sources/'
     | '/tutors/'
     | '/answer-sheets/$id/edit'
+    | '/drill-sessions/$id/edit'
     | '/lessons/$id/edit'
     | '/listening-sessions/$id/edit'
     | '/my-sentences/$id/edit'
@@ -675,6 +743,7 @@ export interface FileRouteTypes {
     | '/shadowing/$id/edit'
     | '/tutors/$id/edit'
     | '/answer-sheets/$id/'
+    | '/drill-sessions/$id/'
     | '/lessons/$id/'
     | '/listening-sessions/$id/'
     | '/my-sentences/$id/'
@@ -700,6 +769,9 @@ export interface FileRouteTypes {
     | '/ai-lessons/new'
     | '/answer-sheets/new'
     | '/captures/$id'
+    | '/drill-sessions/new'
+    | '/drill-sessions/reasons'
+    | '/drill-sessions/stats'
     | '/lessons/new'
     | '/listening-sessions/new'
     | '/my-sentences/new'
@@ -715,6 +787,7 @@ export interface FileRouteTypes {
     | '/answer-sheets'
     | '/book-exercises'
     | '/captures'
+    | '/drill-sessions'
     | '/lessons'
     | '/listening-sessions'
     | '/my-sentences'
@@ -726,6 +799,7 @@ export interface FileRouteTypes {
     | '/sources'
     | '/tutors'
     | '/answer-sheets/$id/edit'
+    | '/drill-sessions/$id/edit'
     | '/lessons/$id/edit'
     | '/listening-sessions/$id/edit'
     | '/my-sentences/$id/edit'
@@ -735,6 +809,7 @@ export interface FileRouteTypes {
     | '/shadowing/$id/edit'
     | '/tutors/$id/edit'
     | '/answer-sheets/$id'
+    | '/drill-sessions/$id'
     | '/lessons/$id'
     | '/listening-sessions/$id'
     | '/my-sentences/$id'
@@ -761,6 +836,10 @@ export interface FileRouteTypes {
     | '/answer-sheets/$id'
     | '/answer-sheets/new'
     | '/captures/$id'
+    | '/drill-sessions/$id'
+    | '/drill-sessions/new'
+    | '/drill-sessions/reasons'
+    | '/drill-sessions/stats'
     | '/lessons/$id'
     | '/lessons/new'
     | '/listening-sessions/$id'
@@ -784,6 +863,7 @@ export interface FileRouteTypes {
     | '/answer-sheets/'
     | '/book-exercises/'
     | '/captures/'
+    | '/drill-sessions/'
     | '/lessons/'
     | '/listening-sessions/'
     | '/my-sentences/'
@@ -795,6 +875,7 @@ export interface FileRouteTypes {
     | '/sources/'
     | '/tutors/'
     | '/answer-sheets/$id/edit'
+    | '/drill-sessions/$id/edit'
     | '/lessons/$id/edit'
     | '/listening-sessions/$id/edit'
     | '/my-sentences/$id/edit'
@@ -804,6 +885,7 @@ export interface FileRouteTypes {
     | '/shadowing/$id/edit'
     | '/tutors/$id/edit'
     | '/answer-sheets/$id/'
+    | '/drill-sessions/$id/'
     | '/lessons/$id/'
     | '/listening-sessions/$id/'
     | '/my-sentences/$id/'
@@ -831,6 +913,10 @@ export interface RootRouteChildren {
   AnswerSheetsIdRoute: typeof AnswerSheetsIdRouteWithChildren
   AnswerSheetsNewRoute: typeof AnswerSheetsNewRoute
   CapturesIdRoute: typeof CapturesIdRoute
+  DrillSessionsIdRoute: typeof DrillSessionsIdRouteWithChildren
+  DrillSessionsNewRoute: typeof DrillSessionsNewRoute
+  DrillSessionsReasonsRoute: typeof DrillSessionsReasonsRoute
+  DrillSessionsStatsRoute: typeof DrillSessionsStatsRoute
   LessonsIdRoute: typeof LessonsIdRouteWithChildren
   LessonsNewRoute: typeof LessonsNewRoute
   ListeningSessionsIdRoute: typeof ListeningSessionsIdRouteWithChildren
@@ -853,6 +939,7 @@ export interface RootRouteChildren {
   AnswerSheetsIndexRoute: typeof AnswerSheetsIndexRoute
   BookExercisesIndexRoute: typeof BookExercisesIndexRoute
   CapturesIndexRoute: typeof CapturesIndexRoute
+  DrillSessionsIndexRoute: typeof DrillSessionsIndexRoute
   LessonsIndexRoute: typeof LessonsIndexRoute
   ListeningSessionsIndexRoute: typeof ListeningSessionsIndexRoute
   MySentencesIndexRoute: typeof MySentencesIndexRoute
@@ -1012,6 +1099,13 @@ declare module '@tanstack/react-router' {
       path: '/lessons'
       fullPath: '/lessons/'
       preLoaderRoute: typeof LessonsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/drill-sessions/': {
+      id: '/drill-sessions/'
+      path: '/drill-sessions'
+      fullPath: '/drill-sessions/'
+      preLoaderRoute: typeof DrillSessionsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/captures/': {
@@ -1175,6 +1269,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LessonsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/drill-sessions/stats': {
+      id: '/drill-sessions/stats'
+      path: '/drill-sessions/stats'
+      fullPath: '/drill-sessions/stats'
+      preLoaderRoute: typeof DrillSessionsStatsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/drill-sessions/reasons': {
+      id: '/drill-sessions/reasons'
+      path: '/drill-sessions/reasons'
+      fullPath: '/drill-sessions/reasons'
+      preLoaderRoute: typeof DrillSessionsReasonsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/drill-sessions/new': {
+      id: '/drill-sessions/new'
+      path: '/drill-sessions/new'
+      fullPath: '/drill-sessions/new'
+      preLoaderRoute: typeof DrillSessionsNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/drill-sessions/$id': {
+      id: '/drill-sessions/$id'
+      path: '/drill-sessions/$id'
+      fullPath: '/drill-sessions/$id'
+      preLoaderRoute: typeof DrillSessionsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/captures/$id': {
       id: '/captures/$id'
       path: '/captures/$id'
@@ -1266,6 +1388,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LessonsIdIndexRouteImport
       parentRoute: typeof LessonsIdRoute
     }
+    '/drill-sessions/$id/': {
+      id: '/drill-sessions/$id/'
+      path: '/'
+      fullPath: '/drill-sessions/$id/'
+      preLoaderRoute: typeof DrillSessionsIdIndexRouteImport
+      parentRoute: typeof DrillSessionsIdRoute
+    }
     '/answer-sheets/$id/': {
       id: '/answer-sheets/$id/'
       path: '/'
@@ -1329,6 +1458,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LessonsIdEditRouteImport
       parentRoute: typeof LessonsIdRoute
     }
+    '/drill-sessions/$id/edit': {
+      id: '/drill-sessions/$id/edit'
+      path: '/edit'
+      fullPath: '/drill-sessions/$id/edit'
+      preLoaderRoute: typeof DrillSessionsIdEditRouteImport
+      parentRoute: typeof DrillSessionsIdRoute
+    }
     '/answer-sheets/$id/edit': {
       id: '/answer-sheets/$id/edit'
       path: '/edit'
@@ -1363,6 +1499,20 @@ const AnswerSheetsIdRouteChildren: AnswerSheetsIdRouteChildren = {
 
 const AnswerSheetsIdRouteWithChildren = AnswerSheetsIdRoute._addFileChildren(
   AnswerSheetsIdRouteChildren,
+)
+
+interface DrillSessionsIdRouteChildren {
+  DrillSessionsIdEditRoute: typeof DrillSessionsIdEditRoute
+  DrillSessionsIdIndexRoute: typeof DrillSessionsIdIndexRoute
+}
+
+const DrillSessionsIdRouteChildren: DrillSessionsIdRouteChildren = {
+  DrillSessionsIdEditRoute: DrillSessionsIdEditRoute,
+  DrillSessionsIdIndexRoute: DrillSessionsIdIndexRoute,
+}
+
+const DrillSessionsIdRouteWithChildren = DrillSessionsIdRoute._addFileChildren(
+  DrillSessionsIdRouteChildren,
 )
 
 interface LessonsIdRouteChildren {
@@ -1491,6 +1641,10 @@ const rootRouteChildren: RootRouteChildren = {
   AnswerSheetsIdRoute: AnswerSheetsIdRouteWithChildren,
   AnswerSheetsNewRoute: AnswerSheetsNewRoute,
   CapturesIdRoute: CapturesIdRoute,
+  DrillSessionsIdRoute: DrillSessionsIdRouteWithChildren,
+  DrillSessionsNewRoute: DrillSessionsNewRoute,
+  DrillSessionsReasonsRoute: DrillSessionsReasonsRoute,
+  DrillSessionsStatsRoute: DrillSessionsStatsRoute,
   LessonsIdRoute: LessonsIdRouteWithChildren,
   LessonsNewRoute: LessonsNewRoute,
   ListeningSessionsIdRoute: ListeningSessionsIdRouteWithChildren,
@@ -1513,6 +1667,7 @@ const rootRouteChildren: RootRouteChildren = {
   AnswerSheetsIndexRoute: AnswerSheetsIndexRoute,
   BookExercisesIndexRoute: BookExercisesIndexRoute,
   CapturesIndexRoute: CapturesIndexRoute,
+  DrillSessionsIndexRoute: DrillSessionsIndexRoute,
   LessonsIndexRoute: LessonsIndexRoute,
   ListeningSessionsIndexRoute: ListeningSessionsIndexRoute,
   MySentencesIndexRoute: MySentencesIndexRoute,

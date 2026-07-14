@@ -7,6 +7,8 @@ import { aiLessonRoutes } from "@/routes/ai-lessons";
 import { answerSheetRoutes } from "@/routes/answer-sheets";
 import { bookmarksRoutes } from "@/routes/bookmarks";
 import { captureRoutes } from "@/routes/captures";
+import { drillReasonCategoryRoutes } from "@/routes/drill-reason-categories";
+import { drillSessionRoutes } from "@/routes/drill-sessions";
 import { healthRoutes } from "@/routes/health";
 import { lessonRoutes } from "@/routes/lessons";
 import { listeningSessionsRoutes } from "@/routes/listening-sessions";
@@ -104,6 +106,14 @@ export async function buildApp(): Promise<FastifyInstance> {
           description: "Tutors who run lessons",
         },
         {
+          name: "drill-sessions",
+          description: "Drill Buddy — logged mistakes and reflections from drilling",
+        },
+        {
+          name: "drill-reason-categories",
+          description: "Drill Buddy — the reusable mistake-reason taxonomy",
+        },
+        {
           name: "health",
           description: "Service health",
         },
@@ -156,6 +166,8 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(writingPromptRoutes);
   await app.register(tutorRoutes);
   await app.register(lessonRoutes);
+  await app.register(drillReasonCategoryRoutes);
+  await app.register(drillSessionRoutes);
   await app.register(sourceRoutes);
   await app.register(vocabRoutes);
   await app.register(captureRoutes);

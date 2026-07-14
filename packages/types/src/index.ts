@@ -7,6 +7,7 @@
 
 export * from "./answer-sheet.js";
 export * from "./ai-lesson.js";
+export * from "./drill-session.js";
 export * from "./lesson.js";
 export * from "./listening-session.js";
 export * from "./my-sentence.js";
