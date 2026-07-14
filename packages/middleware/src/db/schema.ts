@@ -88,7 +88,7 @@ export const sentences = pgTable("sentences", {
 export type SentenceRow = typeof sentences.$inferSelect;
 export type NewSentenceRow = typeof sentences.$inferInsert;
 
-/** `vocab` — standalone vocabulary bank (peer of `sentences`, distinct from lesson-scoped vocab). */
+/** `vocab` — standalone vocabulary bank (peer of `sentences`, distinct from AI-Lesson-scoped vocab). */
 export const vocab = pgTable("vocab", {
   id: uuid("id").primaryKey().defaultRandom(),
   term: text("term").notNull(),
@@ -472,7 +472,7 @@ export type ParseTemplateRow = typeof parseTemplates.$inferSelect;
 export type NewParseTemplateRow = typeof parseTemplates.$inferInsert;
 
 /**
- * `captures` — a raw OCR scan saved as a first-class record (peer of lessons). A capture holds the
+ * `captures` — a raw OCR scan saved as a first-class record (peer of AI Lessons). A capture holds the
  * extracted text, the per-block OCR detail, and the original image, so it can be parsed into
  * sentences later. It optionally references a `sources` taxonomy entry + page. The image is stored
  * inline as `bytea` and served from a dedicated endpoint, never inlined in JSON list/detail responses.
@@ -523,15 +523,15 @@ export const settings = pgTable("settings", {
 
 export type SettingRow = typeof settings.$inferSelect;
 
-/* ── Lessons ────────────────────────────────────────────────────────────────────────────────
- * A lesson is the parent of five normalized child item types. Each child references `lessons.id`
- * with ON DELETE CASCADE and carries an explicit `sort_order` so the authored array order round-
- * trips exactly. Intra-item lists (grammar examples, per-sentence breakdowns, culture terms) live
- * as JSONB on their parent row — they are never queried independently.
+/* ── AI Lessons ─────────────────────────────────────────────────────────────────────────────
+ * An AI Lesson is the parent of five normalized child item types. Each child references
+ * `ai_lessons.id` with ON DELETE CASCADE and carries an explicit `sort_order` so the authored array
+ * order round-trips exactly. Intra-item lists (grammar examples, per-sentence breakdowns, culture
+ * terms) live as JSONB on their parent row — they are never queried independently.
  */
 
-/** `lessons` — per-lesson header/footer chrome + metadata. */
-export const lessons = pgTable("lessons", {
+/** `ai_lessons` — per-AI-Lesson header/footer chrome + metadata. */
+export const aiLessons = pgTable("ai_lessons", {
   id: uuid("id").primaryKey().defaultRandom(),
   slug: text("slug").notNull().unique(),
   title: text("title").notNull(),
@@ -548,14 +548,14 @@ export const lessons = pgTable("lessons", {
   }).notNull().defaultNow(),
 });
 
-/** `lesson_categories` — the vocab filter chips for a lesson. */
-export const lessonCategories = pgTable(
-  "lesson_categories",
+/** `ai_lesson_categories` — the vocab filter chips for an AI Lesson. */
+export const aiLessonCategories = pgTable(
+  "ai_lesson_categories",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    lessonId: uuid("lesson_id")
+    aiLessonId: uuid("ai_lesson_id")
       .notNull()
-      .references(() => lessons.id, {
+      .references(() => aiLessons.id, {
         onDelete: "cascade",
       }),
     key: text("key").notNull(),
@@ -564,15 +564,15 @@ export const lessonCategories = pgTable(
     icon: text("icon").notNull(),
     sortOrder: integer("sort_order").notNull(),
   },
-  t => [uniqueIndex("lesson_categories_lesson_id_key_unique").on(t.lessonId, t.key)],
+  t => [uniqueIndex("ai_lesson_categories_ai_lesson_id_key_unique").on(t.aiLessonId, t.key)],
 );
 
-/** `lesson_vocab` — flashcard vocabulary. */
-export const lessonVocab = pgTable("lesson_vocab", {
+/** `ai_lesson_vocab` — flashcard vocabulary. */
+export const aiLessonVocab = pgTable("ai_lesson_vocab", {
   id: uuid("id").primaryKey().defaultRandom(),
-  lessonId: uuid("lesson_id")
+  aiLessonId: uuid("ai_lesson_id")
     .notNull()
-    .references(() => lessons.id, {
+    .references(() => aiLessons.id, {
       onDelete: "cascade",
     }),
   jp: text("jp").notNull(),
@@ -586,12 +586,12 @@ export const lessonVocab = pgTable("lesson_vocab", {
   renshuuList: text("renshuu_list"),
 });
 
-/** `lesson_grammar` — grammar patterns; examples embedded as JSONB. */
-export const lessonGrammar = pgTable("lesson_grammar", {
+/** `ai_lesson_grammar` — grammar patterns; examples embedded as JSONB. */
+export const aiLessonGrammar = pgTable("ai_lesson_grammar", {
   id: uuid("id").primaryKey().defaultRandom(),
-  lessonId: uuid("lesson_id")
+  aiLessonId: uuid("ai_lesson_id")
     .notNull()
-    .references(() => lessons.id, {
+    .references(() => aiLessons.id, {
       onDelete: "cascade",
     }),
   pat: text("pat").notNull(),
@@ -603,12 +603,12 @@ export const lessonGrammar = pgTable("lesson_grammar", {
   grammarTerms: jsonb("grammar_terms").$type<SentenceTermRef[]>(),
 });
 
-/** `lesson_source_sentences` — real sentences with per-sentence breakdown (JSONB). */
-export const lessonSourceSentences = pgTable("lesson_source_sentences", {
+/** `ai_lesson_source_sentences` — real sentences with per-sentence breakdown (JSONB). */
+export const aiLessonSourceSentences = pgTable("ai_lesson_source_sentences", {
   id: uuid("id").primaryKey().defaultRandom(),
-  lessonId: uuid("lesson_id")
+  aiLessonId: uuid("ai_lesson_id")
     .notNull()
-    .references(() => lessons.id, {
+    .references(() => aiLessons.id, {
       onDelete: "cascade",
     }),
   jp: text("jp").notNull(),
@@ -623,12 +623,12 @@ export const lessonSourceSentences = pgTable("lesson_source_sentences", {
   grammarTerms: jsonb("grammar_terms").$type<SentenceTermRef[]>(),
 });
 
-/** `lesson_culture` — short cultural-context cards; terms embedded as JSONB. */
-export const lessonCulture = pgTable("lesson_culture", {
+/** `ai_lesson_culture` — short cultural-context cards; terms embedded as JSONB. */
+export const aiLessonCulture = pgTable("ai_lesson_culture", {
   id: uuid("id").primaryKey().defaultRandom(),
-  lessonId: uuid("lesson_id")
+  aiLessonId: uuid("ai_lesson_id")
     .notNull()
-    .references(() => lessons.id, {
+    .references(() => aiLessons.id, {
       onDelete: "cascade",
     }),
   icon: text("icon").notNull(),
@@ -639,10 +639,10 @@ export const lessonCulture = pgTable("lesson_culture", {
   sortOrder: integer("sort_order").notNull(),
 });
 
-export type LessonRow = typeof lessons.$inferSelect;
-export type NewLessonRow = typeof lessons.$inferInsert;
-export type LessonCategoryRow = typeof lessonCategories.$inferSelect;
-export type LessonVocabRow = typeof lessonVocab.$inferSelect;
-export type LessonGrammarRow = typeof lessonGrammar.$inferSelect;
-export type LessonSourceSentenceRow = typeof lessonSourceSentences.$inferSelect;
-export type LessonCultureRow = typeof lessonCulture.$inferSelect;
+export type AiLessonRow = typeof aiLessons.$inferSelect;
+export type NewAiLessonRow = typeof aiLessons.$inferInsert;
+export type AiLessonCategoryRow = typeof aiLessonCategories.$inferSelect;
+export type AiLessonVocabRow = typeof aiLessonVocab.$inferSelect;
+export type AiLessonGrammarRow = typeof aiLessonGrammar.$inferSelect;
+export type AiLessonSourceSentenceRow = typeof aiLessonSourceSentences.$inferSelect;
+export type AiLessonCultureRow = typeof aiLessonCulture.$inferSelect;

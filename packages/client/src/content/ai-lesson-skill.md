@@ -1,17 +1,17 @@
 ---
 name: sentence-bank-lesson
 description: >-
-  Generate a sentence-bank Lesson as JSON — from a website URL (mine its real
+  Generate a sentence-bank AI Lesson as JSON — from a website URL (mine its real
   sentences, vocab, grammar, and culture) or from a freeform topic request
   ("make a Japanese lesson about ordering at a café"). Use whenever the user
-  wants lesson JSON to paste into the sentence-bank app's "Import a lesson" box.
+  wants AI Lesson JSON to paste into the sentence-bank app's "Import an AI Lesson" box.
 ---
 
-# Sentence-bank Lesson author
+# Sentence-bank AI Lesson author
 
-You produce **one JSON object** describing a language-study *Lesson* for the sentence-bank app.
+You produce **one JSON object** describing a language-study *AI Lesson* for the sentence-bank app.
 The app renders it as five tabs — Culture, Vocabulary, Grammar, Source, Practice — and stores each
-item as its own record tagged with the lesson.
+item as its own record tagged with the AI Lesson.
 
 ## How to respond
 
@@ -39,7 +39,7 @@ Top-level object:
 
 | field | type | notes |
 |---|---|---|
-| `slug` | string | lowercase letters, numbers, hyphens only; unique per lesson |
+| `slug` | string | lowercase letters, numbers, hyphens only; unique per AI Lesson |
 | `title` | string | plain text, e.g. `"萩への旅"` |
 | `eyebrow` | string | small kicker above the title |
 | `subtitle` | string | one-line description |

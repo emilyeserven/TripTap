@@ -1,13 +1,13 @@
 import type {
+  AiLessonContent,
+  AiLessonDetail,
+  AiLessonImportInput,
+  AiLessonRecord,
+  AiLessonSummary,
   CategoryItem,
   CultureItem,
   GrammarItem,
   IconKey,
-  LessonContent,
-  LessonDetail,
-  LessonImportInput,
-  LessonRecord,
-  LessonSummary,
   SentenceTermRef,
   SourceSentenceItem,
   VocabItem,
@@ -16,25 +16,25 @@ import type {
 import { asc, desc, eq, sql } from "drizzle-orm";
 import { db } from "@/db";
 import {
-  lessonCategories,
-  lessonCulture,
-  lessonGrammar,
-  lessons,
-  lessonSourceSentences,
-  lessonVocab,
-  type LessonCategoryRow,
-  type LessonCultureRow,
-  type LessonGrammarRow,
-  type LessonRow,
-  type LessonSourceSentenceRow,
-  type LessonVocabRow,
+  aiLessonCategories,
+  aiLessonCulture,
+  aiLessonGrammar,
+  aiLessons,
+  aiLessonSourceSentences,
+  aiLessonVocab,
+  type AiLessonCategoryRow,
+  type AiLessonCultureRow,
+  type AiLessonGrammarRow,
+  type AiLessonRow,
+  type AiLessonSourceSentenceRow,
+  type AiLessonVocabRow,
 } from "@/db/schema";
 
-/** Thrown when an imported lesson reuses an existing slug. Routes map this to HTTP 409. */
-export class LessonSlugConflictError extends Error {
+/** Thrown when an imported AI Lesson reuses an existing slug. Routes map this to HTTP 409. */
+export class AiLessonSlugConflictError extends Error {
   constructor(public readonly slug: string) {
-    super(`A lesson with slug "${slug}" already exists`);
-    this.name = "LessonSlugConflictError";
+    super(`An AI Lesson with slug "${slug}" already exists`);
+    this.name = "AiLessonSlugConflictError";
   }
 }
 
@@ -44,7 +44,7 @@ function toIso(value: Date | string): string {
   return value instanceof Date ? value.toISOString() : String(value);
 }
 
-function toLessonRecord(row: LessonRow): LessonRecord {
+function toAiLessonRecord(row: AiLessonRow): AiLessonRecord {
   return {
     id: row.id,
     slug: row.slug,
@@ -61,7 +61,7 @@ function toLessonRecord(row: LessonRow): LessonRecord {
   };
 }
 
-function toCategory(row: LessonCategoryRow): CategoryItem {
+function toCategory(row: AiLessonCategoryRow): CategoryItem {
   return {
     id: row.id,
     sortOrder: row.sortOrder,
@@ -72,7 +72,7 @@ function toCategory(row: LessonCategoryRow): CategoryItem {
   };
 }
 
-function toVocab(row: LessonVocabRow): VocabItem {
+function toVocab(row: AiLessonVocabRow): VocabItem {
   return {
     id: row.id,
     sortOrder: row.sortOrder,
@@ -86,7 +86,7 @@ function toVocab(row: LessonVocabRow): VocabItem {
   };
 }
 
-function toGrammar(row: LessonGrammarRow): GrammarItem {
+function toGrammar(row: AiLessonGrammarRow): GrammarItem {
   return {
     id: row.id,
     sortOrder: row.sortOrder,
@@ -98,7 +98,7 @@ function toGrammar(row: LessonGrammarRow): GrammarItem {
   };
 }
 
-function toSourceSentence(row: LessonSourceSentenceRow): SourceSentenceItem {
+function toSourceSentence(row: AiLessonSourceSentenceRow): SourceSentenceItem {
   return {
     id: row.id,
     sortOrder: row.sortOrder,
@@ -112,7 +112,7 @@ function toSourceSentence(row: LessonSourceSentenceRow): SourceSentenceItem {
   };
 }
 
-function toCulture(row: LessonCultureRow): CultureItem {
+function toCulture(row: AiLessonCultureRow): CultureItem {
   return {
     id: row.id,
     sortOrder: row.sortOrder,
@@ -126,9 +126,9 @@ function toCulture(row: LessonCultureRow): CultureItem {
 
 /* ── Queries ──────────────────────────────────────────────────────────────────────────────── */
 
-/** List lessons (newest first) with per-section counts for the summary cards. */
-export async function listLessons(): Promise<LessonSummary[]> {
-  const rows = await db.select().from(lessons).orderBy(desc(lessons.createdAt));
+/** List AI Lessons (newest first) with per-section counts for the summary cards. */
+export async function listAiLessons(): Promise<AiLessonSummary[]> {
+  const rows = await db.select().from(aiLessons).orderBy(desc(aiLessons.createdAt));
   if (rows.length === 0) return [];
 
   const counts = await loadCounts();
@@ -143,7 +143,7 @@ export async function listLessons(): Promise<LessonSummary[]> {
   }));
 }
 
-function emptyCounts(): LessonSummary["counts"] {
+function emptyCounts(): AiLessonSummary["counts"] {
   return {
     categories: 0,
     vocab: 0,
@@ -153,9 +153,9 @@ function emptyCounts(): LessonSummary["counts"] {
   };
 }
 
-/** One grouped-count query per child table → a map keyed by lessonId. Constant number of queries. */
-async function loadCounts(): Promise<Map<string, LessonSummary["counts"]>> {
-  const map = new Map<string, LessonSummary["counts"]>();
+/** One grouped-count query per child table → a map keyed by aiLessonId. Constant number of queries. */
+async function loadCounts(): Promise<Map<string, AiLessonSummary["counts"]>> {
+  const map = new Map<string, AiLessonSummary["counts"]>();
   const ensure = (id: string) => {
     let c = map.get(id);
     if (!c) {
@@ -168,54 +168,54 @@ async function loadCounts(): Promise<Map<string, LessonSummary["counts"]>> {
 
   const [cats, voc, gra, src, cul] = await Promise.all([
     db.select({
-      lessonId: lessonCategories.lessonId,
+      aiLessonId: aiLessonCategories.aiLessonId,
       count: n,
-    }).from(lessonCategories).groupBy(lessonCategories.lessonId),
+    }).from(aiLessonCategories).groupBy(aiLessonCategories.aiLessonId),
     db.select({
-      lessonId: lessonVocab.lessonId,
+      aiLessonId: aiLessonVocab.aiLessonId,
       count: n,
-    }).from(lessonVocab).groupBy(lessonVocab.lessonId),
+    }).from(aiLessonVocab).groupBy(aiLessonVocab.aiLessonId),
     db.select({
-      lessonId: lessonGrammar.lessonId,
+      aiLessonId: aiLessonGrammar.aiLessonId,
       count: n,
-    }).from(lessonGrammar).groupBy(lessonGrammar.lessonId),
+    }).from(aiLessonGrammar).groupBy(aiLessonGrammar.aiLessonId),
     db.select({
-      lessonId: lessonSourceSentences.lessonId,
+      aiLessonId: aiLessonSourceSentences.aiLessonId,
       count: n,
-    }).from(lessonSourceSentences).groupBy(lessonSourceSentences.lessonId),
+    }).from(aiLessonSourceSentences).groupBy(aiLessonSourceSentences.aiLessonId),
     db.select({
-      lessonId: lessonCulture.lessonId,
+      aiLessonId: aiLessonCulture.aiLessonId,
       count: n,
-    }).from(lessonCulture).groupBy(lessonCulture.lessonId),
+    }).from(aiLessonCulture).groupBy(aiLessonCulture.aiLessonId),
   ]);
 
-  for (const g of cats) ensure(g.lessonId).categories = g.count;
-  for (const g of voc) ensure(g.lessonId).vocab = g.count;
-  for (const g of gra) ensure(g.lessonId).grammar = g.count;
-  for (const g of src) ensure(g.lessonId).source = g.count;
-  for (const g of cul) ensure(g.lessonId).culture = g.count;
+  for (const g of cats) ensure(g.aiLessonId).categories = g.count;
+  for (const g of voc) ensure(g.aiLessonId).vocab = g.count;
+  for (const g of gra) ensure(g.aiLessonId).grammar = g.count;
+  for (const g of src) ensure(g.aiLessonId).source = g.count;
+  for (const g of cul) ensure(g.aiLessonId).culture = g.count;
 
   return map;
 }
 
-/** Fetch one lesson by slug with all children assembled into the render-friendly nested shape. */
-export async function getLessonBySlug(slug: string): Promise<LessonDetail | null> {
-  const [lesson] = await db.select().from(lessons).where(eq(lessons.slug, slug));
+/** Fetch one AI Lesson by slug with all children assembled into the render-friendly nested shape. */
+export async function getAiLessonBySlug(slug: string): Promise<AiLessonDetail | null> {
+  const [lesson] = await db.select().from(aiLessons).where(eq(aiLessons.slug, slug));
   if (!lesson) return null;
   return assembleDetail(lesson.id, lesson);
 }
 
-async function assembleDetail(lessonId: string, lesson: LessonRow): Promise<LessonDetail> {
+async function assembleDetail(aiLessonId: string, lesson: AiLessonRow): Promise<AiLessonDetail> {
   const [categories, vocab, grammar, source, culture] = await Promise.all([
-    db.select().from(lessonCategories).where(eq(lessonCategories.lessonId, lessonId)).orderBy(asc(lessonCategories.sortOrder)),
-    db.select().from(lessonVocab).where(eq(lessonVocab.lessonId, lessonId)).orderBy(asc(lessonVocab.sortOrder)),
-    db.select().from(lessonGrammar).where(eq(lessonGrammar.lessonId, lessonId)).orderBy(asc(lessonGrammar.sortOrder)),
-    db.select().from(lessonSourceSentences).where(eq(lessonSourceSentences.lessonId, lessonId)).orderBy(asc(lessonSourceSentences.sortOrder)),
-    db.select().from(lessonCulture).where(eq(lessonCulture.lessonId, lessonId)).orderBy(asc(lessonCulture.sortOrder)),
+    db.select().from(aiLessonCategories).where(eq(aiLessonCategories.aiLessonId, aiLessonId)).orderBy(asc(aiLessonCategories.sortOrder)),
+    db.select().from(aiLessonVocab).where(eq(aiLessonVocab.aiLessonId, aiLessonId)).orderBy(asc(aiLessonVocab.sortOrder)),
+    db.select().from(aiLessonGrammar).where(eq(aiLessonGrammar.aiLessonId, aiLessonId)).orderBy(asc(aiLessonGrammar.sortOrder)),
+    db.select().from(aiLessonSourceSentences).where(eq(aiLessonSourceSentences.aiLessonId, aiLessonId)).orderBy(asc(aiLessonSourceSentences.sortOrder)),
+    db.select().from(aiLessonCulture).where(eq(aiLessonCulture.aiLessonId, aiLessonId)).orderBy(asc(aiLessonCulture.sortOrder)),
   ]);
 
   return {
-    ...toLessonRecord(lesson),
+    ...toAiLessonRecord(lesson),
     categories: categories.map(toCategory),
     vocab: vocab.map(toVocab),
     grammar: grammar.map(toGrammar),
@@ -224,16 +224,16 @@ async function assembleDetail(lessonId: string, lesson: LessonRow): Promise<Less
   };
 }
 
-/** Insert a lesson and all children in one transaction. Throws LessonSlugConflictError on a dup slug. */
-export async function createLessonFromImport(input: LessonImportInput): Promise<LessonDetail> {
+/** Insert an AI Lesson and all children in one transaction. Throws AiLessonSlugConflictError on a dup slug. */
+export async function createAiLessonFromImport(input: AiLessonImportInput): Promise<AiLessonDetail> {
   const lesson = await db.transaction(async (tx) => {
     const [dup] = await tx.select({
-      id: lessons.id,
-    }).from(lessons).where(eq(lessons.slug, input.slug));
-    if (dup) throw new LessonSlugConflictError(input.slug);
+      id: aiLessons.id,
+    }).from(aiLessons).where(eq(aiLessons.slug, input.slug));
+    if (dup) throw new AiLessonSlugConflictError(input.slug);
 
     const [inserted] = await tx
-      .insert(lessons)
+      .insert(aiLessons)
       .values({
         slug: input.slug,
         title: input.title,
@@ -247,12 +247,12 @@ export async function createLessonFromImport(input: LessonImportInput): Promise<
         sourceLabel: input.sourceLabel ?? null,
       })
       .returning();
-    const lessonId = inserted.id;
+    const aiLessonId = inserted.id;
 
     if (input.categories.length > 0) {
-      await tx.insert(lessonCategories).values(
+      await tx.insert(aiLessonCategories).values(
         input.categories.map((c, i) => ({
-          lessonId,
+          aiLessonId,
           key: c.key,
           jp: c.jp,
           en: c.en,
@@ -262,9 +262,9 @@ export async function createLessonFromImport(input: LessonImportInput): Promise<
       );
     }
     if (input.vocab.length > 0) {
-      await tx.insert(lessonVocab).values(
+      await tx.insert(aiLessonVocab).values(
         input.vocab.map((v, i) => ({
-          lessonId,
+          aiLessonId,
           jp: v.jp,
           yomi: v.yomi,
           en: v.en,
@@ -275,9 +275,9 @@ export async function createLessonFromImport(input: LessonImportInput): Promise<
       );
     }
     if (input.grammar.length > 0) {
-      await tx.insert(lessonGrammar).values(
+      await tx.insert(aiLessonGrammar).values(
         input.grammar.map((g, i) => ({
-          lessonId,
+          aiLessonId,
           pat: g.pat,
           gloss: g.gloss,
           note: g.note,
@@ -287,9 +287,9 @@ export async function createLessonFromImport(input: LessonImportInput): Promise<
       );
     }
     if (input.source.length > 0) {
-      await tx.insert(lessonSourceSentences).values(
+      await tx.insert(aiLessonSourceSentences).values(
         input.source.map((s, i) => ({
-          lessonId,
+          aiLessonId,
           jp: s.jp,
           en: s.en,
           whereText: s.where,
@@ -301,9 +301,9 @@ export async function createLessonFromImport(input: LessonImportInput): Promise<
       );
     }
     if (input.culture.length > 0) {
-      await tx.insert(lessonCulture).values(
+      await tx.insert(aiLessonCulture).values(
         input.culture.map((c, i) => ({
-          lessonId,
+          aiLessonId,
           icon: c.icon,
           jp: c.jp,
           en: c.en,
@@ -331,116 +331,116 @@ export async function updateVocabRenshuu(
   if (patch.renshuuAdded !== undefined) set.renshuuAdded = patch.renshuuAdded;
   if (patch.renshuuList !== undefined) set.renshuuList = patch.renshuuList;
   if (Object.keys(set).length === 0) {
-    const [row] = await db.select().from(lessonVocab).where(eq(lessonVocab.id, id));
+    const [row] = await db.select().from(aiLessonVocab).where(eq(aiLessonVocab.id, id));
     return row ? toVocab(row) : null;
   }
-  const [row] = await db.update(lessonVocab).set(set).where(eq(lessonVocab.id, id)).returning();
+  const [row] = await db.update(aiLessonVocab).set(set).where(eq(aiLessonVocab.id, id)).returning();
   return row ? toVocab(row) : null;
 }
 
-/** Set the Grammar source tags on a lesson grammar item. Returns the updated item, or null if no such id. */
-export async function updateLessonGrammarTerms(
+/** Set the Grammar source tags on an AI Lesson grammar item. Returns the updated item, or null if no such id. */
+export async function updateAiLessonGrammarTerms(
   id: string,
   grammarTerms: SentenceTermRef[] | null,
 ): Promise<GrammarItem | null> {
   const [row] = await db
-    .update(lessonGrammar)
+    .update(aiLessonGrammar)
     .set({
       grammarTerms: grammarTerms ?? null,
     })
-    .where(eq(lessonGrammar.id, id))
+    .where(eq(aiLessonGrammar.id, id))
     .returning();
   return row ? toGrammar(row) : null;
 }
 
-/** Set the Grammar source tags on a lesson source sentence. Returns the updated item, or null if no such id. */
+/** Set the Grammar source tags on an AI Lesson source sentence. Returns the updated item, or null if no such id. */
 export async function updateSourceSentenceTerms(
   id: string,
   grammarTerms: SentenceTermRef[] | null,
 ): Promise<SourceSentenceItem | null> {
   const [row] = await db
-    .update(lessonSourceSentences)
+    .update(aiLessonSourceSentences)
     .set({
       grammarTerms: grammarTerms ?? null,
     })
-    .where(eq(lessonSourceSentences.id, id))
+    .where(eq(aiLessonSourceSentences.id, id))
     .returning();
   return row ? toSourceSentence(row) : null;
 }
 
-/** Delete a lesson (children cascade). Returns false if no such id. */
-export async function deleteLesson(id: string): Promise<boolean> {
-  const rows = await db.delete(lessons).where(eq(lessons.id, id)).returning({
-    id: lessons.id,
+/** Delete an AI Lesson (children cascade). Returns false if no such id. */
+export async function deleteAiLesson(id: string): Promise<boolean> {
+  const rows = await db.delete(aiLessons).where(eq(aiLessons.id, id)).returning({
+    id: aiLessons.id,
   });
   return rows.length > 0;
 }
 
 /**
- * All lesson content flattened across lessons for the global browse pages. Each item is tagged with
- * its lesson's slug + title. Ordered by lesson (newest first) then the item's authored order.
+ * All AI Lesson content flattened across AI Lessons for the global browse pages. Each item is tagged
+ * with its AI Lesson's slug + title. Ordered by AI Lesson (newest first) then the item's authored order.
  */
-export async function getLessonContent(): Promise<LessonContent> {
-  const lessonCols = {
-    lessonSlug: lessons.slug,
-    lessonTitle: lessons.title,
+export async function getAiLessonContent(): Promise<AiLessonContent> {
+  const aiLessonCols = {
+    aiLessonSlug: aiLessons.slug,
+    aiLessonTitle: aiLessons.title,
   };
 
   const [vocab, culture, grammar, source] = await Promise.all([
     db
       .select({
-        row: lessonVocab,
-        ...lessonCols,
+        row: aiLessonVocab,
+        ...aiLessonCols,
       })
-      .from(lessonVocab)
-      .innerJoin(lessons, eq(lessonVocab.lessonId, lessons.id))
-      .orderBy(desc(lessons.createdAt), asc(lessonVocab.sortOrder)),
+      .from(aiLessonVocab)
+      .innerJoin(aiLessons, eq(aiLessonVocab.aiLessonId, aiLessons.id))
+      .orderBy(desc(aiLessons.createdAt), asc(aiLessonVocab.sortOrder)),
     db
       .select({
-        row: lessonCulture,
-        ...lessonCols,
+        row: aiLessonCulture,
+        ...aiLessonCols,
       })
-      .from(lessonCulture)
-      .innerJoin(lessons, eq(lessonCulture.lessonId, lessons.id))
-      .orderBy(desc(lessons.createdAt), asc(lessonCulture.sortOrder)),
+      .from(aiLessonCulture)
+      .innerJoin(aiLessons, eq(aiLessonCulture.aiLessonId, aiLessons.id))
+      .orderBy(desc(aiLessons.createdAt), asc(aiLessonCulture.sortOrder)),
     db
       .select({
-        row: lessonGrammar,
-        ...lessonCols,
+        row: aiLessonGrammar,
+        ...aiLessonCols,
       })
-      .from(lessonGrammar)
-      .innerJoin(lessons, eq(lessonGrammar.lessonId, lessons.id))
-      .orderBy(desc(lessons.createdAt), asc(lessonGrammar.sortOrder)),
+      .from(aiLessonGrammar)
+      .innerJoin(aiLessons, eq(aiLessonGrammar.aiLessonId, aiLessons.id))
+      .orderBy(desc(aiLessons.createdAt), asc(aiLessonGrammar.sortOrder)),
     db
       .select({
-        row: lessonSourceSentences,
-        ...lessonCols,
+        row: aiLessonSourceSentences,
+        ...aiLessonCols,
       })
-      .from(lessonSourceSentences)
-      .innerJoin(lessons, eq(lessonSourceSentences.lessonId, lessons.id))
-      .orderBy(desc(lessons.createdAt), asc(lessonSourceSentences.sortOrder)),
+      .from(aiLessonSourceSentences)
+      .innerJoin(aiLessons, eq(aiLessonSourceSentences.aiLessonId, aiLessons.id))
+      .orderBy(desc(aiLessons.createdAt), asc(aiLessonSourceSentences.sortOrder)),
   ]);
 
   return {
     vocab: vocab.map(r => ({
       ...toVocab(r.row),
-      lessonSlug: r.lessonSlug,
-      lessonTitle: r.lessonTitle,
+      aiLessonSlug: r.aiLessonSlug,
+      aiLessonTitle: r.aiLessonTitle,
     })),
     culture: culture.map(r => ({
       ...toCulture(r.row),
-      lessonSlug: r.lessonSlug,
-      lessonTitle: r.lessonTitle,
+      aiLessonSlug: r.aiLessonSlug,
+      aiLessonTitle: r.aiLessonTitle,
     })),
     grammar: grammar.map(r => ({
       ...toGrammar(r.row),
-      lessonSlug: r.lessonSlug,
-      lessonTitle: r.lessonTitle,
+      aiLessonSlug: r.aiLessonSlug,
+      aiLessonTitle: r.aiLessonTitle,
     })),
     sentences: source.map(r => ({
       ...toSourceSentence(r.row),
-      lessonSlug: r.lessonSlug,
-      lessonTitle: r.lessonTitle,
+      aiLessonSlug: r.aiLessonSlug,
+      aiLessonTitle: r.aiLessonTitle,
     })),
   };
 }

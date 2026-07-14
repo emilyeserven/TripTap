@@ -3,12 +3,12 @@ import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
 
-import { FuriganaScope } from "@/components/lesson/FuriganaScope";
-import { FuriganaToggle } from "@/components/lesson/FuriganaToggle";
-import { LessonFilterChips } from "@/components/lesson/lesson-filter";
-import { uniqueLessons } from "@/components/lesson/lesson-filter-utils";
-import { matches, sortLevels } from "@/components/lesson/search";
-import { VocabCard } from "@/components/lesson/VocabCard";
+import { AiLessonFilterChips } from "@/components/ai-lesson/ai-lesson-filter";
+import { uniqueAiLessons } from "@/components/ai-lesson/ai-lesson-filter-utils";
+import { FuriganaScope } from "@/components/ai-lesson/FuriganaScope";
+import { FuriganaToggle } from "@/components/ai-lesson/FuriganaToggle";
+import { matches, sortLevels } from "@/components/ai-lesson/search";
+import { VocabCard } from "@/components/ai-lesson/VocabCard";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/select";
 import { VocabBankCard } from "@/components/VocabBankCard";
 import { VocabForm } from "@/components/VocabForm";
-import { useLessonContent, useUpdateVocabRenshuu } from "@/hooks/useLessons";
+import { useAiLessonContent, useUpdateVocabRenshuu } from "@/hooks/useAiLessons";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useSources } from "@/hooks/useSources";
 import { useDeleteVocab, useVocab } from "@/hooks/useVocab";
@@ -40,7 +40,7 @@ function VocabularyPage() {
   usePageTitle("Vocabulary");
   const {
     data, isLoading, error,
-  } = useLessonContent();
+  } = useAiLessonContent();
   const updateVocab = useUpdateVocabRenshuu();
 
   const {
@@ -55,36 +55,36 @@ function VocabularyPage() {
 
   const items = useMemo(() => data?.vocab ?? [], [data]);
   const bank = useMemo(() => standalone ?? [], [standalone]);
-  const lessons = useMemo(() => uniqueLessons(items), [items]);
+  const aiLessons = useMemo(() => uniqueAiLessons(items), [items]);
   const levels = useMemo(() => sortLevels(items.map(v => v.lvl)), [items]);
   const categories = useMemo(() => [...new Set(items.map(v => v.cat))].sort(), [items]);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [scope, setScope] = useState("all"); // "all" | "yours" | "lessons"
-  const [lesson, setLesson] = useState("all");
+  const [aiLesson, setAiLesson] = useState("all");
   const [level, setLevel] = useState("all");
   const [category, setCategory] = useState("all");
   const [renshuu, setRenshuu] = useState("all");
 
-  // A lesson-specific refinement hides the standalone bank (it carries no lesson/level/category).
-  const noLessonNarrowing
-    = lesson === "all" && level === "all" && category === "all" && renshuu === "all";
+  // An AI-Lesson-specific refinement hides the standalone bank (it carries no lesson/level/category).
+  const noAiLessonNarrowing
+    = aiLesson === "all" && level === "all" && category === "all" && renshuu === "all";
 
-  const bankShown = scope !== "lessons" && (scope === "yours" || noLessonNarrowing)
+  const bankShown = scope !== "lessons" && (scope === "yours" || noAiLessonNarrowing)
     ? bank.filter(v => matches(search, v.term, v.reading, v.meaning, v.tags, v.notes))
     : [];
 
-  const lessonShown = scope !== "yours"
+  const aiLessonShown = scope !== "yours"
     ? items.filter(v =>
-      (lesson === "all" || v.lessonSlug === lesson)
+      (aiLesson === "all" || v.aiLessonSlug === aiLesson)
       && (level === "all" || v.lvl === level)
       && (category === "all" || v.cat === category)
       && (renshuu === "all" || (renshuu === "in" ? v.renshuuAdded : !v.renshuuAdded))
       && matches(search, v.jp, v.yomi, v.en))
     : [];
 
-  const shownCount = bankShown.length + lessonShown.length;
+  const shownCount = bankShown.length + aiLessonShown.length;
   const totalCount = bank.length + items.length;
   const nothing = !isLoading && shownCount === 0;
 
@@ -94,7 +94,7 @@ function VocabularyPage() {
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-sm text-muted-foreground">
-              {`Your own words and those mined from lessons — ${shownCount} of ${totalCount}.`}
+              {`Your own words and those mined from AI Lessons — ${shownCount} of ${totalCount}.`}
             </p>
           </div>
           <div className="flex items-center gap-4">
@@ -140,7 +140,7 @@ function VocabularyPage() {
             <SelectContent>
               <SelectItem value="all">All vocab</SelectItem>
               <SelectItem value="yours">Yours</SelectItem>
-              <SelectItem value="lessons">From lessons</SelectItem>
+              <SelectItem value="lessons">From AI Lessons</SelectItem>
             </SelectContent>
           </Select>
           <FilterSelect
@@ -176,10 +176,10 @@ function VocabularyPage() {
         </div>
 
         {scope !== "yours" && (
-          <LessonFilterChips
-            lessons={lessons}
-            value={lesson}
-            onChange={setLesson}
+          <AiLessonFilterChips
+            aiLessons={aiLessons}
+            value={aiLesson}
+            onChange={setAiLesson}
           />
         )}
 
@@ -200,13 +200,13 @@ function VocabularyPage() {
               onDelete={id => deleteVocab.mutate(id)}
             />
           ))}
-          {lessonShown.map(v => (
+          {aiLessonShown.map(v => (
             <VocabCard
               key={v.id}
               vocab={v}
-              lesson={{
-                slug: v.lessonSlug,
-                title: v.lessonTitle,
+              aiLesson={{
+                slug: v.aiLessonSlug,
+                title: v.aiLessonTitle,
               }}
               onRenshuuChange={patch => updateVocab.mutate({
                 id: v.id,

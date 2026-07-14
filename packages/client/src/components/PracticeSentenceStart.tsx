@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 
 import { useNavigate } from "@tanstack/react-router";
 
-import { useLessonContent } from "../hooks/useLessons";
+import { useAiLessonContent } from "../hooks/useAiLessons";
 import { useCreatePracticeSentence } from "../hooks/usePracticeSentences";
 import { useSentences } from "../hooks/useSentences";
 import { useSources } from "../hooks/useSources";
@@ -19,7 +19,7 @@ import { Textarea } from "@/components/ui/textarea";
 
 /**
  * Begins a new practice sentence. You either type a sentence, or search the existing sentences — both
- * your bank and the ones mined from lessons — and pick one. Picking copies its text/translation (and,
+ * your bank and the ones mined from AI Lessons — and pick one. Picking copies its text/translation (and,
  * for bank rows, the source/page + a link back). Either way the record is created immediately and you
  * land on its autosaving editor.
  */
@@ -117,14 +117,14 @@ function TypeTab({
   );
 }
 
-/** A searchable candidate drawn from either the sentence bank or a lesson. */
+/** A searchable candidate drawn from either the sentence bank or an AI Lesson. */
 interface Candidate {
   key: string;
   text: string;
   translation: string | null;
-  /** Lesson title when mined from a lesson; null for bank sentences. */
-  lesson: string | null;
-  /** Taxonomy source id for bank sentences; null when unsourced or lesson-mined. */
+  /** AI Lesson title when mined from an AI Lesson; null for bank sentences. */
+  aiLesson: string | null;
+  /** Taxonomy source id for bank sentences; null when unsourced or AI-Lesson-mined. */
   sourceId: string | null;
   input: CreatePracticeSentenceInput;
 }
@@ -140,8 +140,8 @@ function SearchTab({
     data: sentences,
   } = useSentences();
   const {
-    data: lessonContent,
-  } = useLessonContent();
+    data: aiLessonContent,
+  } = useAiLessonContent();
   const {
     data: sources,
   } = useSources();
@@ -153,7 +153,7 @@ function SearchTab({
       key: `bank:${s.id}`,
       text: s.text,
       translation: s.translation,
-      lesson: null,
+      aiLesson: null,
       sourceId: s.sourceId,
       input: {
         text: s.text,
@@ -164,13 +164,13 @@ function SearchTab({
         page: s.page,
       },
     }));
-    // Lesson-mined sentences live in a separate table, so they can't populate `sentenceId` (that FK
+    // AI-Lesson-mined sentences live in a separate table, so they can't populate `sentenceId` (that FK
     // references the bank). Copy their text/translation and map `where` → page instead.
-    const lessons: Candidate[] = (lessonContent?.sentences ?? []).map(s => ({
-      key: `lesson:${s.lessonSlug}:${s.id}`,
+    const aiLessons: Candidate[] = (aiLessonContent?.sentences ?? []).map(s => ({
+      key: `ai-lesson:${s.aiLessonSlug}:${s.id}`,
       text: s.jp,
       translation: s.en,
-      lesson: s.lessonTitle,
+      aiLesson: s.aiLessonTitle,
       sourceId: null,
       input: {
         text: s.jp,
@@ -179,8 +179,8 @@ function SearchTab({
         page: s.where,
       },
     }));
-    return [...bank, ...lessons];
-  }, [sentences, lessonContent]);
+    return [...bank, ...aiLessons];
+  }, [sentences, aiLessonContent]);
 
   const sourceOptions = useMemo(() => [
     {
@@ -195,14 +195,14 @@ function SearchTab({
 
   const shown = useMemo(() => {
     const q = search.trim().toLowerCase();
-    // Lesson-mined candidates carry no source, so a specific source filter hides them.
+    // AI-Lesson-mined candidates carry no source, so a specific source filter hides them.
     const bySource = (c: Candidate) => sourceFilter === "all" || c.sourceId === sourceFilter;
     const matched = candidates.filter((c) => {
       if (!bySource(c)) return false;
       if (!q) return true;
       return c.text.toLowerCase().includes(q)
         || (c.translation ?? "").toLowerCase().includes(q)
-        || (c.lesson ?? "").toLowerCase().includes(q);
+        || (c.aiLesson ?? "").toLowerCase().includes(q);
     });
     return matched.slice(0, 50);
   }, [candidates, search, sourceFilter]);
@@ -212,7 +212,7 @@ function SearchTab({
       <Input
         value={search}
         onChange={e => setSearch(e.target.value)}
-        placeholder="Search your bank and lesson sentences…"
+        placeholder="Search your bank and AI Lesson sentences…"
         aria-label="Search sentences"
       />
       {sourceOptions.length > 1
@@ -244,12 +244,12 @@ function SearchTab({
             >
               <span className="flex items-center gap-2">
                 <span className="min-w-0 flex-1 truncate">{c.text}</span>
-                {c.lesson
+                {c.aiLesson
                   ? (
                     <Badge
                       variant="secondary"
                       className="shrink-0 text-xs font-normal"
-                    >{c.lesson}
+                    >{c.aiLesson}
                     </Badge>
                   )
                   : null}

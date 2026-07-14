@@ -12,9 +12,9 @@ import {
 } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 // The skill's markdown, imported raw so the textarea can never drift from the file.
-import skillMd from "@/content/lesson-skill.md?raw";
+import skillMd from "@/content/ai-lesson-skill.md?raw";
 
-/** Shows the lesson-authoring skill in a copyable textarea, with its install path. */
+/** Shows the AI-Lesson-authoring skill in a copyable textarea, with its install path. */
 export function SkillInstallCard() {
   const [copied, setCopied] = useState(false);
 
@@ -32,9 +32,9 @@ export function SkillInstallCard() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Lesson-authoring skill</CardTitle>
+        <CardTitle>AI-Lesson-authoring skill</CardTitle>
         <CardDescription>
-          Copy this into Claude so it can generate valid lesson JSON. Save it as
+          Copy this into Claude so it can generate valid AI Lesson JSON. Save it as
           {" "}
           <code className="rounded-sm bg-muted px-1 py-0.5 text-xs">
             ~/.claude/skills/sentence-bank-lesson/SKILL.md
@@ -48,7 +48,7 @@ export function SkillInstallCard() {
           value={skillMd}
           rows={12}
           className="font-mono text-xs"
-          aria-label="Lesson skill (SKILL.md)"
+          aria-label="AI Lesson skill (SKILL.md)"
         />
         <Button
           variant="outline"

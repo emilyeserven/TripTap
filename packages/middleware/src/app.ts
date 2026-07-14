@@ -3,11 +3,11 @@ import multipart from "@fastify/multipart";
 import swagger from "@fastify/swagger";
 import swaggerUi from "@fastify/swagger-ui";
 import Fastify, { type FastifyInstance } from "fastify";
+import { aiLessonRoutes } from "@/routes/ai-lessons";
 import { answerSheetRoutes } from "@/routes/answer-sheets";
 import { bookmarksRoutes } from "@/routes/bookmarks";
 import { captureRoutes } from "@/routes/captures";
 import { healthRoutes } from "@/routes/health";
-import { lessonRoutes } from "@/routes/lessons";
 import { listeningSessionsRoutes } from "@/routes/listening-sessions";
 import { mySentenceRoutes } from "@/routes/my-sentences";
 import { ocrRoutes } from "@/routes/ocr";
@@ -90,8 +90,8 @@ export async function buildApp(): Promise<FastifyInstance> {
           description: "Reusable prompts to spark a free-write",
         },
         {
-          name: "lessons",
-          description: "Lesson import & viewing",
+          name: "ai-lessons",
+          description: "AI Lesson import & viewing",
         },
         {
           name: "health",
@@ -148,7 +148,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(vocabRoutes);
   await app.register(captureRoutes);
   await app.register(parseTemplateRoutes);
-  await app.register(lessonRoutes);
+  await app.register(aiLessonRoutes);
   await app.register(ocrRoutes);
   await app.register(settingsRoutes);
 

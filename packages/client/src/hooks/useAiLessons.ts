@@ -1,48 +1,48 @@
-import type { LessonImportInput, SentenceTermRef, VocabRenshuuUpdate } from "@sentence-bank/types";
+import type { AiLessonImportInput, SentenceTermRef, VocabRenshuuUpdate } from "@sentence-bank/types";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { lessonsApi } from "../lib/api";
+import { aiLessonsApi } from "../lib/api";
 
-const LESSONS_KEY = ["lessons"] as const;
+const AI_LESSONS_KEY = ["ai-lessons"] as const;
 
-export function useLessons() {
+export function useAiLessons() {
   return useQuery({
-    queryKey: LESSONS_KEY,
-    queryFn: lessonsApi.list,
+    queryKey: AI_LESSONS_KEY,
+    queryFn: aiLessonsApi.list,
   });
 }
 
-export function useLesson(slug: string) {
+export function useAiLesson(slug: string) {
   return useQuery({
-    queryKey: [...LESSONS_KEY, slug],
-    queryFn: () => lessonsApi.getBySlug(slug),
+    queryKey: [...AI_LESSONS_KEY, slug],
+    queryFn: () => aiLessonsApi.getBySlug(slug),
   });
 }
 
-export function useLessonContent() {
+export function useAiLessonContent() {
   return useQuery({
-    queryKey: ["lesson-content"],
-    queryFn: lessonsApi.content,
+    queryKey: ["ai-lesson-content"],
+    queryFn: aiLessonsApi.content,
   });
 }
 
-export function useImportLesson() {
+export function useImportAiLesson() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input: LessonImportInput) => lessonsApi.import(input),
+    mutationFn: (input: AiLessonImportInput) => aiLessonsApi.import(input),
     onSuccess: () => queryClient.invalidateQueries({
-      queryKey: LESSONS_KEY,
+      queryKey: AI_LESSONS_KEY,
     }),
   });
 }
 
-export function useDeleteLesson() {
+export function useDeleteAiLesson() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => lessonsApi.remove(id),
+    mutationFn: (id: string) => aiLessonsApi.remove(id),
     onSuccess: () => queryClient.invalidateQueries({
-      queryKey: LESSONS_KEY,
+      queryKey: AI_LESSONS_KEY,
     }),
   });
 }
@@ -54,32 +54,32 @@ export function useUpdateVocabRenshuu() {
       id, patch,
     }: { id: string;
       patch: VocabRenshuuUpdate; }) =>
-      lessonsApi.updateVocab(id, patch),
+      aiLessonsApi.updateVocab(id, patch),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["lesson-content"],
+        queryKey: ["ai-lesson-content"],
       });
       queryClient.invalidateQueries({
-        queryKey: LESSONS_KEY,
+        queryKey: AI_LESSONS_KEY,
       });
     },
   });
 }
 
-export function useUpdateLessonGrammarTerms() {
+export function useUpdateAiLessonGrammarTerms() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({
       id, grammarTerms,
     }: { id: string;
       grammarTerms: SentenceTermRef[] | null; }) =>
-      lessonsApi.updateGrammarTerms(id, grammarTerms),
+      aiLessonsApi.updateGrammarTerms(id, grammarTerms),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["lesson-content"],
+        queryKey: ["ai-lesson-content"],
       });
       queryClient.invalidateQueries({
-        queryKey: LESSONS_KEY,
+        queryKey: AI_LESSONS_KEY,
       });
     },
   });
@@ -92,13 +92,13 @@ export function useUpdateSourceSentenceTerms() {
       id, grammarTerms,
     }: { id: string;
       grammarTerms: SentenceTermRef[] | null; }) =>
-      lessonsApi.updateSourceSentenceTerms(id, grammarTerms),
+      aiLessonsApi.updateSourceSentenceTerms(id, grammarTerms),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["lesson-content"],
+        queryKey: ["ai-lesson-content"],
       });
       queryClient.invalidateQueries({
-        queryKey: LESSONS_KEY,
+        queryKey: AI_LESSONS_KEY,
       });
     },
   });

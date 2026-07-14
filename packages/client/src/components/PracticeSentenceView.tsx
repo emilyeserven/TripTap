@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, Pencil, TriangleAlert, Volume2 } from "lucide-react";
 
-import { speak } from "./lesson/speak";
+import { speak } from "./ai-lesson/speak";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

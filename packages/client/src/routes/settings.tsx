@@ -15,7 +15,7 @@ function SettingsPage() {
     <section className="space-y-6">
       <div>
         <p className="text-sm text-muted-foreground">
-          Cloud OCR credentials, bookmarks tagging, and lesson-authoring tools.
+          Cloud OCR credentials, bookmarks tagging, and AI-Lesson-authoring tools.
         </p>
       </div>
       <OcrKeysCard />

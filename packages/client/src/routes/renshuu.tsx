@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Plus, X } from "lucide-react";
 
-import { matches } from "@/components/lesson/search";
+import { matches } from "@/components/ai-lesson/search";
 import { Button } from "@/components/ui/button";
 import {
   Card,

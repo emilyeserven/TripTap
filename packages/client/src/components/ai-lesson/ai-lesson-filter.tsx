@@ -1,22 +1,22 @@
-import type { LessonRef } from "./LessonBadge";
+import type { AiLessonRef } from "./AiLessonBadge";
 
 import { Button } from "@/components/ui/button";
 
-/** `All` + one chip per lesson. `value` is a lesson slug or "all". */
-export function LessonFilterChips({
-  lessons,
+/** `All` + one chip per AI Lesson. `value` is an AI Lesson slug or "all". */
+export function AiLessonFilterChips({
+  aiLessons,
   value,
   onChange,
   extra,
 }: {
-  lessons: LessonRef[];
+  aiLessons: AiLessonRef[];
   value: string;
   onChange: (value: string) => void;
   /** Optional extra chips (e.g. a "Mine" bucket), rendered after "All". */
   extra?: { value: string;
     label: string; }[];
 }) {
-  if (lessons.length + (extra?.length ?? 0) < 2) return null;
+  if (aiLessons.length + (extra?.length ?? 0) < 2) return null;
   return (
     <div className="flex flex-wrap gap-2">
       <Button
@@ -36,7 +36,7 @@ export function LessonFilterChips({
           {e.label}
         </Button>
       ))}
-      {lessons.map(l => (
+      {aiLessons.map(l => (
         <Button
           key={l.slug}
           size="sm"

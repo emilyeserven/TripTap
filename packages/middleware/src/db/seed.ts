@@ -1,8 +1,8 @@
 import { readFileSync } from "node:fs";
-import { lessonImportSchema } from "@sentence-bank/types";
+import { aiLessonImportSchema } from "@sentence-bank/types";
 import { db } from "@/db";
-import { lessons, sentences } from "@/db/schema";
-import { createLessonFromImport } from "@/services/lessons";
+import { aiLessons, sentences } from "@/db/schema";
+import { createAiLessonFromImport } from "@/services/ai-lessons";
 
 /**
  * Seed a sample sentence when the table is empty. Skipped in production so real
@@ -26,29 +26,29 @@ export async function maybeSeed(): Promise<void> {
   });
 }
 
-/** The reference lessons shipped as importable fixtures, seeded in dev. */
-const LESSON_FIXTURES = [
-  "hagi-lesson.json",
-  "mihagi-lesson.json",
-  "ghost-in-the-shell-lesson.json",
+/** The reference AI Lessons shipped as importable fixtures, seeded in dev. */
+const AI_LESSON_FIXTURES = [
+  "hagi-ai-lesson.json",
+  "mihagi-ai-lesson.json",
+  "ghost-in-the-shell-ai-lesson.json",
 ] as const;
 
 /**
- * Seed the reference lessons in dev. Each fixture doubles as the contract's ground-truth example, so
+ * Seed the reference AI Lessons in dev. Each fixture doubles as the contract's ground-truth example, so
  * we validate on the way in and import any whose slug isn't already present (idempotent).
  */
-export async function maybeSeedLessons(): Promise<void> {
+export async function maybeSeedAiLessons(): Promise<void> {
   if (process.env.NODE_ENV === "production") return;
 
   const existing = await db.select({
-    slug: lessons.slug,
-  }).from(lessons);
+    slug: aiLessons.slug,
+  }).from(aiLessons);
   const present = new Set(existing.map(r => r.slug));
 
-  for (const file of LESSON_FIXTURES) {
+  for (const file of AI_LESSON_FIXTURES) {
     const raw = readFileSync(new URL(`./fixtures/${file}`, import.meta.url), "utf8");
-    const input = lessonImportSchema.parse(JSON.parse(raw));
+    const input = aiLessonImportSchema.parse(JSON.parse(raw));
     if (present.has(input.slug)) continue;
-    await createLessonFromImport(input);
+    await createAiLessonFromImport(input);
   }
 }

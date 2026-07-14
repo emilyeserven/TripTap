@@ -19,7 +19,7 @@ interface UiState {
   /** Whether translations are revealed on the sentence cards (turn off to self-test). */
   showTranslations: boolean;
   toggleShowTranslations: () => void;
-  /** Whether furigana readings are shown across lesson content (app-wide). */
+  /** Whether furigana readings are shown across AI Lesson content (app-wide). */
   furigana: boolean;
   toggleFurigana: () => void;
   /** The learner's self-assessed level, driving the practice add-rate guidance. */

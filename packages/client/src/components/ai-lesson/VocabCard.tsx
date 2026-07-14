@@ -1,12 +1,12 @@
-import type { LessonRef } from "./LessonBadge";
+import type { AiLessonRef } from "./AiLessonBadge";
 import type { VocabItem, VocabRenshuuUpdate } from "@sentence-bank/types";
 
 import { useState } from "react";
 
 import { Volume2 } from "lucide-react";
 
+import { AiLessonBadge } from "./AiLessonBadge";
 import { Furi } from "./Furi";
-import { LessonBadge } from "./LessonBadge";
 import { LevelBadge } from "./LevelBadge";
 import { speak } from "./speak";
 
@@ -22,14 +22,14 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 export function VocabCard({
   vocab: v,
   topLabel,
-  lesson,
+  aiLesson,
   onRenshuuChange,
 }: {
   vocab: VocabItem;
-  /** Small caption on the front (e.g. the category in a lesson). */
+  /** Small caption on the front (e.g. the category in an AI Lesson). */
   topLabel?: string;
-  /** When set, shows a badge linking to the source lesson (for cross-lesson views). */
-  lesson?: LessonRef;
+  /** When set, shows a badge linking to the source AI Lesson (for cross-AI-Lesson views). */
+  aiLesson?: AiLessonRef;
   /** When provided, the Renshuu annotation becomes editable; otherwise it's read-only. */
   onRenshuuChange?: (patch: VocabRenshuuUpdate) => void;
 }) {
@@ -87,7 +87,7 @@ export function VocabCard({
               <LevelBadge lvl={v.lvl} />
             </>
           )}
-        {lesson ? <LessonBadge {...lesson} /> : null}
+        {aiLesson ? <AiLessonBadge {...aiLesson} /> : null}
       </CardContent>
 
       <RenshuuFooter

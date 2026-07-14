@@ -1,15 +1,15 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
-import { LessonTemplate } from "./LessonTemplate";
+import { AiLessonTemplate } from "./AiLessonTemplate";
 
-import { lessonDetailFixture } from "@/test-utils/lessonFixture";
+import { aiLessonDetailFixture } from "@/test-utils/aiLessonFixture";
 
-describe("LessonTemplate", () => {
-  it("renders the lesson chrome and the default Culture pane", () => {
-    render(<LessonTemplate lesson={lessonDetailFixture} />);
+describe("AiLessonTemplate", () => {
+  it("renders the AI Lesson chrome and the default Culture pane", () => {
+    render(<AiLessonTemplate aiLesson={aiLessonDetailFixture} />);
 
-    // Header chrome from the lesson meta.
+    // Header chrome from the AI Lesson meta.
     expect(screen.getByRole("heading", {
       name: "カフェで注文",
     })).toBeInTheDocument();
@@ -32,11 +32,11 @@ describe("LessonTemplate", () => {
   });
 
   it("normalizes the source tab label to 'Sentences'", () => {
-    render(<LessonTemplate lesson={lessonDetailFixture} />);
+    render(<AiLessonTemplate aiLesson={aiLessonDetailFixture} />);
     expect(screen.getByRole("tab", {
       name: /Sentences/,
     })).toBeInTheDocument();
-    // The per-lesson sourceLabel ("Examples") is no longer shown as the tab title.
+    // The per-AI-Lesson sourceLabel ("Examples") is no longer shown as the tab title.
     expect(screen.queryByRole("tab", {
       name: /Examples/,
     })).not.toBeInTheDocument();

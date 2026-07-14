@@ -1,17 +1,17 @@
-import type { LessonRef } from "./LessonBadge";
+import type { AiLessonRef } from "./AiLessonBadge";
 import type { CultureItem } from "@sentence-bank/types";
 
-import { LessonIcon } from "./icon-map";
-import { LessonBadge } from "./LessonBadge";
+import { AiLessonBadge } from "./AiLessonBadge";
+import { AiLessonIcon } from "./icon-map";
 import { VocabPill } from "./VocabPill";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 /** A single culture-context card. */
 export function CultureCard({
-  culture: c, lesson,
+  culture: c, aiLesson,
 }: { culture: CultureItem;
-  lesson?: LessonRef; }) {
+  aiLesson?: AiLessonRef; }) {
   return (
     <Card>
       <CardHeader>
@@ -22,7 +22,7 @@ export function CultureCard({
               bg-muted
             "
           >
-            <LessonIcon
+            <AiLessonIcon
               name={c.icon}
               className="size-4"
             />
@@ -31,10 +31,10 @@ export function CultureCard({
             <CardTitle className="text-base">{c.jp}</CardTitle>
             <div className="text-sm text-muted-foreground">{c.en}</div>
           </div>
-          {lesson
+          {aiLesson
             ? (
               <div className="ml-auto">
-                <LessonBadge {...lesson} />
+                <AiLessonBadge {...aiLesson} />
               </div>
             )
             : null}

@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { lessonImportSchema } from "@sentence-bank/types";
+import { aiLessonImportSchema } from "@sentence-bank/types";
 import { useNavigate } from "@tanstack/react-router";
 
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { useImportLesson } from "@/hooks/useLessons";
+import { useImportAiLesson } from "@/hooks/useAiLessons";
 
 const PLACEHOLDER = `{
   "slug": "my-lesson",
@@ -24,11 +24,11 @@ const PLACEHOLDER = `{
   "categories": [ … ]
 }`;
 
-/** Paste lesson JSON, validate it against the shared contract, and import it. */
-export function LessonPasteBox() {
+/** Paste AI Lesson JSON, validate it against the shared contract, and import it. */
+export function AiLessonPasteBox() {
   const [text, setText] = useState("");
   const [errors, setErrors] = useState<string[]>([]);
-  const importLesson = useImportLesson();
+  const importAiLesson = useImportAiLesson();
   const navigate = useNavigate();
 
   async function submit() {
@@ -43,7 +43,7 @@ export function LessonPasteBox() {
       return;
     }
 
-    const result = lessonImportSchema.safeParse(parsed);
+    const result = aiLessonImportSchema.safeParse(parsed);
     if (!result.success) {
       setErrors(
         result.error.issues
@@ -54,12 +54,12 @@ export function LessonPasteBox() {
     }
 
     try {
-      const lesson = await importLesson.mutateAsync(result.data);
+      const aiLesson = await importAiLesson.mutateAsync(result.data);
       setText("");
       await navigate({
-        to: "/lessons/$slug",
+        to: "/ai-lessons/$slug",
         params: {
-          slug: lesson.slug,
+          slug: aiLesson.slug,
         },
       });
     }
@@ -71,9 +71,9 @@ export function LessonPasteBox() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Import a lesson</CardTitle>
+        <CardTitle>Import an AI Lesson</CardTitle>
         <CardDescription>
-          Paste the JSON produced by the lesson skill, then import it.
+          Paste the JSON produced by the AI Lesson skill, then import it.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -83,7 +83,7 @@ export function LessonPasteBox() {
           rows={8}
           placeholder={PLACEHOLDER}
           className="font-mono text-xs"
-          aria-label="Lesson JSON"
+          aria-label="AI Lesson JSON"
         />
         {errors.length > 0 && (
           <ul className="space-y-1 text-sm text-destructive">
@@ -92,9 +92,9 @@ export function LessonPasteBox() {
         )}
         <Button
           onClick={submit}
-          disabled={!text.trim() || importLesson.isPending}
+          disabled={!text.trim() || importAiLesson.isPending}
         >
-          {importLesson.isPending ? "Importing…" : "Validate & import"}
+          {importAiLesson.isPending ? "Importing…" : "Validate & import"}
         </Button>
       </CardContent>
     </Card>

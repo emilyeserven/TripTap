@@ -1,25 +1,25 @@
-import type { LessonRef } from "./LessonBadge";
+import type { AiLessonRef } from "./AiLessonBadge";
 import type { SourceSentenceItem } from "@sentence-bank/types";
 
 import { useState } from "react";
 
 import { ChevronDown, ExternalLink, Layers, ScrollText, Volume2 } from "lucide-react";
 
+import { AiLessonBadge } from "./AiLessonBadge";
 import { Furi } from "./Furi";
 import { GrammarTagsEditor } from "./GrammarTagsEditor";
-import { LessonBadge } from "./LessonBadge";
 import { LevelBadge } from "./LevelBadge";
 import { speak } from "./speak";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { useUpdateSourceSentenceTerms } from "@/hooks/useLessons";
+import { useUpdateSourceSentenceTerms } from "@/hooks/useAiLessons";
 
 /** A single source sentence with reveal + grammar/vocab breakdown. */
 export function SourceCard({
-  sentence: s, lesson, onTagClick,
+  sentence: s, aiLesson, onTagClick,
 }: { sentence: SourceSentenceItem;
-  lesson?: LessonRef;
+  aiLesson?: AiLessonRef;
   onTagClick?: (termId: string) => void; }) {
   const updateTerms = useUpdateSourceSentenceTerms();
   const [showEn, setShowEn] = useState(false);
@@ -39,7 +39,7 @@ export function SourceCard({
             {s.where}
           </span>
           <div className="flex items-center gap-2">
-            {lesson ? <LessonBadge {...lesson} /> : null}
+            {aiLesson ? <AiLessonBadge {...aiLesson} /> : null}
             {s.url && (
               <a
                 className="

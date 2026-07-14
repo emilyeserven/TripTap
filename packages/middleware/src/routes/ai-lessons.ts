@@ -1,17 +1,17 @@
 import type { FastifyInstance } from "fastify";
-import { lessonImportJsonSchema, type LessonImportInput } from "@sentence-bank/types";
+import { aiLessonImportJsonSchema, type AiLessonImportInput } from "@sentence-bank/types";
 import type { GrammarTermsUpdate, VocabRenshuuUpdate } from "@sentence-bank/types";
 import {
-  createLessonFromImport,
-  deleteLesson,
-  getLessonBySlug,
-  getLessonContent,
-  LessonSlugConflictError,
-  listLessons,
-  updateLessonGrammarTerms,
+  AiLessonSlugConflictError,
+  createAiLessonFromImport,
+  deleteAiLesson,
+  getAiLessonBySlug,
+  getAiLessonContent,
+  listAiLessons,
+  updateAiLessonGrammarTerms,
   updateSourceSentenceTerms,
   updateVocabRenshuu,
-} from "@/services/lessons";
+} from "@/services/ai-lessons";
 
 const slugParams = {
   type: "object",
@@ -86,49 +86,49 @@ const grammarTermsBody = {
   },
 } as const;
 
-/** Lesson import + viewing routes, mounted under `/api/lessons`. */
-export async function lessonRoutes(app: FastifyInstance): Promise<void> {
-  app.get("/api/lessons", {
+/** AI Lesson import + viewing routes, mounted under `/api/ai-lessons`. */
+export async function aiLessonRoutes(app: FastifyInstance): Promise<void> {
+  app.get("/api/ai-lessons", {
     schema: {
-      tags: ["lessons"],
+      tags: ["ai-lessons"],
     },
-  }, async () => listLessons());
+  }, async () => listAiLessons());
 
-  // All lesson content flattened across lessons (for the global Culture/Vocab/Grammar/Sentences pages).
-  app.get("/api/lesson-content", {
+  // All AI Lesson content flattened across AI Lessons (for the global Culture/Vocab/Grammar/Sentences pages).
+  app.get("/api/ai-lesson-content", {
     schema: {
-      tags: ["lessons"],
+      tags: ["ai-lessons"],
     },
-  }, async () => getLessonContent());
+  }, async () => getAiLessonContent());
 
-  app.get("/api/lessons/:slug", {
+  app.get("/api/ai-lessons/:slug", {
     schema: {
-      tags: ["lessons"],
+      tags: ["ai-lessons"],
       params: slugParams,
     },
   }, async (req, reply) => {
     const {
       slug,
     } = req.params as { slug: string };
-    const lesson = await getLessonBySlug(slug);
+    const lesson = await getAiLessonBySlug(slug);
     if (!lesson) return reply.code(404).send({
-      message: "Lesson not found",
+      message: "AI Lesson not found",
     });
     return lesson;
   });
 
-  app.post("/api/lessons/import", {
+  app.post("/api/ai-lessons/import", {
     schema: {
-      tags: ["lessons"],
-      body: lessonImportJsonSchema,
+      tags: ["ai-lessons"],
+      body: aiLessonImportJsonSchema,
     },
   }, async (req, reply) => {
     try {
-      const detail = await createLessonFromImport(req.body as LessonImportInput);
+      const detail = await createAiLessonFromImport(req.body as AiLessonImportInput);
       return reply.code(201).send(detail);
     }
     catch (err) {
-      if (err instanceof LessonSlugConflictError) {
+      if (err instanceof AiLessonSlugConflictError) {
         return reply.code(409).send({
           message: err.message,
         });
@@ -138,9 +138,9 @@ export async function lessonRoutes(app: FastifyInstance): Promise<void> {
   });
 
   // Update a vocab item's Renshuu annotation.
-  app.patch("/api/lesson-vocab/:id", {
+  app.patch("/api/ai-lesson-vocab/:id", {
     schema: {
-      tags: ["lessons"],
+      tags: ["ai-lessons"],
       params: idParams,
       body: vocabRenshuuBody,
     },
@@ -156,9 +156,9 @@ export async function lessonRoutes(app: FastifyInstance): Promise<void> {
   });
 
   // Set the Grammar source tags on a grammar item.
-  app.patch("/api/lesson-grammar/:id", {
+  app.patch("/api/ai-lesson-grammar/:id", {
     schema: {
-      tags: ["lessons"],
+      tags: ["ai-lessons"],
       params: idParams,
       body: grammarTermsBody,
     },
@@ -169,7 +169,7 @@ export async function lessonRoutes(app: FastifyInstance): Promise<void> {
     const {
       grammarTerms,
     } = req.body as GrammarTermsUpdate;
-    const updated = await updateLessonGrammarTerms(id, grammarTerms);
+    const updated = await updateAiLessonGrammarTerms(id, grammarTerms);
     if (!updated) return reply.code(404).send({
       message: "Grammar item not found",
     });
@@ -177,9 +177,9 @@ export async function lessonRoutes(app: FastifyInstance): Promise<void> {
   });
 
   // Set the Grammar source tags on a source sentence.
-  app.patch("/api/lesson-source-sentences/:id", {
+  app.patch("/api/ai-lesson-source-sentences/:id", {
     schema: {
-      tags: ["lessons"],
+      tags: ["ai-lessons"],
       params: idParams,
       body: grammarTermsBody,
     },
@@ -197,18 +197,18 @@ export async function lessonRoutes(app: FastifyInstance): Promise<void> {
     return updated;
   });
 
-  app.delete("/api/lessons/:id", {
+  app.delete("/api/ai-lessons/:id", {
     schema: {
-      tags: ["lessons"],
+      tags: ["ai-lessons"],
       params: idParams,
     },
   }, async (req, reply) => {
     const {
       id,
     } = req.params as { id: string };
-    const deleted = await deleteLesson(id);
+    const deleted = await deleteAiLesson(id);
     if (!deleted) return reply.code(404).send({
-      message: "Lesson not found",
+      message: "AI Lesson not found",
     });
     return reply.code(204).send();
   });

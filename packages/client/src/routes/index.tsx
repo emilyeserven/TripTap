@@ -144,10 +144,10 @@ const sections: readonly TileSection[] = [
     description: "The source material you mine sentences from.",
     tiles: [
       {
-        title: "Lessons",
-        to: "/lessons",
+        title: "AI Lessons",
+        to: "/ai-lessons",
         icon: GraduationCapIcon,
-        description: "Lesson notes and material to draw from.",
+        description: "AI Lesson notes and material to draw from.",
       },
       {
         title: "Captures",

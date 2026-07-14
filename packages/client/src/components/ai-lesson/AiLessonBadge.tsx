@@ -2,19 +2,19 @@ import { Link } from "@tanstack/react-router";
 
 import { Badge } from "@/components/ui/badge";
 
-/** A reference to the lesson an item belongs to. */
-export interface LessonRef {
+/** A reference to the AI Lesson an item belongs to. */
+export interface AiLessonRef {
   slug: string;
   title: string;
 }
 
-/** A small badge linking to the lesson an aggregated item came from. */
-export function LessonBadge({
+/** A small badge linking to the AI Lesson an aggregated item came from. */
+export function AiLessonBadge({
   slug, title,
-}: LessonRef) {
+}: AiLessonRef) {
   return (
     <Link
-      to="/lessons/$slug"
+      to="/ai-lessons/$slug"
       params={{
         slug,
       }}
