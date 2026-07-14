@@ -7,12 +7,14 @@ import { AnswerSheetCard } from "@/components/AnswerSheetCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAnswerSheets, useDeleteAnswerSheet } from "@/hooks/useAnswerSheets";
+import { usePageTitle } from "@/hooks/usePageTitle";
 
 export const Route = createFileRoute("/answer-sheets/")({
   component: AnswerSheetsPage,
 });
 
 function AnswerSheetsPage() {
+  usePageTitle("Answer Sheets");
   const {
     data: sheets, isLoading, error,
   } = useAnswerSheets();
@@ -33,7 +35,6 @@ function AnswerSheetsPage() {
     <section className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">Answer Sheets</h1>
           <p className="text-sm text-muted-foreground">
             Your filled-in attempts at a question sheet. Open one to review it, or switch on the
             Corrections tab to record what went wrong and why.

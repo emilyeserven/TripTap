@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { useOcr } from "@/hooks/useOcr";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/capture")({
@@ -31,6 +32,7 @@ export const Route = createFileRoute("/capture")({
 });
 
 function CapturePage() {
+  usePageTitle("Capture text");
   const navigate = useNavigate();
   const inputRef = useRef<HTMLInputElement>(null);
   // The originally selected image: source for both the preview and the crop dialog. Kept alive
@@ -151,7 +153,6 @@ function CapturePage() {
           <ArrowLeft className="size-3.5" />
           Captures
         </Link>
-        <h1 className="text-2xl font-bold">Capture text</h1>
         <p className="text-sm text-muted-foreground">
           Take a photo or choose an image, and extract its Japanese and English text.
         </p>

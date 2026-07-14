@@ -3,6 +3,7 @@ import { ArrowLeft, Pencil } from "lucide-react";
 
 import { ShadowingSessionView } from "@/components/ShadowingSessionView";
 import { Button } from "@/components/ui/button";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { useDeleteShadowingSession, useShadowingSession } from "@/hooks/useShadowingSessions";
 
 export const Route = createFileRoute("/shadowing/$id/")({
@@ -18,6 +19,8 @@ function ViewShadowingSessionPage() {
     data, isLoading, error,
   } = useShadowingSession(id);
   const remove = useDeleteShadowingSession();
+
+  usePageTitle(data?.title ?? "");
 
   if (isLoading) return <p className="text-muted-foreground">Loading…</p>;
   if (error) return <p className="text-destructive">{error.message}</p>;
@@ -71,10 +74,6 @@ function ViewShadowingSessionPage() {
             Delete
           </Button>
         </div>
-      </div>
-
-      <div>
-        <h1 className="text-2xl font-bold">{data.title}</h1>
       </div>
 
       <ShadowingSessionView session={data} />

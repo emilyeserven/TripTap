@@ -4,6 +4,7 @@ import { ArrowLeft, Pencil } from "lucide-react";
 import { ListeningSessionView } from "@/components/ListeningSessionView";
 import { Button } from "@/components/ui/button";
 import { useDeleteListeningSession, useListeningSession } from "@/hooks/useListeningSessions";
+import { usePageTitle } from "@/hooks/usePageTitle";
 
 export const Route = createFileRoute("/listening-sessions/$id/")({
   component: ViewListeningSessionPage,
@@ -18,6 +19,8 @@ function ViewListeningSessionPage() {
     data, isLoading, error,
   } = useListeningSession(id);
   const remove = useDeleteListeningSession();
+
+  usePageTitle(data?.title ?? "");
 
   if (isLoading) return <p className="text-muted-foreground">Loading…</p>;
   if (error) return <p className="text-destructive">{error.message}</p>;
@@ -71,10 +74,6 @@ function ViewListeningSessionPage() {
             Delete
           </Button>
         </div>
-      </div>
-
-      <div>
-        <h1 className="text-2xl font-bold">{data.title}</h1>
       </div>
 
       <ListeningSessionView session={data} />

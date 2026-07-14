@@ -19,6 +19,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { WritingPromptBulkDialog } from "@/components/WritingPromptBulkDialog";
 import { WritingPromptCard } from "@/components/WritingPromptCard";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { useCreateWritingPrompt, useWritingPrompts } from "@/hooks/useWritingPrompts";
 
 export const Route = createFileRoute("/writing-prompts")({
@@ -26,6 +27,7 @@ export const Route = createFileRoute("/writing-prompts")({
 });
 
 function WritingPromptsPage() {
+  usePageTitle("Writing Prompts");
   const {
     data: prompts, isLoading, error,
   } = useWritingPrompts();
@@ -47,7 +49,6 @@ function WritingPromptsPage() {
     <section className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Writing Prompts</h1>
           <p className="text-sm text-muted-foreground">
             Save reusable prompts to spark a free-write. When you start a new My Writing entry you can
             pull one up to write against.

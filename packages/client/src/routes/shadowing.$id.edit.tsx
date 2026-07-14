@@ -3,6 +3,7 @@ import { ArrowLeft } from "lucide-react";
 
 import { ShadowingSessionForm } from "@/components/ShadowingSessionForm";
 import { Button } from "@/components/ui/button";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { useShadowingSession } from "@/hooks/useShadowingSessions";
 
 export const Route = createFileRoute("/shadowing/$id/edit")({
@@ -10,6 +11,7 @@ export const Route = createFileRoute("/shadowing/$id/edit")({
 });
 
 function EditShadowingSessionPage() {
+  usePageTitle("Edit session");
   const {
     id,
   } = Route.useParams();
@@ -39,9 +41,6 @@ function EditShadowingSessionPage() {
           Back to session
         </Link>
       </Button>
-      <div>
-        <h1 className="text-2xl font-bold">Edit session</h1>
-      </div>
       <ShadowingSessionForm
         session={data}
         onSuccess={() =>

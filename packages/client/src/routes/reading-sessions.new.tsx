@@ -3,12 +3,14 @@ import { ArrowLeft } from "lucide-react";
 
 import { ReadingSessionForm } from "@/components/ReadingSessionForm";
 import { Button } from "@/components/ui/button";
+import { usePageTitle } from "@/hooks/usePageTitle";
 
 export const Route = createFileRoute("/reading-sessions/new")({
   component: NewReadingSessionPage,
 });
 
 function NewReadingSessionPage() {
+  usePageTitle("New reading session");
   const navigate = useNavigate();
 
   return (
@@ -24,7 +26,6 @@ function NewReadingSessionPage() {
         </Link>
       </Button>
       <div>
-        <h1 className="text-2xl font-bold">New reading session</h1>
         <p className="text-sm text-muted-foreground">
           Note where the reading came from, translate it freeform or line-by-line, and jot down the
           words you were shaky on or didn’t know.

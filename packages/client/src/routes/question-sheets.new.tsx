@@ -3,12 +3,14 @@ import { ArrowLeft } from "lucide-react";
 
 import { QuestionSheetForm } from "@/components/QuestionSheetForm";
 import { Button } from "@/components/ui/button";
+import { usePageTitle } from "@/hooks/usePageTitle";
 
 export const Route = createFileRoute("/question-sheets/new")({
   component: NewQuestionSheetPage,
 });
 
 function NewQuestionSheetPage() {
+  usePageTitle("New question sheet");
   const navigate = useNavigate();
 
   return (
@@ -24,7 +26,6 @@ function NewQuestionSheetPage() {
         </Link>
       </Button>
       <div>
-        <h1 className="text-2xl font-bold">New question sheet</h1>
         <p className="text-sm text-muted-foreground">
           Capture the questions from a textbook or worksheet as a reusable template — a list of
           questions (with optional parts) or a grid/table.

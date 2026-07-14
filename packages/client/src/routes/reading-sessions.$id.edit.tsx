@@ -3,6 +3,7 @@ import { ArrowLeft } from "lucide-react";
 
 import { ReadingSessionForm } from "@/components/ReadingSessionForm";
 import { Button } from "@/components/ui/button";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { useReadingSession } from "@/hooks/useReadingSessions";
 
 export const Route = createFileRoute("/reading-sessions/$id/edit")({
@@ -10,6 +11,7 @@ export const Route = createFileRoute("/reading-sessions/$id/edit")({
 });
 
 function EditReadingSessionPage() {
+  usePageTitle("Edit reading session");
   const {
     id,
   } = Route.useParams();
@@ -40,7 +42,6 @@ function EditReadingSessionPage() {
         </Link>
       </Button>
       <div>
-        <h1 className="text-2xl font-bold">Edit reading session</h1>
         <p className="text-sm text-muted-foreground">
           Update the translation, corrections, or word notes.
         </p>

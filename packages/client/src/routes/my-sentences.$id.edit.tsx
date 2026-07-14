@@ -4,12 +4,14 @@ import { ArrowLeft } from "lucide-react";
 import { MySentenceForm } from "@/components/MySentenceForm";
 import { Button } from "@/components/ui/button";
 import { useMySentence } from "@/hooks/useMySentences";
+import { usePageTitle } from "@/hooks/usePageTitle";
 
 export const Route = createFileRoute("/my-sentences/$id/edit")({
   component: EditMySentencePage,
 });
 
 function EditMySentencePage() {
+  usePageTitle("Edit sentence");
   const {
     id,
   } = Route.useParams();
@@ -40,7 +42,6 @@ function EditMySentencePage() {
         </Link>
       </Button>
       <div>
-        <h1 className="text-2xl font-bold">Edit sentence</h1>
         <p className="text-sm text-muted-foreground">
           Update the correction, meanings, explanation, or tags.
         </p>

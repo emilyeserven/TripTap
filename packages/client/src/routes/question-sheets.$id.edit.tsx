@@ -3,6 +3,7 @@ import { ArrowLeft } from "lucide-react";
 
 import { QuestionSheetForm } from "@/components/QuestionSheetForm";
 import { Button } from "@/components/ui/button";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { useQuestionSheet } from "@/hooks/useQuestionSheets";
 
 export const Route = createFileRoute("/question-sheets/$id/edit")({
@@ -10,6 +11,7 @@ export const Route = createFileRoute("/question-sheets/$id/edit")({
 });
 
 function EditQuestionSheetPage() {
+  usePageTitle("Edit question sheet");
   const {
     id,
   } = Route.useParams();
@@ -40,7 +42,6 @@ function EditQuestionSheetPage() {
         </Link>
       </Button>
       <div>
-        <h1 className="text-2xl font-bold">Edit question sheet</h1>
         <p className="text-sm text-muted-foreground">
           Update the title, notes, tags, or the questions/grid.
         </p>

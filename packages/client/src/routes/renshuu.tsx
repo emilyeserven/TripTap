@@ -15,6 +15,7 @@ import {
 import { Combobox } from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { useSentences } from "@/hooks/useSentences";
 import { useSources } from "@/hooks/useSources";
 import { useVocab } from "@/hooks/useVocab";
@@ -301,6 +302,7 @@ function ExportPanel({
 }
 
 function RenshuuPage() {
+  usePageTitle("Renshuu export");
   const {
     data: sentences,
   } = useSentences();
@@ -336,7 +338,6 @@ function RenshuuPage() {
   return (
     <section className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Renshuu export</h1>
         <p className="text-sm text-muted-foreground">
           Build a list and copy it to paste into a Renshuu lesson — sentences as
           {" "}

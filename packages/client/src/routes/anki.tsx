@@ -15,6 +15,7 @@ import {
 import { Combobox } from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { usePracticeSentences } from "@/hooks/usePracticeSentences";
 import { useSentences } from "@/hooks/useSentences";
 import { useSources } from "@/hooks/useSources";
@@ -305,6 +306,7 @@ function ExportPanel({
 }
 
 function AnkiPage() {
+  usePageTitle("Anki export");
   const {
     data: sentences,
   } = useSentences();
@@ -357,7 +359,6 @@ function AnkiPage() {
   return (
     <section className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Anki export</h1>
         <p className="text-sm text-muted-foreground">
           Build a list and copy tab-separated notes to import into Anki — sentences as
           {" "}

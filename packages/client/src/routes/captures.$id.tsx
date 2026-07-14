@@ -24,6 +24,7 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs";
 import { useCapture, useDeleteCapture, useUpdateCapture } from "@/hooks/useCaptures";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { useSources } from "@/hooks/useSources";
 import { capturesApi } from "@/lib/api";
 
@@ -134,6 +135,8 @@ function CaptureDetailPage() {
     ? sources?.find(s => s.id === capture.sourceId)?.name ?? null
     : null;
 
+  usePageTitle(capture ? (capture.title || "Untitled capture") : "");
+
   function remove() {
     if (!globalThis.confirm("Delete this capture? Sentences and vocab created from it are kept.")) {
       return;
@@ -172,9 +175,6 @@ function CaptureDetailPage() {
         <>
           <div className="flex items-start justify-between gap-4">
             <div className="space-y-1">
-              <h1 className="text-2xl font-bold">
-                {capture.title || "Untitled capture"}
-              </h1>
               <div
                 className="
                   flex flex-wrap items-center gap-2 text-sm

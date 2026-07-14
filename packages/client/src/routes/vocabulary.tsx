@@ -28,6 +28,7 @@ import {
 import { VocabBankCard } from "@/components/VocabBankCard";
 import { VocabForm } from "@/components/VocabForm";
 import { useLessonContent, useUpdateVocabRenshuu } from "@/hooks/useLessons";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { useSources } from "@/hooks/useSources";
 import { useDeleteVocab, useVocab } from "@/hooks/useVocab";
 
@@ -36,6 +37,7 @@ export const Route = createFileRoute("/vocabulary")({
 });
 
 function VocabularyPage() {
+  usePageTitle("Vocabulary");
   const {
     data, isLoading, error,
   } = useLessonContent();
@@ -91,7 +93,6 @@ function VocabularyPage() {
       <section className="space-y-4">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold">Vocabulary</h1>
             <p className="text-sm text-muted-foreground">
               {`Your own words and those mined from lessons — ${shownCount} of ${totalCount}.`}
             </p>

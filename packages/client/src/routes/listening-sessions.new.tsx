@@ -3,12 +3,14 @@ import { ArrowLeft } from "lucide-react";
 
 import { ListeningSessionForm } from "@/components/ListeningSessionForm";
 import { Button } from "@/components/ui/button";
+import { usePageTitle } from "@/hooks/usePageTitle";
 
 export const Route = createFileRoute("/listening-sessions/new")({
   component: NewListeningSessionPage,
 });
 
 function NewListeningSessionPage() {
+  usePageTitle("New listening session");
   const navigate = useNavigate();
 
   return (
@@ -24,7 +26,6 @@ function NewListeningSessionPage() {
         </Link>
       </Button>
       <div>
-        <h1 className="text-2xl font-bold">New listening session</h1>
         <p className="text-sm text-muted-foreground">
           Pick a bookmark or paste a YouTube link, then open the session to start taking notes.
         </p>

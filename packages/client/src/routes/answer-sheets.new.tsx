@@ -3,6 +3,7 @@ import { ArrowLeft } from "lucide-react";
 
 import { AnswerSheetForm } from "@/components/AnswerSheetForm";
 import { Button } from "@/components/ui/button";
+import { usePageTitle } from "@/hooks/usePageTitle";
 
 interface NewAnswerSheetSearch {
   questionSheetId?: string;
@@ -17,6 +18,7 @@ export const Route = createFileRoute("/answer-sheets/new")({
 });
 
 function NewAnswerSheetPage() {
+  usePageTitle("New answer sheet");
   const navigate = useNavigate();
   const {
     questionSheetId,
@@ -35,7 +37,6 @@ function NewAnswerSheetPage() {
         </Link>
       </Button>
       <div>
-        <h1 className="text-2xl font-bold">New answer sheet</h1>
         <p className="text-sm text-muted-foreground">
           Pick a question sheet and fill in your answers. You can add corrections now or come back to
           them later.

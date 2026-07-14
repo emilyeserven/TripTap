@@ -17,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { useDeletePracticeSentence, usePracticeSentences } from "@/hooks/usePracticeSentences";
 import { useSources } from "@/hooks/useSources";
 import { useUiStore } from "@/stores/uiStore";
@@ -59,6 +60,7 @@ function matchesSearch(query: string, ...fields: (string | null)[]): boolean {
 }
 
 function PracticePage() {
+  usePageTitle("Study Sentences");
   const {
     data: practiceSentences, isLoading, error,
   } = usePracticeSentences();
@@ -97,7 +99,6 @@ function PracticePage() {
     <section className="space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Study Sentences</h1>
           <p className="text-sm text-muted-foreground">
             Richly break a sentence down, keep one target, then throw most of it away. A study aid —
             these aren&apos;t professionally written, so they may need corrections.

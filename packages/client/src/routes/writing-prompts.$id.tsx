@@ -9,6 +9,7 @@ import { DifficultySelect } from "@/components/DifficultySelect";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import {
   useDeleteWritingPrompt,
   useUpdateWritingPrompt,
@@ -20,6 +21,7 @@ export const Route = createFileRoute("/writing-prompts/$id")({
 });
 
 function EditWritingPromptPage() {
+  usePageTitle("Edit prompt");
   const {
     id,
   } = Route.useParams();
@@ -99,7 +101,6 @@ function EditWritingPromptForm({
       </Button>
 
       <div>
-        <h1 className="text-2xl font-bold">Edit prompt</h1>
         <p className="text-sm text-muted-foreground">
           Update the Japanese and English versions or the difficulty tag.
         </p>

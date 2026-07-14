@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { WritingCard } from "@/components/WritingCard";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { useWritingPrompts } from "@/hooks/useWritingPrompts";
 import { useCreateWriting, useDeleteWriting, useWritings } from "@/hooks/useWritings";
 
@@ -21,6 +22,7 @@ export const Route = createFileRoute("/my-writing/")({
 });
 
 function MyWritingPage() {
+  usePageTitle("My Writing");
   const {
     data: writings, isLoading, error,
   } = useWritings();
@@ -70,7 +72,6 @@ function MyWritingPage() {
     <section className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">My Writing</h1>
           <p className="text-sm text-muted-foreground">
             Write freely in Japanese. Note what you meant, add comments, tag what you were targeting,
             and flag it ready to review. Open an entry to edit it or turn on correction mode to fix a

@@ -4,12 +4,14 @@ import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useDeleteLesson, useLessons } from "@/hooks/useLessons";
+import { usePageTitle } from "@/hooks/usePageTitle";
 
 export const Route = createFileRoute("/lessons/")({
   component: LessonsPage,
 });
 
 function LessonsPage() {
+  usePageTitle("Lessons");
   const {
     data: lessons, isLoading, error,
   } = useLessons();
@@ -19,7 +21,6 @@ function LessonsPage() {
     <section className="space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Lessons</h1>
           <p className="text-sm text-muted-foreground">Study a lesson, or create a new one.</p>
         </div>
         <Button asChild>
