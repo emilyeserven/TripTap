@@ -1,17 +1,14 @@
 import type { BookmarkRecord, SentenceTermCategory } from "@sentence-bank/types";
 
-import { useState } from "react";
-
 import { Combobox } from "@/components/ui/combobox";
 import { Label } from "@/components/ui/label";
-import { useBookmarkRecords, useBookmarksVocabulary } from "@/hooks/useBookmarks";
+import { useBookmarkRecords } from "@/hooks/useBookmarks";
 import { TERM_CATEGORIES } from "@/lib/terms";
 
 /**
- * Two-step bookmark chooser for one channel's configured bookmarks source: pick a child tag, then
- * pick one of the bookmarks tagged with it. Selecting a bookmark calls `onPick` with the full record
- * (so the form can auto-fill a URL/title and keep the bookmark id for a back-link). Picking the blank
- * option clears the association.
+ * Searchable bookmark chooser for one channel's configured bookmarks source. Selecting a bookmark
+ * calls `onPick` with the full record (so the form can auto-fill a URL/title and keep the bookmark id
+ * for a back-link). Picking the blank option clears the association.
  */
 export function BookmarkPicker({
   selectedBookmarkId,
@@ -27,22 +24,9 @@ export function BookmarkPicker({
   label?: string;
 }) {
   const channelLabel = TERM_CATEGORIES.find(c => c.category === category)?.label ?? category;
-  const [tagId, setTagId] = useState("");
-  const childTags = useBookmarksVocabulary(category);
-  const records = useBookmarkRecords(tagId || null);
+  const records = useBookmarkRecords(category);
 
-  const tagOptions = [
-    {
-      value: "",
-      label: "Select a tag…",
-    },
-    ...(childTags.data ?? []).map(t => ({
-      value: t.id,
-      label: t.name,
-    })),
-  ];
-
-  // Keep the currently-selected bookmark visible even before its tag's records load (e.g. in edit mode).
+  // Keep the currently-selected bookmark visible even before the list finishes loading (e.g. in edit mode).
   const recordOptions = [
     {
       value: "",
@@ -64,9 +48,9 @@ export function BookmarkPicker({
     <div className="space-y-2 rounded-md border p-4">
       <Label>{label}</Label>
       <p className="text-xs text-muted-foreground">
-        Pick a {channelLabel} tag, then a bookmark.
+        Search {channelLabel} bookmarks.
       </p>
-      {childTags.isError
+      {records.isError
         ? (
           <p className="text-sm text-destructive">
             Couldn’t reach the bookmarks host. Configure the {channelLabel} source in Settings and make
@@ -74,37 +58,21 @@ export function BookmarkPicker({
           </p>
         )
         : (
-          <>
-            <Combobox
-              value={tagId}
-              onChange={setTagId}
-              options={tagOptions}
-              className="w-full"
-              ariaLabel={`${channelLabel} tag`}
-              placeholder={childTags.isLoading ? "Loading tags…" : "Select a tag…"}
-            />
-            <Combobox
-              value={selectedBookmarkId ?? ""}
-              onChange={(id) => {
-                if (!id) {
-                  onPick(null);
-                  return;
-                }
-                const record = (records.data ?? []).find(r => r.id === id);
-                if (record) onPick(record);
-              }}
-              options={recordOptions}
-              className="w-full"
-              ariaLabel="Bookmark"
-              placeholder={!tagId
-                ? "Pick a tag first…"
-                : records.isLoading
-                  ? "Loading bookmarks…"
-                  : records.isError
-                    ? "Couldn’t load bookmarks"
-                    : "Select a bookmark…"}
-            />
-          </>
+          <Combobox
+            value={selectedBookmarkId ?? ""}
+            onChange={(id) => {
+              if (!id) {
+                onPick(null);
+                return;
+              }
+              const record = (records.data ?? []).find(r => r.id === id);
+              if (record) onPick(record);
+            }}
+            options={recordOptions}
+            className="w-full"
+            ariaLabel="Bookmark"
+            placeholder={records.isLoading ? "Loading bookmarks…" : "Select a bookmark…"}
+          />
         )}
     </div>
   );

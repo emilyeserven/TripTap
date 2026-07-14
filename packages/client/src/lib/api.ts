@@ -476,9 +476,9 @@ export const bookmarksApi = {
       method: "POST",
       body: JSON.stringify(input),
     }),
-  /** Bookmarks tagged with the given tag id (sections omitted). */
-  records: (tagId: string) =>
-    request<BookmarkRecord[]>(`/bookmarks/records?tagId=${encodeURIComponent(tagId)}`),
+  /** All bookmarks across one channel's configured source (sections omitted). */
+  records: (category: SentenceTermCategory) =>
+    request<BookmarkRecord[]>(`/bookmarks/records?category=${category}`),
   /** A single bookmark with its flattened timestamp sections. */
   record: (id: string) => request<BookmarkRecord>(`/bookmarks/records/${encodeURIComponent(id)}`),
 };

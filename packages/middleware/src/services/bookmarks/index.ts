@@ -211,6 +211,24 @@ export async function listBookmarks(tagId: string): Promise<BookmarkRecord[]> {
     : [];
 }
 
+/**
+ * All bookmarks across every child tag/term in one channel's configured source, deduped by id and
+ * sorted by title. The upstream host only supports listing bookmarks for one specific tag/term id at a
+ * time, so this fetches the channel's whole vocabulary and merges each item's bookmarks.
+ */
+export async function listBookmarksForCategory(
+  category: SentenceTermCategory = "vocabulary",
+): Promise<BookmarkRecord[]> {
+  const items = await fetchVocabulary(category);
+  if (items.length === 0) return [];
+  const lists = await Promise.all(items.map(item => listBookmarks(item.id)));
+  const byId = new Map<string, BookmarkRecord>();
+  for (const record of lists.flat()) {
+    if (!byId.has(record.id)) byId.set(record.id, record);
+  }
+  return [...byId.values()].sort((a, b) => a.title.localeCompare(b.title));
+}
+
 /** A single bookmark by id, including its flattened timestamp sections. Null when not found/unreadable. */
 export async function getBookmark(id: string): Promise<BookmarkRecord | null> {
   const {

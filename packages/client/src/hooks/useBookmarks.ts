@@ -67,12 +67,11 @@ export function useBookmarksListeningVocabulary() {
   return useBookmarksVocabulary("listening");
 }
 
-/** Bookmarks tagged with the given tag id. Deferred until a tag id is provided. */
-export function useBookmarkRecords(tagId: string | null) {
+/** All bookmarks across one channel's configured source. */
+export function useBookmarkRecords(category: SentenceTermCategory) {
   return useQuery({
-    queryKey: [...BOOKMARKS_KEY, "records", tagId],
-    queryFn: () => bookmarksApi.records(tagId as string),
-    enabled: Boolean(tagId),
+    queryKey: [...BOOKMARKS_KEY, "records", category],
+    queryFn: () => bookmarksApi.records(category),
     retry: false,
   });
 }
