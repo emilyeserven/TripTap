@@ -188,7 +188,7 @@
  * toggled via the `slide-mode` class on documentElement by the SlideMode controller.
  */
 html.slide-mode {
-  scroll-snap-type: y mandatory;
+  scroll-snap-type: y proximity;
   scroll-behavior: smooth;
 }
 [data-slide-mode="on"] form > *,
