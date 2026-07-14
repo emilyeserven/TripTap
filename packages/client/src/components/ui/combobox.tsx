@@ -59,9 +59,19 @@ export function Combobox({
           role="combobox"
           aria-expanded={open}
           aria-label={ariaLabel}
-          className={cn("justify-between gap-2 font-normal", className)}
+          className={cn(
+            `
+              h-auto min-h-9 justify-between gap-2 py-2 text-left font-normal
+              whitespace-normal
+            `,
+            className,
+          )}
         >
-          <span className={cn("truncate", !selected && "text-muted-foreground")}>
+          <span
+            className={cn("min-w-0 wrap-break-word", !selected && `
+              text-muted-foreground
+            `)}
+          >
             {selected ? selected.label : placeholder}
           </span>
           <ChevronsUpDown className="size-4 shrink-0 opacity-50" />
@@ -94,7 +104,7 @@ export function Combobox({
                 }}
                 className={cn(
                   `
-                    flex w-full items-center gap-2 rounded-sm px-2 py-1.5
+                    flex w-full items-start gap-2 rounded-sm px-2 py-1.5
                     text-left text-sm
                     hover:bg-accent
                   `,
@@ -102,11 +112,11 @@ export function Combobox({
                 )}
               >
                 <Check
-                  className={cn("size-4 shrink-0", o.value === value
+                  className={cn("mt-0.5 size-4 shrink-0", o.value === value
                     ? "opacity-100"
                     : "opacity-0")}
                 />
-                <span className="truncate">{o.label}</span>
+                <span className="min-w-0 wrap-break-word">{o.label}</span>
               </button>
             ))}
         </div>
