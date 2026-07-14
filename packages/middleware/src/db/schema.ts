@@ -2,6 +2,8 @@ import type {
   AnswerSheetEntry,
   CleanedBlocks,
   DrillMistake,
+  DrillMistakeReasonRef,
+  DrillReason,
   DrillSubcategory,
   FuriToken,
   GrammarExample,
@@ -242,6 +244,10 @@ export const mySentences = pgTable("my_sentences", {
   writingId: uuid("writing_id").references((): AnyPgColumn => writings.id, {
     onDelete: "set null",
   }),
+  /** The tutoring lesson this sentence was added from, or null. */
+  lessonId: uuid("lesson_id").references((): AnyPgColumn => lessons.id, {
+    onDelete: "set null",
+  }),
   needsCorrection: boolean("needs_correction").notNull().default(true),
   correction: text("correction"),
   // What the sentence, as written, actually says — the mismatch with `translation`.
@@ -251,6 +257,8 @@ export const mySentences = pgTable("my_sentences", {
   // Structured tags from the bookmarks channels (Vocabulary / Grammar / General). Denormalized so
   // display never needs a live bookmarks call. Null until any are attached.
   terms: jsonb("terms").$type<SentenceTermRef[]>(),
+  // Why it was wrong — references into the shared Drill reason taxonomy. Null until any are tagged.
+  reasons: jsonb("reasons").$type<DrillMistakeReasonRef[]>(),
   createdAt: timestamp("created_at", {
     withTimezone: true,
   }).notNull().defaultNow(),
@@ -493,6 +501,7 @@ export const drillReasonCategories = pgTable("drill_reason_categories", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: text("name").notNull(),
   subcategories: jsonb("subcategories").$type<DrillSubcategory[]>(),
+  reasons: jsonb("reasons").$type<DrillReason[]>(),
   createdAt: timestamp("created_at", {
     withTimezone: true,
   }).notNull().defaultNow(),

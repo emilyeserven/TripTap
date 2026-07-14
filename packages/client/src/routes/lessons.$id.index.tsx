@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Pencil } from "lucide-react";
 
+import { LessonMySentences } from "@/components/LessonMySentences";
 import { LessonView } from "@/components/LessonView";
 import { Button } from "@/components/ui/button";
 import { useDeleteLesson, useLesson } from "@/hooks/useLessons";
@@ -74,6 +75,11 @@ function ViewLessonPage() {
       </div>
 
       <LessonView lesson={data} />
+
+      <LessonMySentences
+        lessonId={data.id}
+        language={data.language}
+      />
     </section>
   );
 }

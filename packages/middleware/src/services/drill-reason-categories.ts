@@ -13,6 +13,7 @@ export function toDrillReasonCategory(row: DrillReasonCategoryRow): DrillReasonC
     id: row.id,
     name: row.name,
     subcategories: row.subcategories ?? null,
+    reasons: row.reasons ?? null,
     createdAt:
       row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
     updatedAt:
@@ -25,6 +26,7 @@ function toInsert(input: CreateDrillReasonCategoryInput) {
   return {
     name: input.name,
     subcategories: input.subcategories ?? null,
+    reasons: input.reasons ?? null,
   };
 }
 

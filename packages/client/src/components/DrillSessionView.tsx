@@ -44,7 +44,17 @@ export function DrillSessionView({
               <li key={m.id}>
                 <Card>
                   <CardContent className="space-y-2 p-4">
-                    <p className="font-medium">{m.prompt}</p>
+                    {m.question
+                      ? <p className="font-medium">{m.question}</p>
+                      : null}
+                    <p
+                      className={m.question
+                        ? "text-sm text-muted-foreground"
+                        : "font-medium"}
+                    >
+                      {m.question ? "You put: " : null}
+                      <span className={m.question ? "text-foreground" : undefined}>{m.prompt}</span>
+                    </p>
                     {m.correctAnswer
                       ? (
                         <p className="text-sm text-muted-foreground">

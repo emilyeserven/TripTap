@@ -1,9 +1,10 @@
-import type { MySentence, SentenceTermRef } from "@sentence-bank/types";
+import type { DrillMistakeReasonRef, MySentence, SentenceTermRef } from "@sentence-bank/types";
 
 import { useState } from "react";
 
 import { termCategory } from "../lib/terms";
 
+import { DrillReasonPicker } from "@/components/DrillReasonPicker";
 import { TermPicker } from "@/components/TermPicker";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -21,9 +22,15 @@ import { useCreateMySentence, useUpdateMySentence } from "@/hooks/useMySentences
 export function MySentenceForm({
   mySentence,
   onSuccess,
+  lessonId,
+  defaultLanguage,
 }: {
   mySentence?: MySentence;
   onSuccess?: (id: string) => void;
+  /** When creating from a lesson, links the new sentence to it. */
+  lessonId?: string;
+  /** Seeds the language field for a fresh sentence (e.g. the lesson's language). */
+  defaultLanguage?: string;
 }) {
   const create = useCreateMySentence();
   const update = useUpdateMySentence();
@@ -34,8 +41,11 @@ export function MySentenceForm({
   const [correction, setCorrection] = useState(mySentence?.correction ?? "");
   const [actualMeaning, setActualMeaning] = useState(mySentence?.actualMeaning ?? "");
   const [explanation, setExplanation] = useState(mySentence?.explanation ?? "");
-  const [language, setLanguage] = useState(mySentence?.language ?? "Japanese");
+  const [language, setLanguage] = useState(
+    mySentence?.language ?? defaultLanguage ?? "Japanese",
+  );
   const [needsCorrection, setNeedsCorrection] = useState(mySentence?.needsCorrection ?? true);
+  const [reasons, setReasons] = useState<DrillMistakeReasonRef[]>(mySentence?.reasons ?? []);
 
   const initialTerms = mySentence?.terms ?? [];
   const [vocabTerms, setVocabTerms] = useState<SentenceTermRef[]>(
@@ -66,6 +76,8 @@ export function MySentenceForm({
       actualMeaning: actualMeaning.trim() || null,
       explanation: explanation.trim() || null,
       terms: terms.length > 0 ? terms : null,
+      lessonId: mySentence?.lessonId ?? lessonId ?? null,
+      reasons: reasons.length > 0 ? reasons : null,
     };
     const saved = editing
       ? await update.mutateAsync({
@@ -143,6 +155,17 @@ export function MySentenceForm({
           onChange={e => setExplanation(e.target.value)}
           placeholder="Why it was wrong — e.g. a note from your tutor"
           rows={2}
+        />
+      </div>
+
+      <div className="space-y-1.5">
+        <Label>Reasons</Label>
+        <p className="text-xs text-muted-foreground">
+          Categorize why it was wrong, using the same reasons as your drill sessions.
+        </p>
+        <DrillReasonPicker
+          value={reasons}
+          onChange={setReasons}
         />
       </div>
 

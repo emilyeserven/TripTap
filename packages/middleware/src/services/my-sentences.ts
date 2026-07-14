@@ -1,4 +1,4 @@
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import type {
   CreateMySentenceInput,
   MySentence,
@@ -16,11 +16,13 @@ export function toMySentence(row: MySentenceRow): MySentence {
     language: row.language,
     practiceSentenceId: row.practiceSentenceId,
     writingId: row.writingId,
+    lessonId: row.lessonId,
     needsCorrection: row.needsCorrection,
     correction: row.correction,
     actualMeaning: row.actualMeaning,
     explanation: row.explanation,
     terms: row.terms ?? null,
+    reasons: row.reasons ?? null,
     createdAt:
       row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
   };
@@ -34,21 +36,33 @@ function toInsert(input: CreateMySentenceInput) {
     language: input.language,
     practiceSentenceId: input.practiceSentenceId ?? null,
     writingId: input.writingId ?? null,
+    lessonId: input.lessonId ?? null,
     needsCorrection: input.needsCorrection ?? true,
     correction: input.correction ?? null,
     actualMeaning: input.actualMeaning ?? null,
     explanation: input.explanation ?? null,
     terms: input.terms ?? null,
+    reasons: input.reasons ?? null,
   };
 }
 
-/** List my-sentences, newest first; optionally scoped to one practice sentence. */
-export async function listMySentences(practiceSentenceId?: string): Promise<MySentence[]> {
-  const rows = practiceSentenceId
+/** List my-sentences, newest first; optionally scoped to one practice sentence and/or lesson. */
+export async function listMySentences(
+  filters: { practiceSentenceId?: string;
+    lessonId?: string; } = {},
+): Promise<MySentence[]> {
+  const conditions = [
+    filters.practiceSentenceId
+      ? eq(mySentences.practiceSentenceId, filters.practiceSentenceId)
+      : undefined,
+    filters.lessonId ? eq(mySentences.lessonId, filters.lessonId) : undefined,
+  ].filter(c => c !== undefined);
+
+  const rows = conditions.length > 0
     ? await db
       .select()
       .from(mySentences)
-      .where(eq(mySentences.practiceSentenceId, practiceSentenceId))
+      .where(and(...conditions))
       .orderBy(desc(mySentences.createdAt))
     : await db.select().from(mySentences).orderBy(desc(mySentences.createdAt));
   return rows.map(toMySentence);

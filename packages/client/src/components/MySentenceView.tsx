@@ -1,28 +1,37 @@
 import type { MySentence } from "@sentence-bank/types";
 
+import { useState } from "react";
+
 import { Link } from "@tanstack/react-router";
-import { NotebookPen, PenLine, TriangleAlert } from "lucide-react";
+import { Eye, EyeOff, NotebookPen, PenLine, TriangleAlert } from "lucide-react";
 
 import { CorrectionDiff } from "../lib/sentenceDiff";
 import { groupTermsByCategory, TERM_CATEGORIES } from "../lib/terms";
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { useDrillReasonCategories } from "@/hooks/useDrillReasonCategories";
+import { resolveReasonRef } from "@/lib/drill-reasons";
 
-/** Read-only detail of one My Sentence: the written text, a diff against its correction, the
- * intended/actual meaning, an explanation, and its tags. */
+/** Read-only detail of one My Sentence. When corrected, the corrected version leads and the learner's
+ * original (bad Japanese) is hidden behind an opt-in toggle, to reduce exposure to incorrect text. */
 export function MySentenceView({
   mySentence: ms,
 }: {
   mySentence: MySentence;
 }) {
   const termGroups = groupTermsByCategory(ms.terms ?? []);
+  const categoriesQuery = useDrillReasonCategories();
+  const categories = categoriesQuery.data ?? [];
+  const corrected = ms.correction?.trim() ? ms.correction : null;
+  const [showOriginal, setShowOriginal] = useState(false);
 
   return (
     <Card>
       <CardContent className="space-y-4 p-4">
-        <p className="text-xl font-semibold">{ms.text}</p>
+        <p className="text-xl font-semibold">{corrected ?? ms.text}</p>
 
         <div
           className="
@@ -30,7 +39,7 @@ export function MySentenceView({
           "
         >
           <Badge variant="secondary">{ms.language}</Badge>
-          {ms.needsCorrection
+          {!corrected && ms.needsCorrection
             ? (
               <Badge
                 variant="outline"
@@ -100,18 +109,36 @@ export function MySentenceView({
           })}
         </div>
 
-        {ms.correction
+        {corrected
           ? (
             <div className="space-y-1">
-              <Label className="text-sm">Correction</Label>
-              <div className="space-y-1 rounded-md border bg-muted/30 p-3">
-                <CorrectionDiff
-                  written={ms.text}
-                  correct={ms.correction}
-                  language={ms.language}
-                />
-                <p className="text-base">{ms.correction}</p>
-              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowOriginal(v => !v)}
+              >
+                {showOriginal
+                  ? <EyeOff className="size-4" />
+                  : (
+                    <Eye
+                      className="size-4"
+                    />
+                  )}
+                {showOriginal ? "Hide original" : "Show your original"}
+              </Button>
+              {showOriginal
+                ? (
+                  <div className="space-y-1 rounded-md border bg-muted/30 p-3">
+                    <Label className="text-sm">Your original (with corrections)</Label>
+                    <CorrectionDiff
+                      written={ms.text}
+                      correct={corrected}
+                      language={ms.language}
+                    />
+                  </div>
+                )
+                : null}
             </div>
           )
           : null}
@@ -121,6 +148,24 @@ export function MySentenceView({
             <div className="space-y-1">
               <Label className="text-sm">Explanation</Label>
               <p className="text-sm">{ms.explanation}</p>
+            </div>
+          )
+          : null}
+
+        {ms.reasons && ms.reasons.length > 0
+          ? (
+            <div className="space-y-1">
+              <Label className="text-sm">Reasons</Label>
+              <div className="flex flex-wrap gap-1.5">
+                {ms.reasons.map((ref, i) => (
+                  <Badge
+                    key={ref.reasonId ?? `${ref.categoryId}-${i}`}
+                    variant="outline"
+                  >
+                    {resolveReasonRef(categories, ref).label}
+                  </Badge>
+                ))}
+              </div>
             </div>
           )
           : null}

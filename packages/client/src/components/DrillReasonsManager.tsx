@@ -1,4 +1,4 @@
-import type { DrillReasonCategory, DrillSubcategory } from "@sentence-bank/types";
+import type { DrillReason, DrillReasonCategory, DrillSubcategory } from "@sentence-bank/types";
 
 import { useState } from "react";
 
@@ -105,6 +105,22 @@ function CategoryEditor({
   const [subcategories, setSubcategories] = useState<DrillSubcategory[]>(
     category.subcategories ?? [],
   );
+  const [catReasons, setCatReasons] = useState<DrillReason[]>(category.reasons ?? []);
+
+  const addCatReason = () =>
+    setCatReasons([...catReasons, {
+      id: newId(),
+      name: "",
+    }]);
+  const patchCatReason = (reasonId: string, reasonName: string) =>
+    setCatReasons(catReasons.map(r => (r.id === reasonId
+      ? {
+        ...r,
+        name: reasonName,
+      }
+      : r)));
+  const removeCatReason = (reasonId: string) =>
+    setCatReasons(catReasons.filter(r => r.id !== reasonId));
 
   const addSubcategory = () =>
     setSubcategories([...subcategories, {
@@ -164,11 +180,18 @@ function CategoryEditor({
         })),
       }))
       .filter(s => s.name.length > 0);
+    const cleanedReasons = catReasons
+      .filter(r => r.name.trim().length > 0)
+      .map(r => ({
+        ...r,
+        name: r.name.trim(),
+      }));
     update.mutate({
       id: category.id,
       input: {
         name: name.trim() || category.name,
         subcategories: cleaned,
+        reasons: cleanedReasons,
       },
     });
   };
@@ -271,6 +294,44 @@ function CategoryEditor({
           >
             <Plus className="size-4" />
             Add subcategory
+          </Button>
+        </div>
+
+        <div className="space-y-2 rounded-md border border-dashed p-3">
+          <Label className="text-xs text-muted-foreground">Reasons (no subcategory)</Label>
+          <ul className="space-y-1.5">
+            {catReasons.map(reason => (
+              <li
+                key={reason.id}
+                className="flex items-center gap-2"
+              >
+                <Input
+                  value={reason.name}
+                  onChange={e => patchCatReason(reason.id, e.target.value)}
+                  placeholder="Reason (e.g. Careless)"
+                  aria-label="Reason name"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="text-destructive"
+                  onClick={() => removeCatReason(reason.id)}
+                  aria-label="Delete reason"
+                >
+                  <Trash2 className="size-4" />
+                </Button>
+              </li>
+            ))}
+          </ul>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={addCatReason}
+          >
+            <Plus className="size-4" />
+            Add reason
           </Button>
         </div>
 
