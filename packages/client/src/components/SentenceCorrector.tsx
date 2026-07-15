@@ -1,4 +1,3 @@
-import type { Insertion } from "@/lib/sentenceMarks";
 import type { SentenceMark } from "@sentence-bank/types";
 import type { ReactNode } from "react";
 
@@ -24,10 +23,11 @@ export interface SentenceCorrectionResult {
 
 /**
  * Inline correction editor for one un-reviewed sentence. The immutable original is shown; the learner
- * **selects** a span to mark it correct/incorrect and **clicks** a spot to type an insertion — the
- * corrected sentence is the live *derived* result (incorrect spans dropped, insertions spliced in).
- * Once anything is edited, a reasoning field + Save appear; Save commits `{ correction, marks, reasoning }`
- * together via `onSave`.
+ * **selects** a span to mark it correct/incorrect (incorrect spans seed the corrected text by dropping
+ * out of it). The corrected sentence is a fully editable field: it starts derived from the marks, and the
+ * moment the learner types into it, it becomes free-form (type/backspace/edit anywhere) while marks then
+ * only annotate the original. Once anything is edited, a reasoning field + Save appear; Save commits
+ * `{ correction, marks, reasoning }` together via `onSave`.
  */
 export function SentenceCorrector({
   text,
@@ -44,17 +44,22 @@ export function SentenceCorrector({
   const menuRef = useRef<HTMLDivElement>(null);
 
   const [marks, setMarks] = useState<SentenceMark[]>([]);
-  const [insertions, setInsertions] = useState<Insertion[]>([]);
   const [reasoning, setReasoning] = useState(initialReasoning ?? "");
+  // The corrected sentence. Seeded/derived from the marks until the learner edits it directly (`dirty`),
+  // after which it is free-form and marks no longer rewrite it.
+  const [correction, setCorrection] = useState(text);
+  const [dirty, setDirty] = useState(false);
   const [menu, setMenu] = useState<{ top: number;
     left: number;
     start: number;
     end: number; } | null>(null);
-  const [insertAt, setInsertAt] = useState<number | null>(null);
-  const [insertDraft, setInsertDraft] = useState("");
 
-  const edited = marks.length > 0 || insertions.length > 0;
-  const correction = buildCorrection(text, marks, insertions);
+  const edited = dirty || marks.length > 0;
+
+  // While the corrected field is still auto-derived, keep it in sync with the marks (drop incorrect spans).
+  useEffect(() => {
+    if (!dirty) setCorrection(buildCorrection(text, marks, []));
+  }, [text, marks, dirty]);
 
   // Close the mark menu on any pointer-down outside it.
   useEffect(() => {
@@ -84,16 +89,11 @@ export function SentenceCorrector({
     if (!sel || !container) return;
 
     if (sel.isCollapsed) {
+      // A plain click clears a mark it lands in; otherwise it does nothing (edit in the corrected field).
       const p = offsetFromPoint(sel.focusNode, sel.focusOffset);
       if (p == null) return;
       const hit = marks.find(m => p >= m.start && p < m.end);
-      if (hit) {
-        setMarks(removeMark(marks, hit.start));
-      }
-      else {
-        setInsertAt(p);
-        setInsertDraft("");
-      }
+      if (hit) setMarks(removeMark(marks, hit.start));
       return;
     }
 
@@ -124,71 +124,18 @@ export function SentenceCorrector({
     window.getSelection()?.removeAllRanges();
   }
 
-  function commitInsertion() {
-    if (insertAt != null && insertDraft.length > 0) {
-      setInsertions([...insertions, {
-        at: insertAt,
-        text: insertDraft,
-      }]);
-    }
-    setInsertAt(null);
-    setInsertDraft("");
-  }
-
-  // Split the original into segments at every mark boundary / insertion offset, interleaving insertion
-  // chips and the active insertion input so the whole thing renders as a flat run of inline elements.
+  // Split the original into segments at every mark boundary so the whole thing renders as a flat run of
+  // inline `<span>`s (needed so selection `Range` offsets map cleanly to string indices).
   const points = Array.from(new Set([
     0,
     text.length,
     ...marks.flatMap(m => [m.start, m.end]),
-    ...insertions.map(i => i.at),
-    ...(insertAt != null ? [insertAt] : []),
   ]))
     .filter(p => p >= 0 && p <= text.length)
     .sort((x, y) => x - y);
 
   const nodes: ReactNode[] = [];
   points.forEach((p, idx) => {
-    insertions.forEach((ins, k) => {
-      if (ins.at !== p) return;
-      nodes.push(
-        <button
-          key={`ins-${k}`}
-          type="button"
-          title="Click to remove"
-          onClick={() => setInsertions(insertions.filter((_, i) => i !== k))}
-          className={cn(MARK_CORRECT_CLASS, "cursor-pointer px-0.5")}
-        >
-          {ins.text}
-        </button>,
-      );
-    });
-    if (insertAt === p) {
-      nodes.push(
-        <input
-          key="ins-input"
-          autoFocus
-          value={insertDraft}
-          onChange={e => setInsertDraft(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              commitInsertion();
-            }
-            if (e.key === "Escape") {
-              setInsertAt(null);
-              setInsertDraft("");
-            }
-          }}
-          onBlur={commitInsertion}
-          placeholder="type…"
-          className="
-            mx-0.5 inline-block w-24 rounded-sm border bg-background px-1
-            text-base
-          "
-        />,
-      );
-    }
     const next = points[idx + 1];
     if (next != null && next > p) {
       const m = marks.find(mm => mm.start <= p && mm.end >= next);
@@ -208,65 +155,73 @@ export function SentenceCorrector({
   });
 
   return (
-    <div className="space-y-2">
-      <div
-        ref={containerRef}
-        className="relative text-base/relaxed"
-        onMouseUp={onMouseUp}
-      >
-        {nodes}
-        {menu
-          ? (
-            <div
-              ref={menuRef}
-              className="
-                absolute z-20 -mt-1 flex -translate-y-full items-center gap-1
-                rounded-md border bg-popover p-1 shadow-md
-              "
-              style={{
-                top: menu.top,
-                left: menu.left,
-              }}
-            >
-              <Button
-                type="button"
-                size="sm"
-                variant="ghost"
+    <div className="space-y-3">
+      <div className="space-y-1">
+        <span className="text-xs text-muted-foreground">Your original</span>
+        <div
+          ref={containerRef}
+          className="relative text-base/relaxed"
+          onMouseUp={onMouseUp}
+        >
+          {nodes}
+          {menu
+            ? (
+              <div
+                ref={menuRef}
                 className="
-                  text-emerald-700
-                  dark:text-emerald-400
+                  absolute z-20 -mt-1 flex -translate-y-full items-center gap-1
+                  rounded-md border bg-popover p-1 shadow-md
                 "
-                onClick={() => applyMark(true)}
+                style={{
+                  top: menu.top,
+                  left: menu.left,
+                }}
               >
-                Correct
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant="ghost"
-                className="text-destructive"
-                onClick={() => applyMark(false)}
-              >
-                Incorrect
-              </Button>
-            </div>
-          )
-          : null}
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  className="
+                    text-emerald-700
+                    dark:text-emerald-400
+                  "
+                  onClick={() => applyMark(true)}
+                >
+                  Correct
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  className="text-destructive"
+                  onClick={() => applyMark(false)}
+                >
+                  Incorrect
+                </Button>
+              </div>
+            )
+            : null}
+        </div>
+      </div>
+
+      <div className="space-y-1.5">
+        <Label htmlFor="corrector-corrected">Corrected</Label>
+        <Textarea
+          id="corrector-corrected"
+          value={correction}
+          onChange={(e) => {
+            setDirty(true);
+            setCorrection(e.target.value);
+          }}
+          placeholder="The corrected sentence — edit it directly"
+          rows={2}
+          className="text-xl/relaxed font-semibold"
+        />
       </div>
 
       {edited
         ? (
           <div className="space-y-2 rounded-md border bg-muted/30 p-3">
-            <div className="space-y-0.5">
-              <span className="text-xs text-muted-foreground">Corrected</span>
-              <p className="text-base">{correction || (
-                <span
-                  className="text-muted-foreground italic"
-                >(empty)
-                </span>
-              )}
-              </p>
-            </div>
             <div className="space-y-1.5">
               <Label htmlFor="corrector-reason">Explanation</Label>
               <Textarea
@@ -292,7 +247,7 @@ export function SentenceCorrector({
         )
         : (
           <p className="text-xs text-muted-foreground">
-            Select text to mark it correct / incorrect · click a mark to clear · click a spot to type a fix.
+            Select text above to mark it correct / incorrect · click a mark to clear · edit the corrected sentence directly.
           </p>
         )}
     </div>

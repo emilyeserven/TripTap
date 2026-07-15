@@ -11,7 +11,6 @@ import { Link } from "@tanstack/react-router";
 import { Check, Eye, EyeOff, X } from "lucide-react";
 
 import { Markdown } from "@/components/Markdown";
-import { MarkedText } from "@/components/MarkedText";
 import { SentenceCorrector } from "@/components/SentenceCorrector";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -485,7 +484,6 @@ function AnswerEntry({
 }) {
   const corrected = entry.correction?.trim() ? entry.correction : null;
   const hasCorrections = hasCorrectionDetail(entry);
-  const marks = entry.marks ?? [];
   // Un-reviewed = no verdict and no correction yet → offer the inline corrector; once reviewed/corrected
   // the standard corrected-leads display (with the marks under "Show your original") takes over.
   const unreviewed = entry.correct == null && !corrected;
@@ -545,10 +543,17 @@ function AnswerEntry({
         )
         : (
           <>
-            <p className="text-base">
+            <p className="text-xl font-semibold">
               {corrected ?? entry.value ?? ""}
               {!corrected && !entry.value.trim()
-                ? <span className="text-muted-foreground italic">No answer</span>
+                ? (
+                  <span
+                    className="
+                      text-base font-normal text-muted-foreground italic
+                    "
+                  >No answer
+                  </span>
+                )
                 : null}
             </p>
 
@@ -574,16 +579,6 @@ function AnswerEntry({
                         className="space-y-1 rounded-md border bg-muted/30 p-3"
                       >
                         <Label className="text-sm">Your original (with corrections)</Label>
-                        {marks.length > 0
-                          ? (
-                            <p className="text-base">
-                              <MarkedText
-                                text={entry.value}
-                                marks={marks}
-                              />
-                            </p>
-                          )
-                          : null}
                         <CorrectionDiff
                           written={entry.value}
                           correct={corrected}
