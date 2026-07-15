@@ -5,10 +5,10 @@ import { useState } from "react";
 import { Pencil, Trash2, X } from "lucide-react";
 import { toKana } from "wanakana";
 
+import { CollapsibleSection } from "@/components/CollapsibleSection";
 import { KanaEntryToggle } from "@/components/KanaEntryToggle";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { newId } from "@/lib/id";
 import { useUiStore } from "@/stores/uiStore";
@@ -90,14 +90,10 @@ export function LessonListeningNotes({
   const remove = (id: string) => onChange(notes.filter(n => n.id !== id));
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <div>
-          <Label>Listening notes</Label>
-          <p className="text-xs text-muted-foreground">
-            Notes taken while listening. No timestamps — kana-only entry is available.
-          </p>
-        </div>
+    <CollapsibleSection
+      title="Listening notes"
+      description="Notes taken while listening. No timestamps — kana-only entry is available."
+      action={(
         <div className="flex items-center gap-4">
           <label className="flex items-center gap-2 text-sm">
             <Switch
@@ -109,8 +105,8 @@ export function LessonListeningNotes({
           </label>
           <KanaEntryToggle />
         </div>
-      </div>
-
+      )}
+    >
       <div className="flex gap-2">
         <div className="flex flex-1 flex-col gap-2">
           <Input
@@ -221,6 +217,6 @@ export function LessonListeningNotes({
             ))}
           </ul>
         )}
-    </div>
+    </CollapsibleSection>
   );
 }

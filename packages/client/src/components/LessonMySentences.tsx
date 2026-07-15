@@ -2,10 +2,10 @@ import { useState } from "react";
 
 import { Plus, X } from "lucide-react";
 
+import { CollapsibleSection } from "@/components/CollapsibleSection";
 import { MySentenceCard } from "@/components/MySentenceCard";
 import { MySentenceForm } from "@/components/MySentenceForm";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { useMySentencesForLesson } from "@/hooks/useMySentences";
 
 /**
@@ -31,24 +31,22 @@ export function LessonMySentences({
   const nothing = !isLoading && shown.length === 0;
 
   return (
-    <section className="space-y-3">
-      <div className="flex items-center justify-between">
-        <Label>My Sentences</Label>
-        {!readOnly && !adding
-          ? (
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              onClick={() => setAdding(true)}
-            >
-              <Plus className="size-4" />
-              Add My Sentence
-            </Button>
-          )
-          : null}
-      </div>
-
+    <CollapsibleSection
+      title="My Sentences"
+      action={!readOnly && !adding
+        ? (
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => setAdding(true)}
+          >
+            <Plus className="size-4" />
+            Add My Sentence
+          </Button>
+        )
+        : undefined}
+    >
       {adding && !readOnly
         ? (
           <div className="space-y-3 rounded-md border p-4">
@@ -92,6 +90,6 @@ export function LessonMySentences({
           />
         ))}
       </div>
-    </section>
+    </CollapsibleSection>
   );
 }
