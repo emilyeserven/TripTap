@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { usePageTitle } from "@/hooks/usePageTitle";
-import { useDeletePracticeSentence, usePracticeSentences } from "@/hooks/usePracticeSentences";
+import { usePracticeSentences } from "@/hooks/usePracticeSentences";
 import { useSources } from "@/hooks/useSources";
 import { useUiStore } from "@/stores/uiStore";
 
@@ -64,7 +64,6 @@ function PracticePage() {
   const {
     data: practiceSentences, isLoading, error,
   } = usePracticeSentences();
-  const deletePracticeSentence = useDeletePracticeSentence();
   const {
     data: sources,
   } = useSources();
@@ -202,7 +201,6 @@ function PracticePage() {
             practiceSentence={ps}
             showTranslation={showTranslations}
             sourceName={sourceName(ps.sourceId)}
-            onDelete={id => deletePracticeSentence.mutate(id)}
           />
         ))}
       </div>

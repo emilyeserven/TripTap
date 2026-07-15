@@ -287,7 +287,12 @@ export const readingSessionsApi = {
 };
 
 export const answerSheetsApi = {
-  list: () => request<AnswerSheet[]>("/answer-sheets"),
+  list: (filters?: { questionSheetId?: string }) => {
+    const params = new URLSearchParams();
+    if (filters?.questionSheetId) params.set("questionSheetId", filters.questionSheetId);
+    const qs = params.toString();
+    return request<AnswerSheet[]>(qs ? `/answer-sheets?${qs}` : "/answer-sheets");
+  },
   get: (id: string) => request<AnswerSheet>(`/answer-sheets/${id}`),
   create: (input: CreateAnswerSheetInput) =>
     request<AnswerSheet>("/answer-sheets", {

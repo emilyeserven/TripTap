@@ -9,10 +9,8 @@ import { useQuestionSheets } from "@/hooks/useQuestionSheets";
 /** Compact list-item for one Answer Sheet: title link, source sheet, and answer/correction counts. */
 export function AnswerSheetCard({
   answerSheet: as,
-  onDelete,
 }: {
   answerSheet: AnswerSheet;
-  onDelete: (id: string) => void;
 }) {
   const sheets = useQuestionSheets();
   const sheet = (sheets.data ?? []).find(s => s.id === as.questionSheetId);
@@ -34,16 +32,6 @@ export function AnswerSheetCard({
           >
             {as.title ?? "Answer sheet"}
           </Link>
-          <button
-            type="button"
-            className="
-              text-sm text-destructive
-              hover:underline
-            "
-            onClick={() => onDelete(as.id)}
-          >
-            Delete
-          </button>
         </div>
         <div
           className="

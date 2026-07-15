@@ -22,6 +22,17 @@ const answerSheetParams = {
   },
 } as const;
 
+const listQuery = {
+  type: "object",
+  additionalProperties: false,
+  properties: {
+    questionSheetId: {
+      type: "string",
+      format: "uuid",
+    },
+  },
+} as const;
+
 const entriesSchema = {
   type: "array",
   items: {
@@ -83,8 +94,16 @@ export async function answerSheetRoutes(app: FastifyInstance): Promise<void> {
   app.get("/api/answer-sheets", {
     schema: {
       tags: ["answer-sheets"],
+      querystring: listQuery,
     },
-  }, async () => listAnswerSheets());
+  }, async (req) => {
+    const {
+      questionSheetId,
+    } = req.query as { questionSheetId?: string };
+    return listAnswerSheets({
+      questionSheetId,
+    });
+  });
 
   app.get("/api/answer-sheets/:id", {
     schema: {

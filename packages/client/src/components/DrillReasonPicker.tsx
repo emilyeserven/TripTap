@@ -207,7 +207,10 @@ export function DrillReasonPicker({
                     setSubChoice(NONE);
                   }}
                 >
-                  <SelectTrigger aria-label="Category">
+                  <SelectTrigger
+                    aria-label="Category"
+                    className="w-full"
+                  >
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -240,7 +243,10 @@ export function DrillReasonPicker({
                   value={subChoice}
                   onValueChange={setSubChoice}
                 >
-                  <SelectTrigger aria-label="Subcategory">
+                  <SelectTrigger
+                    aria-label="Subcategory"
+                    className="w-full"
+                  >
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>

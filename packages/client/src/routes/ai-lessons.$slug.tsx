@@ -1,7 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 
 import { AiLessonTemplate } from "@/components/ai-lesson/AiLessonTemplate";
-import { useAiLesson } from "@/hooks/useAiLessons";
+import { Button } from "@/components/ui/button";
+import { useAiLesson, useDeleteAiLesson } from "@/hooks/useAiLessons";
 
 export const Route = createFileRoute("/ai-lessons/$slug")({
   component: AiLessonViewer,
@@ -11,6 +12,8 @@ function AiLessonViewer() {
   const {
     slug,
   } = Route.useParams();
+  const navigate = useNavigate();
+  const deleteAiLesson = useDeleteAiLesson();
   const {
     data: aiLesson, isLoading, error,
   } = useAiLesson(slug);
@@ -19,5 +22,28 @@ function AiLessonViewer() {
   if (error) return <p className="text-destructive">{error.message}</p>;
   if (!aiLesson) return <p className="text-muted-foreground">AI Lesson not found.</p>;
 
-  return <AiLessonTemplate aiLesson={aiLesson} />;
+  const remove = () => {
+    deleteAiLesson.mutate(aiLesson.id, {
+      onSuccess: () => navigate({
+        to: "/ai-lessons",
+      }),
+    });
+  };
+
+  return (
+    <section className="space-y-6">
+      <div className="flex items-center justify-end">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-destructive"
+          disabled={deleteAiLesson.isPending}
+          onClick={remove}
+        >
+          Delete
+        </Button>
+      </div>
+      <AiLessonTemplate aiLesson={aiLesson} />
+    </section>
+  );
 }

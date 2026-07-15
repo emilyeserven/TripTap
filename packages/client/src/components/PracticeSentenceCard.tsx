@@ -48,14 +48,12 @@ interface PracticeSentenceCardProps {
   showTranslation?: boolean;
   /** Resolved taxonomy source name, when the sentence references one. */
   sourceName?: string | null;
-  onDelete?: (id: string) => void;
 }
 
 export function PracticeSentenceCard({
   practiceSentence: ps,
   showTranslation = true,
   sourceName,
-  onDelete,
 }: PracticeSentenceCardProps) {
   const [revealed, setRevealed] = useState(false);
   const [showBreak, setShowBreak] = useState(false);
@@ -110,20 +108,6 @@ export function PracticeSentenceCard({
                 <Pencil className="size-4" />
               </Link>
             </Button>
-            {onDelete
-              ? (
-                <button
-                  type="button"
-                  onClick={() => onDelete(ps.id)}
-                  className="
-                    text-sm text-destructive
-                    hover:underline
-                  "
-                >
-                  Delete
-                </button>
-              )
-              : null}
           </div>
         </div>
 

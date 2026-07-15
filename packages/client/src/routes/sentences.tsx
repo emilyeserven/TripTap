@@ -39,8 +39,8 @@ function SentencesPage() {
   const {
     data: sentences, isLoading, error,
   } = useSentences();
-  const deleteSentence = useDeleteSentence();
   const backfillFurigana = useBackfillFurigana();
+  const deleteSentence = useDeleteSentence();
   const {
     data: sources,
   } = useSources();
@@ -239,7 +239,9 @@ function SentencesPage() {
               sentence={s}
               showTranslation={showTranslations}
               sourceName={sourceName(s.sourceId)}
-              onDelete={id => deleteSentence.mutate(id)}
+              onDelete={(id) => {
+                if (globalThis.confirm("Delete this sentence?")) deleteSentence.mutate(id);
+              }}
               onGrammarTagClick={setGrammarTag}
             />
           ))}

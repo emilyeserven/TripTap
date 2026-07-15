@@ -6,7 +6,7 @@ import { Plus } from "lucide-react";
 import { AnswerSheetCard } from "@/components/AnswerSheetCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useAnswerSheets, useDeleteAnswerSheet } from "@/hooks/useAnswerSheets";
+import { useAnswerSheets } from "@/hooks/useAnswerSheets";
 import { usePageTitle } from "@/hooks/usePageTitle";
 
 export const Route = createFileRoute("/answer-sheets/")({
@@ -18,7 +18,6 @@ function AnswerSheetsPage() {
   const {
     data: sheets, isLoading, error,
   } = useAnswerSheets();
-  const deleteSheet = useDeleteAnswerSheet();
   const [search, setSearch] = useState("");
 
   const shown = useMemo(() => {
@@ -72,7 +71,6 @@ function AnswerSheetsPage() {
           <AnswerSheetCard
             key={as.id}
             answerSheet={as}
-            onDelete={id => deleteSheet.mutate(id)}
           />
         ))}
       </div>

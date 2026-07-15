@@ -1,9 +1,9 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, Pencil } from "lucide-react";
 
 import { AnswerSheetView } from "@/components/AnswerSheetView";
 import { Button } from "@/components/ui/button";
-import { useAnswerSheet, useDeleteAnswerSheet } from "@/hooks/useAnswerSheets";
+import { useAnswerSheet } from "@/hooks/useAnswerSheets";
 
 export const Route = createFileRoute("/answer-sheets/$id/")({
   component: ViewAnswerSheetPage,
@@ -13,24 +13,13 @@ function ViewAnswerSheetPage() {
   const {
     id,
   } = Route.useParams();
-  const navigate = useNavigate();
   const {
     data, isLoading, error,
   } = useAnswerSheet(id);
-  const deleteSheet = useDeleteAnswerSheet();
 
   if (isLoading) return <p className="text-muted-foreground">Loading…</p>;
   if (error) return <p className="text-destructive">{error.message}</p>;
   if (!data) return <p className="text-muted-foreground">Answer sheet not found.</p>;
-
-  const remove = () => {
-    deleteSheet.mutate(id, {
-      onSuccess: () =>
-        navigate({
-          to: "/answer-sheets",
-        }),
-    });
-  };
 
   return (
     <section className="max-w-3xl space-y-6">
@@ -60,15 +49,6 @@ function ViewAnswerSheetPage() {
               <Pencil className="size-4" />
               Edit
             </Link>
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-destructive"
-            disabled={deleteSheet.isPending}
-            onClick={remove}
-          >
-            Delete
           </Button>
         </div>
       </div>

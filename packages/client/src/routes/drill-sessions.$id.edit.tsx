@@ -3,7 +3,7 @@ import { ArrowLeft } from "lucide-react";
 
 import { DrillSessionForm } from "@/components/DrillSessionForm";
 import { Button } from "@/components/ui/button";
-import { useDrillSession } from "@/hooks/useDrillSessions";
+import { useDeleteDrillSession, useDrillSession } from "@/hooks/useDrillSessions";
 import { usePageTitle } from "@/hooks/usePageTitle";
 
 export const Route = createFileRoute("/drill-sessions/$id/edit")({
@@ -16,6 +16,7 @@ function EditDrillSessionPage() {
     id,
   } = Route.useParams();
   const navigate = useNavigate();
+  const deleteDrillSession = useDeleteDrillSession();
   const {
     data, isLoading, error,
   } = useDrillSession(id);
@@ -24,23 +25,42 @@ function EditDrillSessionPage() {
   if (error) return <p className="text-destructive">{error.message}</p>;
   if (!data) return <p className="text-muted-foreground">Drill session not found.</p>;
 
+  const remove = () => {
+    deleteDrillSession.mutate(id, {
+      onSuccess: () => navigate({
+        to: "/drill-sessions",
+      }),
+    });
+  };
+
   return (
     <section className="max-w-3xl space-y-6">
-      <Button
-        asChild
-        variant="ghost"
-        size="sm"
-      >
-        <Link
-          to="/drill-sessions/$id"
-          params={{
-            id,
-          }}
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <Button
+          asChild
+          variant="ghost"
+          size="sm"
         >
-          <ArrowLeft className="size-4" />
-          Back to session
-        </Link>
-      </Button>
+          <Link
+            to="/drill-sessions/$id"
+            params={{
+              id,
+            }}
+          >
+            <ArrowLeft className="size-4" />
+            Back to session
+          </Link>
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-destructive"
+          disabled={deleteDrillSession.isPending}
+          onClick={remove}
+        >
+          Delete
+        </Button>
+      </div>
       <DrillSessionForm
         session={data}
         onSuccess={() =>

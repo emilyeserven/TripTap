@@ -1,10 +1,10 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, Pencil } from "lucide-react";
 
 import { ShadowingSessionView } from "@/components/ShadowingSessionView";
 import { Button } from "@/components/ui/button";
 import { usePageTitle } from "@/hooks/usePageTitle";
-import { useDeleteShadowingSession, useShadowingSession } from "@/hooks/useShadowingSessions";
+import { useShadowingSession } from "@/hooks/useShadowingSessions";
 
 export const Route = createFileRoute("/shadowing/$id/")({
   component: ViewShadowingSessionPage,
@@ -14,26 +14,15 @@ function ViewShadowingSessionPage() {
   const {
     id,
   } = Route.useParams();
-  const navigate = useNavigate();
   const {
     data, isLoading, error,
   } = useShadowingSession(id);
-  const remove = useDeleteShadowingSession();
 
   usePageTitle(data?.title ?? "");
 
   if (isLoading) return <p className="text-muted-foreground">Loading…</p>;
   if (error) return <p className="text-destructive">{error.message}</p>;
   if (!data) return <p className="text-muted-foreground">Session not found.</p>;
-
-  const onDelete = () => {
-    remove.mutate(id, {
-      onSuccess: () =>
-        navigate({
-          to: "/shadowing",
-        }),
-    });
-  };
 
   return (
     <section className="max-w-3xl space-y-6">
@@ -63,15 +52,6 @@ function ViewShadowingSessionPage() {
               <Pencil className="size-4" />
               Edit
             </Link>
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-destructive"
-            disabled={remove.isPending}
-            onClick={onDelete}
-          >
-            Delete
           </Button>
         </div>
       </div>

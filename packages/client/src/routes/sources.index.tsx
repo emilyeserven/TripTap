@@ -3,7 +3,7 @@ import type { CreateSourceInput, Source } from "@sentence-bank/types";
 import { useState } from "react";
 
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { ExternalLink, Pencil, Plus, Trash2 } from "lucide-react";
+import { ExternalLink, Pencil, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -32,12 +32,17 @@ function SourceForm({
   pending,
   onSubmit,
   onCancel,
+  onDelete,
+  deleting,
 }: {
   initial?: Source;
   submitLabel: string;
   pending: boolean;
   onSubmit: (input: CreateSourceInput) => void;
   onCancel: () => void;
+  /** When editing an existing source, deletes it — Delete lives on the edit surface, not the list row. */
+  onDelete?: () => void;
+  deleting?: boolean;
 }) {
   const [name, setName] = useState(initial?.name ?? "");
   const [type, setType] = useState(initial?.type ?? "");
@@ -127,6 +132,20 @@ function SourceForm({
         >
           Cancel
         </Button>
+        {onDelete
+          ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="ml-auto text-destructive"
+              disabled={deleting}
+              onClick={onDelete}
+            >
+              Delete
+            </Button>
+          )
+          : null}
       </div>
     </form>
   );
@@ -223,6 +242,8 @@ function SourcesPage() {
                       submitLabel="Save"
                       pending={updateSource.isPending}
                       onCancel={() => setEditingId(null)}
+                      onDelete={() => remove(source)}
+                      deleting={deleteSource.isPending}
                       onSubmit={input =>
                         updateSource.mutate({
                           id: source.id,
@@ -293,16 +314,6 @@ function SourcesPage() {
                             title="Edit source"
                           >
                             <Pencil className="size-4" />
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => remove(source)}
-                            disabled={deleteSource.isPending}
-                            title="Delete source"
-                          >
-                            <Trash2 className="size-4" />
                           </Button>
                         </div>
                       </div>

@@ -96,13 +96,13 @@ export function TermPicker({
 
   return (
     <div>
-      <span className="block text-sm font-medium text-slate-700">
+      <span className="block text-sm font-medium text-foreground">
         {label}
         {value.length > 0 ? ` (${value.length})` : ""}
       </span>
       {!source
         ? (
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-muted-foreground">
             Choose a bookmarks tag or taxonomy in
             {" "}
             <Link

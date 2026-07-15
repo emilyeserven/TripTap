@@ -138,7 +138,9 @@ function SourceDetailPage() {
                         sentence={s}
                         showTranslation={showTranslations}
                         sourceName={source.name}
-                        onDelete={sid => deleteSentence.mutate(sid)}
+                        onDelete={(sid) => {
+                          if (globalThis.confirm("Delete this sentence?")) deleteSentence.mutate(sid);
+                        }}
                       />
                     ))}
                   </div>
@@ -170,9 +172,13 @@ function SourceDetailPage() {
                           <p className="text-lg font-semibold">{v.term}</p>
                           <button
                             type="button"
-                            onClick={() => deleteVocab.mutate(v.id)}
+                            onClick={() => {
+                              if (globalThis.confirm("Delete this vocab entry?")) {
+                                deleteVocab.mutate(v.id);
+                              }
+                            }}
                             className="
-                              text-xs text-red-600
+                              text-xs text-destructive
                               hover:underline
                             "
                           >

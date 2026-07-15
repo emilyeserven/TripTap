@@ -4,9 +4,9 @@ import { Plus } from "lucide-react";
 import { AnswerSheetCard } from "@/components/AnswerSheetCard";
 import { QuestionSheetCard } from "@/components/QuestionSheetCard";
 import { Button } from "@/components/ui/button";
-import { useAnswerSheets, useDeleteAnswerSheet } from "@/hooks/useAnswerSheets";
+import { useAnswerSheets } from "@/hooks/useAnswerSheets";
 import { usePageTitle } from "@/hooks/usePageTitle";
-import { useDeleteQuestionSheet, useQuestionSheets } from "@/hooks/useQuestionSheets";
+import { useQuestionSheets } from "@/hooks/useQuestionSheets";
 
 export const Route = createFileRoute("/book-exercises/")({
   component: BookExercisesPage,
@@ -17,12 +17,10 @@ function BookExercisesPage() {
   const {
     data: questionSheets, isLoading: questionSheetsLoading, error: questionSheetsError,
   } = useQuestionSheets();
-  const deleteQuestionSheet = useDeleteQuestionSheet();
 
   const {
     data: answerSheets, isLoading: answerSheetsLoading, error: answerSheetsError,
   } = useAnswerSheets();
-  const deleteAnswerSheet = useDeleteAnswerSheet();
 
   return (
     <section className="max-w-4xl space-y-10">
@@ -57,7 +55,6 @@ function BookExercisesPage() {
             <QuestionSheetCard
               key={qs.id}
               questionSheet={qs}
-              onDelete={id => deleteQuestionSheet.mutate(id)}
             />
           ))}
         </div>
@@ -88,7 +85,6 @@ function BookExercisesPage() {
             <AnswerSheetCard
               key={as.id}
               answerSheet={as}
-              onDelete={id => deleteAnswerSheet.mutate(id)}
             />
           ))}
         </div>

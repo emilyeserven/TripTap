@@ -1,9 +1,9 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, Pencil } from "lucide-react";
 
 import { ListeningSessionView } from "@/components/ListeningSessionView";
 import { Button } from "@/components/ui/button";
-import { useDeleteListeningSession, useListeningSession } from "@/hooks/useListeningSessions";
+import { useListeningSession } from "@/hooks/useListeningSessions";
 import { usePageTitle } from "@/hooks/usePageTitle";
 
 export const Route = createFileRoute("/listening-sessions/$id/")({
@@ -14,26 +14,15 @@ function ViewListeningSessionPage() {
   const {
     id,
   } = Route.useParams();
-  const navigate = useNavigate();
   const {
     data, isLoading, error,
   } = useListeningSession(id);
-  const remove = useDeleteListeningSession();
 
   usePageTitle(data?.title ?? "");
 
   if (isLoading) return <p className="text-muted-foreground">Loading…</p>;
   if (error) return <p className="text-destructive">{error.message}</p>;
   if (!data) return <p className="text-muted-foreground">Session not found.</p>;
-
-  const onDelete = () => {
-    remove.mutate(id, {
-      onSuccess: () =>
-        navigate({
-          to: "/listening-sessions",
-        }),
-    });
-  };
 
   return (
     <section className="max-w-3xl space-y-6">
@@ -63,15 +52,6 @@ function ViewListeningSessionPage() {
               <Pencil className="size-4" />
               Edit
             </Link>
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-destructive"
-            disabled={remove.isPending}
-            onClick={onDelete}
-          >
-            Delete
           </Button>
         </div>
       </div>
