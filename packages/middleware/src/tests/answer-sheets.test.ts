@@ -80,3 +80,24 @@ test("POST /api/answer-sheets accepts a valid payload with answers and a correct
   assert.notEqual(res.statusCode, 400);
   await app.close();
 });
+
+test("GET /api/answer-sheets accepts a uuid questionSheetId filter", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "GET",
+    url: "/api/answer-sheets?questionSheetId=11111111-1111-1111-1111-111111111111",
+  });
+  // Valid querystring — 200 with a DB, or a 5xx without one, but never a 400.
+  assert.notEqual(res.statusCode, 400);
+  await app.close();
+});
+
+test("GET /api/answer-sheets rejects a non-uuid questionSheetId filter", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "GET",
+    url: "/api/answer-sheets?questionSheetId=not-a-uuid",
+  });
+  assert.equal(res.statusCode, 400);
+  await app.close();
+});

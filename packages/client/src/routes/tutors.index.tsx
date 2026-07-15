@@ -7,7 +7,7 @@ import { TutorCard } from "@/components/TutorCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { usePageTitle } from "@/hooks/usePageTitle";
-import { useDeleteTutor, useTutors } from "@/hooks/useTutors";
+import { useTutors } from "@/hooks/useTutors";
 
 export const Route = createFileRoute("/tutors/")({
   component: TutorsPage,
@@ -18,7 +18,6 @@ function TutorsPage() {
   const {
     data: tutors, isLoading, error,
   } = useTutors();
-  const deleteTutor = useDeleteTutor();
   const [search, setSearch] = useState("");
 
   const shown = useMemo(() => {
@@ -71,7 +70,6 @@ function TutorsPage() {
           <TutorCard
             key={tutor.id}
             tutor={tutor}
-            onDelete={id => deleteTutor.mutate(id)}
           />
         ))}
       </div>

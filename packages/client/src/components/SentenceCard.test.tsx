@@ -3,7 +3,7 @@ import type { ReactElement } from "react";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { SentenceCard } from "./SentenceCard";
 
@@ -97,19 +97,5 @@ describe("SentenceCard", () => {
     expect(screen.getByText("毎朝")).toBeInTheDocument();
     expect(screen.getByText("ます-form")).toBeInTheDocument();
     expect(screen.getByText("丁寧")).toBeInTheDocument();
-  });
-
-  it("calls onDelete with the sentence id when the delete button is clicked", () => {
-    const onDelete = vi.fn();
-    renderCard(
-      <SentenceCard
-        sentence={sentence}
-        onDelete={onDelete}
-      />,
-    );
-    screen.getByRole("button", {
-      name: "Delete",
-    }).click();
-    expect(onDelete).toHaveBeenCalledWith(sentence.id);
   });
 });

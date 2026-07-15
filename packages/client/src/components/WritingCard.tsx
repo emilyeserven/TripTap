@@ -14,10 +14,8 @@ import { Card, CardContent } from "@/components/ui/card";
  */
 export function WritingCard({
   writing,
-  onDelete,
 }: {
   writing: Writing;
-  onDelete?: (id: string) => void;
 }) {
   const termGroups = groupTermsByCategory(writing.terms ?? []);
   const correctionCount = writing.corrections?.length ?? 0;
@@ -38,20 +36,6 @@ export function WritingCard({
           >
             {writing.text || <span className="text-muted-foreground italic">Untitled writing</span>}
           </Link>
-          {onDelete
-            ? (
-              <button
-                type="button"
-                onClick={() => onDelete(writing.id)}
-                className="
-                  shrink-0 text-sm text-destructive
-                  hover:underline
-                "
-              >
-                Delete
-              </button>
-            )
-            : null}
         </div>
 
         {writing.meaning ? <p className="text-sm text-muted-foreground">Meant: {writing.meaning}</p> : null}

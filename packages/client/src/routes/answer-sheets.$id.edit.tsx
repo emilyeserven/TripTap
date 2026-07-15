@@ -1,9 +1,9 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 
 import { AnswerSheetForm } from "@/components/AnswerSheetForm";
 import { Button } from "@/components/ui/button";
-import { useAnswerSheet } from "@/hooks/useAnswerSheets";
+import { useAnswerSheet, useDeleteAnswerSheet } from "@/hooks/useAnswerSheets";
 import { usePageTitle } from "@/hooks/usePageTitle";
 
 export const Route = createFileRoute("/answer-sheets/$id/edit")({
@@ -15,6 +15,8 @@ function EditAnswerSheetPage() {
   const {
     id,
   } = Route.useParams();
+  const navigate = useNavigate();
+  const deleteAnswerSheet = useDeleteAnswerSheet();
   const {
     data, isLoading, error,
   } = useAnswerSheet(id);
@@ -23,23 +25,42 @@ function EditAnswerSheetPage() {
   if (error) return <p className="text-destructive">{error.message}</p>;
   if (!data) return <p className="text-muted-foreground">Answer sheet not found.</p>;
 
+  const remove = () => {
+    deleteAnswerSheet.mutate(id, {
+      onSuccess: () => navigate({
+        to: "/answer-sheets",
+      }),
+    });
+  };
+
   return (
     <section className="max-w-3xl space-y-6">
-      <Button
-        asChild
-        variant="ghost"
-        size="sm"
-      >
-        <Link
-          to="/answer-sheets/$id"
-          params={{
-            id,
-          }}
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <Button
+          asChild
+          variant="ghost"
+          size="sm"
         >
-          <ArrowLeft className="size-4" />
-          Done — back to answer sheet
-        </Link>
-      </Button>
+          <Link
+            to="/answer-sheets/$id"
+            params={{
+              id,
+            }}
+          >
+            <ArrowLeft className="size-4" />
+            Done — back to answer sheet
+          </Link>
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-destructive"
+          disabled={deleteAnswerSheet.isPending}
+          onClick={remove}
+        >
+          Delete
+        </Button>
+      </div>
       <AnswerSheetForm answerSheet={data} />
     </section>
   );

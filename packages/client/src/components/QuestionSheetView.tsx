@@ -26,9 +26,17 @@ export function QuestionSheetView({
             {qs.page ? <Badge variant="outline">Page {qs.page}</Badge> : null}
             {qs.bookmarkTitle
               ? (
-                <span className="inline-flex items-center gap-1">
-                  <span>Textbook / Worksheet:</span>
-                  <Badge variant="outline">
+                <span
+                  className="inline-flex max-w-full min-w-0 items-center gap-1"
+                >
+                  <span className="shrink-0">Textbook / Worksheet:</span>
+                  <Badge
+                    variant="outline"
+                    className="
+                      max-w-full min-w-0 shrink wrap-break-word
+                      whitespace-normal
+                    "
+                  >
                     {qs.bookmarkUrl
                       ? (
                         <a

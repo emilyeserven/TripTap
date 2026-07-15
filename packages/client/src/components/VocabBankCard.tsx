@@ -9,6 +9,8 @@ interface VocabBankCardProps {
   vocab: Vocab;
   /** Resolved taxonomy source name, when the vocab references one. */
   sourceName?: string | null;
+  /** Vocab has no edit page, so (per the delete-only-on-edit-page convention) this is the one listing
+   * that keeps a delete — callers guard it with a confirm to avoid accidental deletion. */
   onDelete?: (id: string) => void;
 }
 
@@ -31,7 +33,7 @@ export function VocabBankCard({
                 type="button"
                 onClick={() => onDelete(v.id)}
                 className="
-                  text-xs text-red-600
+                  text-xs text-destructive
                   hover:underline
                 "
               >

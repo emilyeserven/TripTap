@@ -23,6 +23,16 @@ export function useAnswerSheet(id: string) {
   });
 }
 
+/** The answer sheets filled in against a given question sheet (0 or more). */
+export function useAnswerSheetsForQuestionSheet(questionSheetId: string) {
+  return useQuery({
+    queryKey: [...ANSWER_SHEETS_KEY, "for-question-sheet", questionSheetId],
+    queryFn: () => answerSheetsApi.list({
+      questionSheetId,
+    }),
+  });
+}
+
 export function useCreateAnswerSheet() {
   const {
     seed,

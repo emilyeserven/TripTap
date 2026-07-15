@@ -7,10 +7,8 @@ import { Card, CardContent } from "@/components/ui/card";
 /** Compact list-item for one tutor: name link and a snippet of notes. */
 export function TutorCard({
   tutor,
-  onDelete,
 }: {
   tutor: Tutor;
-  onDelete: (id: string) => void;
 }) {
   return (
     <Card>
@@ -28,16 +26,6 @@ export function TutorCard({
           >
             {tutor.name}
           </Link>
-          <button
-            type="button"
-            className="
-              text-sm text-destructive
-              hover:underline
-            "
-            onClick={() => onDelete(tutor.id)}
-          >
-            Delete
-          </button>
         </div>
         {tutor.notes
           ? <p className="line-clamp-2 text-sm text-muted-foreground">{tutor.notes}</p>

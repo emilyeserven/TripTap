@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { WritingCard } from "@/components/WritingCard";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useWritingPrompts } from "@/hooks/useWritingPrompts";
-import { useCreateWriting, useDeleteWriting, useWritings } from "@/hooks/useWritings";
+import { useCreateWriting, useWritings } from "@/hooks/useWritings";
 
 export const Route = createFileRoute("/my-writing/")({
   component: MyWritingPage,
@@ -27,7 +27,6 @@ function MyWritingPage() {
     data: writings, isLoading, error,
   } = useWritings();
   const createWriting = useCreateWriting();
-  const deleteWriting = useDeleteWriting();
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [onlyReady, setOnlyReady] = useState(false);
@@ -150,7 +149,6 @@ function MyWritingPage() {
           <WritingCard
             key={writing.id}
             writing={writing}
-            onDelete={id => deleteWriting.mutate(id)}
           />
         ))}
       </div>

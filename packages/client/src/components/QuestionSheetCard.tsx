@@ -8,13 +8,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { questionSheetSlots } from "@/lib/answer-sheets";
 import { formatDueDate, isOverdue } from "@/lib/due-date";
 
-/** Compact list-item for one Question Sheet: title link, layout + slot count, and a Delete action. */
+/** Compact list-item for one Question Sheet: title link, layout + slot count. */
 export function QuestionSheetCard({
   questionSheet: qs,
-  onDelete,
 }: {
   questionSheet: QuestionSheet;
-  onDelete: (id: string) => void;
 }) {
   const slotCount = questionSheetSlots(qs).length;
 
@@ -34,16 +32,6 @@ export function QuestionSheetCard({
           >
             {qs.title}
           </Link>
-          <button
-            type="button"
-            className="
-              text-sm text-destructive
-              hover:underline
-            "
-            onClick={() => onDelete(qs.id)}
-          >
-            Delete
-          </button>
         </div>
         <div
           className="

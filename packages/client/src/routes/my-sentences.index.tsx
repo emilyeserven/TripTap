@@ -7,7 +7,7 @@ import { MySentenceBulkDialog } from "@/components/MySentenceBulkDialog";
 import { MySentenceCard } from "@/components/MySentenceCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useDeleteMySentence, useMySentences } from "@/hooks/useMySentences";
+import { useMySentences } from "@/hooks/useMySentences";
 import { usePageTitle } from "@/hooks/usePageTitle";
 
 export const Route = createFileRoute("/my-sentences/")({
@@ -19,7 +19,6 @@ function MySentencesPage() {
   const {
     data: mySentences, isLoading, error,
   } = useMySentences();
-  const deleteMySentence = useDeleteMySentence();
   const [search, setSearch] = useState("");
   const [onlyNeedsCorrection, setOnlyNeedsCorrection] = useState(false);
 
@@ -90,7 +89,6 @@ function MySentencesPage() {
           <MySentenceCard
             key={ms.id}
             mySentence={ms}
-            onDelete={id => deleteMySentence.mutate(id)}
           />
         ))}
       </div>

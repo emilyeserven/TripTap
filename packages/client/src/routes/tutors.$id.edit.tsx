@@ -4,7 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { TutorForm } from "@/components/TutorForm";
 import { Button } from "@/components/ui/button";
 import { usePageTitle } from "@/hooks/usePageTitle";
-import { useTutor } from "@/hooks/useTutors";
+import { useDeleteTutor, useTutor } from "@/hooks/useTutors";
 
 export const Route = createFileRoute("/tutors/$id/edit")({
   component: EditTutorPage,
@@ -16,6 +16,7 @@ function EditTutorPage() {
     id,
   } = Route.useParams();
   const navigate = useNavigate();
+  const deleteTutor = useDeleteTutor();
   const {
     data, isLoading, error,
   } = useTutor(id);
@@ -24,23 +25,42 @@ function EditTutorPage() {
   if (error) return <p className="text-destructive">{error.message}</p>;
   if (!data) return <p className="text-muted-foreground">Tutor not found.</p>;
 
+  const remove = () => {
+    deleteTutor.mutate(id, {
+      onSuccess: () => navigate({
+        to: "/tutors",
+      }),
+    });
+  };
+
   return (
     <section className="max-w-3xl space-y-6">
-      <Button
-        asChild
-        variant="ghost"
-        size="sm"
-      >
-        <Link
-          to="/tutors/$id"
-          params={{
-            id,
-          }}
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <Button
+          asChild
+          variant="ghost"
+          size="sm"
         >
-          <ArrowLeft className="size-4" />
-          Back to tutor
-        </Link>
-      </Button>
+          <Link
+            to="/tutors/$id"
+            params={{
+              id,
+            }}
+          >
+            <ArrowLeft className="size-4" />
+            Back to tutor
+          </Link>
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-destructive"
+          disabled={deleteTutor.isPending}
+          onClick={remove}
+        >
+          Delete
+        </Button>
+      </div>
       <TutorForm
         tutor={data}
         onSuccess={() =>

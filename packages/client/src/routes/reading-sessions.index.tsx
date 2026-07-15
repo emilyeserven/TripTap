@@ -7,7 +7,7 @@ import { ReadingSessionCard } from "@/components/ReadingSessionCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { usePageTitle } from "@/hooks/usePageTitle";
-import { useDeleteReadingSession, useReadingSessions } from "@/hooks/useReadingSessions";
+import { useReadingSessions } from "@/hooks/useReadingSessions";
 
 export const Route = createFileRoute("/reading-sessions/")({
   component: ReadingSessionsPage,
@@ -18,7 +18,6 @@ function ReadingSessionsPage() {
   const {
     data: sessions, isLoading, error,
   } = useReadingSessions();
-  const deleteSession = useDeleteReadingSession();
   const [search, setSearch] = useState("");
 
   const shown = useMemo(() => {
@@ -71,7 +70,6 @@ function ReadingSessionsPage() {
           <ReadingSessionCard
             key={session.id}
             session={session}
-            onDelete={id => deleteSession.mutate(id)}
           />
         ))}
       </div>

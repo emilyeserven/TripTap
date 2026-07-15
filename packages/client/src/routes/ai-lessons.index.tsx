@@ -1,9 +1,9 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { useAiLessons, useDeleteAiLesson } from "@/hooks/useAiLessons";
+import { useAiLessons } from "@/hooks/useAiLessons";
 import { usePageTitle } from "@/hooks/usePageTitle";
 
 export const Route = createFileRoute("/ai-lessons/")({
@@ -15,7 +15,6 @@ function AiLessonsPage() {
   const {
     data: aiLessons, isLoading, error,
   } = useAiLessons();
-  const deleteAiLesson = useDeleteAiLesson();
 
   return (
     <section className="space-y-6">
@@ -77,14 +76,6 @@ function AiLessonsPage() {
                   <span>{`${l.counts.culture} culture`}</span>
                 </div>
               </div>
-              <Button
-                size="icon"
-                variant="ghost"
-                aria-label={`Delete ${l.title}`}
-                onClick={() => deleteAiLesson.mutate(l.id)}
-              >
-                <Trash2 className="size-4" />
-              </Button>
             </CardContent>
           </Card>
         ))}

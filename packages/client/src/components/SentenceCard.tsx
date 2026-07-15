@@ -21,6 +21,8 @@ interface SentenceCardProps {
   showTranslation?: boolean;
   /** Resolved taxonomy source name, when the sentence references one. */
   sourceName?: string | null;
+  /** A sentence has no edit page, so (per the delete-only-on-edit-page convention) this is the one
+   * listing that keeps a delete — callers guard it with a confirm to avoid accidental deletion. */
   onDelete?: (id: string) => void;
   /** When provided, grammar-tag badges become filter buttons (surfaces the grammar↔sentence link). */
   onGrammarTagClick?: (termId: string) => void;
@@ -77,7 +79,7 @@ export function SentenceCard({
                 type="button"
                 onClick={() => onDelete(sentence.id)}
                 className="
-                  shrink-0 text-sm text-red-600
+                  shrink-0 text-sm text-destructive
                   hover:underline
                 "
               >

@@ -9,10 +9,8 @@ import { useSources } from "@/hooks/useSources";
 /** Compact list-item for one reading session: title link, origin, mode, and word-note count. */
 export function ReadingSessionCard({
   session,
-  onDelete,
 }: {
   session: ReadingSession;
-  onDelete: (id: string) => void;
 }) {
   const {
     data: sources,
@@ -38,16 +36,6 @@ export function ReadingSessionCard({
           >
             {session.title}
           </Link>
-          <button
-            type="button"
-            className="
-              text-sm text-destructive
-              hover:underline
-            "
-            onClick={() => onDelete(session.id)}
-          >
-            Delete
-          </button>
         </div>
         <div
           className="

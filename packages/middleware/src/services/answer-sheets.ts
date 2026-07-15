@@ -1,4 +1,4 @@
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import type {
   AnswerSheet,
   AnswerSheetEntry,
@@ -52,9 +52,23 @@ function toInsert(input: CreateAnswerSheetInput) {
   };
 }
 
-/** List answer sheets, newest first. */
-export async function listAnswerSheets(): Promise<AnswerSheet[]> {
-  const rows = await db.select().from(answerSheets).orderBy(desc(answerSheets.createdAt));
+/** List answer sheets, newest first; optionally scoped to one question sheet. */
+export async function listAnswerSheets(
+  filters: { questionSheetId?: string } = {},
+): Promise<AnswerSheet[]> {
+  const conditions = [
+    filters.questionSheetId
+      ? eq(answerSheets.questionSheetId, filters.questionSheetId)
+      : undefined,
+  ].filter(c => c !== undefined);
+
+  const rows = conditions.length > 0
+    ? await db
+      .select()
+      .from(answerSheets)
+      .where(and(...conditions))
+      .orderBy(desc(answerSheets.createdAt))
+    : await db.select().from(answerSheets).orderBy(desc(answerSheets.createdAt));
   return rows.map(toAnswerSheet);
 }
 

@@ -46,10 +46,10 @@ function VocabularyPage() {
   const {
     data: standalone,
   } = useVocab();
+  const deleteVocab = useDeleteVocab();
   const {
     data: sources,
   } = useSources();
-  const deleteVocab = useDeleteVocab();
   const sourceName = (id: string | null) =>
     (id ? sources?.find(s => s.id === id)?.name ?? null : null);
 
@@ -197,7 +197,9 @@ function VocabularyPage() {
               key={v.id}
               vocab={v}
               sourceName={sourceName(v.sourceId)}
-              onDelete={id => deleteVocab.mutate(id)}
+              onDelete={(id) => {
+                if (globalThis.confirm("Delete this vocab entry?")) deleteVocab.mutate(id);
+              }}
             />
           ))}
           {aiLessonShown.map(v => (

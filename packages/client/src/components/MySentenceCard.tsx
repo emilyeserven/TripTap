@@ -19,11 +19,9 @@ import { Card, CardContent } from "@/components/ui/card";
  */
 export function MySentenceCard({
   mySentence: ms,
-  onDelete,
   onEdit,
 }: {
   mySentence: MySentence;
-  onDelete?: (id: string) => void;
   /** When provided, "Edit" becomes an in-page button (this callback) instead of a link to the edit
    * route — used where the sentence is edited inline, e.g. within a lesson. */
   onEdit?: (id: string) => void;
@@ -76,20 +74,6 @@ export function MySentenceCard({
                   </Link>
                 </Button>
               )}
-            {onDelete
-              ? (
-                <button
-                  type="button"
-                  onClick={() => onDelete(ms.id)}
-                  className="
-                    text-sm text-destructive
-                    hover:underline
-                  "
-                >
-                  Delete
-                </button>
-              )
-              : null}
           </div>
         </div>
 

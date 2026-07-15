@@ -7,7 +7,7 @@ import { QuestionSheetCard } from "@/components/QuestionSheetCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { usePageTitle } from "@/hooks/usePageTitle";
-import { useDeleteQuestionSheet, useQuestionSheets } from "@/hooks/useQuestionSheets";
+import { useQuestionSheets } from "@/hooks/useQuestionSheets";
 
 export const Route = createFileRoute("/question-sheets/")({
   component: QuestionSheetsPage,
@@ -18,7 +18,6 @@ function QuestionSheetsPage() {
   const {
     data: sheets, isLoading, error,
   } = useQuestionSheets();
-  const deleteSheet = useDeleteQuestionSheet();
   const [search, setSearch] = useState("");
 
   const shown = useMemo(() => {
@@ -71,7 +70,6 @@ function QuestionSheetsPage() {
           <QuestionSheetCard
             key={qs.id}
             questionSheet={qs}
-            onDelete={id => deleteSheet.mutate(id)}
           />
         ))}
       </div>

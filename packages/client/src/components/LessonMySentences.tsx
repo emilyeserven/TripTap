@@ -6,7 +6,7 @@ import { CollapsibleSection } from "@/components/CollapsibleSection";
 import { MySentenceCard } from "@/components/MySentenceCard";
 import { MySentenceForm } from "@/components/MySentenceForm";
 import { Button } from "@/components/ui/button";
-import { useDeleteMySentence, useMySentencesForLesson } from "@/hooks/useMySentences";
+import { useMySentencesForLesson } from "@/hooks/useMySentences";
 
 /**
  * The "My Sentences" section for a lesson: lists the sentences added from this lesson and (unless
@@ -27,7 +27,6 @@ export function LessonMySentences({
   const {
     data: sentences, isLoading,
   } = useMySentencesForLesson(lessonId);
-  const deleteMySentence = useDeleteMySentence();
   const [adding, setAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -119,9 +118,6 @@ export function LessonMySentences({
                 key={ms.id}
                 mySentence={ms}
                 onEdit={readOnly ? undefined : setEditingId}
-                onDelete={readOnly
-                  ? undefined
-                  : id => deleteMySentence.mutate(id)}
               />
             ))}
       </div>
