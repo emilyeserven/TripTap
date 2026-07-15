@@ -101,3 +101,27 @@ test("GET /api/answer-sheets rejects a non-uuid questionSheetId filter", async (
   assert.equal(res.statusCode, 400);
   await app.close();
 });
+
+test("POST /api/answer-sheets rejects an entry with a malformed mark", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/answer-sheets",
+    payload: {
+      questionSheetId: "11111111-1111-1111-1111-111111111111",
+      entries: [
+        {
+          slotId: "q1",
+          value: "食べます",
+          marks: [{
+            start: 0,
+            end: 2,
+            correct: "yes",
+          }], // correct must be a boolean
+        },
+      ],
+    },
+  });
+  assert.equal(res.statusCode, 400);
+  await app.close();
+});

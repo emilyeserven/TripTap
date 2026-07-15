@@ -8,6 +8,7 @@ import { Eye, EyeOff, NotebookPen, PenLine, TriangleAlert } from "lucide-react";
 import { CorrectionDiff } from "../lib/sentenceDiff";
 import { groupTermsByCategory, TERM_CATEGORIES } from "../lib/terms";
 
+import { MarkedText } from "@/components/MarkedText";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -97,7 +98,17 @@ export function MySentenceCard({
               </Button>
               {showOriginal
                 ? (
-                  <div className="rounded-md border bg-muted/30 p-2">
+                  <div className="space-y-1 rounded-md border bg-muted/30 p-2">
+                    {(ms.marks?.length ?? 0) > 0
+                      ? (
+                        <p className="text-sm">
+                          <MarkedText
+                            text={ms.text}
+                            marks={ms.marks ?? []}
+                          />
+                        </p>
+                      )
+                      : null}
                     <CorrectionDiff
                       written={ms.text}
                       correct={corrected}

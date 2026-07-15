@@ -86,6 +86,26 @@ const termsSchema = {
   },
 } as const;
 
+const marksSchema = {
+  type: ["array", "null"],
+  items: {
+    type: "object",
+    additionalProperties: false,
+    required: ["start", "end", "correct"],
+    properties: {
+      start: {
+        type: "integer",
+      },
+      end: {
+        type: "integer",
+      },
+      correct: {
+        type: "boolean",
+      },
+    },
+  },
+} as const;
+
 const createMySentenceBody = {
   type: "object",
   required: ["text", "language"],
@@ -128,6 +148,7 @@ const createMySentenceBody = {
     },
     terms: termsSchema,
     reasons: reasonsSchema,
+    marks: marksSchema,
   },
 } as const;
 

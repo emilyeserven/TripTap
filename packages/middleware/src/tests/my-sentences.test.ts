@@ -97,3 +97,42 @@ test("PUT /api/practice-sentences/:id/vocab rejects a non-uuid vocab id", async 
   assert.equal(res.statusCode, 400);
   await app.close();
 });
+
+test("POST /api/my-sentences accepts a valid marks array", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/my-sentences",
+    payload: {
+      text: "週末に映画を見った。",
+      language: "Japanese",
+      marks: [{
+        start: 5,
+        end: 7,
+        correct: false,
+      }],
+    },
+  });
+  // Valid payload — 201 with a DB, or a 5xx without one, but never a 400.
+  assert.notEqual(res.statusCode, 400);
+  await app.close();
+});
+
+test("POST /api/my-sentences rejects a malformed mark", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/my-sentences",
+    payload: {
+      text: "私の文。",
+      language: "Japanese",
+      marks: [{
+        start: "x",
+        end: 2,
+        correct: false,
+      }], // start must be an integer
+    },
+  });
+  assert.equal(res.statusCode, 400);
+  await app.close();
+});

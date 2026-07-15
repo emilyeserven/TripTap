@@ -17,6 +17,7 @@ import type {
   QuestionSheetGrid,
   QuestionSheetQuestion,
   ReadingLine,
+  SentenceMark,
   SentenceTermRef,
   ShadowingSegment,
   SourceGrammar,
@@ -259,6 +260,8 @@ export const mySentences = pgTable("my_sentences", {
   terms: jsonb("terms").$type<SentenceTermRef[]>(),
   // Why it was wrong — references into the shared Drill reason taxonomy. Null until any are tagged.
   reasons: jsonb("reasons").$type<DrillMistakeReasonRef[]>(),
+  // Learner-marked correct/incorrect spans of `text` (offsets into the original). Null until any are made.
+  marks: jsonb("marks").$type<SentenceMark[]>(),
   createdAt: timestamp("created_at", {
     withTimezone: true,
   }).notNull().defaultNow(),

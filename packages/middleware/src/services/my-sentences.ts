@@ -23,6 +23,7 @@ export function toMySentence(row: MySentenceRow): MySentence {
     explanation: row.explanation,
     terms: row.terms ?? null,
     reasons: row.reasons ?? null,
+    marks: row.marks ?? null,
     createdAt:
       row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
   };
@@ -43,6 +44,7 @@ function toInsert(input: CreateMySentenceInput) {
     explanation: input.explanation ?? null,
     terms: input.terms ?? null,
     reasons: input.reasons ?? null,
+    marks: input.marks ?? null,
   };
 }
 

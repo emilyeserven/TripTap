@@ -24,6 +24,7 @@ function emptyEntry(slotId: string): AnswerSheetEntry {
     reasoning: null,
     intendedMeaning: null,
     actualMeaning: null,
+    marks: null,
   };
 }
 
@@ -34,7 +35,8 @@ function isTouched(e: AnswerSheetEntry): boolean {
     || Boolean(e.correction?.trim())
     || Boolean(e.reasoning?.trim())
     || Boolean(e.intendedMeaning?.trim())
-    || Boolean(e.actualMeaning?.trim());
+    || Boolean(e.actualMeaning?.trim())
+    || (e.marks?.length ?? 0) > 0;
 }
 
 const SAVE_LABEL: Record<string, string> = {

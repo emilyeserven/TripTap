@@ -11,6 +11,8 @@ import { Link } from "@tanstack/react-router";
 import { Check, Eye, EyeOff, X } from "lucide-react";
 
 import { Markdown } from "@/components/Markdown";
+import { MarkedText } from "@/components/MarkedText";
+import { SentenceCorrector } from "@/components/SentenceCorrector";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -38,6 +40,7 @@ function emptyEntry(slotId: string): AnswerSheetEntry {
     reasoning: null,
     intendedMeaning: null,
     actualMeaning: null,
+    marks: null,
   };
 }
 
@@ -48,7 +51,8 @@ function isTouched(e: AnswerSheetEntry): boolean {
     || Boolean(e.correction?.trim())
     || Boolean(e.reasoning?.trim())
     || Boolean(e.intendedMeaning?.trim())
-    || Boolean(e.actualMeaning?.trim());
+    || Boolean(e.actualMeaning?.trim())
+    || (e.marks?.length ?? 0) > 0;
 }
 
 /** True when an entry carries any correction detail worth showing beyond the raw answer. */
@@ -60,6 +64,14 @@ function hasCorrectionDetail(e: AnswerSheetEntry): boolean {
 function isAnswered(e: AnswerSheetEntry): boolean {
   return e.value.trim().length > 0 || e.correct != null || hasCorrectionDetail(e);
 }
+
+/** Persist an inline correction built from span marks + typed insertions for one slot. */
+type SaveCorrection = (
+  slotId: string,
+  result: { correction: string;
+    marks: AnswerSheetEntry["marks"];
+    reasoning: string | null; },
+) => void;
 
 /**
  * The Answer Sheet view. It is not just read-only: each answered slot exposes on-hover ✓ / ✗ actions —
@@ -149,6 +161,22 @@ export function AnswerSheetView({
   function editCorrections(slotId: string) {
     setCorrectingSlotId(slotId);
   }
+  /** Commit an inline correction (built from span marks + typed insertions) for a slot. */
+  function saveCorrection(
+    slotId: string,
+    {
+      correction, marks, reasoning,
+    }: { correction: string;
+      marks: AnswerSheetEntry["marks"];
+      reasoning: string | null; },
+  ) {
+    commitField(slotId, {
+      correction,
+      marks,
+      reasoning,
+      correct: false,
+    });
+  }
   function closeModal() {
     persist(entriesRef.current);
     setCorrectingSlotId(null);
@@ -201,6 +229,7 @@ export function AnswerSheetView({
               markCorrect={markCorrect}
               markWrong={markWrong}
               editCorrections={editCorrections}
+              saveCorrection={saveCorrection}
             />
           )}
 
@@ -359,12 +388,14 @@ function ListCorrectableView({
   markCorrect,
   markWrong,
   editCorrections,
+  saveCorrection,
 }: {
   questions: QuestionSheetQuestion[];
   getEntry: (slotId: string) => AnswerSheetEntry;
   markCorrect: (slotId: string) => void;
   markWrong: (slotId: string) => void;
   editCorrections: (slotId: string) => void;
+  saveCorrection: SaveCorrection;
 }) {
   const cards = questions.map((q, i) => {
     const base = q.prompt.trim() || `Question ${i + 1}`;
@@ -419,6 +450,7 @@ function ListCorrectableView({
                   markCorrect={markCorrect}
                   markWrong={markWrong}
                   editCorrections={editCorrections}
+                  saveCorrection={saveCorrection}
                 />
               </div>
             ))}
@@ -441,6 +473,7 @@ function AnswerEntry({
   markCorrect,
   markWrong,
   editCorrections,
+  saveCorrection,
 }: {
   slotId: string;
   label: string | null;
@@ -448,9 +481,14 @@ function AnswerEntry({
   markCorrect: (slotId: string) => void;
   markWrong: (slotId: string) => void;
   editCorrections: (slotId: string) => void;
+  saveCorrection: SaveCorrection;
 }) {
   const corrected = entry.correction?.trim() ? entry.correction : null;
   const hasCorrections = hasCorrectionDetail(entry);
+  const marks = entry.marks ?? [];
+  // Un-reviewed = no verdict and no correction yet → offer the inline corrector; once reviewed/corrected
+  // the standard corrected-leads display (with the marks under "Show your original") takes over.
+  const unreviewed = entry.correct == null && !corrected;
   const [showOriginal, setShowOriginal] = useState(false);
 
   if (!isAnswered(entry)) {
@@ -497,43 +535,67 @@ function AnswerEntry({
         </div>
       </div>
 
-      <p className="text-base">
-        {corrected ?? entry.value ?? ""}
-        {!corrected && !entry.value.trim()
-          ? <span className="text-muted-foreground italic">No answer</span>
-          : null}
-      </p>
-
-      <EntryCorrections entry={entry} />
-
-      {corrected
+      {unreviewed
         ? (
-          <div className="space-y-1">
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowOriginal(v => !v)}
-            >
-              {showOriginal
-                ? <EyeOff className="size-4" />
-                : <Eye className="size-4" />}
-              {showOriginal ? "Hide original" : "Show your original"}
-            </Button>
-            {showOriginal
+          <SentenceCorrector
+            text={entry.value}
+            reasoning={entry.reasoning}
+            onSave={r => saveCorrection(slotId, r)}
+          />
+        )
+        : (
+          <>
+            <p className="text-base">
+              {corrected ?? entry.value ?? ""}
+              {!corrected && !entry.value.trim()
+                ? <span className="text-muted-foreground italic">No answer</span>
+                : null}
+            </p>
+
+            <EntryCorrections entry={entry} />
+
+            {corrected
               ? (
-                <div className="space-y-1 rounded-md border bg-muted/30 p-3">
-                  <Label className="text-sm">Your original (with corrections)</Label>
-                  <CorrectionDiff
-                    written={entry.value}
-                    correct={corrected}
-                  />
+                <div className="space-y-1">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowOriginal(v => !v)}
+                  >
+                    {showOriginal
+                      ? <EyeOff className="size-4" />
+                      : <Eye className="size-4" />}
+                    {showOriginal ? "Hide original" : "Show your original"}
+                  </Button>
+                  {showOriginal
+                    ? (
+                      <div
+                        className="space-y-1 rounded-md border bg-muted/30 p-3"
+                      >
+                        <Label className="text-sm">Your original (with corrections)</Label>
+                        {marks.length > 0
+                          ? (
+                            <p className="text-base">
+                              <MarkedText
+                                text={entry.value}
+                                marks={marks}
+                              />
+                            </p>
+                          )
+                          : null}
+                        <CorrectionDiff
+                          written={entry.value}
+                          correct={corrected}
+                        />
+                      </div>
+                    )
+                    : null}
                 </div>
               )
               : null}
-          </div>
-        )
-        : null}
+          </>
+        )}
     </div>
   );
 }

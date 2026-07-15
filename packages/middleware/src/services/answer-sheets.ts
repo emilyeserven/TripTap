@@ -26,6 +26,7 @@ function normalizeEntry(e: AnswerSheetEntry): AnswerSheetEntry {
     reasoning: e.reasoning ?? null,
     intendedMeaning: e.intendedMeaning ?? null,
     actualMeaning: e.actualMeaning ?? null,
+    marks: e.marks ?? null,
   };
 }
 

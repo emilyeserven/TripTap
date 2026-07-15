@@ -15,6 +15,7 @@ export * from "./tutor.js";
 export * from "./practice-sentence.js";
 export * from "./question-sheet.js";
 export * from "./reading-session.js";
+export * from "./sentence-mark.js";
 export * from "./shadowing-session.js";
 export * from "./writing.js";
 export * from "./writing-prompt.js";
