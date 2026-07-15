@@ -9,6 +9,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { newId } from "@/lib/id";
+import { WORD_COLUMN_CLASS } from "@/lib/lessonLayout";
+import { cn } from "@/lib/utils";
+import { useDisplayStore } from "@/stores/displayStore";
 import { useUiStore } from "@/stores/uiStore";
 
 type WordNoteStatus = LessonWordNote["status"];
@@ -22,11 +25,16 @@ type WordNoteStatus = LessonWordNote["status"];
 export function LessonWordNotes({
   wordNotes,
   onChange,
+  bare = false,
 }: {
   wordNotes: LessonWordNote[];
   onChange: (wordNotes: LessonWordNote[]) => void;
+  /** Render content without the `CollapsibleSection` wrapper (the caller supplies the section
+   * container); the "Add word" button moves to the top of the body. */
+  bare?: boolean;
 }) {
   const kanaScript = useUiStore(s => s.kanaScript);
+  const wordColumns = useDisplayStore(s => s.lessonWordColumns);
 
   const toKanaInput = (raw: string) =>
     toKana(raw, {
@@ -52,34 +60,32 @@ export function LessonWordNotes({
       : w)));
   const removeWord = (id: string) => onChange(wordNotes.filter(w => w.id !== id));
 
-  return (
-    <CollapsibleSection
-      title="Word notes"
-      description="Every field is optional — fill in whatever you know. Reading is kana-only."
-      action={(
-        <Button
-          type="button"
-          size="sm"
-          onClick={addWordNote}
-        >
-          <Plus className="size-4" />
-          Add word
-        </Button>
-      )}
+  const addButton = (
+    <Button
+      type="button"
+      size="sm"
+      onClick={addWordNote}
     >
+      <Plus className="size-4" />
+      Add word
+    </Button>
+  );
+
+  const body = (
+    <>
       {wordNotes.length === 0
         ? <p className="text-sm text-muted-foreground">No words noted yet.</p>
         : (
-          <ul className="space-y-3">
+          <ul className={cn(WORD_COLUMN_CLASS[wordColumns], "items-start")}>
             {wordNotes.map(w => (
               <li
                 key={w.id}
-                className="space-y-2 rounded-md border p-3"
+                className="@container space-y-2 rounded-md border p-3"
               >
                 <div
                   className="
                     grid gap-2
-                    sm:grid-cols-3
+                    @md:grid-cols-3
                   "
                 >
                   <Input
@@ -170,6 +176,25 @@ export function LessonWordNotes({
           </Button>
         )
         : null}
+    </>
+  );
+
+  if (bare) {
+    return (
+      <div className="space-y-3">
+        <div className="flex justify-end">{addButton}</div>
+        {body}
+      </div>
+    );
+  }
+
+  return (
+    <CollapsibleSection
+      title="Word notes"
+      description="Every field is optional — fill in whatever you know. Reading is kana-only."
+      action={addButton}
+    >
+      {body}
     </CollapsibleSection>
   );
 }

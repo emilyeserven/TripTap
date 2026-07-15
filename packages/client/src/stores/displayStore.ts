@@ -59,7 +59,14 @@ interface DisplayState {
   /** Lesson view: how many columns the Word notes wrap into. */
   lessonWordColumns: LessonWordColumns;
   setLessonWordColumns: (columns: LessonWordColumns) => void;
+  /** Width (px) of the pinned listening-session video; resizable via a drag handle. */
+  pinnedVideoWidth: number;
+  setPinnedVideoWidth: (width: number) => void;
 }
+
+/** Bounds for the pinned-video width drag handle. */
+export const PINNED_VIDEO_MIN = 160;
+export const PINNED_VIDEO_MAX = 640;
 
 /**
  * Persisted display preferences (theme, text size, focus mode, content width), surfaced through the
@@ -108,6 +115,10 @@ export const useDisplayStore = create<DisplayState>()(
       lessonWordColumns: 1,
       setLessonWordColumns: columns => set({
         lessonWordColumns: columns,
+      }),
+      pinnedVideoWidth: 256,
+      setPinnedVideoWidth: width => set({
+        pinnedVideoWidth: Math.min(PINNED_VIDEO_MAX, Math.max(PINNED_VIDEO_MIN, Math.round(width))),
       }),
     }),
     {

@@ -1,4 +1,9 @@
-import type { AnswerSheet, AnswerSheetEntry, QuestionSheet } from "@sentence-bank/types";
+import type {
+  AnswerSheet,
+  AnswerSheetEntry,
+  QuestionSheet,
+  QuestionSheetQuestion,
+} from "@sentence-bank/types";
 
 import { useRef, useState } from "react";
 
@@ -49,6 +54,11 @@ function isTouched(e: AnswerSheetEntry): boolean {
 /** True when an entry carries any correction detail worth showing beyond the raw answer. */
 function hasCorrectionDetail(e: AnswerSheetEntry): boolean {
   return Boolean(e.correction || e.reasoning || e.intendedMeaning || e.actualMeaning);
+}
+
+/** True once a slot has been engaged with — an answer, a verdict, or a correction. */
+function isAnswered(e: AnswerSheetEntry): boolean {
+  return e.value.trim().length > 0 || e.correct != null || hasCorrectionDetail(e);
 }
 
 /**
@@ -186,7 +196,7 @@ export function AnswerSheetView({
           )
           : (
             <ListCorrectableView
-              slots={slots}
+              questions={sheet?.questions ?? []}
               getEntry={getEntry}
               markCorrect={markCorrect}
               markWrong={markWrong}
@@ -338,62 +348,102 @@ function GridCorrectableView({
   );
 }
 
-/** List rendering: one block per answered slot, with hover actions and inline corrections. */
+/**
+ * List rendering: one card per question, with the question's parts separated inside. A question card
+ * appears once any of its slots is answered, and then shows all of the question's parts (unanswered
+ * ones read "No answer").
+ */
 function ListCorrectableView({
-  slots,
+  questions,
   getEntry,
   markCorrect,
   markWrong,
   editCorrections,
 }: {
-  slots: { id: string;
-    label: string; }[];
+  questions: QuestionSheetQuestion[];
   getEntry: (slotId: string) => AnswerSheetEntry;
   markCorrect: (slotId: string) => void;
   markWrong: (slotId: string) => void;
   editCorrections: (slotId: string) => void;
 }) {
-  const answered = slots.filter((s) => {
-    const e = getEntry(s.id);
-    return e.value.trim() || e.correct != null || hasCorrectionDetail(e);
-  });
+  const cards = questions.map((q, i) => {
+    const base = q.prompt.trim() || `Question ${i + 1}`;
+    const parts = q.parts ?? [];
+    const hasParts = parts.length > 0;
+    const slots = hasParts
+      ? parts.map(p => ({
+        id: p.id,
+        label: p.label as string | null,
+      }))
+      : [{
+        id: q.id,
+        label: null as string | null,
+      }];
+    return {
+      key: q.id || `q${i}`,
+      base,
+      hasParts,
+      slots,
+      anyAnswered: slots.some(s => isAnswered(getEntry(s.id))),
+    };
+  }).filter(c => c.anyAnswered);
 
-  if (answered.length === 0) {
+  if (cards.length === 0) {
     return <p className="text-sm text-muted-foreground">No answers recorded.</p>;
   }
 
   return (
     <div className="space-y-3">
-      {answered.map((slot) => {
-        const entry = getEntry(slot.id);
-        return (
-          <AnswerEntryBlock
-            key={slot.id}
-            slot={slot}
-            entry={entry}
-            markCorrect={markCorrect}
-            markWrong={markWrong}
-            editCorrections={editCorrections}
-          />
-        );
-      })}
+      {cards.map(c => (
+        <div
+          key={c.key}
+          className="space-y-2 rounded-md border p-3"
+        >
+          {c.hasParts ? <p className="text-sm font-medium">{c.base}</p> : null}
+          <div className={c.hasParts ? "divide-y" : undefined}>
+            {c.slots.map(s => (
+              <div
+                key={s.id}
+                className={c.hasParts
+                  ? `
+                    py-3
+                    first:pt-0
+                    last:pb-0
+                  `
+                  : undefined}
+              >
+                <AnswerEntry
+                  slotId={s.id}
+                  label={c.hasParts ? s.label : c.base}
+                  entry={getEntry(s.id)}
+                  markCorrect={markCorrect}
+                  markWrong={markWrong}
+                  editCorrections={editCorrections}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
 
 /**
- * One answered slot. Mirrors the My Sentences correction style: when corrected, the corrected answer
- * leads and the learner's original is hidden behind an opt-in toggle that reveals a word/char diff.
+ * One answered slot within a question card (no outer border — the card provides it). Mirrors the My
+ * Sentences correction style: the corrected answer leads and the learner's original hides behind an
+ * opt-in toggle that reveals a word/char diff (shown below the explanation).
  */
-function AnswerEntryBlock({
-  slot,
+function AnswerEntry({
+  slotId,
+  label,
   entry,
   markCorrect,
   markWrong,
   editCorrections,
 }: {
-  slot: { id: string;
-    label: string; };
+  slotId: string;
+  label: string | null;
   entry: AnswerSheetEntry;
   markCorrect: (slotId: string) => void;
   markWrong: (slotId: string) => void;
@@ -403,8 +453,17 @@ function AnswerEntryBlock({
   const hasCorrections = hasCorrectionDetail(entry);
   const [showOriginal, setShowOriginal] = useState(false);
 
+  if (!isAnswered(entry)) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        {label ? <span className="font-medium">{label} — </span> : null}
+        No answer
+      </p>
+    );
+  }
+
   return (
-    <div className="group space-y-2 rounded-md border p-3">
+    <div className="group space-y-2">
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-1.5">
           {entry.correct === true
@@ -412,7 +471,7 @@ function AnswerEntryBlock({
             : entry.correct === false || corrected
               ? <X className="size-4 shrink-0 text-destructive" />
               : null}
-          <p className="text-sm font-medium">{slot.label}</p>
+          {label ? <p className="text-sm font-medium">{label}</p> : null}
         </div>
         <div className="flex items-center gap-2">
           {hasCorrections
@@ -421,14 +480,14 @@ function AnswerEntryBlock({
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => editCorrections(slot.id)}
+                onClick={() => editCorrections(slotId)}
               >
                 Edit corrections
               </Button>
             )
             : (
               <HoverActions
-                slotId={slot.id}
+                slotId={slotId}
                 correct={entry.correct}
                 markCorrect={markCorrect}
                 markWrong={markWrong}
@@ -444,6 +503,8 @@ function AnswerEntryBlock({
           ? <span className="text-muted-foreground italic">No answer</span>
           : null}
       </p>
+
+      <EntryCorrections entry={entry} />
 
       {corrected
         ? (
@@ -473,8 +534,6 @@ function AnswerEntryBlock({
           </div>
         )
         : null}
-
-      <EntryCorrections entry={entry} />
     </div>
   );
 }

@@ -1,14 +1,10 @@
-import type {
-  Lesson,
-  LessonListeningNote,
-  LessonWordNote,
-} from "@sentence-bank/types";
+import type { LessonSection } from "@/components/LessonSections";
+import type { Lesson, LessonWordNote } from "@sentence-bank/types";
 
 import { useMemo, useState } from "react";
 
-import { CollapsibleSection } from "@/components/CollapsibleSection";
-import { LessonListeningNotes } from "@/components/LessonListeningNotes";
 import { LessonMySentences } from "@/components/LessonMySentences";
+import { LessonSections } from "@/components/LessonSections";
 import { LessonWordNotes } from "@/components/LessonWordNotes";
 import { TutorPicker } from "@/components/TutorPicker";
 import { Input } from "@/components/ui/input";
@@ -36,7 +32,8 @@ const SAVE_LABEL: Record<string, string> = {
 /**
  * The lesson editor. A lesson is created up front (minimal date) so it always has an id here; this
  * form then **autosaves** every change — scalar fields flush on blur, nested editors save on change
- * (debounced) — so there is no Save button. My Sentences are added inline at the bottom.
+ * (debounced) — so there is no Save button. Sections render as cards or tabs per the shared View
+ * options (same pref as the view page).
  */
 export function LessonForm({
   lesson,
@@ -51,20 +48,10 @@ export function LessonForm({
   const [language, setLanguage] = useState(lesson.language);
   const [tutorId, setTutorId] = useState<string | null>(lesson.tutorId ?? null);
   const [notes, setNotes] = useState(lesson.notes ?? "");
-  const [listeningNotes, setListeningNotes] = useState<LessonListeningNote[]>(
-    lesson.listeningNotes ?? [],
-  );
   const [wordNotes, setWordNotes] = useState<LessonWordNote[]>(lesson.wordNotes ?? []);
   const [answerSheetIds, setAnswerSheetIds] = useState<string[]>(lesson.answerSheetIds ?? []);
 
   const input = useMemo(() => {
-    const cleanNotes = listeningNotes
-      .filter(n => n.text.trim().length > 0)
-      .map(n => ({
-        ...n,
-        text: n.text.trim(),
-        context: n.context?.trim() || null,
-      }));
     const cleanWords = wordNotes
       .filter(isWordNoteFilled)
       .map(w => ({
@@ -80,11 +67,10 @@ export function LessonForm({
       language: language.trim() || "Japanese",
       tutorId,
       notes: notes.trim() || null,
-      listeningNotes: cleanNotes.length > 0 ? cleanNotes : null,
       wordNotes: cleanWords.length > 0 ? cleanWords : null,
       answerSheetIds: answerSheetIds.length > 0 ? answerSheetIds : null,
     };
-  }, [title, date, language, tutorId, notes, listeningNotes, wordNotes, answerSheetIds]);
+  }, [title, date, language, tutorId, notes, wordNotes, answerSheetIds]);
 
   const {
     status, flush,
@@ -92,6 +78,66 @@ export function LessonForm({
     id: lesson.id,
     input: i,
   }));
+
+  const sections: LessonSection[] = [
+    {
+      id: "notes",
+      title: "Notes (Markdown)",
+      description: "General notes for the lesson. Markdown is supported.",
+      node: (
+        <Textarea
+          id="lesson-notes"
+          value={notes}
+          onChange={e => setNotes(e.target.value)}
+          onBlur={flush}
+          placeholder="# Topics&#10;- …"
+          rows={4}
+          aria-label="Notes"
+        />
+      ),
+    },
+    {
+      id: "words",
+      title: "Word notes",
+      description: "Every field is optional — fill in whatever you know. Reading is kana-only.",
+      node: (
+        <LessonWordNotes
+          bare
+          wordNotes={wordNotes}
+          onChange={setWordNotes}
+        />
+      ),
+    },
+    {
+      id: "answer-sheets",
+      title: "Answer sheets",
+      description: "Link any answer sheets you worked through in this lesson.",
+      node: (
+        <MultiSelect
+          value={answerSheetIds}
+          onChange={setAnswerSheetIds}
+          options={(answerSheets.data ?? []).map(a => ({
+            value: a.id,
+            label: a.title ?? "Answer sheet",
+          }))}
+          ariaLabel="Answer sheets"
+          placeholder={answerSheets.isLoading ? "Loading…" : "Select answer sheets…"}
+          className="w-full max-w-md"
+        />
+      ),
+    },
+    {
+      id: "my-sentences",
+      title: "My Sentences",
+      node: (
+        <LessonMySentences
+          bare
+          lessonId={lesson.id}
+          language={lesson.language}
+        />
+      ),
+    },
+  ];
 
   return (
     <form
@@ -151,52 +197,7 @@ export function LessonForm({
         />
       </div>
 
-      <CollapsibleSection
-        title="Notes (Markdown)"
-        description="General notes for the lesson. Markdown is supported."
-      >
-        <Textarea
-          id="lesson-notes"
-          value={notes}
-          onChange={e => setNotes(e.target.value)}
-          onBlur={flush}
-          placeholder="# Topics&#10;- …"
-          rows={4}
-          aria-label="Notes"
-        />
-      </CollapsibleSection>
-
-      <LessonListeningNotes
-        notes={listeningNotes}
-        onChange={setListeningNotes}
-      />
-
-      <LessonWordNotes
-        wordNotes={wordNotes}
-        onChange={setWordNotes}
-      />
-
-      <CollapsibleSection
-        title="Answer sheets"
-        description="Link any answer sheets you worked through in this lesson."
-      >
-        <MultiSelect
-          value={answerSheetIds}
-          onChange={setAnswerSheetIds}
-          options={(answerSheets.data ?? []).map(a => ({
-            value: a.id,
-            label: a.title ?? "Answer sheet",
-          }))}
-          ariaLabel="Answer sheets"
-          placeholder={answerSheets.isLoading ? "Loading…" : "Select answer sheets…"}
-          className="w-full max-w-md"
-        />
-      </CollapsibleSection>
-
-      <LessonMySentences
-        lessonId={lesson.id}
-        language={lesson.language}
-      />
+      <LessonSections sections={sections} />
     </form>
   );
 }

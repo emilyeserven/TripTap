@@ -1,38 +1,21 @@
-import type { LessonWordColumns } from "@/stores/displayStore";
+import type { LessonSection } from "@/components/LessonSections";
 import type { Lesson } from "@sentence-bank/types";
-import type { ReactNode } from "react";
 
 import { Link } from "@tanstack/react-router";
 
-import { CollapsibleSection } from "@/components/CollapsibleSection";
 import { LessonMySentences } from "@/components/LessonMySentences";
-import { Markdown } from "@/components/Markdown";
+import { LessonSections } from "@/components/LessonSections";
+import { NotesHighlightMenu } from "@/components/NotesHighlightMenu";
 import { Badge } from "@/components/ui/badge";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
 import { useAnswerSheets } from "@/hooks/useAnswerSheets";
 import { useTutors } from "@/hooks/useTutors";
+import { WORD_COLUMN_CLASS } from "@/lib/lessonLayout";
 import { useDisplayStore } from "@/stores/displayStore";
 
-/** Word-note grid classes per column count — always 1 column when narrow, widening at breakpoints. */
-const WORD_COLUMN_CLASS: Record<LessonWordColumns, string> = {
-  1: "grid gap-2",
-  2: "grid gap-2 sm:grid-cols-2",
-  3: `
-    grid gap-2
-    sm:grid-cols-2
-    lg:grid-cols-3
-  `,
-};
-
 /**
- * Read-only view of a lesson: notes, tutor, listening notes, word notes, linked answer sheets, and My
- * Sentences. The sections render either as stacked collapsible cards or as a tabbed switcher, and the
- * word notes wrap into 1–3 columns — both driven by the lesson's local View options (display store).
+ * Read-only view of a lesson: notes, tutor, word notes, linked answer sheets, and My Sentences. The
+ * sections render as bordered collapsible cards or as a tabbed switcher, and the word notes wrap into
+ * 1–3 columns — both driven by the lesson's local View options (display store, shared with the editor).
  */
 export function LessonView({
   lesson,
@@ -41,7 +24,6 @@ export function LessonView({
 }) {
   const tutors = useTutors();
   const answerSheets = useAnswerSheets();
-  const sectionLayout = useDisplayStore(s => s.lessonSectionLayout);
   const wordColumns = useDisplayStore(s => s.lessonWordColumns);
 
   const tutor = (tutors.data ?? []).find(t => t.id === lesson.tutorId);
@@ -49,42 +31,17 @@ export function LessonView({
     .map(id => (answerSheets.data ?? []).find(a => a.id === id))
     .filter((a): a is NonNullable<typeof a> => Boolean(a));
 
-  const listeningNotes = lesson.listeningNotes ?? [];
   const wordNotes = lesson.wordNotes ?? [];
 
-  const sections: { id: string;
-    title: string;
-    node: ReactNode; }[] = [];
+  const sections: LessonSection[] = [];
 
   if (lesson.notes) {
     sections.push({
       id: "notes",
       title: "Notes",
-      node: <Markdown content={lesson.notes} />,
+      node: <NotesHighlightMenu lesson={lesson} />,
     });
   }
-
-  sections.push({
-    id: "listening",
-    title: "Listening notes",
-    node: listeningNotes.length === 0
-      ? <p className="text-sm text-muted-foreground">No listening notes.</p>
-      : (
-        <ul className="divide-y rounded-md border">
-          {listeningNotes.map(note => (
-            <li
-              key={note.id}
-              className="p-2 wrap-break-word"
-            >
-              {note.text}
-              {note.context && (
-                <span className="ml-2 text-sm text-muted-foreground">{note.context}</span>
-              )}
-            </li>
-          ))}
-        </ul>
-      ),
-  });
 
   sections.push({
     id: "words",
@@ -193,37 +150,7 @@ export function LessonView({
         </div>
       </div>
 
-      {sectionLayout === "tabs"
-        ? (
-          <Tabs defaultValue={sections[0]?.id}>
-            <TabsList className="h-auto flex-wrap">
-              {sections.map(s => (
-                <TabsTrigger
-                  key={s.id}
-                  value={s.id}
-                >
-                  {s.title}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-            {sections.map(s => (
-              <TabsContent
-                key={s.id}
-                value={s.id}
-              >
-                {s.node}
-              </TabsContent>
-            ))}
-          </Tabs>
-        )
-        : sections.map(s => (
-          <CollapsibleSection
-            key={s.id}
-            title={s.title}
-          >
-            {s.node}
-          </CollapsibleSection>
-        ))}
+      <LessonSections sections={sections} />
     </div>
   );
 }

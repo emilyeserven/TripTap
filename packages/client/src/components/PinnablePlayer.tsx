@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { Pin, PinOff } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useDisplayStore } from "@/stores/displayStore";
 
 /**
  * Wraps the session's video/stopwatch player and lets the learner "pin" it: when pinned the player
@@ -22,6 +23,30 @@ export function PinnablePlayer({
   const [pinned, setPinned] = useState(false);
   const isPinned = canPin && pinned;
 
+  const pinnedWidth = useDisplayStore(s => s.pinnedVideoWidth);
+  const setPinnedWidth = useDisplayStore(s => s.setPinnedVideoWidth);
+  // Drag state for the resize handle. The box is centered (`mx-auto`), so a drag of `dx` moves each
+  // side by `dx` — width changes by `2·dx` to keep the handle under the cursor.
+  const drag = useRef<{ startX: number;
+    startWidth: number; } | null>(null);
+
+  function onResizePointerDown(e: React.PointerEvent) {
+    e.preventDefault();
+    drag.current = {
+      startX: e.clientX,
+      startWidth: pinnedWidth,
+    };
+    e.currentTarget.setPointerCapture(e.pointerId);
+  }
+  function onResizePointerMove(e: React.PointerEvent) {
+    if (!drag.current) return;
+    setPinnedWidth(drag.current.startWidth + (e.clientX - drag.current.startX) * 2);
+  }
+  function onResizePointerEnd(e: React.PointerEvent) {
+    drag.current = null;
+    e.currentTarget.releasePointerCapture?.(e.pointerId);
+  }
+
   return (
     // Outer = the "bar": spans the column and gets an opaque bg when pinned so notes scroll cleanly
     // under it. top-12 clears the sticky h-12 header; z-20 sits under the header (z-30), above notes.
@@ -30,11 +55,33 @@ export function PinnablePlayer({
         sticky top-12 z-20 bg-background py-2 shadow-sm
       `)}
     >
-      {/* Inner = the video box + button anchor; constrained to a compact size when pinned. */}
+      {/* Inner = the video box + button anchor; constrained to a resizable width when pinned. */}
       <div
-        className={cn("relative", isPinned && "mx-auto w-64 max-w-full")}
+        className={cn("relative", isPinned && "mx-auto max-w-full")}
+        style={isPinned
+          ? {
+            width: pinnedWidth,
+          }
+          : undefined}
       >
         {children}
+        {isPinned && (
+          <div
+            role="separator"
+            aria-orientation="vertical"
+            aria-label="Resize video"
+            onPointerDown={onResizePointerDown}
+            onPointerMove={onResizePointerMove}
+            onPointerUp={onResizePointerEnd}
+            onPointerCancel={onResizePointerEnd}
+            className="
+              absolute top-1/2 right-0 z-10 h-12 w-2 translate-x-1/2
+              -translate-y-1/2 cursor-ew-resize touch-none rounded-full
+              bg-border
+              hover:bg-foreground/40
+            "
+          />
+        )}
         {canPin && (
           <Button
             type="button"

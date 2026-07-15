@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 
 import { LessonForm } from "@/components/LessonForm";
+import { LessonViewOptions } from "@/components/LessonViewOptions";
 import { Button } from "@/components/ui/button";
 import { useDeleteLesson, useLesson } from "@/hooks/useLessons";
 import { usePageTitle } from "@/hooks/usePageTitle";
@@ -51,15 +52,18 @@ function EditLessonPage() {
             Done — back to lesson
           </Link>
         </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-destructive"
-          disabled={deleteLesson.isPending}
-          onClick={remove}
-        >
-          Delete
-        </Button>
+        <div className="flex items-center gap-2">
+          <LessonViewOptions />
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-destructive"
+            disabled={deleteLesson.isPending}
+            onClick={remove}
+          >
+            Delete
+          </Button>
+        </div>
       </div>
       <LessonForm lesson={data} />
     </section>
