@@ -149,7 +149,7 @@ function PracticePage() {
         >
           <SelectTrigger
             size="sm"
-            className="w-36"
+            className="w-48"
           >
             <SelectValue />
           </SelectTrigger>

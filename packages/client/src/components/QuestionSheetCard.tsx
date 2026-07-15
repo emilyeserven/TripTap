@@ -43,7 +43,12 @@ export function QuestionSheetCard({
           <span>{slotCount} {slotCount === 1 ? "slot" : "slots"}</span>
           {qs.bookmarkTitle
             ? (
-              <Badge variant="outline">
+              <Badge
+                variant="outline"
+                className="
+                  max-w-full min-w-0 shrink wrap-break-word whitespace-normal
+                "
+              >
                 {qs.bookmarkUrl
                   ? (
                     <a

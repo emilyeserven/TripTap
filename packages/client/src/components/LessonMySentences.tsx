@@ -113,24 +113,33 @@ export function LessonMySentences({
     </>
   );
 
-  if (bare) return content;
+  const addButton = !readOnly && !adding
+    ? (
+      <Button
+        type="button"
+        size="sm"
+        variant="outline"
+        onClick={() => setAdding(true)}
+      >
+        <Plus className="size-4" />
+        Add My Sentence
+      </Button>
+    )
+    : undefined;
+
+  if (bare) {
+    return (
+      <div className="space-y-3">
+        {addButton ? <div className="flex justify-end">{addButton}</div> : null}
+        {content}
+      </div>
+    );
+  }
 
   return (
     <CollapsibleSection
       title="My Sentences"
-      action={!readOnly && !adding
-        ? (
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            onClick={() => setAdding(true)}
-          >
-            <Plus className="size-4" />
-            Add My Sentence
-          </Button>
-        )
-        : undefined}
+      action={addButton}
     >
       {content}
     </CollapsibleSection>
