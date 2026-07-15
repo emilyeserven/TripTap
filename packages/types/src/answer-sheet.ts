@@ -1,3 +1,5 @@
+import type { SentenceMark } from "./sentence-mark.js";
+
 /**
  * One filled-in answer for a single slot of the referenced {@link QuestionSheet}. Only slots the user
  * has touched get an entry. The correction fields mirror the {@link MySentence} entity's phrasing:
@@ -13,6 +15,8 @@ export interface AnswerSheetEntry {
   reasoning: string | null;
   intendedMeaning: string | null;
   actualMeaning: string | null;
+  /** Learner-marked correct/incorrect spans of `value` (offsets into the original answer); null if none. */
+  marks: SentenceMark[] | null;
 }
 
 /**

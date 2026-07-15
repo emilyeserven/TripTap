@@ -11,6 +11,7 @@
 // Type-only import (erased at build) — `SentenceTermRef` lives in the barrel; no runtime cycle.
 import type { DrillMistakeReasonRef } from "./drill-session.js";
 import type { SentenceTermRef } from "./index.js";
+import type { SentenceMark } from "./sentence-mark.js";
 
 /** A learner-produced sentence, awaiting correction. */
 export interface MySentence {
@@ -39,6 +40,8 @@ export interface MySentence {
   terms: SentenceTermRef[] | null;
   /** Why it was wrong — references into the shared Drill reason taxonomy; null until any are tagged. */
   reasons: DrillMistakeReasonRef[] | null;
+  /** Learner-marked correct/incorrect spans of `text` (offsets into the original); null if none. */
+  marks: SentenceMark[] | null;
   /** ISO-8601 timestamp of when the sentence was added. */
   createdAt: string;
 }
@@ -58,6 +61,7 @@ export interface CreateMySentenceInput {
   explanation?: string | null;
   terms?: SentenceTermRef[] | null;
   reasons?: DrillMistakeReasonRef[] | null;
+  marks?: SentenceMark[] | null;
 }
 
 /** Payload for partially updating a my-sentence. */

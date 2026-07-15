@@ -8,10 +8,13 @@ import { Eye, EyeOff, NotebookPen, PenLine, TriangleAlert } from "lucide-react";
 import { CorrectionDiff } from "../lib/sentenceDiff";
 import { groupTermsByCategory, TERM_CATEGORIES } from "../lib/terms";
 
+import { MarkedText } from "@/components/MarkedText";
+import { SentenceCorrector } from "@/components/SentenceCorrector";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useDrillReasonCategories } from "@/hooks/useDrillReasonCategories";
+import { useUpdateMySentence } from "@/hooks/useMySentences";
 import { resolveReasonRef } from "@/lib/drill-reasons";
 
 /** Read-only detail of one My Sentence. When corrected, the corrected version leads and the learner's
@@ -25,11 +28,30 @@ export function MySentenceView({
   const categoriesQuery = useDrillReasonCategories();
   const categories = categoriesQuery.data ?? [];
   const corrected = ms.correction?.trim() ? ms.correction : null;
+  const marks = ms.marks ?? [];
+  const update = useUpdateMySentence();
+  // Un-reviewed = still flagged and not yet corrected → offer the inline corrector.
+  const unreviewed = !corrected && ms.needsCorrection;
   const [showOriginal, setShowOriginal] = useState(false);
 
   return (
     <div className="space-y-4">
-      <p className="text-xl font-semibold">{corrected ?? ms.text}</p>
+      {unreviewed
+        ? (
+          <SentenceCorrector
+            text={ms.text}
+            reasoning={ms.explanation}
+            onSave={r => update.mutate({
+              id: ms.id,
+              input: {
+                correction: r.correction,
+                marks: r.marks,
+                explanation: r.reasoning,
+              },
+            })}
+          />
+        )
+        : <p className="text-xl font-semibold">{corrected ?? ms.text}</p>}
 
       <div
         className="
@@ -129,6 +151,16 @@ export function MySentenceView({
               ? (
                 <div className="space-y-1 rounded-md border bg-muted/30 p-3">
                   <Label className="text-sm">Your original (with corrections)</Label>
+                  {marks.length > 0
+                    ? (
+                      <p className="text-base">
+                        <MarkedText
+                          text={ms.text}
+                          marks={marks}
+                        />
+                      </p>
+                    )
+                    : null}
                   <CorrectionDiff
                     written={ms.text}
                     correct={corrected}

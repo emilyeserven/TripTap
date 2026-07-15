@@ -1,0 +1,1 @@
+ALTER TABLE "my_sentences" ADD COLUMN "marks" jsonb;
