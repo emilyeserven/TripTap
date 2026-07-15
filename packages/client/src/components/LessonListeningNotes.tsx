@@ -9,6 +9,7 @@ import { KanaEntryToggle } from "@/components/KanaEntryToggle";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { newId } from "@/lib/id";
 import { useUiStore } from "@/stores/uiStore";
 
@@ -27,6 +28,8 @@ export function LessonListeningNotes({
 }) {
   const kanaEntry = useUiStore(s => s.kanaEntry);
   const kanaScript = useUiStore(s => s.kanaScript);
+  const enterToAddNote = useUiStore(s => s.enterToAddNote);
+  const setEnterToAddNote = useUiStore(s => s.setEnterToAddNote);
   const [inputValue, setInputValue] = useState("");
   const [contextValue, setContextValue] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -55,7 +58,9 @@ export function LessonListeningNotes({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
+    // Ignore the Enter that confirms an IME candidate — otherwise a note is added mid-composition.
+    if (e.nativeEvent.isComposing || e.keyCode === 229) return;
+    if (e.key === "Enter" && enterToAddNote) {
       e.preventDefault();
       submit();
     }
@@ -93,7 +98,17 @@ export function LessonListeningNotes({
             Notes taken while listening. No timestamps — kana-only entry is available.
           </p>
         </div>
-        <KanaEntryToggle />
+        <div className="flex items-center gap-4">
+          <label className="flex items-center gap-2 text-sm">
+            <Switch
+              checked={enterToAddNote}
+              onCheckedChange={setEnterToAddNote}
+              aria-label="Enter adds note"
+            />
+            Enter adds note
+          </label>
+          <KanaEntryToggle />
+        </div>
       </div>
 
       <div className="flex gap-2">

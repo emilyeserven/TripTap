@@ -162,6 +162,11 @@ export function SlideMode() {
     wrapper.addEventListener("focusin", onFocusIn);
 
     const onKeyDown = (event: KeyboardEvent) => {
+      // Don't hijack arrows while composing (IME candidate selection) or while typing in a field —
+      // otherwise picking a kanji / moving the caret jarringly jumps slides. The chevron buttons stay.
+      if (event.isComposing) return;
+      const target = event.target as HTMLElement | null;
+      if (target?.closest("input, textarea, select, [contenteditable=\"true\"]")) return;
       if (event.key === "ArrowDown" || event.key === "PageDown") {
         event.preventDefault();
         go(1);

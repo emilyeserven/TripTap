@@ -113,6 +113,9 @@ const createLessonBody = {
       type: ["string", "null"],
       format: "uuid",
     },
+    notes: {
+      type: ["string", "null"],
+    },
     listeningNotes: listeningNotesSchema,
     wordNotes: wordNotesSchema,
     answerSheetIds: answerSheetIdsSchema,

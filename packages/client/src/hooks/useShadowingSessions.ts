@@ -3,21 +3,13 @@ import type {
   UpdateShadowingSessionInput,
 } from "@sentence-bank/types";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 
+import { useEntityCacheSync } from "./useEntityCacheSync";
 import { shadowingSessionsApi } from "../lib/api";
 
 const SHADOWING_SESSIONS_KEY = ["shadowing-sessions"] as const;
-
-function useShadowingSessionInvalidator() {
-  const queryClient = useQueryClient();
-  return () => {
-    queryClient.invalidateQueries({
-      queryKey: SHADOWING_SESSIONS_KEY,
-    });
-  };
-}
 
 export function useShadowingSessions() {
   return useQuery({
@@ -34,10 +26,12 @@ export function useShadowingSession(id: string) {
 }
 
 export function useCreateShadowingSession() {
-  const invalidate = useShadowingSessionInvalidator();
+  const {
+    seed,
+  } = useEntityCacheSync(SHADOWING_SESSIONS_KEY);
   return useMutation({
     mutationFn: (input: CreateShadowingSessionInput) => shadowingSessionsApi.create(input),
-    onSuccess: invalidate,
+    onSuccess: seed,
     onError: err => toast.error("Couldn't create the shadowing session", {
       description: err instanceof Error ? err.message : undefined,
     }),
@@ -45,14 +39,16 @@ export function useCreateShadowingSession() {
 }
 
 export function useUpdateShadowingSession() {
-  const invalidate = useShadowingSessionInvalidator();
+  const {
+    seed,
+  } = useEntityCacheSync(SHADOWING_SESSIONS_KEY);
   return useMutation({
     mutationFn: ({
       id, input,
     }: { id: string;
       input: UpdateShadowingSessionInput; }) =>
       shadowingSessionsApi.update(id, input),
-    onSuccess: invalidate,
+    onSuccess: seed,
     onError: err => toast.error("Couldn't save the shadowing session", {
       description: err instanceof Error ? err.message : undefined,
     }),
@@ -60,7 +56,9 @@ export function useUpdateShadowingSession() {
 }
 
 export function useDeleteShadowingSession() {
-  const invalidate = useShadowingSessionInvalidator();
+  const {
+    invalidate,
+  } = useEntityCacheSync(SHADOWING_SESSIONS_KEY);
   return useMutation({
     mutationFn: (id: string) => shadowingSessionsApi.remove(id),
     onSuccess: invalidate,

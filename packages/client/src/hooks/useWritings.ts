@@ -1,20 +1,12 @@
 import type { CreateWritingInput, UpdateWritingInput } from "@sentence-bank/types";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 
+import { useEntityCacheSync } from "./useEntityCacheSync";
 import { writingsApi } from "../lib/api";
 
 const WRITINGS_KEY = ["writings"] as const;
-
-function useWritingInvalidator() {
-  const queryClient = useQueryClient();
-  return () => {
-    queryClient.invalidateQueries({
-      queryKey: WRITINGS_KEY,
-    });
-  };
-}
 
 export function useWritings() {
   return useQuery({
@@ -31,10 +23,12 @@ export function useWriting(id: string) {
 }
 
 export function useCreateWriting() {
-  const invalidate = useWritingInvalidator();
+  const {
+    seed,
+  } = useEntityCacheSync(WRITINGS_KEY);
   return useMutation({
     mutationFn: (input: CreateWritingInput) => writingsApi.create(input),
-    onSuccess: invalidate,
+    onSuccess: seed,
     onError: err => toast.error("Couldn't create your writing", {
       description: err instanceof Error ? err.message : undefined,
     }),
@@ -42,14 +36,16 @@ export function useCreateWriting() {
 }
 
 export function useUpdateWriting() {
-  const invalidate = useWritingInvalidator();
+  const {
+    seed,
+  } = useEntityCacheSync(WRITINGS_KEY);
   return useMutation({
     mutationFn: ({
       id, input,
     }: { id: string;
       input: UpdateWritingInput; }) =>
       writingsApi.update(id, input),
-    onSuccess: invalidate,
+    onSuccess: seed,
     onError: err => toast.error("Couldn't save your writing", {
       description: err instanceof Error ? err.message : undefined,
     }),
@@ -57,7 +53,9 @@ export function useUpdateWriting() {
 }
 
 export function useDeleteWriting() {
-  const invalidate = useWritingInvalidator();
+  const {
+    invalidate,
+  } = useEntityCacheSync(WRITINGS_KEY);
   return useMutation({
     mutationFn: (id: string) => writingsApi.remove(id),
     onSuccess: invalidate,

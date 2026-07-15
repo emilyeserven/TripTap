@@ -1,20 +1,12 @@
 import type { CreateMySentenceInput, UpdateMySentenceInput } from "@sentence-bank/types";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 
+import { useEntityCacheSync } from "./useEntityCacheSync";
 import { mySentencesApi } from "../lib/api";
 
 const MY_SENTENCES_KEY = ["my-sentences"] as const;
-
-function useMySentenceInvalidator() {
-  const queryClient = useQueryClient();
-  return () => {
-    queryClient.invalidateQueries({
-      queryKey: MY_SENTENCES_KEY,
-    });
-  };
-}
 
 export function useMySentences() {
   return useQuery({
@@ -52,10 +44,12 @@ export function useMySentencesForLesson(lessonId: string) {
 }
 
 export function useCreateMySentence() {
-  const invalidate = useMySentenceInvalidator();
+  const {
+    seed,
+  } = useEntityCacheSync(MY_SENTENCES_KEY);
   return useMutation({
     mutationFn: (input: CreateMySentenceInput) => mySentencesApi.create(input),
-    onSuccess: invalidate,
+    onSuccess: seed,
     onError: err => toast.error("Couldn't save your sentence", {
       description: err instanceof Error ? err.message : undefined,
     }),
@@ -64,10 +58,12 @@ export function useCreateMySentence() {
 
 /** Bulk-create many my-sentences from pasted content in a single request. */
 export function useCreateMySentencesMany() {
-  const invalidate = useMySentenceInvalidator();
+  const {
+    seedMany,
+  } = useEntityCacheSync(MY_SENTENCES_KEY);
   return useMutation({
     mutationFn: (inputs: CreateMySentenceInput[]) => mySentencesApi.createMany(inputs),
-    onSuccess: invalidate,
+    onSuccess: seedMany,
     onError: err => toast.error("Couldn't import your sentences", {
       description: err instanceof Error ? err.message : undefined,
     }),
@@ -75,14 +71,16 @@ export function useCreateMySentencesMany() {
 }
 
 export function useUpdateMySentence() {
-  const invalidate = useMySentenceInvalidator();
+  const {
+    seed,
+  } = useEntityCacheSync(MY_SENTENCES_KEY);
   return useMutation({
     mutationFn: ({
       id, input,
     }: { id: string;
       input: UpdateMySentenceInput; }) =>
       mySentencesApi.update(id, input),
-    onSuccess: invalidate,
+    onSuccess: seed,
     onError: err => toast.error("Couldn't update your sentence", {
       description: err instanceof Error ? err.message : undefined,
     }),
@@ -90,7 +88,9 @@ export function useUpdateMySentence() {
 }
 
 export function useDeleteMySentence() {
-  const invalidate = useMySentenceInvalidator();
+  const {
+    invalidate,
+  } = useEntityCacheSync(MY_SENTENCES_KEY);
   return useMutation({
     mutationFn: (id: string) => mySentencesApi.remove(id),
     onSuccess: invalidate,

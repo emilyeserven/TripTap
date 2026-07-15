@@ -34,6 +34,9 @@ interface UiState {
   /** Which kana script the kana-only entry produces (hiragana vs katakana). */
   kanaScript: KanaScript;
   setKanaScript: (script: KanaScript) => void;
+  /** Whether pressing Enter in a note field adds the note (off to avoid clashing with IME confirm). */
+  enterToAddNote: boolean;
+  setEnterToAddNote: (on: boolean) => void;
 }
 
 export const useUiStore = create<UiState>(set => ({
@@ -60,5 +63,9 @@ export const useUiStore = create<UiState>(set => ({
   kanaScript: "hiragana",
   setKanaScript: script => set({
     kanaScript: script,
+  }),
+  enterToAddNote: true,
+  setEnterToAddNote: on => set({
+    enterToAddNote: on,
   }),
 }));

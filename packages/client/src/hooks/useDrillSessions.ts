@@ -1,20 +1,12 @@
 import type { CreateDrillSessionInput, UpdateDrillSessionInput } from "@sentence-bank/types";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 
+import { useEntityCacheSync } from "./useEntityCacheSync";
 import { drillSessionsApi } from "../lib/api";
 
 const DRILL_SESSIONS_KEY = ["drill-sessions"] as const;
-
-function useDrillSessionInvalidator() {
-  const queryClient = useQueryClient();
-  return () => {
-    queryClient.invalidateQueries({
-      queryKey: DRILL_SESSIONS_KEY,
-    });
-  };
-}
 
 export function useDrillSessions() {
   return useQuery({
@@ -32,10 +24,12 @@ export function useDrillSession(id: string) {
 }
 
 export function useCreateDrillSession() {
-  const invalidate = useDrillSessionInvalidator();
+  const {
+    seed,
+  } = useEntityCacheSync(DRILL_SESSIONS_KEY);
   return useMutation({
     mutationFn: (input: CreateDrillSessionInput) => drillSessionsApi.create(input),
-    onSuccess: invalidate,
+    onSuccess: seed,
     onError: err => toast.error("Couldn't save the drill session", {
       description: err instanceof Error ? err.message : undefined,
     }),
@@ -43,14 +37,16 @@ export function useCreateDrillSession() {
 }
 
 export function useUpdateDrillSession() {
-  const invalidate = useDrillSessionInvalidator();
+  const {
+    seed,
+  } = useEntityCacheSync(DRILL_SESSIONS_KEY);
   return useMutation({
     mutationFn: ({
       id, input,
     }: { id: string;
       input: UpdateDrillSessionInput; }) =>
       drillSessionsApi.update(id, input),
-    onSuccess: invalidate,
+    onSuccess: seed,
     onError: err => toast.error("Couldn't update the drill session", {
       description: err instanceof Error ? err.message : undefined,
     }),
@@ -58,7 +54,9 @@ export function useUpdateDrillSession() {
 }
 
 export function useDeleteDrillSession() {
-  const invalidate = useDrillSessionInvalidator();
+  const {
+    invalidate,
+  } = useEntityCacheSync(DRILL_SESSIONS_KEY);
   return useMutation({
     mutationFn: (id: string) => drillSessionsApi.remove(id),
     onSuccess: invalidate,

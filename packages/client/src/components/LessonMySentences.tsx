@@ -1,37 +1,31 @@
 import { useState } from "react";
 
-import { Plus } from "lucide-react";
+import { Plus, X } from "lucide-react";
 
 import { MySentenceCard } from "@/components/MySentenceCard";
 import { MySentenceForm } from "@/components/MySentenceForm";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { useMySentencesForLesson } from "@/hooks/useMySentences";
 
 /**
- * The "My Sentences" section on a lesson page: lists the sentences added from this lesson and offers a
- * dialog to add another (linked to the lesson, language prefilled). Reuses {@link MySentenceForm} and
- * {@link MySentenceCard} so the corrected-first display and full field set come for free.
+ * The "My Sentences" section for a lesson: lists the sentences added from this lesson and (unless
+ * `readOnly`) offers an inline `MySentenceForm` to add another — linked to the lesson, language
+ * prefilled. Reuses `MySentenceCard` so the corrected-first display comes for free.
  */
 export function LessonMySentences({
   lessonId,
   language,
+  readOnly = false,
 }: {
   lessonId: string;
   language: string;
+  readOnly?: boolean;
 }) {
   const {
     data: sentences, isLoading,
   } = useMySentencesForLesson(lessonId);
-  const [open, setOpen] = useState(false);
+  const [adding, setAdding] = useState(false);
 
   const shown = sentences ?? [];
   const nothing = !isLoading && shown.length === 0;
@@ -40,46 +34,52 @@ export function LessonMySentences({
     <section className="space-y-3">
       <div className="flex items-center justify-between">
         <Label>My Sentences</Label>
-        <Dialog
-          open={open}
-          onOpenChange={setOpen}
-        >
-          <DialogTrigger asChild>
+        {!readOnly && !adding
+          ? (
             <Button
+              type="button"
               size="sm"
               variant="outline"
+              onClick={() => setAdding(true)}
             >
               <Plus className="size-4" />
               Add My Sentence
             </Button>
-          </DialogTrigger>
-          <DialogContent
-            className="
-              max-h-[85vh] overflow-y-auto
-              sm:max-w-3xl
-            "
-          >
-            <DialogHeader>
-              <DialogTitle>Add a My Sentence</DialogTitle>
-              <DialogDescription>
-                A sentence you produced in this lesson. It’ll be linked to the lesson and appear in your
-                My Sentences.
-              </DialogDescription>
-            </DialogHeader>
+          )
+          : null}
+      </div>
+
+      {adding && !readOnly
+        ? (
+          <div className="space-y-3 rounded-md border p-4">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium">New My Sentence</p>
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                onClick={() => setAdding(false)}
+                aria-label="Cancel"
+              >
+                <X className="size-4" />
+              </Button>
+            </div>
             <MySentenceForm
               lessonId={lessonId}
               defaultLanguage={language}
-              onSuccess={() => setOpen(false)}
+              onSuccess={() => setAdding(false)}
             />
-          </DialogContent>
-        </Dialog>
-      </div>
+          </div>
+        )
+        : null}
 
       {isLoading ? <p className="text-sm text-muted-foreground">Loading…</p> : null}
       {nothing
         ? (
           <p className="text-sm text-muted-foreground">
-            No sentences from this lesson yet. Add one with “Add My Sentence”.
+            {readOnly
+              ? "No sentences from this lesson yet."
+              : "No sentences from this lesson yet. Add one with “Add My Sentence”."}
           </p>
         )
         : null}

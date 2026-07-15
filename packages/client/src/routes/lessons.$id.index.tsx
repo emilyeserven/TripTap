@@ -79,6 +79,7 @@ function ViewLessonPage() {
       <LessonMySentences
         lessonId={data.id}
         language={data.language}
+        readOnly
       />
     </section>
   );

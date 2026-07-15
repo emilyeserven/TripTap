@@ -197,7 +197,9 @@ html.slide-mode {
   display: flex !important;
   min-height: 100vh;
   flex-direction: column;
-  justify-content: center;
+  /* `safe` falls back to start-alignment when content overflows, so tall panels keep a reachable top
+     instead of centering the middle and hiding the top above the fold. */
+  justify-content: safe center;
   scroll-snap-align: start;
   margin-top: 0 !important;
 }

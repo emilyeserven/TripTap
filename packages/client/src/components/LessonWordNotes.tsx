@@ -160,6 +160,20 @@ export function LessonWordNotes({
             ))}
           </ul>
         )}
+
+      {wordNotes.length > 0
+        ? (
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={addWordNote}
+          >
+            <Plus className="size-4" />
+            Add word
+          </Button>
+        )
+        : null}
     </div>
   );
 }

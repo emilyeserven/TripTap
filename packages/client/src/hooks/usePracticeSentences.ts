@@ -6,18 +6,10 @@ import type {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
+import { useEntityCacheSync } from "./useEntityCacheSync";
 import { practiceSentencesApi } from "../lib/api";
 
 const PRACTICE_KEY = ["practice-sentences"] as const;
-
-function usePracticeSentenceInvalidator() {
-  const queryClient = useQueryClient();
-  return () => {
-    queryClient.invalidateQueries({
-      queryKey: PRACTICE_KEY,
-    });
-  };
-}
 
 export function usePracticeSentences() {
   return useQuery({
@@ -68,10 +60,12 @@ export function useSetPracticeSentenceVocab() {
 }
 
 export function useCreatePracticeSentence() {
-  const invalidate = usePracticeSentenceInvalidator();
+  const {
+    seed,
+  } = useEntityCacheSync(PRACTICE_KEY);
   return useMutation({
     mutationFn: (input: CreatePracticeSentenceInput) => practiceSentencesApi.create(input),
-    onSuccess: invalidate,
+    onSuccess: seed,
     onError: err => toast.error("Couldn't save practice sentence", {
       description: err instanceof Error ? err.message : undefined,
     }),
@@ -79,11 +73,13 @@ export function useCreatePracticeSentence() {
 }
 
 export function useCreatePracticeSentencesMany() {
-  const invalidate = usePracticeSentenceInvalidator();
+  const {
+    seedMany,
+  } = useEntityCacheSync(PRACTICE_KEY);
   return useMutation({
     mutationFn: (inputs: CreatePracticeSentenceInput[]) => practiceSentencesApi.createMany(inputs),
     onSuccess: (created) => {
-      invalidate();
+      seedMany(created);
       toast.success(
         created.length === 1
           ? "Imported 1 practice sentence"
@@ -97,14 +93,16 @@ export function useCreatePracticeSentencesMany() {
 }
 
 export function useUpdatePracticeSentence() {
-  const invalidate = usePracticeSentenceInvalidator();
+  const {
+    seed,
+  } = useEntityCacheSync(PRACTICE_KEY);
   return useMutation({
     mutationFn: ({
       id, input,
     }: { id: string;
       input: UpdatePracticeSentenceInput; }) =>
       practiceSentencesApi.update(id, input),
-    onSuccess: invalidate,
+    onSuccess: seed,
     onError: err => toast.error("Couldn't update practice sentence", {
       description: err instanceof Error ? err.message : undefined,
     }),
@@ -112,7 +110,9 @@ export function useUpdatePracticeSentence() {
 }
 
 export function useDeletePracticeSentence() {
-  const invalidate = usePracticeSentenceInvalidator();
+  const {
+    invalidate,
+  } = useEntityCacheSync(PRACTICE_KEY);
   return useMutation({
     mutationFn: (id: string) => practiceSentencesApi.remove(id),
     onSuccess: invalidate,

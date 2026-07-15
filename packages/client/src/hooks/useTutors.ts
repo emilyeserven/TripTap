@@ -1,20 +1,12 @@
 import type { CreateTutorInput, UpdateTutorInput } from "@sentence-bank/types";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 
+import { useEntityCacheSync } from "./useEntityCacheSync";
 import { tutorsApi } from "../lib/api";
 
 const TUTORS_KEY = ["tutors"] as const;
-
-function useTutorInvalidator() {
-  const queryClient = useQueryClient();
-  return () => {
-    queryClient.invalidateQueries({
-      queryKey: TUTORS_KEY,
-    });
-  };
-}
 
 export function useTutors() {
   return useQuery({
@@ -32,10 +24,12 @@ export function useTutor(id: string) {
 }
 
 export function useCreateTutor() {
-  const invalidate = useTutorInvalidator();
+  const {
+    seed,
+  } = useEntityCacheSync(TUTORS_KEY);
   return useMutation({
     mutationFn: (input: CreateTutorInput) => tutorsApi.create(input),
-    onSuccess: invalidate,
+    onSuccess: seed,
     onError: err => toast.error("Couldn't save the tutor", {
       description: err instanceof Error ? err.message : undefined,
     }),
@@ -43,14 +37,16 @@ export function useCreateTutor() {
 }
 
 export function useUpdateTutor() {
-  const invalidate = useTutorInvalidator();
+  const {
+    seed,
+  } = useEntityCacheSync(TUTORS_KEY);
   return useMutation({
     mutationFn: ({
       id, input,
     }: { id: string;
       input: UpdateTutorInput; }) =>
       tutorsApi.update(id, input),
-    onSuccess: invalidate,
+    onSuccess: seed,
     onError: err => toast.error("Couldn't update the tutor", {
       description: err instanceof Error ? err.message : undefined,
     }),
@@ -58,7 +54,9 @@ export function useUpdateTutor() {
 }
 
 export function useDeleteTutor() {
-  const invalidate = useTutorInvalidator();
+  const {
+    invalidate,
+  } = useEntityCacheSync(TUTORS_KEY);
   return useMutation({
     mutationFn: (id: string) => tutorsApi.remove(id),
     onSuccess: invalidate,

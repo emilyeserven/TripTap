@@ -1,20 +1,12 @@
 import type { CreateAnswerSheetInput, UpdateAnswerSheetInput } from "@sentence-bank/types";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 
+import { useEntityCacheSync } from "./useEntityCacheSync";
 import { answerSheetsApi } from "../lib/api";
 
 const ANSWER_SHEETS_KEY = ["answer-sheets"] as const;
-
-function useAnswerSheetInvalidator() {
-  const queryClient = useQueryClient();
-  return () => {
-    queryClient.invalidateQueries({
-      queryKey: ANSWER_SHEETS_KEY,
-    });
-  };
-}
 
 export function useAnswerSheets() {
   return useQuery({
@@ -32,10 +24,12 @@ export function useAnswerSheet(id: string) {
 }
 
 export function useCreateAnswerSheet() {
-  const invalidate = useAnswerSheetInvalidator();
+  const {
+    seed,
+  } = useEntityCacheSync(ANSWER_SHEETS_KEY);
   return useMutation({
     mutationFn: (input: CreateAnswerSheetInput) => answerSheetsApi.create(input),
-    onSuccess: invalidate,
+    onSuccess: seed,
     onError: err => toast.error("Couldn't save the answer sheet", {
       description: err instanceof Error ? err.message : undefined,
     }),
@@ -43,14 +37,16 @@ export function useCreateAnswerSheet() {
 }
 
 export function useUpdateAnswerSheet() {
-  const invalidate = useAnswerSheetInvalidator();
+  const {
+    seed,
+  } = useEntityCacheSync(ANSWER_SHEETS_KEY);
   return useMutation({
     mutationFn: ({
       id, input,
     }: { id: string;
       input: UpdateAnswerSheetInput; }) =>
       answerSheetsApi.update(id, input),
-    onSuccess: invalidate,
+    onSuccess: seed,
     onError: err => toast.error("Couldn't update the answer sheet", {
       description: err instanceof Error ? err.message : undefined,
     }),
@@ -58,7 +54,9 @@ export function useUpdateAnswerSheet() {
 }
 
 export function useDeleteAnswerSheet() {
-  const invalidate = useAnswerSheetInvalidator();
+  const {
+    invalidate,
+  } = useEntityCacheSync(ANSWER_SHEETS_KEY);
   return useMutation({
     mutationFn: (id: string) => answerSheetsApi.remove(id),
     onSuccess: invalidate,

@@ -1,20 +1,12 @@
 import type { CreateLessonInput, UpdateLessonInput } from "@sentence-bank/types";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 
+import { useEntityCacheSync } from "./useEntityCacheSync";
 import { lessonsApi } from "../lib/api";
 
 const LESSONS_KEY = ["lessons"] as const;
-
-function useLessonInvalidator() {
-  const queryClient = useQueryClient();
-  return () => {
-    queryClient.invalidateQueries({
-      queryKey: LESSONS_KEY,
-    });
-  };
-}
 
 /** All lessons, optionally scoped to a single tutor. */
 export function useLessons(tutorId?: string) {
@@ -35,10 +27,12 @@ export function useLesson(id: string) {
 }
 
 export function useCreateLesson() {
-  const invalidate = useLessonInvalidator();
+  const {
+    seed,
+  } = useEntityCacheSync(LESSONS_KEY);
   return useMutation({
     mutationFn: (input: CreateLessonInput) => lessonsApi.create(input),
-    onSuccess: invalidate,
+    onSuccess: seed,
     onError: err => toast.error("Couldn't save the lesson", {
       description: err instanceof Error ? err.message : undefined,
     }),
@@ -46,14 +40,16 @@ export function useCreateLesson() {
 }
 
 export function useUpdateLesson() {
-  const invalidate = useLessonInvalidator();
+  const {
+    seed,
+  } = useEntityCacheSync(LESSONS_KEY);
   return useMutation({
     mutationFn: ({
       id, input,
     }: { id: string;
       input: UpdateLessonInput; }) =>
       lessonsApi.update(id, input),
-    onSuccess: invalidate,
+    onSuccess: seed,
     onError: err => toast.error("Couldn't update the lesson", {
       description: err instanceof Error ? err.message : undefined,
     }),
@@ -61,7 +57,9 @@ export function useUpdateLesson() {
 }
 
 export function useDeleteLesson() {
-  const invalidate = useLessonInvalidator();
+  const {
+    invalidate,
+  } = useEntityCacheSync(LESSONS_KEY);
   return useMutation({
     mutationFn: (id: string) => lessonsApi.remove(id),
     onSuccess: invalidate,

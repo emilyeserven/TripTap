@@ -55,6 +55,8 @@ export interface Lesson {
   language: string;
   /** The associated tutor's id, or null. */
   tutorId: string | null;
+  /** General free-text notes (Markdown), shown above the listening notes; null if none. */
+  notes: string | null;
   /** Notes logged while listening; null if none. */
   listeningNotes: LessonListeningNote[] | null;
   /** Words noted during the lesson; null if none. */
@@ -73,6 +75,7 @@ export interface CreateLessonInput {
   language?: string;
   title?: string | null;
   tutorId?: string | null;
+  notes?: string | null;
   listeningNotes?: LessonListeningNote[] | null;
   wordNotes?: LessonWordNote[] | null;
   answerSheetIds?: string[] | null;
