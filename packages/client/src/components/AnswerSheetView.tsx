@@ -5,6 +5,7 @@ import { useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Check, TriangleAlert, X } from "lucide-react";
 
+import { Markdown } from "@/components/Markdown";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -433,13 +434,13 @@ function CorrectionModal({
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="reason-modal">Explanation</Label>
+                <Label htmlFor="reason-modal">Explanation (Markdown)</Label>
                 <Textarea
                   id="reason-modal"
                   value={entry.reasoning ?? ""}
                   onChange={e => setField(slotId, "reasoning", e.target.value)}
-                  placeholder="Why it was wrong"
-                  rows={2}
+                  placeholder="Why it was wrong — Markdown & multiple lines supported"
+                  rows={4}
                 />
               </div>
               <div
@@ -518,7 +519,10 @@ function EntryCorrections({
         ? (
           <div className="space-y-1">
             <Label className="text-sm">Explanation</Label>
-            <p className="text-sm text-muted-foreground">{entry.reasoning}</p>
+            <Markdown
+              content={entry.reasoning}
+              className="text-muted-foreground"
+            />
           </div>
         )
         : null}

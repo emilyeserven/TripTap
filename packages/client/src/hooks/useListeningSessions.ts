@@ -3,21 +3,13 @@ import type {
   UpdateListeningSessionInput,
 } from "@sentence-bank/types";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 
+import { useEntityCacheSync } from "./useEntityCacheSync";
 import { listeningSessionsApi } from "../lib/api";
 
 const LISTENING_SESSIONS_KEY = ["listening-sessions"] as const;
-
-function useListeningSessionInvalidator() {
-  const queryClient = useQueryClient();
-  return () => {
-    queryClient.invalidateQueries({
-      queryKey: LISTENING_SESSIONS_KEY,
-    });
-  };
-}
 
 export function useListeningSessions() {
   return useQuery({
@@ -34,10 +26,12 @@ export function useListeningSession(id: string) {
 }
 
 export function useCreateListeningSession() {
-  const invalidate = useListeningSessionInvalidator();
+  const {
+    seed,
+  } = useEntityCacheSync(LISTENING_SESSIONS_KEY);
   return useMutation({
     mutationFn: (input: CreateListeningSessionInput) => listeningSessionsApi.create(input),
-    onSuccess: invalidate,
+    onSuccess: seed,
     onError: err => toast.error("Couldn't create the listening session", {
       description: err instanceof Error ? err.message : undefined,
     }),
@@ -45,14 +39,16 @@ export function useCreateListeningSession() {
 }
 
 export function useUpdateListeningSession() {
-  const invalidate = useListeningSessionInvalidator();
+  const {
+    seed,
+  } = useEntityCacheSync(LISTENING_SESSIONS_KEY);
   return useMutation({
     mutationFn: ({
       id, input,
     }: { id: string;
       input: UpdateListeningSessionInput; }) =>
       listeningSessionsApi.update(id, input),
-    onSuccess: invalidate,
+    onSuccess: seed,
     onError: err => toast.error("Couldn't save the listening session", {
       description: err instanceof Error ? err.message : undefined,
     }),
@@ -60,7 +56,9 @@ export function useUpdateListeningSession() {
 }
 
 export function useDeleteListeningSession() {
-  const invalidate = useListeningSessionInvalidator();
+  const {
+    invalidate,
+  } = useEntityCacheSync(LISTENING_SESSIONS_KEY);
   return useMutation({
     mutationFn: (id: string) => listeningSessionsApi.remove(id),
     onSuccess: invalidate,

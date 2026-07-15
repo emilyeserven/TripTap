@@ -78,9 +78,12 @@ export function useCreateCapture() {
     }: { input: CreateCaptureInput;
       image: Blob | null; }) =>
       capturesApi.create(input, image),
-    onSuccess: () => queryClient.invalidateQueries({
-      queryKey: CAPTURES_KEY,
-    }),
+    onSuccess: (capture) => {
+      queryClient.setQueryData([...CAPTURES_KEY, capture.id], capture);
+      queryClient.invalidateQueries({
+        queryKey: CAPTURES_KEY,
+      });
+    },
   });
 }
 
@@ -93,11 +96,10 @@ export function useUpdateCapture() {
       input: UpdateCaptureInput; }) =>
       capturesApi.update(id, input),
     onSuccess: (capture) => {
+      // Seed the detail cache so the just-saved capture shows immediately, then refresh the list.
+      queryClient.setQueryData([...CAPTURES_KEY, capture.id], capture);
       queryClient.invalidateQueries({
         queryKey: CAPTURES_KEY,
-      });
-      queryClient.invalidateQueries({
-        queryKey: [...CAPTURES_KEY, capture.id],
       });
     },
   });

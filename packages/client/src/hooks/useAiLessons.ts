@@ -31,9 +31,12 @@ export function useImportAiLesson() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (input: AiLessonImportInput) => aiLessonsApi.import(input),
-    onSuccess: () => queryClient.invalidateQueries({
-      queryKey: AI_LESSONS_KEY,
-    }),
+    onSuccess: (saved) => {
+      queryClient.setQueryData([...AI_LESSONS_KEY, saved.slug], saved);
+      queryClient.invalidateQueries({
+        queryKey: AI_LESSONS_KEY,
+      });
+    },
   });
 }
 

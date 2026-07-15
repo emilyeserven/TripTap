@@ -236,13 +236,13 @@ function SlotBlock({
         />
       </div>
       <div className="space-y-1.5">
-        <Label>Explanation</Label>
+        <Label>Explanation (Markdown)</Label>
         <Textarea
           value={entry.reasoning ?? ""}
           onChange={e => onField("reasoning", e.target.value)}
           onBlur={flush}
-          placeholder="Why it was wrong"
-          rows={2}
+          placeholder="Why it was wrong — Markdown & multiple lines supported"
+          rows={4}
         />
       </div>
       <div

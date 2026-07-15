@@ -1,20 +1,12 @@
 import type { CreateWritingPromptInput, UpdateWritingPromptInput } from "@sentence-bank/types";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 
+import { useEntityCacheSync } from "./useEntityCacheSync";
 import { writingPromptsApi } from "../lib/api";
 
 const WRITING_PROMPTS_KEY = ["writing-prompts"] as const;
-
-function useWritingPromptInvalidator() {
-  const queryClient = useQueryClient();
-  return () => {
-    queryClient.invalidateQueries({
-      queryKey: WRITING_PROMPTS_KEY,
-    });
-  };
-}
 
 export function useWritingPrompts() {
   return useQuery({
@@ -31,10 +23,12 @@ export function useWritingPrompt(id: string) {
 }
 
 export function useCreateWritingPrompt() {
-  const invalidate = useWritingPromptInvalidator();
+  const {
+    seed,
+  } = useEntityCacheSync(WRITING_PROMPTS_KEY);
   return useMutation({
     mutationFn: (input: CreateWritingPromptInput) => writingPromptsApi.create(input),
-    onSuccess: invalidate,
+    onSuccess: seed,
     onError: err => toast.error("Couldn't create your prompt", {
       description: err instanceof Error ? err.message : undefined,
     }),
@@ -42,10 +36,12 @@ export function useCreateWritingPrompt() {
 }
 
 export function useCreateWritingPromptsMany() {
-  const invalidate = useWritingPromptInvalidator();
+  const {
+    seedMany,
+  } = useEntityCacheSync(WRITING_PROMPTS_KEY);
   return useMutation({
     mutationFn: (inputs: CreateWritingPromptInput[]) => writingPromptsApi.createMany(inputs),
-    onSuccess: invalidate,
+    onSuccess: seedMany,
     onError: err => toast.error("Couldn't add your prompts", {
       description: err instanceof Error ? err.message : undefined,
     }),
@@ -53,14 +49,16 @@ export function useCreateWritingPromptsMany() {
 }
 
 export function useUpdateWritingPrompt() {
-  const invalidate = useWritingPromptInvalidator();
+  const {
+    seed,
+  } = useEntityCacheSync(WRITING_PROMPTS_KEY);
   return useMutation({
     mutationFn: ({
       id, input,
     }: { id: string;
       input: UpdateWritingPromptInput; }) =>
       writingPromptsApi.update(id, input),
-    onSuccess: invalidate,
+    onSuccess: seed,
     onError: err => toast.error("Couldn't save your prompt", {
       description: err instanceof Error ? err.message : undefined,
     }),
@@ -68,7 +66,9 @@ export function useUpdateWritingPrompt() {
 }
 
 export function useDeleteWritingPrompt() {
-  const invalidate = useWritingPromptInvalidator();
+  const {
+    invalidate,
+  } = useEntityCacheSync(WRITING_PROMPTS_KEY);
   return useMutation({
     mutationFn: (id: string) => writingPromptsApi.remove(id),
     onSuccess: invalidate,
