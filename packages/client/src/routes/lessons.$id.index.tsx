@@ -1,8 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, Pencil } from "lucide-react";
 
-import { LessonMySentences } from "@/components/LessonMySentences";
 import { LessonView } from "@/components/LessonView";
+import { LessonViewOptions } from "@/components/LessonViewOptions";
 import { Button } from "@/components/ui/button";
 import { useLesson } from "@/hooks/useLessons";
 
@@ -36,6 +36,7 @@ function ViewLessonPage() {
           </Link>
         </Button>
         <div className="flex items-center gap-2">
+          <LessonViewOptions />
           <Button
             asChild
             variant="outline"
@@ -55,12 +56,6 @@ function ViewLessonPage() {
       </div>
 
       <LessonView lesson={data} />
-
-      <LessonMySentences
-        lessonId={data.id}
-        language={data.language}
-        readOnly
-      />
     </section>
   );
 }

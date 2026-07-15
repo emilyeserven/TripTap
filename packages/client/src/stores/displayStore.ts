@@ -19,6 +19,12 @@ export type SuperFocusSpace = "s" | "m" | "l";
  */
 export type SlideProgress = "none" | "line" | "boxes";
 
+/** How the lesson-view sections are laid out: stacked collapsible cards, or a tabbed switcher. */
+export type LessonSectionLayout = "cards" | "tabs";
+
+/** How many columns the lesson-view Word notes wrap into (collapses to fewer when narrow). */
+export type LessonWordColumns = 1 | 2 | 3;
+
 interface DisplayState {
   /** Light/dark theme; `system` tracks the OS preference until the user picks explicitly. */
   theme: Theme;
@@ -47,6 +53,12 @@ interface DisplayState {
   /** Whether the content column is constrained (`normal`) or spans the full width (`wide`). */
   containerWidth: ContainerWidth;
   setContainerWidth: (width: ContainerWidth) => void;
+  /** Lesson view: render sections as stacked collapsible cards or as a tabbed switcher. */
+  lessonSectionLayout: LessonSectionLayout;
+  setLessonSectionLayout: (layout: LessonSectionLayout) => void;
+  /** Lesson view: how many columns the Word notes wrap into. */
+  lessonWordColumns: LessonWordColumns;
+  setLessonWordColumns: (columns: LessonWordColumns) => void;
 }
 
 /**
@@ -88,6 +100,14 @@ export const useDisplayStore = create<DisplayState>()(
       containerWidth: "normal",
       setContainerWidth: width => set({
         containerWidth: width,
+      }),
+      lessonSectionLayout: "cards",
+      setLessonSectionLayout: layout => set({
+        lessonSectionLayout: layout,
+      }),
+      lessonWordColumns: 1,
+      setLessonWordColumns: columns => set({
+        lessonWordColumns: columns,
       }),
     }),
     {

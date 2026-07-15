@@ -19,10 +19,14 @@ export function LessonMySentences({
   lessonId,
   language,
   readOnly = false,
+  bare = false,
 }: {
   lessonId: string;
   language: string;
   readOnly?: boolean;
+  /** Render just the content, without the `CollapsibleSection` wrapper (the caller supplies the section
+   * container — e.g. the lesson view's cards/tabs layout). Intended for read-only embedding. */
+  bare?: boolean;
 }) {
   const {
     data: sentences, isLoading,
@@ -33,23 +37,8 @@ export function LessonMySentences({
   const shown = sentences ?? [];
   const nothing = !isLoading && shown.length === 0;
 
-  return (
-    <CollapsibleSection
-      title="My Sentences"
-      action={!readOnly && !adding
-        ? (
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            onClick={() => setAdding(true)}
-          >
-            <Plus className="size-4" />
-            Add My Sentence
-          </Button>
-        )
-        : undefined}
-    >
+  const content = (
+    <>
       {adding && !readOnly
         ? (
           <div className="space-y-3 rounded-md border p-4">
@@ -121,6 +110,29 @@ export function LessonMySentences({
               />
             ))}
       </div>
+    </>
+  );
+
+  if (bare) return content;
+
+  return (
+    <CollapsibleSection
+      title="My Sentences"
+      action={!readOnly && !adding
+        ? (
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => setAdding(true)}
+          >
+            <Plus className="size-4" />
+            Add My Sentence
+          </Button>
+        )
+        : undefined}
+    >
+      {content}
     </CollapsibleSection>
   );
 }

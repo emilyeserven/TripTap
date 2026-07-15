@@ -39,12 +39,25 @@ export function CorrectionDiff({
   const byChar = shouldCharDiff(language, written, correct);
   const parts = byChar ? diffChars(written, correct) : diffWords(written, correct);
 
+  // jsdiff emits a substitution as removed (incorrect) then added (correct). Swap each such pair so the
+  // corrected text reads before the struck-through original — "correct part before the incorrect part".
+  const ordered: typeof parts = [];
+  for (let i = 0; i < parts.length; i++) {
+    if (parts[i].removed && parts[i + 1]?.added) {
+      ordered.push(parts[i + 1], parts[i]);
+      i++;
+    }
+    else {
+      ordered.push(parts[i]);
+    }
+  }
+
   return (
     <p
       className={cn("text-base/relaxed", className)}
       aria-label="Diff of your sentence against the correction"
     >
-      {parts.map((part, i) => {
+      {ordered.map((part, i) => {
         if (part.added) {
           return (
             <span

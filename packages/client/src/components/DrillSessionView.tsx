@@ -17,24 +17,22 @@ export function DrillSessionView({
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardContent className="space-y-2 p-4">
-          <p className="text-xl font-semibold">{session.title ?? session.date}</p>
-          <div
-            className="
-              flex flex-wrap items-center gap-2 text-xs text-muted-foreground
-            "
-          >
-            <span>{session.date}</span>
-            <Badge variant="secondary">
-              {mistakes.length} {mistakes.length === 1 ? "mistake" : "mistakes"}
-            </Badge>
-          </div>
-          {session.notes
-            ? <p className="text-sm whitespace-pre-wrap">{session.notes}</p>
-            : null}
-        </CardContent>
-      </Card>
+      <div className="space-y-2">
+        <p className="text-xl font-semibold">{session.title ?? session.date}</p>
+        <div
+          className="
+            flex flex-wrap items-center gap-2 text-xs text-muted-foreground
+          "
+        >
+          <span>{session.date}</span>
+          <Badge variant="secondary">
+            {mistakes.length} {mistakes.length === 1 ? "mistake" : "mistakes"}
+          </Badge>
+        </div>
+        {session.notes
+          ? <p className="text-sm whitespace-pre-wrap">{session.notes}</p>
+          : null}
+      </div>
 
       {mistakes.length === 0
         ? <p className="text-sm text-muted-foreground">No mistakes logged in this session.</p>
