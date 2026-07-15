@@ -477,6 +477,7 @@ export const lessons = pgTable("lessons", {
   tutorId: uuid("tutor_id").references((): AnyPgColumn => tutors.id, {
     onDelete: "set null",
   }),
+  notes: text("notes"),
   listeningNotes: jsonb("listening_notes").$type<LessonListeningNote[]>(),
   wordNotes: jsonb("word_notes").$type<LessonWordNote[]>(),
   answerSheetIds: jsonb("answer_sheet_ids").$type<string[]>(),

@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 
 import { LessonForm } from "@/components/LessonForm";
@@ -15,7 +15,6 @@ function EditLessonPage() {
   const {
     id,
   } = Route.useParams();
-  const navigate = useNavigate();
   const {
     data, isLoading, error,
   } = useLesson(id);
@@ -38,19 +37,10 @@ function EditLessonPage() {
           }}
         >
           <ArrowLeft className="size-4" />
-          Back to lesson
+          Done — back to lesson
         </Link>
       </Button>
-      <LessonForm
-        lesson={data}
-        onSuccess={() =>
-          navigate({
-            to: "/lessons/$id",
-            params: {
-              id,
-            },
-          })}
-      />
+      <LessonForm lesson={data} />
     </section>
   );
 }

@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 
 import { AnswerSheetForm } from "@/components/AnswerSheetForm";
@@ -15,7 +15,6 @@ function EditAnswerSheetPage() {
   const {
     id,
   } = Route.useParams();
-  const navigate = useNavigate();
   const {
     data, isLoading, error,
   } = useAnswerSheet(id);
@@ -38,24 +37,10 @@ function EditAnswerSheetPage() {
           }}
         >
           <ArrowLeft className="size-4" />
-          Back to answer sheet
+          Done — back to answer sheet
         </Link>
       </Button>
-      <div>
-        <p className="text-sm text-muted-foreground">
-          Update your answers, or use the Corrections tab to record what went wrong and why.
-        </p>
-      </div>
-      <AnswerSheetForm
-        answerSheet={data}
-        onSuccess={() =>
-          navigate({
-            to: "/answer-sheets/$id",
-            params: {
-              id,
-            },
-          })}
-      />
+      <AnswerSheetForm answerSheet={data} />
     </section>
   );
 }

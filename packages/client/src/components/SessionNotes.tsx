@@ -7,6 +7,7 @@ import { toKana } from "wanakana";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import { newId } from "@/lib/id";
 import { formatTime, parseSectionTime } from "@/lib/time";
 import { useUiStore } from "@/stores/uiStore";
@@ -35,6 +36,8 @@ export function SessionNotes({
   const timestampMode = useUiStore(s => s.timestampMode);
   const kanaEntry = useUiStore(s => s.kanaEntry);
   const kanaScript = useUiStore(s => s.kanaScript);
+  const enterToAddNote = useUiStore(s => s.enterToAddNote);
+  const setEnterToAddNote = useUiStore(s => s.setEnterToAddNote);
   const [inputValue, setInputValue] = useState("");
   const [contextValue, setContextValue] = useState("");
   const [typingStartMs, setTypingStartMs] = useState<number | null>(null);
@@ -101,7 +104,9 @@ export function SessionNotes({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
+    // Ignore the Enter that confirms an IME candidate — otherwise a note is added mid-composition.
+    if (e.nativeEvent.isComposing || e.keyCode === 229) return;
+    if (e.key === "Enter" && enterToAddNote) {
       e.preventDefault();
       submit();
     }
@@ -137,6 +142,16 @@ export function SessionNotes({
 
   return (
     <div className="space-y-3">
+      <div className="flex justify-end">
+        <label className="flex items-center gap-2 text-sm">
+          <Switch
+            checked={enterToAddNote}
+            onCheckedChange={setEnterToAddNote}
+            aria-label="Enter adds note"
+          />
+          Enter adds note
+        </label>
+      </div>
       <div className="flex gap-2">
         <div className="flex flex-1 flex-col gap-2">
           <Input
