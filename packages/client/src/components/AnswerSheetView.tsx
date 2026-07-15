@@ -8,7 +8,6 @@ import { Check, Eye, EyeOff, X } from "lucide-react";
 import { Markdown } from "@/components/Markdown";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -136,62 +135,64 @@ export function AnswerSheetView({
     });
     setCorrectingSlotId(slotId);
   }
+  /** Re-open the correction modal for a slot that already has corrections, without changing its verdict. */
+  function editCorrections(slotId: string) {
+    setCorrectingSlotId(slotId);
+  }
   function closeModal() {
     persist(entriesRef.current);
     setCorrectingSlotId(null);
   }
 
   return (
-    <Card>
-      <CardContent className="space-y-4 p-4">
-        <div>
-          <p className="text-xl font-semibold">{as.title ?? "Answer sheet"}</p>
-          <div
-            className="
-              mt-1 flex flex-wrap items-center gap-2 text-xs
-              text-muted-foreground
-            "
-          >
-            {sheet
-              ? (
-                <Link
-                  to="/question-sheets/$id"
-                  params={{
-                    id: sheet.id,
-                  }}
-                  className="hover:text-foreground"
-                >
-                  From: {sheet.title}
-                </Link>
-              )
-              : <span>From a question sheet</span>}
-            <Badge variant="secondary">
-              {as.entries.length} {as.entries.length === 1 ? "answer" : "answers"}
-            </Badge>
-            <span className="text-muted-foreground">Hover an answer to mark it ✓ or ✗.</span>
-          </div>
-        </div>
-
-        {slots.length === 0
-          ? <p className="text-sm text-muted-foreground">No answers recorded.</p>
-          : isGrid && sheet?.grid
+    <div className="space-y-4">
+      <div>
+        <p className="text-xl font-semibold">{as.title ?? "Answer sheet"}</p>
+        <div
+          className="
+            mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground
+          "
+        >
+          {sheet
             ? (
-              <GridCorrectableView
-                grid={sheet.grid}
-                getEntry={getEntry}
-                markCorrect={markCorrect}
-                markWrong={markWrong}
-              />
+              <Link
+                to="/question-sheets/$id"
+                params={{
+                  id: sheet.id,
+                }}
+                className="hover:text-foreground"
+              >
+                From: {sheet.title}
+              </Link>
             )
-            : (
-              <ListCorrectableView
-                slots={slots}
-                getEntry={getEntry}
-                markCorrect={markCorrect}
-                markWrong={markWrong}
-              />
-            )}
-      </CardContent>
+            : <span>From a question sheet</span>}
+          <Badge variant="secondary">
+            {as.entries.length} {as.entries.length === 1 ? "answer" : "answers"}
+          </Badge>
+          <span className="text-muted-foreground">Hover an answer to mark it ✓ or ✗.</span>
+        </div>
+      </div>
+
+      {slots.length === 0
+        ? <p className="text-sm text-muted-foreground">No answers recorded.</p>
+        : isGrid && sheet?.grid
+          ? (
+            <GridCorrectableView
+              grid={sheet.grid}
+              getEntry={getEntry}
+              markCorrect={markCorrect}
+              markWrong={markWrong}
+            />
+          )
+          : (
+            <ListCorrectableView
+              slots={slots}
+              getEntry={getEntry}
+              markCorrect={markCorrect}
+              markWrong={markWrong}
+              editCorrections={editCorrections}
+            />
+          )}
 
       <CorrectionModal
         slotId={correctingSlotId}
@@ -200,24 +201,27 @@ export function AnswerSheetView({
         setField={setField}
         onClose={closeModal}
       />
-    </Card>
+    </div>
   );
 }
 
 /**
- * The ✓ / ✗ review controls for one slot. The ✗ is revealed on hover; the ✓ is revealed on hover too,
- * except once an answer is marked correct it stays visible (solid green) as a persistent indicator.
+ * The ✓ / ✗ review controls for one slot. The ✗ is revealed on hover; the ✓ is revealed on hover too.
+ * When `persistentCorrect` (the grid), a marked-correct ✓ stays visible as the indicator; the list passes
+ * `false` because it shows a persistent ✓/✗ mark to the left of the label instead.
  */
 function HoverActions({
   slotId,
   correct,
   markCorrect,
   markWrong,
+  persistentCorrect = true,
 }: {
   slotId: string;
   correct: boolean | null;
   markCorrect: (slotId: string) => void;
   markWrong: (slotId: string) => void;
+  persistentCorrect?: boolean;
 }) {
   return (
     <span className="flex shrink-0 items-center gap-1">
@@ -229,7 +233,7 @@ function HoverActions({
         aria-pressed={correct === true}
         className={cn(
           "size-6 text-green-600 transition-opacity",
-          correct === true
+          correct === true && persistentCorrect
             ? "opacity-100"
             : `
               opacity-0
@@ -340,12 +344,14 @@ function ListCorrectableView({
   getEntry,
   markCorrect,
   markWrong,
+  editCorrections,
 }: {
   slots: { id: string;
     label: string; }[];
   getEntry: (slotId: string) => AnswerSheetEntry;
   markCorrect: (slotId: string) => void;
   markWrong: (slotId: string) => void;
+  editCorrections: (slotId: string) => void;
 }) {
   const answered = slots.filter((s) => {
     const e = getEntry(s.id);
@@ -367,6 +373,7 @@ function ListCorrectableView({
             entry={entry}
             markCorrect={markCorrect}
             markWrong={markWrong}
+            editCorrections={editCorrections}
           />
         );
       })}
@@ -383,28 +390,51 @@ function AnswerEntryBlock({
   entry,
   markCorrect,
   markWrong,
+  editCorrections,
 }: {
   slot: { id: string;
     label: string; };
   entry: AnswerSheetEntry;
   markCorrect: (slotId: string) => void;
   markWrong: (slotId: string) => void;
+  editCorrections: (slotId: string) => void;
 }) {
   const corrected = entry.correction?.trim() ? entry.correction : null;
+  const hasCorrections = hasCorrectionDetail(entry);
   const [showOriginal, setShowOriginal] = useState(false);
 
   return (
     <div className="group space-y-2 rounded-md border p-3">
       <div className="flex items-start justify-between gap-2">
-        <p className="text-sm font-medium">{slot.label}</p>
+        <div className="flex items-center gap-1.5">
+          {entry.correct === true
+            ? <Check className="size-4 shrink-0 text-green-600" />
+            : entry.correct === false || corrected
+              ? <X className="size-4 shrink-0 text-destructive" />
+              : null}
+          <p className="text-sm font-medium">{slot.label}</p>
+        </div>
         <div className="flex items-center gap-2">
-          {corrected ? <Badge variant="outline">Corrected</Badge> : null}
-          <HoverActions
-            slotId={slot.id}
-            correct={entry.correct}
-            markCorrect={markCorrect}
-            markWrong={markWrong}
-          />
+          {hasCorrections
+            ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => editCorrections(slot.id)}
+              >
+                Edit corrections
+              </Button>
+            )
+            : (
+              <HoverActions
+                slotId={slot.id}
+                correct={entry.correct}
+                markCorrect={markCorrect}
+                markWrong={markWrong}
+                persistentCorrect={false}
+              />
+            )}
         </div>
       </div>
 
