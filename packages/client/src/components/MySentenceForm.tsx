@@ -24,6 +24,7 @@ export function MySentenceForm({
   onSuccess,
   lessonId,
   defaultLanguage,
+  embedded = false,
 }: {
   mySentence?: MySentence;
   onSuccess?: (id: string) => void;
@@ -31,6 +32,12 @@ export function MySentenceForm({
   lessonId?: string;
   /** Seeds the language field for a fresh sentence (e.g. the lesson's language). */
   defaultLanguage?: string;
+  /**
+   * Render without a `<form>` element (a plain `<div>`, submitting on button click). Use when nesting
+   * inside another form — e.g. the lesson editor — since nested forms cause the outer form to submit
+   * and the page to reload before the sentence saves.
+   */
+  embedded?: boolean;
 }) {
   const create = useCreateMySentence();
   const update = useUpdateMySentence();
@@ -88,14 +95,8 @@ export function MySentenceForm({
     onSuccess?.(saved.id);
   };
 
-  return (
-    <form
-      className="space-y-4"
-      onSubmit={(e) => {
-        e.preventDefault();
-        void submit();
-      }}
-    >
+  const content = (
+    <>
       <div className="space-y-1.5">
         <Label htmlFor="ms-text">Sentence you wrote</Label>
         <Textarea
@@ -228,8 +229,9 @@ export function MySentenceForm({
 
       <div className="flex items-center gap-2">
         <Button
-          type="submit"
+          type={embedded ? "button" : "submit"}
           disabled={!canSubmit}
+          onClick={embedded ? () => void submit() : undefined}
         >
           {pending
             ? "Saving…"
@@ -238,6 +240,22 @@ export function MySentenceForm({
               : "Add sentence"}
         </Button>
       </div>
+    </>
+  );
+
+  if (embedded) {
+    return <div className="space-y-4">{content}</div>;
+  }
+
+  return (
+    <form
+      className="space-y-4"
+      onSubmit={(e) => {
+        e.preventDefault();
+        void submit();
+      }}
+    >
+      {content}
     </form>
   );
 }
