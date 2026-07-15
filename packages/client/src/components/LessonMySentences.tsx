@@ -6,12 +6,14 @@ import { CollapsibleSection } from "@/components/CollapsibleSection";
 import { MySentenceCard } from "@/components/MySentenceCard";
 import { MySentenceForm } from "@/components/MySentenceForm";
 import { Button } from "@/components/ui/button";
-import { useMySentencesForLesson } from "@/hooks/useMySentences";
+import { useDeleteMySentence, useMySentencesForLesson } from "@/hooks/useMySentences";
 
 /**
  * The "My Sentences" section for a lesson: lists the sentences added from this lesson and (unless
- * `readOnly`) offers an inline `MySentenceForm` to add another — linked to the lesson, language
- * prefilled. Reuses `MySentenceCard` so the corrected-first display comes for free.
+ * `readOnly`) lets the learner add, edit, and delete them **inline** — the whole flow stays on the
+ * lesson page, no navigation. The `MySentenceForm` renders `embedded` (a plain `<div>`, not a nested
+ * `<form>`) so the lesson's own form doesn't submit and reload the page on save. Reuses
+ * `MySentenceCard` so the corrected-first display comes for free.
  */
 export function LessonMySentences({
   lessonId,
@@ -25,7 +27,9 @@ export function LessonMySentences({
   const {
     data: sentences, isLoading,
   } = useMySentencesForLesson(lessonId);
+  const deleteMySentence = useDeleteMySentence();
   const [adding, setAdding] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const shown = sentences ?? [];
   const nothing = !isLoading && shown.length === 0;
@@ -63,6 +67,7 @@ export function LessonMySentences({
               </Button>
             </div>
             <MySentenceForm
+              embedded
               lessonId={lessonId}
               defaultLanguage={language}
               onSuccess={() => setAdding(false)}
@@ -83,12 +88,42 @@ export function LessonMySentences({
         : null}
 
       <div className="space-y-3">
-        {shown.map(ms => (
-          <MySentenceCard
-            key={ms.id}
-            mySentence={ms}
-          />
-        ))}
+        {shown.map(ms =>
+          editingId === ms.id && !readOnly
+            ? (
+              <div
+                key={ms.id}
+                className="space-y-3 rounded-md border p-4"
+              >
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium">Edit sentence</p>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setEditingId(null)}
+                    aria-label="Cancel"
+                  >
+                    <X className="size-4" />
+                  </Button>
+                </div>
+                <MySentenceForm
+                  embedded
+                  mySentence={ms}
+                  onSuccess={() => setEditingId(null)}
+                />
+              </div>
+            )
+            : (
+              <MySentenceCard
+                key={ms.id}
+                mySentence={ms}
+                onEdit={readOnly ? undefined : setEditingId}
+                onDelete={readOnly
+                  ? undefined
+                  : id => deleteMySentence.mutate(id)}
+              />
+            ))}
       </div>
     </CollapsibleSection>
   );

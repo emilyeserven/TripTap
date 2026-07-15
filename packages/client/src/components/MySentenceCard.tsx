@@ -20,9 +20,13 @@ import { Card, CardContent } from "@/components/ui/card";
 export function MySentenceCard({
   mySentence: ms,
   onDelete,
+  onEdit,
 }: {
   mySentence: MySentence;
   onDelete?: (id: string) => void;
+  /** When provided, "Edit" becomes an in-page button (this callback) instead of a link to the edit
+   * route — used where the sentence is edited inline, e.g. within a lesson. */
+  onEdit?: (id: string) => void;
 }) {
   const termGroups = groupTermsByCategory(ms.terms ?? []);
   const corrected = ms.correction?.trim() ? ms.correction : null;
@@ -45,20 +49,33 @@ export function MySentenceCard({
             {corrected ?? ms.text}
           </Link>
           <div className="flex shrink-0 items-center gap-2">
-            <Button
-              asChild
-              variant="ghost"
-              size="sm"
-            >
-              <Link
-                to="/my-sentences/$id/edit"
-                params={{
-                  id: ms.id,
-                }}
-              >
-                Edit
-              </Link>
-            </Button>
+            {onEdit
+              ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onEdit(ms.id)}
+                >
+                  Edit
+                </Button>
+              )
+              : (
+                <Button
+                  asChild
+                  variant="ghost"
+                  size="sm"
+                >
+                  <Link
+                    to="/my-sentences/$id/edit"
+                    params={{
+                      id: ms.id,
+                    }}
+                  >
+                    Edit
+                  </Link>
+                </Button>
+              )}
             {onDelete
               ? (
                 <button
