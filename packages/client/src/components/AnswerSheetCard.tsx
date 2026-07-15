@@ -16,7 +16,7 @@ export function AnswerSheetCard({
 }) {
   const sheets = useQuestionSheets();
   const sheet = (sheets.data ?? []).find(s => s.id === as.questionSheetId);
-  const needsCorrection = as.entries.filter(e => e.needsCorrection).length;
+  const corrected = as.entries.filter(e => e.correction?.trim()).length;
 
   return (
     <Card>
@@ -54,13 +54,10 @@ export function AnswerSheetCard({
           <Badge variant="secondary">
             {as.entries.length} {as.entries.length === 1 ? "answer" : "answers"}
           </Badge>
-          {needsCorrection > 0
+          {corrected > 0
             ? (
-              <Badge
-                variant="outline"
-                className="border-destructive/40 text-destructive"
-              >
-                {needsCorrection} to correct
+              <Badge variant="outline">
+                {corrected} corrected
               </Badge>
             )
             : null}

@@ -39,8 +39,7 @@ test("POST /api/answer-sheets rejects an entry missing required fields", async (
       questionSheetId: "11111111-1111-1111-1111-111111111111",
       entries: [{
         slotId: "q1",
-        value: "食べます",
-      }], // needsCorrection omitted → invalid
+      }], // value omitted → invalid
     },
   });
   assert.equal(res.statusCode, 400);
@@ -59,7 +58,7 @@ test("POST /api/answer-sheets accepts a valid payload with answers and a correct
         {
           slotId: "q1:0",
           value: "食べます",
-          needsCorrection: false,
+          correct: true,
           correction: null,
           reasoning: null,
           intendedMeaning: null,
@@ -68,7 +67,7 @@ test("POST /api/answer-sheets accepts a valid payload with answers and a correct
         {
           slotId: "q2",
           value: "週末に映画を見った。",
-          needsCorrection: true,
+          correct: false,
           correction: "週末に映画を見た。",
           reasoning: "見る is ichidan, so the past tense is 見た, not 見った.",
           intendedMeaning: "I watched a movie over the weekend.",

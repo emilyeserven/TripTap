@@ -3,10 +3,10 @@ import type { LessonWordNote } from "@sentence-bank/types";
 import { Plus, Trash2 } from "lucide-react";
 import { toKana } from "wanakana";
 
+import { CollapsibleSection } from "@/components/CollapsibleSection";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { newId } from "@/lib/id";
 import { useUiStore } from "@/stores/uiStore";
@@ -53,14 +53,10 @@ export function LessonWordNotes({
   const removeWord = (id: string) => onChange(wordNotes.filter(w => w.id !== id));
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <div>
-          <Label>Word notes</Label>
-          <p className="text-xs text-muted-foreground">
-            Every field is optional — fill in whatever you know. Reading is kana-only.
-          </p>
-        </div>
+    <CollapsibleSection
+      title="Word notes"
+      description="Every field is optional — fill in whatever you know. Reading is kana-only."
+      action={(
         <Button
           type="button"
           size="sm"
@@ -69,8 +65,8 @@ export function LessonWordNotes({
           <Plus className="size-4" />
           Add word
         </Button>
-      </div>
-
+      )}
+    >
       {wordNotes.length === 0
         ? <p className="text-sm text-muted-foreground">No words noted yet.</p>
         : (
@@ -174,6 +170,6 @@ export function LessonWordNotes({
           </Button>
         )
         : null}
-    </div>
+    </CollapsibleSection>
   );
 }

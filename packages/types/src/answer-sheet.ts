@@ -2,12 +2,13 @@
  * One filled-in answer for a single slot of the referenced {@link QuestionSheet}. Only slots the user
  * has touched get an entry. The correction fields mirror the {@link MySentence} entity's phrasing:
  * `intendedMeaning` = what the learner meant to say, `actualMeaning` = what the answer actually says,
- * `correction` = the corrected answer, `reasoning` = why it was wrong.
+ * `correction` = the corrected answer, `reasoning` = why it was wrong. `correct` records the review
+ * verdict: `true` = marked correct, `false` = marked wrong, `null`/absent = not yet reviewed.
  */
 export interface AnswerSheetEntry {
   slotId: string;
   value: string;
-  needsCorrection: boolean;
+  correct: boolean | null;
   correction: string | null;
   reasoning: string | null;
   intendedMeaning: string | null;

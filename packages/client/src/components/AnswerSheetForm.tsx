@@ -6,7 +6,6 @@ import type {
 
 import { useMemo, useState } from "react";
 
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -20,7 +19,7 @@ function emptyEntry(slotId: string): AnswerSheetEntry {
   return {
     slotId,
     value: "",
-    needsCorrection: false,
+    correct: null,
     correction: null,
     reasoning: null,
     intendedMeaning: null,
@@ -28,10 +27,10 @@ function emptyEntry(slotId: string): AnswerSheetEntry {
   };
 }
 
-/** True once the user has put anything into a slot (an answer, a correction, or the flag). */
+/** True once the user has put anything into a slot (an answer, a correction, or a review verdict). */
 function isTouched(e: AnswerSheetEntry): boolean {
   return e.value.trim().length > 0
-    || e.needsCorrection
+    || e.correct != null
     || Boolean(e.correction?.trim())
     || Boolean(e.reasoning?.trim())
     || Boolean(e.intendedMeaning?.trim())
@@ -47,8 +46,8 @@ const SAVE_LABEL: Record<string, string> = {
 /**
  * The Answer Sheet editor — one filled-in attempt at a Question Sheet. The sheet is created up front
  * (minimal question-sheet pick) so it always has an id here; this form then **autosaves** every change
- * (fields flush on blur, the correction flag saves on change). Each question is its own block — a
- * direct `<form>` child — so slide mode gives each question its own panel. Only touched slots are saved.
+ * (fields flush on blur). Each question is its own block — a direct `<form>` child — so slide mode gives
+ * each question its own panel. Only touched slots are saved. Marking correct/wrong happens in the view.
  */
 export function AnswerSheetForm({
   answerSheet,
@@ -218,13 +217,6 @@ function SlotBlock({
           </div>
         )}
 
-      <label className="flex items-center gap-2 text-sm">
-        <Checkbox
-          checked={entry.needsCorrection}
-          onCheckedChange={v => onField("needsCorrection", v === true)}
-        />
-        Needs correction
-      </label>
       <div className="space-y-1.5">
         <Label>Correction</Label>
         <Textarea

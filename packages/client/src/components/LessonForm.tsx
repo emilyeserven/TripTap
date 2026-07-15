@@ -6,6 +6,7 @@ import type {
 
 import { useMemo, useState } from "react";
 
+import { CollapsibleSection } from "@/components/CollapsibleSection";
 import { LessonListeningNotes } from "@/components/LessonListeningNotes";
 import { LessonMySentences } from "@/components/LessonMySentences";
 import { LessonWordNotes } from "@/components/LessonWordNotes";
@@ -150,11 +151,10 @@ export function LessonForm({
         />
       </div>
 
-      <div className="space-y-1.5">
-        <Label htmlFor="lesson-notes">Notes (Markdown)</Label>
-        <p className="text-xs text-muted-foreground">
-          General notes for the lesson. Markdown is supported.
-        </p>
+      <CollapsibleSection
+        title="Notes (Markdown)"
+        description="General notes for the lesson. Markdown is supported."
+      >
         <Textarea
           id="lesson-notes"
           value={notes}
@@ -162,8 +162,9 @@ export function LessonForm({
           onBlur={flush}
           placeholder="# Topics&#10;- …"
           rows={4}
+          aria-label="Notes"
         />
-      </div>
+      </CollapsibleSection>
 
       <LessonListeningNotes
         notes={listeningNotes}
@@ -175,11 +176,10 @@ export function LessonForm({
         onChange={setWordNotes}
       />
 
-      <div className="space-y-1.5">
-        <Label>Answer sheets</Label>
-        <p className="text-xs text-muted-foreground">
-          Link any answer sheets you worked through in this lesson.
-        </p>
+      <CollapsibleSection
+        title="Answer sheets"
+        description="Link any answer sheets you worked through in this lesson."
+      >
         <MultiSelect
           value={answerSheetIds}
           onChange={setAnswerSheetIds}
@@ -191,7 +191,7 @@ export function LessonForm({
           placeholder={answerSheets.isLoading ? "Loading…" : "Select answer sheets…"}
           className="w-full max-w-md"
         />
-      </div>
+      </CollapsibleSection>
 
       <LessonMySentences
         lessonId={lesson.id}

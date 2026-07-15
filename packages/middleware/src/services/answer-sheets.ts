@@ -1,11 +1,33 @@
 import { desc, eq } from "drizzle-orm";
 import type {
   AnswerSheet,
+  AnswerSheetEntry,
   CreateAnswerSheetInput,
   UpdateAnswerSheetInput,
 } from "@sentence-bank/types";
 import { db } from "@/db";
 import { answerSheets, type AnswerSheetRow } from "@/db/schema";
+
+/** An entry as it may exist in older JSONB rows, before `needsCorrection` was replaced by `correct`. */
+type LegacyEntry = AnswerSheetEntry & { needsCorrection?: boolean };
+
+/**
+ * Map one stored entry to the current wire shape. Older rows carry a `needsCorrection` boolean instead
+ * of `correct`; drop it (the strict route schema forbids stray keys) and derive `correct` from it — a
+ * flagged answer becomes `false` (wrong), anything else stays `null` (not yet reviewed).
+ */
+function normalizeEntry(e: AnswerSheetEntry): AnswerSheetEntry {
+  const legacy = e as LegacyEntry;
+  return {
+    slotId: e.slotId,
+    value: e.value ?? "",
+    correct: e.correct ?? (legacy.needsCorrection === true ? false : null),
+    correction: e.correction ?? null,
+    reasoning: e.reasoning ?? null,
+    intendedMeaning: e.intendedMeaning ?? null,
+    actualMeaning: e.actualMeaning ?? null,
+  };
+}
 
 /** Map a DB row to the shared `AnswerSheet` wire type. */
 export function toAnswerSheet(row: AnswerSheetRow): AnswerSheet {
@@ -13,7 +35,7 @@ export function toAnswerSheet(row: AnswerSheetRow): AnswerSheet {
     id: row.id,
     questionSheetId: row.questionSheetId,
     title: row.title,
-    entries: row.entries ?? [],
+    entries: (row.entries ?? []).map(normalizeEntry),
     createdAt:
       row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
     updatedAt:

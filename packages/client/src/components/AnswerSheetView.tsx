@@ -3,13 +3,12 @@ import type { AnswerSheet, AnswerSheetEntry, QuestionSheet } from "@sentence-ban
 import { useRef, useState } from "react";
 
 import { Link } from "@tanstack/react-router";
-import { Check, TriangleAlert, X } from "lucide-react";
+import { Check, Eye, EyeOff, X } from "lucide-react";
 
 import { Markdown } from "@/components/Markdown";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -23,12 +22,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { useUpdateAnswerSheet } from "@/hooks/useAnswerSheets";
 import { useQuestionSheets } from "@/hooks/useQuestionSheets";
 import { questionSheetSlots } from "@/lib/answer-sheets";
+import { CorrectionDiff } from "@/lib/sentenceDiff";
+import { cn } from "@/lib/utils";
 
 function emptyEntry(slotId: string): AnswerSheetEntry {
   return {
     slotId,
     value: "",
-    needsCorrection: false,
+    correct: null,
     correction: null,
     reasoning: null,
     intendedMeaning: null,
@@ -36,10 +37,10 @@ function emptyEntry(slotId: string): AnswerSheetEntry {
   };
 }
 
-/** True once an entry holds anything worth saving (an answer, a flag, or a correction field). */
+/** True once an entry holds anything worth saving (an answer, a review verdict, or a correction field). */
 function isTouched(e: AnswerSheetEntry): boolean {
   return e.value.trim().length > 0
-    || e.needsCorrection
+    || e.correct != null
     || Boolean(e.correction?.trim())
     || Boolean(e.reasoning?.trim())
     || Boolean(e.intendedMeaning?.trim())
@@ -53,7 +54,8 @@ function hasCorrectionDetail(e: AnswerSheetEntry): boolean {
 
 /**
  * The Answer Sheet view. It is not just read-only: each answered slot exposes on-hover ✓ / ✗ actions —
- * ✓ marks the answer correct, ✗ flags it and opens a modal to record the correction. Changes persist
+ * ✓ marks the answer correct (the check then stays visible), ✗ opens a modal to record the correction.
+ * Corrected answers lead with the fix; the original is tucked behind a toggle. Changes persist
  * immediately via the update mutation. Grid-layout sheets render as a table; others as a list.
  */
 export function AnswerSheetView({
@@ -125,12 +127,12 @@ export function AnswerSheetView({
 
   function markCorrect(slotId: string) {
     commitField(slotId, {
-      needsCorrection: false,
+      correct: true,
     });
   }
   function markWrong(slotId: string) {
     commitField(slotId, {
-      needsCorrection: true,
+      correct: false,
     });
     setCorrectingSlotId(slotId);
   }
@@ -202,29 +204,38 @@ export function AnswerSheetView({
   );
 }
 
-/** Two small ✓ / ✗ buttons revealed on hover of the containing `.group` element. */
+/**
+ * The ✓ / ✗ review controls for one slot. The ✗ is revealed on hover; the ✓ is revealed on hover too,
+ * except once an answer is marked correct it stays visible (solid green) as a persistent indicator.
+ */
 function HoverActions({
   slotId,
+  correct,
   markCorrect,
   markWrong,
 }: {
   slotId: string;
+  correct: boolean | null;
   markCorrect: (slotId: string) => void;
   markWrong: (slotId: string) => void;
 }) {
   return (
-    <span
-      className="
-        flex shrink-0 items-center gap-1 opacity-0 transition-opacity
-        group-hover:opacity-100
-      "
-    >
+    <span className="flex shrink-0 items-center gap-1">
       <Button
         type="button"
         variant="ghost"
         size="icon"
-        className="size-6 text-green-600"
         aria-label="Mark correct"
+        aria-pressed={correct === true}
+        className={cn(
+          "size-6 text-green-600 transition-opacity",
+          correct === true
+            ? "opacity-100"
+            : `
+              opacity-0
+              group-hover:opacity-100
+            `,
+        )}
         onClick={() => markCorrect(slotId)}
       >
         <Check className="size-4" />
@@ -233,7 +244,10 @@ function HoverActions({
         type="button"
         variant="ghost"
         size="icon"
-        className="size-6 text-destructive"
+        className="
+          size-6 text-destructive opacity-0 transition-opacity
+          group-hover:opacity-100
+        "
         aria-label="Mark wrong and add a correction"
         onClick={() => markWrong(slotId)}
       >
@@ -278,10 +292,11 @@ function GridCorrectableView({
               {grid.columns.map((_, colIndex) => {
                 const slotId = `${row.id}:${colIndex}`;
                 const entry = getEntry(slotId);
+                const corrected = entry.correction?.trim() ? entry.correction : null;
                 return (
                   <td
                     key={colIndex}
-                    className={entry.needsCorrection
+                    className={!corrected && entry.correct === false
                       ? "border p-1 text-destructive"
                       : "border p-1"}
                   >
@@ -291,15 +306,19 @@ function GridCorrectableView({
                         px-1
                       "
                     >
-                      <span>{entry.value || (
-                        <span
-                          className="text-muted-foreground"
-                        >—
-                        </span>
-                      )}
+                      <span
+                        title={corrected && entry.value.trim()
+                          ? `Your original: ${entry.value}`
+                          : undefined}
+                      >
+                        {corrected ?? entry.value ?? ""}
+                        {!corrected && !entry.value.trim()
+                          ? <span className="text-muted-foreground">—</span>
+                          : null}
                       </span>
                       <HoverActions
                         slotId={slotId}
+                        correct={entry.correct}
                         markCorrect={markCorrect}
                         markWrong={markWrong}
                       />
@@ -330,7 +349,7 @@ function ListCorrectableView({
 }) {
   const answered = slots.filter((s) => {
     const e = getEntry(s.id);
-    return e.value.trim() || e.needsCorrection || hasCorrectionDetail(e);
+    return e.value.trim() || e.correct != null || hasCorrectionDetail(e);
   });
 
   if (answered.length === 0) {
@@ -342,28 +361,90 @@ function ListCorrectableView({
       {answered.map((slot) => {
         const entry = getEntry(slot.id);
         return (
-          <div
+          <AnswerEntryBlock
             key={slot.id}
-            className="group space-y-2 rounded-md border p-3"
-          >
-            <div className="flex items-start justify-between gap-2">
-              <p className="text-sm font-medium">{slot.label}</p>
-              <div className="flex items-center gap-2">
-                {entry.needsCorrection ? <NeedsCorrectionBadge /> : null}
-                <HoverActions
-                  slotId={slot.id}
-                  markCorrect={markCorrect}
-                  markWrong={markWrong}
-                />
-              </div>
-            </div>
-            <p className="text-base">
-              {entry.value || <span className="text-muted-foreground italic">No answer</span>}
-            </p>
-            <EntryCorrections entry={entry} />
-          </div>
+            slot={slot}
+            entry={entry}
+            markCorrect={markCorrect}
+            markWrong={markWrong}
+          />
         );
       })}
+    </div>
+  );
+}
+
+/**
+ * One answered slot. Mirrors the My Sentences correction style: when corrected, the corrected answer
+ * leads and the learner's original is hidden behind an opt-in toggle that reveals a word/char diff.
+ */
+function AnswerEntryBlock({
+  slot,
+  entry,
+  markCorrect,
+  markWrong,
+}: {
+  slot: { id: string;
+    label: string; };
+  entry: AnswerSheetEntry;
+  markCorrect: (slotId: string) => void;
+  markWrong: (slotId: string) => void;
+}) {
+  const corrected = entry.correction?.trim() ? entry.correction : null;
+  const [showOriginal, setShowOriginal] = useState(false);
+
+  return (
+    <div className="group space-y-2 rounded-md border p-3">
+      <div className="flex items-start justify-between gap-2">
+        <p className="text-sm font-medium">{slot.label}</p>
+        <div className="flex items-center gap-2">
+          {corrected ? <Badge variant="outline">Corrected</Badge> : null}
+          <HoverActions
+            slotId={slot.id}
+            correct={entry.correct}
+            markCorrect={markCorrect}
+            markWrong={markWrong}
+          />
+        </div>
+      </div>
+
+      <p className="text-base">
+        {corrected ?? entry.value ?? ""}
+        {!corrected && !entry.value.trim()
+          ? <span className="text-muted-foreground italic">No answer</span>
+          : null}
+      </p>
+
+      {corrected
+        ? (
+          <div className="space-y-1">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowOriginal(v => !v)}
+            >
+              {showOriginal
+                ? <EyeOff className="size-4" />
+                : <Eye className="size-4" />}
+              {showOriginal ? "Hide original" : "Show your original"}
+            </Button>
+            {showOriginal
+              ? (
+                <div className="space-y-1 rounded-md border bg-muted/30 p-3">
+                  <Label className="text-sm">Your original (with corrections)</Label>
+                  <CorrectionDiff
+                    written={entry.value}
+                    correct={corrected}
+                  />
+                </div>
+              )
+              : null}
+          </div>
+        )
+        : null}
+
+      <EntryCorrections entry={entry} />
     </div>
   );
 }
@@ -416,13 +497,6 @@ function CorrectionModal({
                   )}
                 </p>
               </div>
-              <label className="flex items-center gap-2 text-sm">
-                <Checkbox
-                  checked={entry.needsCorrection}
-                  onCheckedChange={v => setField(slotId, "needsCorrection", v === true)}
-                />
-                Needs correction
-              </label>
               <div className="space-y-1.5">
                 <Label htmlFor="corr-modal">Correction</Label>
                 <Textarea
@@ -487,19 +561,8 @@ function CorrectionModal({
   );
 }
 
-function NeedsCorrectionBadge() {
-  return (
-    <Badge
-      variant="outline"
-      className="gap-1 border-destructive/40 text-destructive"
-    >
-      <TriangleAlert className="size-3" />
-      Needs correction
-    </Badge>
-  );
-}
-
-/** The four correction fields for one entry, each rendered only when present. */
+/** The supporting correction fields for one entry (explanation + meanings), each shown only when
+ * present. The corrected answer itself leads the block, so it is not repeated here. */
 function EntryCorrections({
   entry,
 }: {
@@ -507,14 +570,6 @@ function EntryCorrections({
 }) {
   return (
     <>
-      {entry.correction
-        ? (
-          <div className="space-y-1">
-            <Label className="text-sm">Correction</Label>
-            <p className="text-sm">{entry.correction}</p>
-          </div>
-        )
-        : null}
       {entry.reasoning
         ? (
           <div className="space-y-1">

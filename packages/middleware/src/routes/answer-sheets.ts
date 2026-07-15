@@ -27,7 +27,7 @@ const entriesSchema = {
   items: {
     type: "object",
     additionalProperties: false,
-    required: ["slotId", "value", "needsCorrection"],
+    required: ["slotId", "value"],
     properties: {
       slotId: {
         type: "string",
@@ -35,8 +35,8 @@ const entriesSchema = {
       value: {
         type: "string",
       },
-      needsCorrection: {
-        type: "boolean",
+      correct: {
+        type: ["boolean", "null"],
       },
       correction: {
         type: ["string", "null"],
