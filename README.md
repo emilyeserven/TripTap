@@ -1,10 +1,16 @@
-# sentence-bank
+# TripTap
 
-Self-deploy app for building a personal bank of example sentences (language learning).
+Self-deploy **Japanese language-learning workspace**. What began as a personal bank of example
+sentences now spans ~25 feature areas — lessons and AI-generated lessons, answer/question sheets,
+drill/listening/reading/shadowing sessions, free writing with corrections, tutors, sources,
+vocab/grammar/culture, OCR capture, and Anki/Renshuu export.
 
-sentence-bank is a full-stack TypeScript pnpm monorepo: a React client, a Fastify API, a shared types
+TripTap is a full-stack TypeScript pnpm monorepo: a React client, a Fastify API, a shared types
 package, and a production gateway that ties them together behind a single port. It mirrors the
 tooling and architecture of [course-tracker](https://github.com/emilyeserven/course-tracker).
+
+> **Naming:** the product is **TripTap**, but the internal package scope and API title still use the
+> older name **`sentence-bank`** (`@sentence-bank/*`). They refer to the same project.
 
 ## Architecture
 
