@@ -2,9 +2,17 @@
 
 ## Project summary
 
-A full-stack TypeScript monorepo for building a personal bank of example sentences (language
-learning). Built with pnpm workspaces, mirroring the tooling and architecture of
+A full-stack TypeScript monorepo: a personal **Japanese language-learning workspace**. The original
+"bank of example sentences" is now just the seed feature — the app spans ~25 feature areas (lessons,
+AI-generated lessons, answer/question sheets, drill/listening/reading/shadowing sessions, writing +
+corrections, tutors, sources, vocab/grammar/culture, OCR capture, Anki/Renshuu export) backed by ~28
+database tables. See **Domain map** below before hunting for where something lives. Built with pnpm
+workspaces, mirroring the tooling and architecture of
 [course-tracker](https://github.com/emilyeserven/course-tracker).
+
+> **Naming:** the product/repo is **TripTap**, but the internal package scope, the API title, and this
+> doc's history use the older name **`sentence-bank`** (`@sentence-bank/*`). They refer to the same
+> project; don't "fix" the mismatch without an intentional, repo-wide rename.
 
 ## Tech stack
 
@@ -26,10 +34,61 @@ Four packages under `packages/`:
 
 Build order: types → middleware → client. The gateway has no build step.
 
+## Domain map
+
+Each feature is a **vertical slice** with a very consistent shape — learn it once and every feature is
+navigable:
+
+```
+packages/types/src/<feature>.ts        # wire contract: <Entity> + Create<Entity>Input + Update<Entity>Input
+packages/middleware/src/routes/<f>.ts  # Fastify plugin `xRoutes` (inline JSON schemas); registered in app.ts
+packages/middleware/src/services/<f>.ts# all Drizzle/DB access lives here (routes never touch the db directly)
+packages/middleware/src/db/schema.ts   # the pgTable(s) for the feature
+packages/client/src/hooks/useX.ts      # TanStack Query wrapper over the API
+packages/client/src/routes/<f>.*.tsx   # file-based TanStack Router: <f>.index / <f>.new / <f>.$id(.index/.edit)
+packages/client/src/components/X*.tsx  # XForm / XCard / XView for the feature
+```
+
+Multi-table or external-proxy features use a service **directory** instead of a single file
+(`services/bookmarks/`, `services/ocr/`). Middleware resolves `@/*` → `src/*`.
+
+| Feature | Client route(s) | MW route / service | What it is |
+|---|---|---|---|
+| Sentences (bank) | `sentences.tsx` | `sentences.ts` (+ `sentence-vocab`, `furigana`) | Core example-sentence bank; furigana + terms. |
+| My Sentences | `my-sentences.*` | `my-sentences.ts` | Learner-produced sentences in a needs-correction flow. |
+| Practice | `practice.*` | `practice-sentences.ts` (+ `practice-sentence-vocab`) | Study-aid cards: passes, word/grammar breakdowns. |
+| Writings / My Writing | `my-writing.*` | `writings.ts` | Free writing with inline corrections (promotable to My Sentences). |
+| Writing Prompts | `writing-prompts.*` | `writing-prompts.ts` | Reusable prompts, snapshotted onto a writing. |
+| Lessons | `lessons.*` | `lessons.ts` | Tutor-lesson records: sections, word notes, linked answer sheets. |
+| AI Lessons | `ai-lessons.*` | `ai-lessons.ts` | AI-generated bundles: vocab, grammar, source sentences, culture cards. |
+| Grammar / Culture | `grammar.tsx`, `culture.tsx` | *(read AI-lesson content; no own route)* | Cross-lesson views over AI-lesson data. |
+| Vocab | `vocabulary.tsx` (`vocab.tsx` redirects) | `vocab.ts` | Standalone vocab bank, unified with AI-lesson vocab. |
+| Answer Sheets | `answer-sheets.*` | `answer-sheets.ts` | Filled-in answers to a question sheet, with corrections. |
+| Question Sheets / Book Exercises | `question-sheets.*`, `book-exercises.index.tsx` | `question-sheets.ts` | Worksheet/exercise definitions; optional Textbooks bookmark + due date. |
+| Drill Sessions | `drill-sessions.*` (`reasons`, `stats`) | `drill-sessions.ts`, `drill-reason-categories.ts` | Timed drills logging mistakes against a shared reason taxonomy. |
+| Listening Sessions | `listening-sessions.*` | `listening-sessions.ts` | Listen-along on a bookmark video + timestamped notes. |
+| Shadowing Sessions | `shadowing.*` | `shadowing-sessions.ts` | Listen-and-shadow with segment loops + timestamped notes. |
+| Reading Sessions | `reading-sessions.*` | `reading-sessions.ts` | Reading logs: translation/summary + shaky-word notes. |
+| Tutors | `tutors.*` | `tutors.ts` | Lightweight person entity that lessons associate with. |
+| Sources | `sources.*` | `sources.ts` | Source taxonomy (book/show/article) referenced by sentences, vocab, captures. |
+| Captures / OCR | `capture.tsx`, `captures.*` | `captures.ts`, `ocr.ts`, `parse-templates.ts` | Image → OCR → cleaned-blocks workbench → mine sentences/vocab. |
+| Anki / Renshuu | `anki.tsx`, `renshuu.tsx` | *(client-only; `lib/anki.ts`, `lib/renshuu.ts`)* | Export bank rows to Anki TSV / Renshuu bulk-import. |
+| Settings | `settings.tsx` | `settings.ts` | OCR keys (masked) + bookmarks channel config; DB overrides env. |
+| Bookmarks | *(pickers/cards in forms + settings)* | `bookmarks.ts` → `services/bookmarks/` | Proxy to the external bookmarks app for tag/taxonomy terms (see below). |
+
+Root layout is `routes/__root.tsx`; the homepage/dashboard is `routes/index.tsx`. The Swagger UI at
+`/docs` (built in `app.ts`) is the fastest way to see the full live API surface and its tags.
+
+**Client cross-cutting bits:** Zustand `stores/` (`displayStore` theme/text-size/furigana prefs,
+`uiStore` study level, `pageTitleStore` via `usePageTitle`); the TipTap code in `lib/tiptap/` is a
+**track-changes correction editor** (`CorrectMark`/`IncorrectMark`, `trackChanges.ts`), not general
+prose — consumed by `SentenceCorrector`. The middleware `services/furigana.ts` wraps kuroshiro and
+emits a compact `FuriToken[]` so the client renders `<ruby>` without trusting raw HTML.
+
 ## Key commands
 
 ```
-pnpm dev              # Postgres + schema push + all packages concurrently
+pnpm dev              # Postgres (Docker) + apply migrations + all packages concurrently
 pnpm build            # build types → middleware → client
 pnpm test             # run all tests
 pnpm typecheck        # strict type checks
@@ -42,6 +101,16 @@ pnpm db:migrate       # apply committed migrations to the local database
 ```
 
 Package-scoped commands use `pnpm --filter=@sentence-bank/<name>`.
+
+**Fresh checkout / web session:** run `pnpm install` then build the shared types once
+(`pnpm --filter=@sentence-bank/types build`) — middleware and client resolve `@sentence-bank/types`
+to its `dist/` output, so tests and typecheck fail until it exists. `pnpm typecheck` builds types
+itself; `pnpm test` does not.
+
+**Tests need no database.** The middleware suite uses Fastify `inject` + JSON-schema validation, so
+`pnpm test` runs without Postgres. A handful of endpoint tests intentionally exercise a valid payload
+and assert only that it isn't rejected (status ≠ 400); without a DB these log a connection error but
+still pass. The two suites that require a live DB are gated behind `RUN_DB_TESTS=1`.
 
 ## Conventions
 
