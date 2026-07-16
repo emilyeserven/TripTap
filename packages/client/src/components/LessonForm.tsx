@@ -6,11 +6,11 @@ import { useMemo, useState } from "react";
 import { LessonMySentences } from "@/components/LessonMySentences";
 import { LessonSections } from "@/components/LessonSections";
 import { LessonWordNotes } from "@/components/LessonWordNotes";
+import { NotesEditor } from "@/components/NotesEditor";
 import { TutorPicker } from "@/components/TutorPicker";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MultiSelect } from "@/components/ui/multi-select";
-import { Textarea } from "@/components/ui/textarea";
 import { useAnswerSheets } from "@/hooks/useAnswerSheets";
 import { useAutosave } from "@/hooks/useAutosave";
 import { useUpdateLesson } from "@/hooks/useLessons";
@@ -83,16 +83,13 @@ export function LessonForm({
     {
       id: "notes",
       title: "Notes (Markdown)",
-      description: "General notes for the lesson. Markdown is supported.",
+      description: "General notes for the lesson. Highlight text to capture a word card, prompt, or sentence.",
       node: (
-        <Textarea
-          id="lesson-notes"
-          value={notes}
-          onChange={e => setNotes(e.target.value)}
-          onBlur={flush}
-          placeholder="# Topics&#10;- …"
-          rows={4}
-          aria-label="Notes"
+        <NotesEditor
+          notesMarkdown={notes}
+          editable
+          onChange={setNotes}
+          lesson={lesson}
         />
       ),
     },

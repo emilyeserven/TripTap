@@ -2,30 +2,55 @@ import type { Lesson } from "@sentence-bank/types";
 
 import { useEffect, useRef, useState } from "react";
 
+import { EditorContent, useEditor } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
 import { NotebookPen, PenLine, Quote } from "lucide-react";
 import { toast } from "sonner";
 
-import { Markdown } from "@/components/Markdown";
 import { Button } from "@/components/ui/button";
 import { useUpdateLesson } from "@/hooks/useLessons";
 import { useCreateMySentence } from "@/hooks/useMySentences";
 import { useCreateWritingPrompt } from "@/hooks/useWritingPrompts";
 import { newId } from "@/lib/id";
+import { htmlToMarkdown, markdownToHtml } from "@/lib/notesMarkdown";
+
+/** Element styling for the rendered notes — mirrors the hand-rolled styles in {@link Markdown}. */
+const NOTES_PROSE = `
+  text-sm
+  [&_h1]:mt-3 [&_h1]:mb-1 [&_h1]:text-lg [&_h1]:font-semibold
+  [&_h2]:mt-3 [&_h2]:mb-1 [&_h2]:text-base [&_h2]:font-semibold
+  [&_h3]:mt-2 [&_h3]:mb-1 [&_h3]:text-sm [&_h3]:font-semibold
+  [&_p]:my-1.5 [&_p]:leading-relaxed
+  [&_ul]:my-1.5 [&_ul]:ml-5 [&_ul]:list-disc [&_ul]:space-y-0.5
+  [&_ol]:my-1.5 [&_ol]:ml-5 [&_ol]:list-decimal [&_ol]:space-y-0.5
+  [&_a]:text-primary [&_a]:underline [&_a]:underline-offset-2
+  [&_strong]:font-semibold [&_em]:italic
+  [&_code]:rounded-sm [&_code]:bg-muted [&_code]:px-1 [&_code]:py-0.5 [&_code]:font-mono
+  [&_blockquote]:my-2 [&_blockquote]:border-l-2 [&_blockquote]:pl-3 [&_blockquote]:text-muted-foreground
+  [&_.tiptap]:outline-none
+`;
 
 interface Menu { top: number;
   left: number;
   text: string; }
 
 /**
- * Renders a lesson's Notes (markdown) and, when the reader highlights text inside them, floats a small
- * menu at the selection offering to capture it as a Word card, a writing prompt, or a (lesson-linked)
- * sentence. Each action creates the entity seeded with the selected text; the rest is filled in later
- * on that entity's own page.
+ * The lesson-notes surface, rendered with TipTap so the same rich view works read-only (lesson view) and
+ * editable (lesson form). Notes are stored as markdown — {@link markdownToHtml} seeds the editor and
+ * {@link htmlToMarkdown} serializes edits back on change. Highlighting text (in either mode) floats a menu
+ * to capture the selection as a Word card, a writing prompt, or a lesson-linked sentence. The menu needs a
+ * saved lesson to attach to, so it's disabled when `lesson` is null (e.g. the new-lesson form).
  */
-export function NotesHighlightMenu({
+export function NotesEditor({
+  notesMarkdown,
+  editable,
+  onChange,
   lesson,
 }: {
-  lesson: Lesson;
+  notesMarkdown: string;
+  editable: boolean;
+  onChange?: (markdown: string) => void;
+  lesson: Lesson | null;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -35,8 +60,21 @@ export function NotesHighlightMenu({
   const createWritingPrompt = useCreateWritingPrompt();
   const createMySentence = useCreateMySentence();
 
-  // Close the menu when the pointer goes down anywhere but the menu itself (starting a new selection,
-  // or clicking away). A fresh selection re-opens it on mouseup.
+  const editor = useEditor({
+    extensions: [StarterKit],
+    editable,
+    content: markdownToHtml(notesMarkdown),
+    editorProps: {
+      attributes: {
+        class: "outline-none",
+      },
+    },
+    onUpdate: ({
+      editor,
+    }) => onChange?.(htmlToMarkdown(editor.getHTML())),
+  });
+
+  // Close the menu when the pointer goes down anywhere but the menu itself.
   useEffect(() => {
     if (!menu) return;
     const onDown = (e: MouseEvent) => {
@@ -46,11 +84,13 @@ export function NotesHighlightMenu({
     return () => document.removeEventListener("mousedown", onDown);
   }, [menu]);
 
+  // Read the DOM selection on mouseup — works in both read-only and editable editors (ProseMirror's own
+  // selection state isn't updated in read-only mode, so we can't rely on it).
   function onMouseUp() {
     const sel = window.getSelection();
     const text = sel?.toString().trim() ?? "";
     const container = containerRef.current;
-    if (!text || !sel || sel.rangeCount === 0 || !container) {
+    if (!lesson || !text || !sel || sel.rangeCount === 0 || !container) {
       setMenu(null);
       return;
     }
@@ -75,6 +115,7 @@ export function NotesHighlightMenu({
   }
 
   function addWordCard(text: string) {
+    if (!lesson) return;
     updateLesson.mutate(
       {
         id: lesson.id,
@@ -111,6 +152,7 @@ export function NotesHighlightMenu({
   }
 
   function addSentence(text: string) {
+    if (!lesson) return;
     createMySentence.mutate(
       {
         text,
@@ -129,12 +171,22 @@ export function NotesHighlightMenu({
       className="relative"
       onMouseUp={onMouseUp}
     >
-      <Markdown content={lesson.notes ?? ""} />
+      <EditorContent
+        editor={editor}
+        className={editable
+          ? `
+            ${NOTES_PROSE}
+            rounded-md border bg-background px-3 py-2
+            focus-within:ring-2 focus-within:ring-ring
+          `
+          : NOTES_PROSE}
+      />
 
       {menu
         ? (
           <div
             ref={menuRef}
+            onMouseDown={e => e.preventDefault()}
             className="
               absolute z-20 -mt-1 flex -translate-y-full items-center gap-1
               rounded-md border bg-popover p-1 shadow-md
