@@ -1,5 +1,6 @@
 import type {
   BookmarkRecord,
+  BookmarkResource,
   BookmarksSource,
   BookmarksTaxonomy,
   BookmarkSection,
@@ -300,6 +301,89 @@ export async function getBookmark(id: string): Promise<BookmarkRecord | null> {
   } = await resolveBookmarksConfig();
   const raw = await fetchBookmarksJson<unknown>(apiUrl(baseUrl, `/bookmarks/${encodeURIComponent(id)}`));
   return toBookmarkRecord(raw, true);
+}
+
+/**
+ * Widen one upstream bookmark into a {@link BookmarkResource} for the "Find a Resource" browser: pull its
+ * `website`, its runtime (the `numberValues` entry for the resolved "Runtime" property, in seconds), and
+ * its media-type name. Pure — the runtime property id is resolved once by the caller. Null when unreadable.
+ */
+export function toBookmarkResource(raw: unknown, runtimePropId: string | null): BookmarkResource | null {
+  if (!raw || typeof raw !== "object") return null;
+  const o = raw as Record<string, unknown>;
+  if (typeof o.id !== "string" || typeof o.title !== "string") return null;
+
+  let website: BookmarkResource["website"] = null;
+  if (o.website && typeof o.website === "object") {
+    const w = o.website as Record<string, unknown>;
+    const domain = typeof w.domain === "string" ? w.domain : null;
+    const siteName = typeof w.siteName === "string" ? w.siteName : null;
+    if (domain || siteName) {
+      website = {
+        domain: domain ?? siteName ?? "",
+        siteName: siteName ?? domain ?? "",
+      };
+    }
+  }
+
+  let runtimeSeconds: number | null = null;
+  if (runtimePropId && Array.isArray(o.numberValues)) {
+    for (const nv of o.numberValues) {
+      if (nv && typeof nv === "object") {
+        const n = nv as Record<string, unknown>;
+        if (n.propertyId === runtimePropId && typeof n.value === "number") {
+          runtimeSeconds = n.value;
+          break;
+        }
+      }
+    }
+  }
+
+  let mediaType: string | null = null;
+  if (o.mediaType && typeof o.mediaType === "object") {
+    const m = o.mediaType as Record<string, unknown>;
+    if (typeof m.name === "string") mediaType = m.name;
+  }
+
+  return {
+    id: o.id,
+    title: o.title,
+    url: typeof o.url === "string" ? o.url : null,
+    website,
+    runtimeSeconds,
+    mediaType,
+  };
+}
+
+/** Resolve the upstream "Runtime" custom-property id (by name, then by a duration number format). */
+async function resolveRuntimePropertyId(baseUrl: string): Promise<string | null> {
+  const raw = await fetchBookmarksJson<unknown>(apiUrl(baseUrl, "/custom-properties"));
+  if (!Array.isArray(raw)) return null;
+  const props = raw.filter((p): p is Record<string, unknown> => Boolean(p) && typeof p === "object");
+  const match = props.find(p => typeof p.name === "string" && p.name.toLowerCase() === "runtime")
+    ?? props.find(p => p.type === "number" && p.numberFormat === "duration");
+  return match && typeof match.id === "string" ? match.id : null;
+}
+
+/**
+ * The whole bookmarks collection, widened for the "Find a Resource" browser (website + runtime + media
+ * type), sorted by title (the client re-sorts by runtime). Unlike the per-channel record endpoints this
+ * lists everything the host exposes. A failure to read the custom-property list degrades runtime to null
+ * rather than failing the whole request.
+ */
+export async function listBookmarkResources(): Promise<BookmarkResource[]> {
+  const {
+    baseUrl,
+  } = await resolveBookmarksConfig();
+  const [rawBookmarks, runtimePropId] = await Promise.all([
+    fetchBookmarksJson<unknown>(apiUrl(baseUrl, "/bookmarks")),
+    resolveRuntimePropertyId(baseUrl).catch(() => null),
+  ]);
+  if (!Array.isArray(rawBookmarks)) return [];
+  return rawBookmarks
+    .map(r => toBookmarkResource(r, runtimePropId))
+    .filter((r): r is BookmarkResource => r !== null)
+    .sort((a, b) => a.title.localeCompare(b.title));
 }
 
 /** Normalize an upstream create response into a {@link TagTermOption}, or fail if it can't be read. */

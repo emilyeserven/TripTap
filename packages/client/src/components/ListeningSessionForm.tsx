@@ -22,9 +22,14 @@ import {
 export function ListeningSessionForm({
   session,
   onSuccess,
+  initialBookmark,
 }: {
   session?: ListeningSession;
   onSuccess?: (id: string) => void;
+  /** Seed a brand-new session from a bookmark (e.g. from the Find a Resource page); ignored when editing. */
+  initialBookmark?: { id: string;
+    title: string;
+    url: string | null; };
 }) {
   const create = useCreateListeningSession();
   const update = useUpdateListeningSession();
@@ -32,10 +37,10 @@ export function ListeningSessionForm({
 
   const [title, setTitle] = useState(session?.title ?? "");
   const [language, setLanguage] = useState(session?.language ?? "Japanese");
-  const [videoUrl, setVideoUrl] = useState(session?.videoUrl ?? "");
-  const [bookmarkId, setBookmarkId] = useState(session?.bookmarkId ?? null);
-  const [bookmarkTitle, setBookmarkTitle] = useState(session?.bookmarkTitle ?? null);
-  const [bookmarkUrl, setBookmarkUrl] = useState(session?.bookmarkUrl ?? null);
+  const [videoUrl, setVideoUrl] = useState(session?.videoUrl ?? initialBookmark?.url ?? "");
+  const [bookmarkId, setBookmarkId] = useState(session?.bookmarkId ?? initialBookmark?.id ?? null);
+  const [bookmarkTitle, setBookmarkTitle] = useState(session?.bookmarkTitle ?? initialBookmark?.title ?? null);
+  const [bookmarkUrl, setBookmarkUrl] = useState(session?.bookmarkUrl ?? initialBookmark?.url ?? null);
 
   const initialTerms = session?.terms ?? [];
   const [vocabTerms, setVocabTerms] = useState<SentenceTermRef[]>(

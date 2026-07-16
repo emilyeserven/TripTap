@@ -1,5 +1,6 @@
 import type {
   BookmarkRecord,
+  BookmarkResource,
   BookmarksSettings,
   BookmarksTaxonomy,
   Capture,
@@ -582,6 +583,8 @@ export const bookmarksApi = {
     request<BookmarkRecord[]>(`/bookmarks/records?category=${category}`),
   /** A single bookmark with its flattened timestamp sections. */
   record: (id: string) => request<BookmarkRecord>(`/bookmarks/records/${encodeURIComponent(id)}`),
+  /** The whole bookmarks collection with website + runtime, for the Find a Resource browser. */
+  resources: () => request<BookmarkResource[]>("/bookmarks/resources"),
 };
 
 /** Proxy to the external Japanese dictionary lookup (all calls go server-side; provider is swappable). */

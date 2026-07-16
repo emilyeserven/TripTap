@@ -76,6 +76,15 @@ export function useBookmarkRecords(category: SentenceTermCategory) {
   });
 }
 
+/** The whole bookmarks collection (website + runtime) for the Find a Resource browser. */
+export function useBookmarkResources() {
+  return useQuery({
+    queryKey: [...BOOKMARKS_KEY, "resources"],
+    queryFn: () => bookmarksApi.resources(),
+    retry: false,
+  });
+}
+
 /** A single bookmark (with its timestamp sections). Deferred until an id is provided. */
 export function useBookmarkRecord(id: string | null) {
   return useQuery({

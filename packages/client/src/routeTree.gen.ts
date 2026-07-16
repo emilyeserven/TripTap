@@ -30,6 +30,7 @@ import { Route as MyWritingIndexRouteImport } from './routes/my-writing.index'
 import { Route as MySentencesIndexRouteImport } from './routes/my-sentences.index'
 import { Route as ListeningSessionsIndexRouteImport } from './routes/listening-sessions.index'
 import { Route as LessonsIndexRouteImport } from './routes/lessons.index'
+import { Route as FindResourceIndexRouteImport } from './routes/find-resource.index'
 import { Route as DrillSessionsIndexRouteImport } from './routes/drill-sessions.index'
 import { Route as CapturesIndexRouteImport } from './routes/captures.index'
 import { Route as BookExercisesIndexRouteImport } from './routes/book-exercises.index'
@@ -187,6 +188,11 @@ const ListeningSessionsIndexRoute = ListeningSessionsIndexRouteImport.update({
 const LessonsIndexRoute = LessonsIndexRouteImport.update({
   id: '/lessons/',
   path: '/lessons/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FindResourceIndexRoute = FindResourceIndexRouteImport.update({
+  id: '/find-resource/',
+  path: '/find-resource/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DrillSessionsIndexRoute = DrillSessionsIndexRouteImport.update({
@@ -500,6 +506,7 @@ export interface FileRoutesByFullPath {
   '/book-exercises/': typeof BookExercisesIndexRoute
   '/captures/': typeof CapturesIndexRoute
   '/drill-sessions/': typeof DrillSessionsIndexRoute
+  '/find-resource/': typeof FindResourceIndexRoute
   '/lessons/': typeof LessonsIndexRoute
   '/listening-sessions/': typeof ListeningSessionsIndexRoute
   '/my-sentences/': typeof MySentencesIndexRoute
@@ -566,6 +573,7 @@ export interface FileRoutesByTo {
   '/book-exercises': typeof BookExercisesIndexRoute
   '/captures': typeof CapturesIndexRoute
   '/drill-sessions': typeof DrillSessionsIndexRoute
+  '/find-resource': typeof FindResourceIndexRoute
   '/lessons': typeof LessonsIndexRoute
   '/listening-sessions': typeof ListeningSessionsIndexRoute
   '/my-sentences': typeof MySentencesIndexRoute
@@ -643,6 +651,7 @@ export interface FileRoutesById {
   '/book-exercises/': typeof BookExercisesIndexRoute
   '/captures/': typeof CapturesIndexRoute
   '/drill-sessions/': typeof DrillSessionsIndexRoute
+  '/find-resource/': typeof FindResourceIndexRoute
   '/lessons/': typeof LessonsIndexRoute
   '/listening-sessions/': typeof ListeningSessionsIndexRoute
   '/my-sentences/': typeof MySentencesIndexRoute
@@ -721,6 +730,7 @@ export interface FileRouteTypes {
     | '/book-exercises/'
     | '/captures/'
     | '/drill-sessions/'
+    | '/find-resource/'
     | '/lessons/'
     | '/listening-sessions/'
     | '/my-sentences/'
@@ -787,6 +797,7 @@ export interface FileRouteTypes {
     | '/book-exercises'
     | '/captures'
     | '/drill-sessions'
+    | '/find-resource'
     | '/lessons'
     | '/listening-sessions'
     | '/my-sentences'
@@ -863,6 +874,7 @@ export interface FileRouteTypes {
     | '/book-exercises/'
     | '/captures/'
     | '/drill-sessions/'
+    | '/find-resource/'
     | '/lessons/'
     | '/listening-sessions/'
     | '/my-sentences/'
@@ -940,6 +952,7 @@ export interface RootRouteChildren {
   BookExercisesIndexRoute: typeof BookExercisesIndexRoute
   CapturesIndexRoute: typeof CapturesIndexRoute
   DrillSessionsIndexRoute: typeof DrillSessionsIndexRoute
+  FindResourceIndexRoute: typeof FindResourceIndexRoute
   LessonsIndexRoute: typeof LessonsIndexRoute
   ListeningSessionsIndexRoute: typeof ListeningSessionsIndexRoute
   MySentencesIndexRoute: typeof MySentencesIndexRoute
@@ -1100,6 +1113,13 @@ declare module '@tanstack/react-router' {
       path: '/lessons'
       fullPath: '/lessons/'
       preLoaderRoute: typeof LessonsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/find-resource/': {
+      id: '/find-resource/'
+      path: '/find-resource'
+      fullPath: '/find-resource/'
+      preLoaderRoute: typeof FindResourceIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/drill-sessions/': {
@@ -1657,6 +1677,7 @@ const rootRouteChildren: RootRouteChildren = {
   BookExercisesIndexRoute: BookExercisesIndexRoute,
   CapturesIndexRoute: CapturesIndexRoute,
   DrillSessionsIndexRoute: DrillSessionsIndexRoute,
+  FindResourceIndexRoute: FindResourceIndexRoute,
   LessonsIndexRoute: LessonsIndexRoute,
   ListeningSessionsIndexRoute: ListeningSessionsIndexRoute,
   MySentencesIndexRoute: MySentencesIndexRoute,

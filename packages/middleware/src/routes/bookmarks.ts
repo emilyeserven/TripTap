@@ -9,6 +9,7 @@ import {
   fetchTerms,
   fetchVocabulary,
   getBookmark,
+  listBookmarkResources,
   listBookmarksForCategory,
 } from "@/services/bookmarks";
 
@@ -163,6 +164,19 @@ export async function bookmarksRoutes(app: FastifyInstance): Promise<void> {
     } = req.query as { category: SentenceTermCategory };
     try {
       return await listBookmarksForCategory(category);
+    }
+    catch (err) {
+      return handleError(err, reply);
+    }
+  });
+
+  app.get("/api/bookmarks/resources", {
+    schema: {
+      tags: ["bookmarks"],
+    },
+  }, async (_req, reply) => {
+    try {
+      return await listBookmarkResources();
     }
     catch (err) {
       return handleError(err, reply);
