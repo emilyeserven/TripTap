@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { deriveCorrection } from "@/lib/deriveCorrection";
 import { CorrectMark, IncorrectMark } from "@/lib/tiptap/correctionMarks";
+import { TrackChanges } from "@/lib/tiptap/trackChanges";
 
 export interface SentenceCorrectionResult {
   correction: string;
@@ -42,9 +43,11 @@ export function SentenceCorrector({
     correction: text,
     marks: [],
   }));
+  // Reveal the surrounding chrome only once the learner has started changing the sentence.
+  const [hasEdited, setHasEdited] = useState(false);
 
   const editor = useEditor({
-    extensions: [StarterKit, CorrectMark, IncorrectMark],
+    extensions: [StarterKit, CorrectMark, IncorrectMark, TrackChanges],
     content: text,
     editorProps: {
       attributes: {
@@ -53,15 +56,16 @@ export function SentenceCorrector({
     },
     onUpdate: ({
       editor,
-    }) => setDerived(deriveCorrection(editor.getJSON())),
+    }) => {
+      setDerived(deriveCorrection(editor.getJSON()));
+      setHasEdited(true);
+    },
   });
-
-  const edited = derived.correction !== text || derived.marks.length > 0;
 
   return (
     <div className="space-y-3">
       <div className="space-y-1">
-        <Label>Correct the sentence</Label>
+        {hasEdited ? <Label>Correct the sentence</Label> : null}
         {editor
           ? (
             <BubbleMenu
@@ -116,46 +120,44 @@ export function SentenceCorrector({
         />
       </div>
 
-      <div className="space-y-0.5">
-        <span className="text-xs text-muted-foreground">Result</span>
-        <p className="text-base">
-          {derived.correction.trim() || (
-            <span className="text-muted-foreground italic">(empty)</span>
-          )}
-        </p>
-      </div>
-
-      {edited
+      {hasEdited
         ? (
-          <div className="space-y-2 rounded-md border bg-muted/30 p-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="corrector-reason">Explanation</Label>
-              <Textarea
-                id="corrector-reason"
-                value={reasoning}
-                onChange={e => setReasoning(e.target.value)}
-                placeholder="Why it was wrong — optional, Markdown supported"
-                rows={2}
-              />
+          <>
+            <div className="space-y-0.5">
+              <span className="text-xs text-muted-foreground">Result</span>
+              <p className="text-base">
+                {derived.correction.trim() || (
+                  <span className="text-muted-foreground italic">(empty)</span>
+                )}
+              </p>
             </div>
-            <Button
-              type="button"
-              size="sm"
-              onClick={() => onSave({
-                correction: derived.correction,
-                marks: derived.marks,
-                reasoning: reasoning.trim() || null,
-              })}
-            >
-              {saveLabel}
-            </Button>
-          </div>
+
+            <div className="space-y-2 rounded-md border bg-muted/30 p-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="corrector-reason">Explanation</Label>
+                <Textarea
+                  id="corrector-reason"
+                  value={reasoning}
+                  onChange={e => setReasoning(e.target.value)}
+                  placeholder="Why it was wrong — optional, Markdown supported"
+                  rows={2}
+                />
+              </div>
+              <Button
+                type="button"
+                size="sm"
+                onClick={() => onSave({
+                  correction: derived.correction,
+                  marks: derived.marks,
+                  reasoning: reasoning.trim() || null,
+                })}
+              >
+                {saveLabel}
+              </Button>
+            </div>
+          </>
         )
-        : (
-          <p className="text-xs text-muted-foreground">
-            Select text to mark it correct / incorrect · edit the sentence directly to correct it.
-          </p>
-        )}
+        : null}
     </div>
   );
 }
