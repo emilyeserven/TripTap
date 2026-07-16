@@ -1,9 +1,15 @@
 import type { FastifyInstance } from "fastify";
-import type { UpdateBookmarksSettingsInput, UpdateOcrSettingsInput } from "@sentence-bank/types";
+import type {
+  UpdateBookmarksSettingsInput,
+  UpdateDictionarySettingsInput,
+  UpdateOcrSettingsInput,
+} from "@sentence-bank/types";
 import {
   getBookmarksSettings,
+  getDictionarySettings,
   getOcrSettings,
   updateBookmarksSettings,
+  updateDictionarySettings,
   updateOcrSettings,
 } from "@/services/settings";
 
@@ -59,6 +65,20 @@ const updateBookmarksSettingsBody = {
   },
 } as const;
 
+const updateDictionarySettingsBody = {
+  type: "object",
+  additionalProperties: false,
+  properties: {
+    endpointUrl: {
+      type: ["string", "null"],
+    },
+    provider: {
+      type: ["string", "null"],
+      enum: ["jisho", "jotoba", null],
+    },
+  },
+} as const;
+
 /**
  * Settings routes, mounted under `/api/settings`. Cloud OCR credentials are stored server-side; the
  * GET endpoint returns only a masked view (presence + a short hint), never the raw secrets.
@@ -92,5 +112,20 @@ export async function settingsRoutes(app: FastifyInstance): Promise<void> {
     },
   }, async (req) => {
     return updateBookmarksSettings(req.body as UpdateBookmarksSettingsInput);
+  });
+
+  app.get("/api/settings/dictionary", {
+    schema: {
+      tags: ["settings"],
+    },
+  }, async () => getDictionarySettings());
+
+  app.patch("/api/settings/dictionary", {
+    schema: {
+      tags: ["settings"],
+      body: updateDictionarySettingsBody,
+    },
+  }, async (req) => {
+    return updateDictionarySettings(req.body as UpdateDictionarySettingsInput);
   });
 }

@@ -1,21 +1,12 @@
-import type { DictionaryEntry } from "@sentence-bank/types";
+import type { DictionaryEntry, DictionaryProvider } from "@sentence-bank/types";
+import { getDictionarySettings } from "@/services/settings";
 import { DictionaryNotConfiguredError } from "@/services/dictionary/errors";
 import { fetchDictionaryJson } from "@/services/dictionary/util";
 
 export { DictionaryNotConfiguredError, DictionaryUnavailableError } from "@/services/dictionary/errors";
 
-/** Fallback base URL when neither the environment nor a default provider override is set. */
+/** Fallback base URL when neither the DB settings nor the environment configures one. */
 const DEFAULT_DICTIONARY_URL = "https://jisho.org";
-
-/**
- * The supported upstream providers. Both normalize into {@link DictionaryEntry}; they differ only in
- * request shape and response parsing, so swapping between them is a config change (`DICTIONARY_PROVIDER`).
- *
- * - `jisho` — Jisho.org's unofficial JSON API (`GET /api/v1/search/words?keyword=`). No auth, but not
- *   an official/supported API and may be rate-limited or blocked.
- * - `jotoba` — a Jotoba instance (`POST /api/search/words`). Self-hostable with an official API.
- */
-export type DictionaryProvider = "jisho" | "jotoba";
 
 interface DictionaryConfig {
   baseUrl: string;
@@ -28,17 +19,27 @@ function resolveProvider(raw: string | undefined): DictionaryProvider {
 }
 
 /**
- * Resolve the effective dictionary configuration for one request. The base URL and provider come from
- * the environment (`DICTIONARY_API_URL` / `DICTIONARY_PROVIDER`), falling back to a hardcoded default.
- * A DB-stored override (a future Settings page) can slot in ahead of the env vars here without changing
- * callers.
+ * Resolve the effective dictionary configuration for one request. The endpoint URL and provider come
+ * from the DB Settings (entered on the Settings page) and take precedence over `DICTIONARY_API_URL` /
+ * `DICTIONARY_PROVIDER`, then a hardcoded default. The DB lookup is best-effort so this keeps working
+ * (and unit tests run) without a database.
  */
 async function resolveDictionaryConfig(): Promise<DictionaryConfig> {
-  const baseUrl = process.env.DICTIONARY_API_URL || DEFAULT_DICTIONARY_URL;
+  let dbEndpoint: string | null = null;
+  let dbProvider: DictionaryProvider | null = null;
+  try {
+    const settings = await getDictionarySettings();
+    dbEndpoint = settings.endpointUrl;
+    dbProvider = settings.provider;
+  }
+  catch {
+    // Database unavailable — fall back to environment/default.
+  }
+  const baseUrl = dbEndpoint || process.env.DICTIONARY_API_URL || DEFAULT_DICTIONARY_URL;
   if (!baseUrl) throw new DictionaryNotConfiguredError();
   return {
     baseUrl,
-    provider: resolveProvider(process.env.DICTIONARY_PROVIDER),
+    provider: dbProvider ?? resolveProvider(process.env.DICTIONARY_PROVIDER),
   };
 }
 

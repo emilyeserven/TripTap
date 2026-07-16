@@ -16,6 +16,7 @@ import type {
   CreateReadingSessionInput,
   CreateShadowingSessionInput,
   DictionaryEntry,
+  DictionarySettings,
   ListeningSession,
   ReadingSession,
   ShadowingSession,
@@ -39,6 +40,7 @@ import type {
   Source,
   TagTermOption,
   UpdateBookmarksSettingsInput,
+  UpdateDictionarySettingsInput,
   UpdateMySentenceInput,
   UpdateOcrSettingsInput,
   UpdatePracticeSentenceInput,
@@ -550,6 +552,12 @@ export const settingsApi = {
   getBookmarks: () => request<BookmarksSettings>("/settings/bookmarks"),
   updateBookmarks: (input: UpdateBookmarksSettingsInput) =>
     request<BookmarksSettings>("/settings/bookmarks", {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    }),
+  getDictionary: () => request<DictionarySettings>("/settings/dictionary"),
+  updateDictionary: (input: UpdateDictionarySettingsInput) =>
+    request<DictionarySettings>("/settings/dictionary", {
       method: "PATCH",
       body: JSON.stringify(input),
     }),

@@ -1,4 +1,8 @@
-import type { UpdateBookmarksSettingsInput, UpdateOcrSettingsInput } from "@sentence-bank/types";
+import type {
+  UpdateBookmarksSettingsInput,
+  UpdateDictionarySettingsInput,
+  UpdateOcrSettingsInput,
+} from "@sentence-bank/types";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -6,6 +10,7 @@ import { settingsApi } from "../lib/api";
 
 const OCR_SETTINGS_KEY = ["settings", "ocr"] as const;
 const BOOKMARKS_SETTINGS_KEY = ["settings", "bookmarks"] as const;
+const DICTIONARY_SETTINGS_KEY = ["settings", "dictionary"] as const;
 
 /** Masked view of the stored cloud OCR credentials (presence + hint, never the raw secrets). */
 export function useOcrSettings() {
@@ -42,5 +47,21 @@ export function useUpdateBookmarksSettings() {
         queryKey: ["bookmarks"],
       });
     },
+  });
+}
+
+/** The dictionary integration settings (endpoint URL + chosen provider). */
+export function useDictionarySettings() {
+  return useQuery({
+    queryKey: DICTIONARY_SETTINGS_KEY,
+    queryFn: settingsApi.getDictionary,
+  });
+}
+
+export function useUpdateDictionarySettings() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: UpdateDictionarySettingsInput) => settingsApi.updateDictionary(input),
+    onSuccess: data => queryClient.setQueryData(DICTIONARY_SETTINGS_KEY, data),
   });
 }

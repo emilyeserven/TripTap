@@ -168,3 +168,45 @@ test("parseJotoba uses the kana form when there is no kanji", () => {
   assert.equal(entries[0].jlpt, null);
   assert.equal(entries[0].common, false);
 });
+
+test("PATCH /api/settings/dictionary accepts an endpoint URL and a provider", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "PATCH",
+    url: "/api/settings/dictionary",
+    payload: {
+      endpointUrl: "https://jotoba.example.net",
+      provider: "jotoba",
+    },
+  });
+  // 200 when the DB is available, or a 5xx if it isn't — but never a 400 (the payload is valid).
+  assert.notEqual(res.statusCode, 400);
+  await app.close();
+});
+
+test("PATCH /api/settings/dictionary allows clearing both fields with null", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "PATCH",
+    url: "/api/settings/dictionary",
+    payload: {
+      endpointUrl: null,
+      provider: null,
+    },
+  });
+  assert.notEqual(res.statusCode, 400);
+  await app.close();
+});
+
+test("PATCH /api/settings/dictionary rejects an unknown provider", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "PATCH",
+    url: "/api/settings/dictionary",
+    payload: {
+      provider: "wanikani",
+    },
+  });
+  assert.equal(res.statusCode, 400);
+  await app.close();
+});
