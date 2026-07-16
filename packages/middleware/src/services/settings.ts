@@ -2,8 +2,11 @@ import { eq, inArray } from "drizzle-orm";
 import type {
   BookmarksSettings,
   BookmarksSource,
+  DictionaryProvider,
+  DictionarySettings,
   OcrSettings,
   UpdateBookmarksSettingsInput,
+  UpdateDictionarySettingsInput,
   UpdateOcrSettingsInput,
 } from "@sentence-bank/types";
 import { db } from "@/db";
@@ -187,4 +190,44 @@ export async function updateBookmarksSettings(
     await setSetting(BOOKMARKS_KEYS.listeningSource, input.listeningSource ? JSON.stringify(input.listeningSource) : null);
   }
   return getBookmarksSettings();
+}
+
+/**
+ * Settings keys for the Japanese dictionary lookup integration. Neither value is a secret: the base URL
+ * of the upstream (Jisho or a self-hosted Jotoba) and the chosen provider.
+ */
+export const DICTIONARY_KEYS = {
+  endpointUrl: "dictionary.endpointUrl",
+  provider: "dictionary.provider",
+} as const;
+
+/** Coerce a stored provider string to a known provider, or null when absent/unrecognized. */
+function parseProvider(raw: string | null): DictionaryProvider | null {
+  return raw === "jisho" || raw === "jotoba" ? raw : null;
+}
+
+/** The dictionary integration settings stored in the DB (raw values; these are not secrets). */
+export async function getDictionarySettings(): Promise<DictionarySettings> {
+  const stored = await getSettings(Object.values(DICTIONARY_KEYS));
+  return {
+    endpointUrl: stored[DICTIONARY_KEYS.endpointUrl] ?? null,
+    provider: parseProvider(stored[DICTIONARY_KEYS.provider] ?? null),
+  };
+}
+
+/**
+ * Apply a partial update to the dictionary integration settings. Each field is tri-state: `undefined`
+ * leaves the value unchanged, `""`/`null` clears it (reverting to env/default), any other value
+ * replaces it. Returns the new view.
+ */
+export async function updateDictionarySettings(
+  input: UpdateDictionarySettingsInput,
+): Promise<DictionarySettings> {
+  if (input.endpointUrl !== undefined) {
+    await setSetting(DICTIONARY_KEYS.endpointUrl, input.endpointUrl?.trim() ?? null);
+  }
+  if (input.provider !== undefined) {
+    await setSetting(DICTIONARY_KEYS.provider, input.provider ?? null);
+  }
+  return getDictionarySettings();
 }

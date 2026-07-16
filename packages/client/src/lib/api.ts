@@ -15,6 +15,8 @@ import type {
   CreateListeningSessionInput,
   CreateReadingSessionInput,
   CreateShadowingSessionInput,
+  DictionaryEntry,
+  DictionarySettings,
   ListeningSession,
   ReadingSession,
   ShadowingSession,
@@ -38,6 +40,7 @@ import type {
   Source,
   TagTermOption,
   UpdateBookmarksSettingsInput,
+  UpdateDictionarySettingsInput,
   UpdateMySentenceInput,
   UpdateOcrSettingsInput,
   UpdatePracticeSentenceInput,
@@ -552,6 +555,12 @@ export const settingsApi = {
       method: "PATCH",
       body: JSON.stringify(input),
     }),
+  getDictionary: () => request<DictionarySettings>("/settings/dictionary"),
+  updateDictionary: (input: UpdateDictionarySettingsInput) =>
+    request<DictionarySettings>("/settings/dictionary", {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    }),
 };
 
 /** Read-only proxy to the external bookmarks tag/taxonomy API (all calls go server-side). */
@@ -573,6 +582,12 @@ export const bookmarksApi = {
     request<BookmarkRecord[]>(`/bookmarks/records?category=${category}`),
   /** A single bookmark with its flattened timestamp sections. */
   record: (id: string) => request<BookmarkRecord>(`/bookmarks/records/${encodeURIComponent(id)}`),
+};
+
+/** Proxy to the external Japanese dictionary lookup (all calls go server-side; provider is swappable). */
+export const dictionaryApi = {
+  search: (keyword: string) =>
+    request<DictionaryEntry[]>(`/dictionary/search?keyword=${encodeURIComponent(keyword)}`),
 };
 
 export const aiLessonsApi = {

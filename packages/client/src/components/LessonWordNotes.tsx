@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { WordLookup } from "@/components/WordLookup";
 import { newId } from "@/lib/id";
 import { WORD_COLUMN_CLASS } from "@/lib/lessonLayout";
 import { cn } from "@/lib/utils";
@@ -88,14 +89,25 @@ export function LessonWordNotes({
                     @md:grid-cols-3
                   "
                 >
-                  <Input
-                    value={w.word ?? ""}
-                    onChange={e => patchWord(w.id, {
-                      word: e.target.value,
-                    })}
-                    placeholder="Word (optional)"
-                    aria-label="Word"
-                  />
+                  <div className="flex gap-2">
+                    <Input
+                      value={w.word ?? ""}
+                      onChange={e => patchWord(w.id, {
+                        word: e.target.value,
+                      })}
+                      placeholder="Word (optional)"
+                      aria-label="Word"
+                    />
+                    <WordLookup
+                      word={w.word ?? ""}
+                      onPick={entry => patchWord(w.id, {
+                        word: entry.word,
+                        // Route the reading through the kana-only transform to keep that invariant here.
+                        reading: toKanaInput(entry.reading),
+                        meaning: entry.meanings.slice(0, 3).join("; "),
+                      })}
+                    />
+                  </div>
                   <Input
                     value={w.reading ?? ""}
                     onChange={e => patchWord(w.id, {

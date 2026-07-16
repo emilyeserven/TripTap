@@ -3,6 +3,7 @@ import type { Lesson } from "@sentence-bank/types";
 
 import { Link } from "@tanstack/react-router";
 
+import { Furi } from "@/components/ai-lesson/Furi";
 import { LessonMySentences } from "@/components/LessonMySentences";
 import { LessonSections } from "@/components/LessonSections";
 import { NotesEditor } from "@/components/NotesEditor";
@@ -62,10 +63,18 @@ export function LessonView({
               className="space-y-1 rounded-md border p-3"
             >
               <div className="flex flex-wrap items-center gap-2">
-                {w.word ? <span className="text-base font-medium">{w.word}</span> : null}
-                {w.reading
-                  ? <span className="text-sm text-muted-foreground">{w.reading}</span>
-                  : null}
+                {w.word
+                  ? (
+                    <span className="text-base font-medium">
+                      <Furi
+                        kanji={w.word}
+                        yomi={w.reading ?? undefined}
+                      />
+                    </span>
+                  )
+                  : w.reading
+                    ? <span className="text-sm text-muted-foreground">{w.reading}</span>
+                    : null}
                 <Badge variant="outline">
                   {w.status === "shaky" ? "Shaky" : "Didn't know"}
                 </Badge>
