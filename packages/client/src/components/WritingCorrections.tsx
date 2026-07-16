@@ -1,16 +1,18 @@
-import type { Writing } from "@sentence-bank/types";
+import type { SentenceCorrectionResult } from "@/components/SentenceCorrector";
+import type { Writing, WritingCorrection } from "@sentence-bank/types";
 
 import { useState } from "react";
 
 import { Link } from "@tanstack/react-router";
-import { CheckCircle2, PlusIcon } from "lucide-react";
+import { CheckCircle2, Eye, EyeOff, PlusIcon } from "lucide-react";
 
-import { useCreateMySentence } from "../hooks/useMySentences";
-import { useUpdateWriting } from "../hooks/useWritings";
+import { CorrectionDiff } from "../lib/sentenceDiff";
 
+import { SentenceCorrector } from "@/components/SentenceCorrector";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { useCreateMySentence, useUpdateMySentence } from "@/hooks/useMySentences";
+import { useUpdateWriting } from "@/hooks/useWritings";
 
 /**
  * Split free-form text into sentence segments. A boundary is any run of terminal punctuation
@@ -30,10 +32,13 @@ function splitSentences(text: string): string[] {
 }
 
 /**
- * Correction mode for a writing: each sentence gets a `+` to add a correction. Officially adding one
- * creates a My Sentence (original text + corrected version, tagged with the writing's terms and linked
- * back to it) and records the correction inline on the writing. Already-corrected sentences link to
- * their My Sentence instead of offering a fresh `+`.
+ * Correction mode for a writing — the same track-changes flow as My Sentences and Answer Sheets. Each
+ * sentence gets a `+` opening the inline {@link SentenceCorrector} (select a span → Correct/Incorrect,
+ * derive `{ correction, marks }`, add an explanation). Saving creates a My Sentence carrying the
+ * correction, marks, and explanation (tagged with the writing's terms and linked back to it) and
+ * records the correction inline on the writing. Already-corrected sentences lead with the fix, hide the
+ * original behind a "Show your original" diff, and offer "Edit corrections" to revise it (and the
+ * linked My Sentence) in place.
  */
 export function WritingCorrections({
   writing,
@@ -43,48 +48,49 @@ export function WritingCorrections({
   text: string;
 }) {
   const createMySentence = useCreateMySentence();
+  const updateMySentence = useUpdateMySentence();
   const updateWriting = useUpdateWriting();
-  const [editing, setEditing] = useState<number | null>(null);
-  const [corrected, setCorrected] = useState("");
-  const [note, setNote] = useState("");
+  // Which uncorrected segment (by index) is open for a first-time correction.
+  const [addingIndex, setAddingIndex] = useState<number | null>(null);
+  // Which existing correction (by id) is open for re-editing.
+  const [editingId, setEditingId] = useState<string | null>(null);
+  // Which corrections are showing their original-vs-corrected diff.
+  const [showOriginal, setShowOriginal] = useState<Set<string>>(() => new Set());
 
   const segments = splitSentences(text);
   const corrections = writing.corrections ?? [];
   const correctionFor = (segment: string) =>
     corrections.find(c => c.original.trim() === segment.trim());
 
-  const busy = createMySentence.isPending || updateWriting.isPending;
+  const toggleOriginal = (id: string) =>
+    setShowOriginal((cur) => {
+      const next = new Set(cur);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
 
-  const open = (index: number, segment: string) => {
-    setEditing(index);
-    setCorrected(segment);
-    setNote("");
-  };
-
-  const cancel = () => {
-    setEditing(null);
-    setCorrected("");
-    setNote("");
-  };
-
-  const officiallyAdd = async (original: string) => {
+  const officiallyAdd = async (original: string, r: SentenceCorrectionResult) => {
     try {
       const created = await createMySentence.mutateAsync({
         text: original,
-        correction: corrected.trim() || null,
+        correction: r.correction.trim() || null,
+        marks: r.marks,
+        explanation: r.reasoning,
         needsCorrection: false,
         translation: writing.meaning,
         language: writing.language,
         writingId: writing.id,
         terms: writing.terms,
       });
-      const next = [
+      const next: WritingCorrection[] = [
         ...corrections,
         {
           id: crypto.randomUUID(),
           original,
-          corrected: corrected.trim(),
-          note: note.trim() || null,
+          corrected: r.correction.trim(),
+          note: r.reasoning,
+          marks: r.marks,
           mySentenceId: created.id,
         },
       ];
@@ -94,7 +100,41 @@ export function WritingCorrections({
           corrections: next,
         },
       });
-      cancel();
+      setAddingIndex(null);
+    }
+    catch {
+      // Errors are surfaced by the mutations' onError toasts; keep the editor open for a retry.
+    }
+  };
+
+  const saveEdit = async (existing: WritingCorrection, r: SentenceCorrectionResult) => {
+    try {
+      if (existing.mySentenceId) {
+        await updateMySentence.mutateAsync({
+          id: existing.mySentenceId,
+          input: {
+            correction: r.correction.trim() || null,
+            marks: r.marks,
+            explanation: r.reasoning,
+          },
+        });
+      }
+      const next = corrections.map(c =>
+        c.id === existing.id
+          ? {
+            ...c,
+            corrected: r.correction.trim(),
+            note: r.reasoning,
+            marks: r.marks,
+          }
+          : c);
+      await updateWriting.mutateAsync({
+        id: writing.id,
+        input: {
+          corrections: next,
+        },
+      });
+      setEditingId(null);
     }
     catch {
       // Errors are surfaced by the mutations' onError toasts; keep the editor open for a retry.
@@ -127,85 +167,124 @@ export function WritingCorrections({
               key={`${index}-${segment}`}
               className="rounded-md border p-3"
             >
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className="text-lg">{segment}</p>
-                {existing
-                  ? (
-                    <Link
-                      to="/my-sentences"
+              {existing
+                ? (
+                  <div className="space-y-2">
+                    <div
                       className="
-                        inline-flex items-center gap-1 text-sm text-primary
-                        hover:underline
+                        flex flex-wrap items-center justify-between gap-2
                       "
                     >
-                      <CheckCircle2 className="size-4" />
-                      Corrected — in My Sentences
-                    </Link>
-                  )
-                  : (
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      onClick={() => open(index, segment)}
-                      disabled={editing === index}
-                    >
-                      <PlusIcon className="size-4" />
-                      Correct
-                    </Button>
-                  )}
-              </div>
+                      {editingId === existing.id
+                        ? <span className="text-lg font-semibold">Edit your correction</span>
+                        : <p className="text-lg">{existing.corrected || segment}</p>}
+                      <div className="flex shrink-0 items-center gap-1">
+                        <Link
+                          to="/my-sentences"
+                          className="
+                            inline-flex items-center gap-1 text-sm text-primary
+                            hover:underline
+                          "
+                        >
+                          <CheckCircle2 className="size-4" />
+                          In My Sentences
+                        </Link>
+                        {editingId === existing.id
+                          ? null
+                          : (
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setEditingId(existing.id)}
+                            >
+                              Edit corrections
+                            </Button>
+                          )}
+                      </div>
+                    </div>
 
-              {existing?.note
-                ? (
-                  <p
-                    className="mt-1 text-sm text-muted-foreground"
-                  >{existing.note}
-                  </p>
-                )
-                : null}
-
-              {editing === index && !existing
-                ? (
-                  <div className="mt-3 space-y-2 border-t pt-3">
-                    <div className="space-y-1.5">
-                      <Label className="text-sm">Corrected version</Label>
-                      <Textarea
-                        value={corrected}
-                        onChange={e => setCorrected(e.target.value)}
-                        placeholder="Write the corrected sentence…"
-                        rows={2}
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-sm">Note (optional)</Label>
-                      <Textarea
-                        value={note}
-                        onChange={e => setNote(e.target.value)}
-                        placeholder="What changed and why…"
-                        rows={2}
-                      />
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        size="sm"
-                        onClick={() => void officiallyAdd(segment)}
-                        disabled={busy || !corrected.trim()}
-                      >
-                        Add to My Sentences
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={cancel}
-                        disabled={busy}
-                      >
-                        Cancel
-                      </Button>
-                    </div>
+                    {editingId === existing.id
+                      ? (
+                        <SentenceCorrector
+                          text={existing.corrected || segment}
+                          reasoning={existing.note}
+                          onSave={r => void saveEdit(existing, r)}
+                        />
+                      )
+                      : (
+                        <>
+                          {existing.note
+                            ? <p className="text-sm text-muted-foreground">{existing.note}</p>
+                            : null}
+                          <div className="space-y-1">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => toggleOriginal(existing.id)}
+                            >
+                              {showOriginal.has(existing.id)
+                                ? <EyeOff className="size-4" />
+                                : <Eye className="size-4" />}
+                              {showOriginal.has(existing.id) ? "Hide original" : "Show your original"}
+                            </Button>
+                            {showOriginal.has(existing.id)
+                              ? (
+                                <div
+                                  className="
+                                    space-y-1 rounded-md border bg-muted/30 p-2
+                                  "
+                                >
+                                  <CorrectionDiff
+                                    written={existing.original}
+                                    correct={existing.corrected}
+                                    language={writing.language}
+                                  />
+                                </div>
+                              )
+                              : null}
+                          </div>
+                        </>
+                      )}
                   </div>
                 )
-                : null}
+                : (
+                  <div className="space-y-2">
+                    <div
+                      className="
+                        flex flex-wrap items-center justify-between gap-2
+                      "
+                    >
+                      {addingIndex === index
+                        ? <span className="text-lg font-semibold">Correct your sentence</span>
+                        : <p className="text-lg">{segment}</p>}
+                      {addingIndex === index
+                        ? null
+                        : (
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setAddingIndex(index)}
+                          >
+                            <PlusIcon className="size-4" />
+                            Correct
+                          </Button>
+                        )}
+                    </div>
+
+                    {addingIndex === index
+                      ? (
+                        <SentenceCorrector
+                          text={segment}
+                          onSave={r => void officiallyAdd(segment, r)}
+                          saveLabel="Add to My Sentences"
+                        />
+                      )
+                      : null}
+                  </div>
+                )}
             </li>
           );
         })}

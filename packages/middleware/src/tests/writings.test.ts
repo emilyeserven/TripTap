@@ -89,6 +89,13 @@ test("POST /api/writings accepts a valid payload with tags and a correction", as
           original: "今日は寒いです。",
           corrected: "今日は寒いですね。",
           note: "Softer with ね.",
+          marks: [
+            {
+              start: 5,
+              end: 6,
+              correct: true,
+            },
+          ],
           mySentenceId: null,
         },
       ],
@@ -96,5 +103,34 @@ test("POST /api/writings accepts a valid payload with tags and a correction", as
   });
   // Valid payload — 201 with a DB, or a 5xx without one, but never a 400.
   assert.notEqual(res.statusCode, 400);
+  await app.close();
+});
+
+test("POST /api/writings rejects a correction mark missing required fields", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/writings",
+    payload: {
+      text: "今日は寒いです。",
+      language: "Japanese",
+      corrections: [
+        {
+          id: "c1",
+          original: "今日は寒いです。",
+          corrected: "今日は寒いですね。",
+          marks: [
+            {
+              start: 5,
+              // end omitted → invalid
+              correct: true,
+            },
+          ],
+          mySentenceId: null,
+        },
+      ],
+    },
+  });
+  assert.equal(res.statusCode, 400);
   await app.close();
 });

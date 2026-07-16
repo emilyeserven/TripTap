@@ -9,6 +9,7 @@
  */
 
 import type { SentenceTermRef } from "./index.js";
+import type { SentenceMark } from "./sentence-mark.js";
 
 /**
  * One corrected sentence within a writing. Created client-side (`id` via `crypto.randomUUID()`); once
@@ -19,10 +20,12 @@ export interface WritingCorrection {
   id: string;
   /** The sentence as originally written (the segment the `+` was clicked after). */
   original: string;
-  /** The corrected version of {@link original}. */
+  /** The corrected version of {@link original}, derived from the track-changes editor. */
   corrected: string;
   /** An optional explanation of the correction; null if none. */
   note: string | null;
+  /** Track-changes spans over {@link corrected} (offsets into it); null if none. */
+  marks: SentenceMark[] | null;
   /** The My Sentence created from this correction, or null if not yet promoted. */
   mySentenceId: string | null;
 }
