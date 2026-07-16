@@ -12,6 +12,8 @@ import { writingPrompts, type WritingPromptRow } from "@/db/schema";
 export function toWritingPrompt(row: WritingPromptRow): WritingPrompt {
   return {
     id: row.id,
+    title: row.title ?? null,
+    titleEn: row.titleEn ?? null,
     text: row.text,
     textEn: row.textEn ?? null,
     difficulty: (row.difficulty as WritingPromptDifficulty) ?? "Other",
@@ -25,6 +27,8 @@ export function toWritingPrompt(row: WritingPromptRow): WritingPrompt {
 /** Drizzle insert shape for one writing-prompt row, from the create input. */
 function toInsert(input: CreateWritingPromptInput) {
   return {
+    title: input.title ?? null,
+    titleEn: input.titleEn ?? null,
     text: input.text,
     textEn: input.textEn ?? null,
     difficulty: input.difficulty ?? "Other",

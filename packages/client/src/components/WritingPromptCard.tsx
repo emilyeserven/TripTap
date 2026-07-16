@@ -24,11 +24,11 @@ export function WritingPromptCard({
       <CardContent className="space-y-2 p-4">
         <div className="flex items-start justify-between gap-2">
           <div className="flex flex-wrap items-center gap-2">
-            <h2 className="text-lg font-semibold">{prompt.text}</h2>
+            <h2 className="text-lg font-semibold">{prompt.title || prompt.text}</h2>
             <DifficultyBadge difficulty={prompt.difficulty} />
           </div>
           <div className="flex shrink-0 items-center gap-3">
-            {prompt.textEn
+            {prompt.titleEn || prompt.textEn
               ? (
                 <button
                   type="button"
@@ -56,6 +56,12 @@ export function WritingPromptCard({
             </Link>
           </div>
         </div>
+        {prompt.title
+          ? <p className="text-sm whitespace-pre-wrap">{prompt.text}</p>
+          : null}
+        {showEnglish && prompt.titleEn
+          ? <p className="text-sm font-medium text-muted-foreground">{prompt.titleEn}</p>
+          : null}
         {showEnglish && prompt.textEn
           ? <p className="text-sm whitespace-pre-wrap text-muted-foreground">{prompt.textEn}</p>
           : null}
