@@ -1,4 +1,4 @@
-import type { QuestionSheet } from "@sentence-bank/types";
+import type { AnswerSheet, LearningArea, QuestionSheet } from "@sentence-bank/types";
 
 /** One answerable cell of a question sheet: a stable `id` and a human label for the input. */
 export interface QuestionSheetSlot {
@@ -51,4 +51,82 @@ export function questionSheetSlots(qs: QuestionSheet): QuestionSheetSlot[] {
     }
   });
   return slots;
+}
+
+/**
+ * True when every answerable slot of `qs` has a non-empty answer recorded in `as`. A sheet with no
+ * slots is never "complete" (there is nothing to fill in).
+ */
+export function isAnswerSheetComplete(qs: QuestionSheet, as: AnswerSheet): boolean {
+  const slots = questionSheetSlots(qs);
+  if (slots.length === 0) return false;
+  const byId = new Map(as.entries.map(e => [e.slotId, e] as const));
+  return slots.every(s => (byId.get(s.id)?.value.trim().length ?? 0) > 0);
+}
+
+/** The UTC calendar day of an ISO timestamp, as an epoch-ms at midnight (for day-granular comparisons). */
+function utcDay(iso: string): number {
+  const d = new Date(iso);
+  return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+}
+
+/**
+ * True when this attempt meets the question sheet's due date: every slot is filled in and the attempt's
+ * assigned date falls on or between the day the question sheet was created and its due date (both
+ * inclusive). A question sheet with no due date, or an attempt with no assigned date, is never met.
+ * Compared at day granularity so an attempt dated the same day the sheet was created still counts.
+ */
+export function answerSheetMeetsDueDate(qs: QuestionSheet, as: AnswerSheet): boolean {
+  if (!qs.dueDate || !as.date) return false;
+  if (!isAnswerSheetComplete(qs, as)) return false;
+  const answered = utcDay(as.date);
+  return answered >= utcDay(qs.createdAt) && answered <= utcDay(qs.dueDate);
+}
+
+/** True when any of the given attempts meets the question sheet's due date. */
+export function dueDateMet(qs: QuestionSheet, answerSheets: AnswerSheet[]): boolean {
+  return answerSheets.some(as => answerSheetMeetsDueDate(qs, as));
+}
+
+/** The sentinel filter value meaning "no filter applied" for the resource/learning-area dropdowns. */
+export const ALL_FILTER = "all";
+
+/** One `{ value, label }` choice for a filter dropdown. */
+export interface FilterOption {
+  value: string;
+  label: string;
+}
+
+/**
+ * Distinct resource (Textbook/Worksheet bookmark) filter options across the given question sheets,
+ * with an "all" sentinel first. Sheets with no bookmark contribute nothing. Value = `bookmarkId`,
+ * label = `bookmarkTitle`.
+ */
+export function resourceFilterOptions(sheets: QuestionSheet[]): FilterOption[] {
+  const seen = new Map<string, string>();
+  for (const s of sheets) {
+    if (s.bookmarkId && !seen.has(s.bookmarkId)) {
+      seen.set(s.bookmarkId, s.bookmarkTitle ?? s.bookmarkId);
+    }
+  }
+  return [
+    {
+      value: ALL_FILTER,
+      label: "All resources",
+    },
+    ...[...seen].map(([value, label]) => ({
+      value,
+      label,
+    })),
+  ];
+}
+
+/** True when a question sheet passes the resource filter (`ALL_FILTER` passes everything). */
+export function matchesResource(qs: QuestionSheet | undefined, resource: string): boolean {
+  return resource === ALL_FILTER || (qs?.bookmarkId ?? null) === resource;
+}
+
+/** True when a question sheet passes the Learning Area filter (`ALL_FILTER` passes everything). */
+export function matchesLearningArea(qs: QuestionSheet | undefined, area: string): boolean {
+  return area === ALL_FILTER || (qs?.learningAreas ?? []).includes(area as LearningArea);
 }

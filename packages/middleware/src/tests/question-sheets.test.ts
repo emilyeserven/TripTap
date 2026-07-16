@@ -102,6 +102,54 @@ test("POST /api/question-sheets accepts a valid list sheet with parts, a bookmar
   await app.close();
 });
 
+test("POST /api/question-sheets accepts valid learning areas", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/question-sheets",
+    payload: {
+      title: "Chapter 3 drills",
+      layout: "list",
+      learningAreas: ["Grammar", "Vocabulary"],
+    },
+  });
+  // Valid payload — 201 with a DB, or a 5xx without one, but never a 400.
+  assert.notEqual(res.statusCode, 400);
+  await app.close();
+});
+
+test("POST /api/question-sheets rejects an unknown learning area", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/question-sheets",
+    payload: {
+      title: "Chapter 3 drills",
+      layout: "list",
+      learningAreas: ["Grammar", "Kanji"], // "Kanji" is not a valid learning area
+    },
+  });
+  assert.equal(res.statusCode, 400);
+  await app.close();
+});
+
+test("POST /api/question-sheets rejects a non-array learningAreas", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/question-sheets",
+    payload: {
+      title: "Chapter 3 drills",
+      layout: "list",
+      learningAreas: {
+        grammar: true,
+      }, // an object can't be coerced to an array
+    },
+  });
+  assert.equal(res.statusCode, 400);
+  await app.close();
+});
+
 test("POST /api/question-sheets accepts a valid grid sheet", async () => {
   const app = await buildApp();
   const res = await app.inject({

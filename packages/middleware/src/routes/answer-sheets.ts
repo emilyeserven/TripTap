@@ -96,6 +96,9 @@ const createAnswerSheetBody = {
     title: {
       type: ["string", "null"],
     },
+    date: {
+      type: ["string", "null"],
+    },
     entries: entriesSchema,
   },
 } as const;

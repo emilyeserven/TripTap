@@ -36,6 +36,7 @@ export function toAnswerSheet(row: AnswerSheetRow): AnswerSheet {
     id: row.id,
     questionSheetId: row.questionSheetId,
     title: row.title,
+    date: row.date instanceof Date ? row.date.toISOString() : (row.date ?? null),
     entries: (row.entries ?? []).map(normalizeEntry),
     createdAt:
       row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
@@ -49,6 +50,7 @@ function toInsert(input: CreateAnswerSheetInput) {
   return {
     questionSheetId: input.questionSheetId,
     title: input.title ?? null,
+    date: input.date ? new Date(input.date) : null,
     entries: input.entries ?? null,
   };
 }
@@ -91,6 +93,7 @@ export async function updateAnswerSheet(
     .update(answerSheets)
     .set({
       ...input,
+      date: input.date === undefined ? undefined : (input.date ? new Date(input.date) : null),
       updatedAt: new Date(),
     })
     .where(eq(answerSheets.id, id))

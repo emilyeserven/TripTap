@@ -1,12 +1,21 @@
+import { useMemo, useState } from "react";
+
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
 
 import { AnswerSheetCard } from "@/components/AnswerSheetCard";
 import { QuestionSheetCard } from "@/components/QuestionSheetCard";
+import { SheetFilters } from "@/components/SheetFilters";
 import { Button } from "@/components/ui/button";
 import { useAnswerSheets } from "@/hooks/useAnswerSheets";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useQuestionSheets } from "@/hooks/useQuestionSheets";
+import {
+  ALL_FILTER,
+  matchesLearningArea,
+  matchesResource,
+  resourceFilterOptions,
+} from "@/lib/answer-sheets";
 
 export const Route = createFileRoute("/book-exercises/")({
   component: BookExercisesPage,
@@ -22,12 +31,46 @@ function BookExercisesPage() {
     data: answerSheets, isLoading: answerSheetsLoading, error: answerSheetsError,
   } = useAnswerSheets();
 
+  const [resource, setResource] = useState(ALL_FILTER);
+  const [area, setArea] = useState(ALL_FILTER);
+
+  const parentById = useMemo(
+    () => new Map((questionSheets ?? []).map(q => [q.id, q])),
+    [questionSheets],
+  );
+  const resourceOptions = useMemo(
+    () => resourceFilterOptions(questionSheets ?? []),
+    [questionSheets],
+  );
+
+  const shownQuestionSheets = useMemo(
+    () => (questionSheets ?? []).filter(
+      qs => matchesResource(qs, resource) && matchesLearningArea(qs, area),
+    ),
+    [questionSheets, resource, area],
+  );
+  // Answer sheets inherit resource/learning-area from their parent question sheet.
+  const shownAnswerSheets = useMemo(
+    () => (answerSheets ?? []).filter((as) => {
+      const parent = parentById.get(as.questionSheetId);
+      return matchesResource(parent, resource) && matchesLearningArea(parent, area);
+    }),
+    [answerSheets, parentById, resource, area],
+  );
+
   return (
     <section className="max-w-4xl space-y-10">
-      <div>
+      <div className="space-y-4">
         <p className="text-sm text-muted-foreground">
           Question sheets and answer sheets for working through textbook exercises.
         </p>
+        <SheetFilters
+          resource={resource}
+          onResourceChange={setResource}
+          resourceOptions={resourceOptions}
+          area={area}
+          onAreaChange={setArea}
+        />
       </div>
 
       <div className="space-y-4">
@@ -46,12 +89,17 @@ function BookExercisesPage() {
 
         {questionSheetsError ? <p className="text-destructive">{questionSheetsError.message}</p> : null}
         {questionSheetsLoading ? <p className="text-muted-foreground">Loading…</p> : null}
-        {!questionSheetsLoading && (questionSheets ?? []).length === 0 && (
+        {!questionSheetsLoading && shownQuestionSheets.length === 0 && (
           <p className="text-muted-foreground">No question sheets yet.</p>
         )}
 
-        <div className="space-y-4">
-          {(questionSheets ?? []).map(qs => (
+        <div
+          className="
+            grid gap-4
+            sm:grid-cols-2
+          "
+        >
+          {shownQuestionSheets.map(qs => (
             <QuestionSheetCard
               key={qs.id}
               questionSheet={qs}
@@ -76,12 +124,17 @@ function BookExercisesPage() {
 
         {answerSheetsError ? <p className="text-destructive">{answerSheetsError.message}</p> : null}
         {answerSheetsLoading ? <p className="text-muted-foreground">Loading…</p> : null}
-        {!answerSheetsLoading && (answerSheets ?? []).length === 0 && (
+        {!answerSheetsLoading && shownAnswerSheets.length === 0 && (
           <p className="text-muted-foreground">No answer sheets yet.</p>
         )}
 
-        <div className="space-y-4">
-          {(answerSheets ?? []).map(as => (
+        <div
+          className="
+            grid gap-4
+            sm:grid-cols-2
+          "
+        >
+          {shownAnswerSheets.map(as => (
             <AnswerSheetCard
               key={as.id}
               answerSheet={as}

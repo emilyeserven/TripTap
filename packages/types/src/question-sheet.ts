@@ -1,6 +1,19 @@
 /** How a question sheet's answerable slots are laid out. */
 export type QuestionSheetLayout = "list" | "grid";
 
+/** The language-learning skill areas a question sheet can be tagged with (a sheet may have several). */
+export const LEARNING_AREAS = [
+  "Speaking",
+  "Listening",
+  "Reading",
+  "Writing",
+  "Grammar",
+  "Vocabulary",
+] as const;
+
+/** One skill area from {@link LEARNING_AREAS}. */
+export type LearningArea = (typeof LEARNING_AREAS)[number];
+
 /** One labelled sub-part of a list question (e.g. "(a)", "(b)"). Each part is its own answer slot. */
 export interface QuestionSheetPart {
   id: string;
@@ -44,6 +57,8 @@ export interface QuestionSheet {
   bookmarkUrl: string | null;
   /** When this sheet should be answered by, if any. */
   dueDate: string | null;
+  /** Skill areas this sheet exercises; empty when untagged. Answer sheets inherit these from here. */
+  learningAreas: LearningArea[];
   layout: QuestionSheetLayout;
   /** Used when `layout === "list"`. */
   questions: QuestionSheetQuestion[];
@@ -62,6 +77,7 @@ export interface CreateQuestionSheetInput {
   bookmarkTitle?: string | null;
   bookmarkUrl?: string | null;
   dueDate?: string | null;
+  learningAreas?: LearningArea[];
   questions?: QuestionSheetQuestion[];
   grid?: QuestionSheetGrid | null;
 }

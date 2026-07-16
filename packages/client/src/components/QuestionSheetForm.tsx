@@ -1,5 +1,6 @@
 import type { PartLabelStyle } from "@/lib/question-sheet-parts";
 import type {
+  LearningArea,
   QuestionSheet,
   QuestionSheetGridRow,
   QuestionSheetLayout,
@@ -12,6 +13,7 @@ import { useEffect, useState } from "react";
 import { ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react";
 
 import { BookmarkPicker } from "@/components/BookmarkPicker";
+import { LearningAreaMultiSelect } from "@/components/LearningAreaMultiSelect";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -61,6 +63,9 @@ export function QuestionSheetForm({
   // bookmark/page until the user types into it directly.
   const [titleTouched, setTitleTouched] = useState(editing);
   const [notes, setNotes] = useState(questionSheet?.notes ?? "");
+  const [learningAreas, setLearningAreas] = useState<LearningArea[]>(
+    questionSheet?.learningAreas ?? [],
+  );
   const [layout, setLayout] = useState<QuestionSheetLayout>(questionSheet?.layout ?? "list");
   const [quickCount, setQuickCount] = useState("");
   const [questions, setQuestions] = useState<QuestionSheetQuestion[]>(
@@ -229,6 +234,7 @@ export function QuestionSheetForm({
       bookmarkTitle,
       bookmarkUrl,
       dueDate: dueDate ? new Date(dueDate).toISOString() : null,
+      learningAreas,
       questions: layout === "list" ? questions : [],
       grid: layout === "grid"
         ? {
@@ -315,6 +321,17 @@ export function QuestionSheetForm({
           placeholder="Anything to remember about this exercise set (optional)"
           rows={2}
         />
+      </div>
+
+      <div className="space-y-2">
+        <Label>Learning areas</Label>
+        <LearningAreaMultiSelect
+          value={learningAreas}
+          onChange={setLearningAreas}
+        />
+        <p className="text-xs text-muted-foreground">
+          Tag the skills this sheet practises (optional). Answer sheets inherit these.
+        </p>
       </div>
 
       <div className="space-y-2">

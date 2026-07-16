@@ -1,11 +1,14 @@
 import type { QuestionSheet } from "@sentence-bank/types";
 
 import { Link } from "@tanstack/react-router";
+import { CalendarCheck } from "lucide-react";
 
+import { LearningAreaBadges } from "@/components/LearningAreaBadges";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { questionSheetSlots } from "@/lib/answer-sheets";
+import { useAnswerSheets } from "@/hooks/useAnswerSheets";
+import { dueDateMet, questionSheetSlots } from "@/lib/answer-sheets";
 import { formatDueDate, isOverdue } from "@/lib/due-date";
 
 /** Compact list-item for one Question Sheet: title link, layout + slot count. */
@@ -15,6 +18,9 @@ export function QuestionSheetCard({
   questionSheet: QuestionSheet;
 }) {
   const slotCount = questionSheetSlots(qs).length;
+  // One shared, cached query for all answer sheets — filtered here rather than one request per card.
+  const answerSheets = useAnswerSheets();
+  const met = dueDateMet(qs, (answerSheets.data ?? []).filter(as => as.questionSheetId === qs.id));
 
   return (
     <Card>
@@ -40,6 +46,7 @@ export function QuestionSheetCard({
         >
           <Badge variant="secondary">{qs.layout === "grid" ? "Grid" : "List"}</Badge>
           {qs.page ? <Badge variant="outline">Page {qs.page}</Badge> : null}
+          <LearningAreaBadges areas={qs.learningAreas} />
           <span>{slotCount} {slotCount === 1 ? "slot" : "slots"}</span>
           {qs.bookmarkTitle
             ? (
@@ -65,11 +72,23 @@ export function QuestionSheetCard({
             )
             : null}
           {qs.dueDate
-            ? (
-              <Badge variant={isOverdue(qs.dueDate, new Date()) ? "destructive" : "outline"}>
-                Due {formatDueDate(qs.dueDate)}
-              </Badge>
-            )
+            ? met
+              ? (
+                <Badge
+                  variant="outline"
+                  className="border-green-600 text-green-600"
+                >
+                  <CalendarCheck />
+                  Due date met ·
+                  {" "}
+                  {formatDueDate(qs.dueDate)}
+                </Badge>
+              )
+              : (
+                <Badge variant={isOverdue(qs.dueDate, new Date()) ? "destructive" : "outline"}>
+                  Due {formatDueDate(qs.dueDate)}
+                </Badge>
+              )
             : null}
         </div>
         <div>

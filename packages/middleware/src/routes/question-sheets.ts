@@ -3,6 +3,7 @@ import type {
   CreateQuestionSheetInput,
   UpdateQuestionSheetInput,
 } from "@sentence-bank/types";
+import { LEARNING_AREAS } from "@sentence-bank/types";
 import {
   createQuestionSheet,
   deleteQuestionSheet,
@@ -115,6 +116,13 @@ const createQuestionSheetBody = {
     },
     dueDate: {
       type: ["string", "null"],
+    },
+    learningAreas: {
+      type: ["array", "null"],
+      items: {
+        type: "string",
+        enum: LEARNING_AREAS,
+      },
     },
     questions: questionsSchema,
     grid: gridSchema,

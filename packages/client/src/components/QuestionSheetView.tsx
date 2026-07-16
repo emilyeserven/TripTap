@@ -1,7 +1,12 @@
 import type { QuestionSheet } from "@sentence-bank/types";
 
+import { CalendarCheck } from "lucide-react";
+
+import { LearningAreaBadges } from "@/components/LearningAreaBadges";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
+import { useAnswerSheetsForQuestionSheet } from "@/hooks/useAnswerSheets";
+import { dueDateMet } from "@/lib/answer-sheets";
 import { formatDueDate, isOverdue } from "@/lib/due-date";
 
 /** Read-only render of a question sheet's structure — a numbered list (with parts) or a grid. */
@@ -10,6 +15,11 @@ export function QuestionSheetView({
 }: {
   questionSheet: QuestionSheet;
 }) {
+  const {
+    data: answerSheets,
+  } = useAnswerSheetsForQuestionSheet(qs.id);
+  const met = dueDateMet(qs, answerSheets ?? []);
+
   return (
     <div className="space-y-4">
       <div>
@@ -21,6 +31,7 @@ export function QuestionSheetView({
         >
           <Badge variant="secondary">{qs.layout === "grid" ? "Grid" : "List"}</Badge>
           {qs.page ? <Badge variant="outline">Page {qs.page}</Badge> : null}
+          <LearningAreaBadges areas={qs.learningAreas} />
           {qs.bookmarkTitle
             ? (
               <span
@@ -50,11 +61,23 @@ export function QuestionSheetView({
             )
             : null}
           {qs.dueDate
-            ? (
-              <Badge variant={isOverdue(qs.dueDate, new Date()) ? "destructive" : "outline"}>
-                Due {formatDueDate(qs.dueDate)}
-              </Badge>
-            )
+            ? met
+              ? (
+                <Badge
+                  variant="outline"
+                  className="border-green-600 text-green-600"
+                >
+                  <CalendarCheck />
+                  Due date met ·
+                  {" "}
+                  {formatDueDate(qs.dueDate)}
+                </Badge>
+              )
+              : (
+                <Badge variant={isOverdue(qs.dueDate, new Date()) ? "destructive" : "outline"}>
+                  Due {formatDueDate(qs.dueDate)}
+                </Badge>
+              )
             : null}
         </div>
       </div>

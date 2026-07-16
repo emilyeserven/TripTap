@@ -260,6 +260,20 @@
       "when": 1784175595106,
       "tag": "0036_sparkling_annihilus",
       "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1784212664075,
+      "tag": "0037_illegal_phalanx",
+      "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1784213994798,
+      "tag": "0038_heavy_pretty_boy",
+      "breakpoints": true
     }
   ]
 }

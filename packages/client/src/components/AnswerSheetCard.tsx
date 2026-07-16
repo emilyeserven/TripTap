@@ -1,10 +1,14 @@
 import type { AnswerSheet } from "@sentence-bank/types";
 
 import { Link } from "@tanstack/react-router";
+import { CalendarCheck } from "lucide-react";
 
+import { LearningAreaBadges } from "@/components/LearningAreaBadges";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { useQuestionSheets } from "@/hooks/useQuestionSheets";
+import { answerSheetMeetsDueDate } from "@/lib/answer-sheets";
+import { formatDueDate } from "@/lib/due-date";
 
 /** Compact list-item for one Answer Sheet: title link, source sheet, and answer/correction counts. */
 export function AnswerSheetCard({
@@ -15,6 +19,7 @@ export function AnswerSheetCard({
   const sheets = useQuestionSheets();
   const sheet = (sheets.data ?? []).find(s => s.id === as.questionSheetId);
   const corrected = as.entries.filter(e => e.correction?.trim()).length;
+  const meetsDueDate = sheet ? answerSheetMeetsDueDate(sheet, as) : false;
 
   return (
     <Card>
@@ -39,6 +44,8 @@ export function AnswerSheetCard({
           "
         >
           {sheet ? <span>From: {sheet.title}</span> : null}
+          {sheet ? <LearningAreaBadges areas={sheet.learningAreas} /> : null}
+          {as.date ? <span>Dated {formatDueDate(as.date)}</span> : null}
           <Badge variant="secondary">
             {as.entries.length} {as.entries.length === 1 ? "answer" : "answers"}
           </Badge>
@@ -46,6 +53,17 @@ export function AnswerSheetCard({
             ? (
               <Badge variant="outline">
                 {corrected} corrected
+              </Badge>
+            )
+            : null}
+          {meetsDueDate
+            ? (
+              <Badge
+                variant="outline"
+                className="border-green-600 text-green-600"
+              >
+                <CalendarCheck />
+                Meets due date
               </Badge>
             )
             : null}
