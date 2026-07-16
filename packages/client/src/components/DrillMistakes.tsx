@@ -151,6 +151,17 @@ export function DrillMistakes({
             ))}
           </ul>
         )}
+
+      {mistakes.length > 0 && (
+        <Button
+          type="button"
+          size="sm"
+          onClick={addMistake}
+        >
+          <Plus className="size-4" />
+          Add mistake
+        </Button>
+      )}
     </div>
   );
 }
