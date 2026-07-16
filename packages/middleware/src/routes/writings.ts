@@ -69,6 +69,25 @@ const correctionsSchema = {
       note: {
         type: ["string", "null"],
       },
+      marks: {
+        type: ["array", "null"],
+        items: {
+          type: "object",
+          additionalProperties: false,
+          required: ["start", "end", "correct"],
+          properties: {
+            start: {
+              type: "integer",
+            },
+            end: {
+              type: "integer",
+            },
+            correct: {
+              type: "boolean",
+            },
+          },
+        },
+      },
       mySentenceId: {
         type: ["string", "null"],
       },
