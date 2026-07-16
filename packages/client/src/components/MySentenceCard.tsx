@@ -17,8 +17,9 @@ import { useUpdateMySentence } from "@/hooks/useMySentences";
 /**
  * One learner-produced sentence in the list — the same correction flow as Answer Sheet entries. When it
  * still needs correction it offers the inline track-changes {@link SentenceCorrector} (plus a ✓ to mark
- * it as actually fine); once corrected it leads with the fix, hides the original behind a toggle, and
- * exposes "Edit corrections" to revise inline. `readOnly` collapses it to a plain read-only summary.
+ * it as actually fine); once corrected it leads with the fix, hiding the original behind a toggle. Where
+ * inline editing is enabled (`onEdit`, e.g. within a lesson) it also exposes "Edit corrections" to revise
+ * the fix in place, seeded from the current correction. `readOnly` collapses it to a plain read-only summary.
  */
 export function MySentenceCard({
   mySentence: ms,
@@ -107,7 +108,7 @@ export function MySentenceCard({
                 </Button>
               )
               : null}
-            {!readOnly && corrected && !correcting
+            {onEdit && corrected && !correcting
               ? (
                 <Button
                   type="button"
@@ -152,7 +153,9 @@ export function MySentenceCard({
         {showCorrector
           ? (
             <SentenceCorrector
-              text={ms.text}
+              // Re-editing an already-corrected sentence revises the correction; a first-time review
+              // starts from the learner's original.
+              text={correcting && corrected ? corrected : ms.text}
               reasoning={ms.explanation}
               onSave={saveCorrection}
             />
