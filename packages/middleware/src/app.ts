@@ -7,6 +7,7 @@ import { aiLessonRoutes } from "@/routes/ai-lessons";
 import { answerSheetRoutes } from "@/routes/answer-sheets";
 import { bookmarksRoutes } from "@/routes/bookmarks";
 import { captureRoutes } from "@/routes/captures";
+import { dictionaryRoutes } from "@/routes/dictionary";
 import { drillReasonCategoryRoutes } from "@/routes/drill-reason-categories";
 import { drillSessionRoutes } from "@/routes/drill-sessions";
 import { healthRoutes } from "@/routes/health";
@@ -145,6 +146,10 @@ export async function buildApp(): Promise<FastifyInstance> {
           name: "bookmarks",
           description: "External bookmarks tag/taxonomy proxy",
         },
+        {
+          name: "dictionary",
+          description: "Japanese dictionary lookup proxy (Jisho / Jotoba)",
+        },
       ],
     },
   });
@@ -154,6 +159,7 @@ export async function buildApp(): Promise<FastifyInstance> {
 
   await app.register(healthRoutes);
   await app.register(bookmarksRoutes);
+  await app.register(dictionaryRoutes);
   await app.register(sentenceRoutes);
   await app.register(practiceSentenceRoutes);
   await app.register(mySentenceRoutes);

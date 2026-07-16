@@ -15,6 +15,7 @@ import type {
   CreateListeningSessionInput,
   CreateReadingSessionInput,
   CreateShadowingSessionInput,
+  DictionaryEntry,
   ListeningSession,
   ReadingSession,
   ShadowingSession,
@@ -573,6 +574,12 @@ export const bookmarksApi = {
     request<BookmarkRecord[]>(`/bookmarks/records?category=${category}`),
   /** A single bookmark with its flattened timestamp sections. */
   record: (id: string) => request<BookmarkRecord>(`/bookmarks/records/${encodeURIComponent(id)}`),
+};
+
+/** Proxy to the external Japanese dictionary lookup (all calls go server-side; provider is swappable). */
+export const dictionaryApi = {
+  search: (keyword: string) =>
+    request<DictionaryEntry[]>(`/dictionary/search?keyword=${encodeURIComponent(keyword)}`),
 };
 
 export const aiLessonsApi = {
