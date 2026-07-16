@@ -5,6 +5,7 @@ import {
   BookAIcon,
   BookMarkedIcon,
   BookOpenIcon,
+  BookOpenTextIcon,
   CameraIcon,
   ChartColumnIcon,
   ChevronDownIcon,
@@ -22,6 +23,7 @@ import {
   LayersIcon,
   LibraryIcon,
   LightbulbIcon,
+  MicIcon,
   NotebookPenIcon,
   PencilRulerIcon,
   PenLineIcon,
@@ -124,19 +126,28 @@ const libraryItems = [
 /** Tools that act on the bank (exports, etc.). */
 const actionItems = [
   {
-    title: "Study Sentences",
-    to: "/practice",
-    icon: NotebookPenIcon,
-  },
-  {
-    title: "My Writing",
-    to: "/my-writing",
-    icon: PenLineIcon,
+    title: "Reading & Writing",
+    icon: BookOpenTextIcon,
     children: [
+      {
+        title: "Study Sentences",
+        to: "/practice",
+        icon: NotebookPenIcon,
+      },
+      {
+        title: "My Writing",
+        to: "/my-writing",
+        icon: PenLineIcon,
+      },
       {
         title: "My Sentences",
         to: "/my-sentences",
         icon: PencilRulerIcon,
+      },
+      {
+        title: "Reading Session",
+        to: "/reading-sessions",
+        icon: BookOpenIcon,
       },
     ],
   },
@@ -158,19 +169,20 @@ const actionItems = [
     ],
   },
   {
-    title: "Listening Sessions",
-    to: "/listening-sessions",
-    icon: HeadphonesIcon,
-  },
-  {
-    title: "Shadowing Practice",
-    to: "/shadowing",
-    icon: Repeat2Icon,
-  },
-  {
-    title: "Reading Session",
-    to: "/reading-sessions",
-    icon: BookOpenIcon,
+    title: "Speaking & Listening",
+    icon: MicIcon,
+    children: [
+      {
+        title: "Listening Sessions",
+        to: "/listening-sessions",
+        icon: HeadphonesIcon,
+      },
+      {
+        title: "Shadowing Practice",
+        to: "/shadowing",
+        icon: Repeat2Icon,
+      },
+    ],
   },
   {
     title: "Drill Sessions",
@@ -488,22 +500,13 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 
         <NavSection label="Action">
           <SidebarMenu>
-            {actionItems.map(item =>
-              "children" in item
-                ? (
-                  <NavNestedItem
-                    key={item.title}
-                    item={item}
-                    pathname={pathname}
-                  />
-                )
-                : (
-                  <NavItem
-                    key={item.to}
-                    item={item}
-                    pathname={pathname}
-                  />
-                ))}
+            {actionItems.map(item => (
+              <NavNestedItem
+                key={item.title}
+                item={item}
+                pathname={pathname}
+              />
+            ))}
           </SidebarMenu>
         </NavSection>
 
