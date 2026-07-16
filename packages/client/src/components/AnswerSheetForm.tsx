@@ -60,6 +60,7 @@ export function AnswerSheetForm({
   const sheets = useQuestionSheets();
 
   const [title, setTitle] = useState(answerSheet.title ?? "");
+  const [date, setDate] = useState(answerSheet.date?.slice(0, 10) ?? "");
   const [entries, setEntries] = useState<Record<string, AnswerSheetEntry>>(() => {
     const seed: Record<string, AnswerSheetEntry> = {};
     for (const e of answerSheet.entries ?? []) seed[e.slotId] = e;
@@ -101,11 +102,12 @@ export function AnswerSheetForm({
     return {
       questionSheetId: answerSheet.questionSheetId,
       title: title.trim() || answerSheet.title,
+      date: date ? new Date(date).toISOString() : null,
       entries: touched,
     };
     // getEntry closes over `entries`; slots derive from the loaded sheet.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [title, entries, slots.length, answerSheet.questionSheetId, answerSheet.title]);
+  }, [title, date, entries, slots.length, answerSheet.questionSheetId, answerSheet.title]);
 
   const {
     status, flush,
@@ -130,15 +132,33 @@ export function AnswerSheetForm({
         <p className="text-sm text-muted-foreground">{selected?.title ?? "Loading…"}</p>
       </div>
 
-      <div className="space-y-1.5">
-        <Label htmlFor="as-title">Title</Label>
-        <Input
-          id="as-title"
-          value={title}
-          onChange={e => setTitle(e.target.value)}
-          onBlur={flush}
-          placeholder={selected ? `${selected.title} — today` : "Answer sheet"}
-        />
+      <div
+        className="
+          grid gap-4
+          sm:grid-cols-[1fr_auto]
+        "
+      >
+        <div className="space-y-1.5">
+          <Label htmlFor="as-title">Title</Label>
+          <Input
+            id="as-title"
+            value={title}
+            onChange={e => setTitle(e.target.value)}
+            onBlur={flush}
+            placeholder={selected ? `${selected.title} — today` : "Answer sheet"}
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="as-date">Date</Label>
+          <Input
+            id="as-date"
+            type="date"
+            value={date}
+            onChange={e => setDate(e.target.value)}
+            onBlur={flush}
+            className="sm:w-40"
+          />
+        </div>
       </div>
 
       {!selected

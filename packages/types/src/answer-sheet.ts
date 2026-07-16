@@ -28,6 +28,11 @@ export interface AnswerSheet {
   id: string;
   questionSheetId: string;
   title: string | null;
+  /**
+   * The date this attempt is assigned to (ISO string), e.g. the day it was answered. Used to decide
+   * whether it meets the question sheet's due date; `null` if the learner hasn't dated it.
+   */
+  date: string | null;
   entries: AnswerSheetEntry[];
   createdAt: string;
   updatedAt: string;
@@ -36,6 +41,7 @@ export interface AnswerSheet {
 export interface CreateAnswerSheetInput {
   questionSheetId: string;
   title?: string | null;
+  date?: string | null;
   entries?: AnswerSheetEntry[];
 }
 

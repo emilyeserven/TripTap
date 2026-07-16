@@ -345,6 +345,9 @@ export const answerSheets = pgTable("answer_sheets", {
     onDelete: "restrict",
   }),
   title: text("title"),
+  date: timestamp("date", {
+    withTimezone: true,
+  }),
   entries: jsonb("entries").$type<AnswerSheetEntry[]>(),
   createdAt: timestamp("created_at", {
     withTimezone: true,

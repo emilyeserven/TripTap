@@ -1,0 +1,1 @@
+ALTER TABLE "answer_sheets" ADD COLUMN "date" timestamp with time zone;

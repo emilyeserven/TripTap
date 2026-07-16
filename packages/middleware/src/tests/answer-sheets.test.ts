@@ -81,6 +81,37 @@ test("POST /api/answer-sheets accepts a valid payload with answers and a correct
   await app.close();
 });
 
+test("POST /api/answer-sheets accepts a payload with an assigned date", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/answer-sheets",
+    payload: {
+      questionSheetId: "11111111-1111-1111-1111-111111111111",
+      title: "Dated attempt",
+      date: "2026-07-15T00:00:00.000Z",
+      entries: [],
+    },
+  });
+  // Valid payload — 201 with a DB, or a 5xx (FK) without one, but never a 400.
+  assert.notEqual(res.statusCode, 400);
+  await app.close();
+});
+
+test("POST /api/answer-sheets rejects a non-string date", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/answer-sheets",
+    payload: {
+      questionSheetId: "11111111-1111-1111-1111-111111111111",
+      date: ["2026-07-15"], // must be a string or null, not an array
+    },
+  });
+  assert.equal(res.statusCode, 400);
+  await app.close();
+});
+
 test("GET /api/answer-sheets accepts a uuid questionSheetId filter", async () => {
   const app = await buildApp();
   const res = await app.inject({

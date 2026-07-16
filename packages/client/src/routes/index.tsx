@@ -30,8 +30,10 @@ import {
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAnswerSheets } from "@/hooks/useAnswerSheets";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useQuestionSheets } from "@/hooks/useQuestionSheets";
+import { dueDateMet } from "@/lib/answer-sheets";
 import { formatDueDate, isDueSoon, isOverdue } from "@/lib/due-date";
 
 /** How far ahead (in days) a due question sheet counts as "due soon" on the homepage card. */
@@ -270,10 +272,15 @@ function DueSoonCard() {
   const {
     data: sheets,
   } = useQuestionSheets();
+  const {
+    data: answerSheets,
+  } = useAnswerSheets();
   const now = new Date();
   const due = (sheets ?? [])
     .filter(hasDueDate)
     .filter(s => isDueSoon(s.dueDate, now, DUE_SOON_DAYS))
+    // Drop sheets already met by a completed, in-window answer sheet — they no longer need attention.
+    .filter(s => !dueDateMet(s, (answerSheets ?? []).filter(as => as.questionSheetId === s.id)))
     .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
     .slice(0, DUE_SOON_LIMIT);
 

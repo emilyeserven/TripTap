@@ -48,6 +48,7 @@ function NewAnswerSheetPage() {
     const saved = await create.mutateAsync({
       questionSheetId,
       title: derivedTitle,
+      date: new Date().toISOString(),
       entries: [],
     });
     navigate({

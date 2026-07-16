@@ -8,7 +8,7 @@ import type {
 import { useRef, useState } from "react";
 
 import { Link } from "@tanstack/react-router";
-import { Check, Eye, EyeOff, X } from "lucide-react";
+import { CalendarCheck, Check, Eye, EyeOff, X } from "lucide-react";
 
 import { Markdown } from "@/components/Markdown";
 import { SentenceCorrector } from "@/components/SentenceCorrector";
@@ -26,7 +26,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useUpdateAnswerSheet } from "@/hooks/useAnswerSheets";
 import { useQuestionSheets } from "@/hooks/useQuestionSheets";
-import { questionSheetSlots } from "@/lib/answer-sheets";
+import { answerSheetMeetsDueDate, questionSheetSlots } from "@/lib/answer-sheets";
+import { formatDueDate } from "@/lib/due-date";
 import { CorrectionDiff } from "@/lib/sentenceDiff";
 import { cn } from "@/lib/utils";
 
@@ -206,6 +207,18 @@ export function AnswerSheetView({
           <Badge variant="secondary">
             {as.entries.length} {as.entries.length === 1 ? "answer" : "answers"}
           </Badge>
+          {as.date ? <span>Dated {formatDueDate(as.date)}</span> : null}
+          {sheet && answerSheetMeetsDueDate(sheet, as)
+            ? (
+              <Badge
+                variant="outline"
+                className="border-green-600 text-green-600"
+              >
+                <CalendarCheck />
+                Meets due date
+              </Badge>
+            )
+            : null}
           <span className="text-muted-foreground">Hover an answer to mark it ✓ or ✗.</span>
         </div>
       </div>
