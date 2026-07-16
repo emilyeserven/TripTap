@@ -7,6 +7,7 @@ import {
   BookOpenIcon,
   CameraIcon,
   ChartColumnIcon,
+  ChevronDownIcon,
   ChevronRightIcon,
   ClipboardCheckIcon,
   ClipboardListIcon,
@@ -28,7 +29,9 @@ import {
   ScrollTextIcon,
   SendIcon,
   SettingsIcon,
+  SparklesIcon,
   TargetIcon,
+  UploadIcon,
   UserRoundIcon,
 } from "lucide-react";
 
@@ -37,6 +40,11 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 import {
   Sidebar,
   SidebarContent,
@@ -53,6 +61,7 @@ import {
   SidebarMenuSubItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import { cn } from "@/lib/utils";
 
 /** { Lessons, AI Lessons, Captures, … } — source material to mine from. */
 const collectionsItems = [
@@ -164,22 +173,6 @@ const actionItems = [
     icon: BookOpenIcon,
   },
   {
-    title: "Drills",
-    icon: DrillIcon,
-    children: [
-      {
-        title: "Renshuu export",
-        to: "/renshuu",
-        icon: SendIcon,
-      },
-      {
-        title: "Anki export",
-        to: "/anki",
-        icon: LayersIcon,
-      },
-    ],
-  },
-  {
     title: "Drill Sessions",
     to: "/drill-sessions",
     icon: TargetIcon,
@@ -195,6 +188,42 @@ const actionItems = [
         icon: ChartColumnIcon,
       },
     ],
+  },
+  {
+    title: "Export",
+    icon: UploadIcon,
+    children: [
+      {
+        title: "Renshuu export",
+        to: "/renshuu",
+        icon: SendIcon,
+      },
+      {
+        title: "Anki export",
+        to: "/anki",
+        icon: LayersIcon,
+      },
+    ],
+  },
+] as const;
+
+/** Primary "start a task" entry points, revealed on hover under the "Start Something" trigger. */
+const startItems = [
+  {
+    title: "Capture",
+    to: "/capture",
+    icon: CameraIcon,
+    emphasis: true,
+  },
+  {
+    title: "Start Lesson",
+    to: "/lessons/new",
+    icon: BookAIcon,
+  },
+  {
+    title: "Start Drills",
+    to: "/drill-sessions/new",
+    icon: DrillIcon,
   },
 ] as const;
 
@@ -316,6 +345,39 @@ function NavNestedItem({
   );
 }
 
+/** A labeled sidebar section whose contents collapse when its header is clicked. */
+function NavSection({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Collapsible
+      defaultOpen
+      className="group/section"
+    >
+      <SidebarGroup>
+        <SidebarGroupLabel asChild>
+          <CollapsibleTrigger className="w-full">
+            {label}
+            <ChevronDownIcon
+              className="
+                ml-auto transition-transform
+                group-data-[state=closed]/section:-rotate-90
+              "
+            />
+          </CollapsibleTrigger>
+        </SidebarGroupLabel>
+        <CollapsibleContent>
+          {children}
+        </CollapsibleContent>
+      </SidebarGroup>
+    </Collapsible>
+  );
+}
+
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   const pathname = useRouterState({
     select: state => state.location.pathname,
@@ -354,57 +416,77 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
 
       <SidebarContent>
-        {/* Primary action — capture new text. */}
+        {/* Primary action — the "start a task" entry points reveal on hover. */}
         <SidebarGroup>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton
-                asChild
-                tooltip="Capture"
-                isActive={isItemActive(pathname, "/capture")}
-                className="
-                  bg-primary text-primary-foreground
-                  hover:bg-primary/90 hover:text-primary-foreground
-                  active:bg-primary/90 active:text-primary-foreground
-                  data-[active=true]:bg-primary
-                  data-[active=true]:text-primary-foreground
-                "
+              <HoverCard
+                openDelay={100}
+                closeDelay={150}
               >
-                <Link to="/capture">
-                  <CameraIcon />
-                  <span>Capture</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                asChild
-                tooltip="Start Lesson"
-                isActive={isItemActive(pathname, "/lessons/new")}
-              >
-                <Link to="/lessons/new">
-                  <BookAIcon />
-                  <span>Start Lesson</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                asChild
-                tooltip="Start Drills"
-                isActive={isItemActive(pathname, "/drill-sessions/new")}
-              >
-                <Link to="/drill-sessions/new">
-                  <DrillIcon />
-                  <span>Start Drills</span>
-                </Link>
-              </SidebarMenuButton>
+                <HoverCardTrigger asChild>
+                  <SidebarMenuButton
+                    tooltip="Start Something"
+                    className="
+                      bg-primary text-primary-foreground
+                      hover:bg-primary/90 hover:text-primary-foreground
+                      active:bg-primary/90 active:text-primary-foreground
+                      data-[state=open]:bg-primary/90
+                      data-[state=open]:text-primary-foreground
+                    "
+                  >
+                    <SparklesIcon />
+                    <span>Start Something</span>
+                    <ChevronRightIcon className="ml-auto" />
+                  </SidebarMenuButton>
+                </HoverCardTrigger>
+                <HoverCardContent
+                  side="right"
+                  align="start"
+                  className="w-56 p-2"
+                >
+                  <div className="flex flex-col gap-1">
+                    {startItems.map(item => (
+                      <Link
+                        key={item.to}
+                        to={item.to}
+                        className={cn(
+                          `
+                            flex items-center gap-2 rounded-md p-2 text-sm
+                            outline-hidden transition-colors
+                            [&>svg]:size-4 [&>svg]:shrink-0
+                          `,
+                          "emphasis" in item && item.emphasis
+                            ? `
+                              bg-primary text-primary-foreground
+                              hover:bg-primary/90
+                            `
+                            : cn(
+                              `
+                                text-sidebar-foreground
+                                hover:bg-sidebar-accent
+                                hover:text-sidebar-accent-foreground
+                              `,
+                              isItemActive(pathname, item.to)
+                              && `
+                                bg-sidebar-accent font-medium
+                                text-sidebar-accent-foreground
+                              `,
+                            ),
+                        )}
+                      >
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </Link>
+                    ))}
+                  </div>
+                </HoverCardContent>
+              </HoverCard>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
 
-        <SidebarGroup>
-          <SidebarGroupLabel>Action</SidebarGroupLabel>
+        <NavSection label="Action">
           <SidebarMenu>
             {actionItems.map(item =>
               "children" in item
@@ -423,10 +505,9 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                   />
                 ))}
           </SidebarMenu>
-        </SidebarGroup>
+        </NavSection>
 
-        <SidebarGroup>
-          <SidebarGroupLabel>Collections</SidebarGroupLabel>
+        <NavSection label="Collections">
           <SidebarMenu>
             {collectionsItems.map(item => (
               <NavItem
@@ -436,10 +517,9 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
               />
             ))}
           </SidebarMenu>
-        </SidebarGroup>
+        </NavSection>
 
-        <SidebarGroup>
-          <SidebarGroupLabel>Library</SidebarGroupLabel>
+        <NavSection label="Library">
           <SidebarMenu>
             {libraryItems.map(item => (
               <NavItem
@@ -449,7 +529,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
               />
             ))}
           </SidebarMenu>
-        </SidebarGroup>
+        </NavSection>
       </SidebarContent>
 
       <SidebarFooter>

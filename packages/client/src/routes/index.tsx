@@ -11,6 +11,7 @@ import {
   ClipboardCheckIcon,
   ClipboardListIcon,
   DatabaseIcon,
+  DrillIcon,
   GraduationCapIcon,
   HeadphonesIcon,
   ImagesIcon,
@@ -60,14 +61,26 @@ interface TileSection {
 
 const sections: readonly TileSection[] = [
   {
-    label: "Capture",
-    description: "Pull new text in from the world around you.",
+    label: "Start Something",
+    description: "Jump straight into capturing text, a lesson, or a drill session.",
     tiles: [
       {
         title: "Capture",
         to: "/capture",
         icon: CameraIcon,
         description: "Snap or paste text and run it through OCR to mine sentences.",
+      },
+      {
+        title: "Start Lesson",
+        to: "/lessons/new",
+        icon: BookAIcon,
+        description: "Begin a new tutor-lesson record.",
+      },
+      {
+        title: "Start Drills",
+        to: "/drill-sessions/new",
+        icon: DrillIcon,
+        description: "Kick off a timed drill session.",
       },
     ],
   },
