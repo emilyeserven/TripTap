@@ -22,7 +22,7 @@ import { WritingPromptCard } from "@/components/WritingPromptCard";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useCreateWritingPrompt, useWritingPrompts } from "@/hooks/useWritingPrompts";
 
-export const Route = createFileRoute("/writing-prompts")({
+export const Route = createFileRoute("/writing-prompts/")({
   component: WritingPromptsPage,
 });
 
@@ -112,6 +112,8 @@ function NewPromptForm({
   onDone: () => void;
 }) {
   const createPrompt = useCreateWritingPrompt();
+  const [title, setTitle] = useState("");
+  const [titleEn, setTitleEn] = useState("");
   const [text, setText] = useState("");
   const [textEn, setTextEn] = useState("");
   const [difficulty, setDifficulty] = useState<WritingPromptDifficulty>("Other");
@@ -121,6 +123,8 @@ function NewPromptForm({
     if (!nextText) return;
     createPrompt.mutate(
       {
+        title: title.trim() || null,
+        titleEn: titleEn.trim() || null,
         text: nextText,
         textEn: textEn.trim() || null,
         difficulty,
@@ -133,6 +137,22 @@ function NewPromptForm({
 
   return (
     <div className="space-y-4">
+      <div className="space-y-1.5">
+        <Label className="text-sm">Japanese title</Label>
+        <Input
+          value={title}
+          onChange={e => setTitle(e.target.value)}
+          placeholder="日本語のタイトル（任意）…"
+        />
+      </div>
+      <div className="space-y-1.5">
+        <Label className="text-sm">English title</Label>
+        <Input
+          value={titleEn}
+          onChange={e => setTitleEn(e.target.value)}
+          placeholder="English title (optional)…"
+        />
+      </div>
       <div className="space-y-1.5">
         <Label className="text-sm">Japanese</Label>
         <Textarea

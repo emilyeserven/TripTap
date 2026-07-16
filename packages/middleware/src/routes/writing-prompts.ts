@@ -26,6 +26,12 @@ const createWritingPromptBody = {
   required: ["text"],
   additionalProperties: false,
   properties: {
+    title: {
+      type: ["string", "null"],
+    },
+    titleEn: {
+      type: ["string", "null"],
+    },
     text: {
       type: "string",
       minLength: 1,

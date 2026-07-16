@@ -8,6 +8,16 @@ import { NotebookPen, PenLine, Quote } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { useUpdateLesson } from "@/hooks/useLessons";
 import { useCreateMySentence } from "@/hooks/useMySentences";
 import { useCreateWritingPrompt } from "@/hooks/useWritingPrompts";
@@ -34,12 +44,17 @@ interface Menu { top: number;
   left: number;
   text: string; }
 
+/** Which entity a highlight action creates. */
+type HighlightAction = "word" | "prompt" | "sentence";
+
 /**
  * The lesson-notes surface, rendered with TipTap so the same rich view works read-only (lesson view) and
  * editable (lesson form). Notes are stored as markdown — {@link markdownToHtml} seeds the editor and
  * {@link htmlToMarkdown} serializes edits back on change. Highlighting text (in either mode) floats a menu
- * to capture the selection as a Word card, a writing prompt, or a lesson-linked sentence. The menu needs a
- * saved lesson to attach to, so it's disabled when `lesson` is null (e.g. the new-lesson form).
+ * to capture the selection as a Word card, a writing prompt, or a lesson-linked sentence; clicking an
+ * action opens a small dialog pre-filled with the selection so a few details can be added before the thing
+ * is created. The menu needs a saved lesson to attach to, so it's disabled when `lesson` is null (e.g. the
+ * new-lesson form).
  */
 export function NotesEditor({
   notesMarkdown,
@@ -55,6 +70,15 @@ export function NotesEditor({
   const containerRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const [menu, setMenu] = useState<Menu | null>(null);
+
+  // The details dialog opened from a highlight action, pre-filled with the captured selection.
+  const [pending, setPending] = useState<{ action: HighlightAction;
+    text: string; } | null>(null);
+  const [draftText, setDraftText] = useState("");
+  const [draftReading, setDraftReading] = useState("");
+  const [draftMeaning, setDraftMeaning] = useState("");
+  const [draftEn, setDraftEn] = useState("");
+  const [draftTranslation, setDraftTranslation] = useState("");
 
   const updateLesson = useUpdateLesson();
   const createWritingPrompt = useCreateWritingPrompt();
@@ -111,11 +135,28 @@ export function NotesEditor({
   function done(message: string) {
     toast.success(message);
     setMenu(null);
+    setPending(null);
     window.getSelection()?.removeAllRanges();
   }
 
-  function addWordCard(text: string) {
+  // Open the details dialog for an action, seeded with the captured selection.
+  function openAction(action: HighlightAction, text: string) {
+    setPending({
+      action,
+      text,
+    });
+    setDraftText(text);
+    setDraftReading("");
+    setDraftMeaning("");
+    setDraftEn("");
+    setDraftTranslation("");
+    setMenu(null);
+  }
+
+  function submitWordCard() {
     if (!lesson) return;
+    const word = draftText.trim();
+    if (!word) return;
     updateLesson.mutate(
       {
         id: lesson.id,
@@ -124,9 +165,9 @@ export function NotesEditor({
             ...(lesson.wordNotes ?? []),
             {
               id: newId(),
-              word: text,
-              reading: null,
-              meaning: null,
+              word,
+              reading: draftReading.trim() || null,
+              meaning: draftMeaning.trim() || null,
               notes: null,
               status: "shaky",
               flashcard: false,
@@ -140,10 +181,13 @@ export function NotesEditor({
     );
   }
 
-  function addWritingPrompt(text: string) {
+  function submitWritingPrompt() {
+    const text = draftText.trim();
+    if (!text) return;
     createWritingPrompt.mutate(
       {
         text,
+        textEn: draftEn.trim() || null,
       },
       {
         onSuccess: () => done("Added a writing prompt"),
@@ -151,11 +195,14 @@ export function NotesEditor({
     );
   }
 
-  function addSentence(text: string) {
+  function submitSentence() {
     if (!lesson) return;
+    const text = draftText.trim();
+    if (!text) return;
     createMySentence.mutate(
       {
         text,
+        translation: draftTranslation.trim() || null,
         language: lesson.language,
         lessonId: lesson.id,
       },
@@ -164,6 +211,19 @@ export function NotesEditor({
       },
     );
   }
+
+  function submit() {
+    if (pending?.action === "word") submitWordCard();
+    else if (pending?.action === "prompt") submitWritingPrompt();
+    else if (pending?.action === "sentence") submitSentence();
+  }
+
+  const busy = updateLesson.isPending || createWritingPrompt.isPending || createMySentence.isPending;
+  const dialogTitle = pending?.action === "word"
+    ? "Add a word card"
+    : pending?.action === "prompt"
+      ? "Add a writing prompt"
+      : "Add a sentence";
 
   return (
     <div
@@ -200,7 +260,7 @@ export function NotesEditor({
               type="button"
               size="sm"
               variant="ghost"
-              onClick={() => addWordCard(menu.text)}
+              onClick={() => openAction("word", menu.text)}
             >
               <NotebookPen className="size-4" />
               Word card
@@ -209,7 +269,7 @@ export function NotesEditor({
               type="button"
               size="sm"
               variant="ghost"
-              onClick={() => addWritingPrompt(menu.text)}
+              onClick={() => openAction("prompt", menu.text)}
             >
               <PenLine className="size-4" />
               Writing prompt
@@ -218,7 +278,7 @@ export function NotesEditor({
               type="button"
               size="sm"
               variant="ghost"
-              onClick={() => addSentence(menu.text)}
+              onClick={() => openAction("sentence", menu.text)}
             >
               <Quote className="size-4" />
               Sentence
@@ -226,6 +286,107 @@ export function NotesEditor({
           </div>
         )
         : null}
+
+      <Dialog
+        open={pending !== null}
+        onOpenChange={(open) => {
+          if (!open) setPending(null);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{dialogTitle}</DialogTitle>
+          </DialogHeader>
+
+          {pending?.action === "word"
+            ? (
+              <div className="space-y-4">
+                <div className="space-y-1.5">
+                  <Label className="text-sm">Word</Label>
+                  <Input
+                    value={draftText}
+                    onChange={e => setDraftText(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-sm">Reading</Label>
+                  <Input
+                    value={draftReading}
+                    onChange={e => setDraftReading(e.target.value)}
+                    placeholder="Kana reading (optional)…"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-sm">Meaning</Label>
+                  <Input
+                    value={draftMeaning}
+                    onChange={e => setDraftMeaning(e.target.value)}
+                    placeholder="Meaning (optional)…"
+                  />
+                </div>
+              </div>
+            )
+            : null}
+
+          {pending?.action === "prompt"
+            ? (
+              <div className="space-y-4">
+                <div className="space-y-1.5">
+                  <Label className="text-sm">Japanese</Label>
+                  <Textarea
+                    value={draftText}
+                    onChange={e => setDraftText(e.target.value)}
+                    rows={3}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-sm">English</Label>
+                  <Textarea
+                    value={draftEn}
+                    onChange={e => setDraftEn(e.target.value)}
+                    placeholder="English version (optional)…"
+                    rows={3}
+                  />
+                </div>
+              </div>
+            )
+            : null}
+
+          {pending?.action === "sentence"
+            ? (
+              <div className="space-y-4">
+                <div className="space-y-1.5">
+                  <Label className="text-sm">Sentence</Label>
+                  <Textarea
+                    value={draftText}
+                    onChange={e => setDraftText(e.target.value)}
+                    rows={3}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-sm">Translation</Label>
+                  <Textarea
+                    value={draftTranslation}
+                    onChange={e => setDraftTranslation(e.target.value)}
+                    placeholder="Translation (optional)…"
+                    rows={3}
+                  />
+                </div>
+              </div>
+            )
+            : null}
+
+          <DialogFooter>
+            <Button
+              type="button"
+              onClick={submit}
+              disabled={!draftText.trim() || busy}
+            >
+              Add
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

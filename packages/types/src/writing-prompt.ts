@@ -32,7 +32,11 @@ export type WritingPromptDifficulty = (typeof WRITING_PROMPT_DIFFICULTIES)[numbe
 /** A reusable writing prompt. */
 export interface WritingPrompt {
   id: string;
-  /** The Japanese version of the prompt — shown by default and used as the display title. */
+  /** Short Japanese title/label for the prompt; falls back to `text` for display when null. */
+  title: string | null;
+  /** Short English title/label for the prompt; revealed alongside the English text. */
+  titleEn: string | null;
+  /** The Japanese version of the prompt — the (longer) prompt text. */
   text: string;
   /** The English version, revealed on request; null when not provided. */
   textEn: string | null;
@@ -46,6 +50,8 @@ export interface WritingPrompt {
 
 /** Payload for creating a writing prompt. `difficulty` defaults to "Other" when omitted. */
 export interface CreateWritingPromptInput {
+  title?: string | null;
+  titleEn?: string | null;
   text: string;
   textEn?: string | null;
   difficulty?: WritingPromptDifficulty;

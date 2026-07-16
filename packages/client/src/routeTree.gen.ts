@@ -9,7 +9,6 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as WritingPromptsRouteImport } from './routes/writing-prompts'
 import { Route as VocabularyRouteImport } from './routes/vocabulary'
 import { Route as VocabRouteImport } from './routes/vocab'
 import { Route as SettingsRouteImport } from './routes/settings'
@@ -20,6 +19,7 @@ import { Route as CultureRouteImport } from './routes/culture'
 import { Route as CaptureRouteImport } from './routes/capture'
 import { Route as AnkiRouteImport } from './routes/anki'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as WritingPromptsIndexRouteImport } from './routes/writing-prompts.index'
 import { Route as TutorsIndexRouteImport } from './routes/tutors.index'
 import { Route as SourcesIndexRouteImport } from './routes/sources.index'
 import { Route as ShadowingIndexRouteImport } from './routes/shadowing.index'
@@ -84,11 +84,6 @@ import { Route as LessonsIdEditRouteImport } from './routes/lessons.$id.edit'
 import { Route as DrillSessionsIdEditRouteImport } from './routes/drill-sessions.$id.edit'
 import { Route as AnswerSheetsIdEditRouteImport } from './routes/answer-sheets.$id.edit'
 
-const WritingPromptsRoute = WritingPromptsRouteImport.update({
-  id: '/writing-prompts',
-  path: '/writing-prompts',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const VocabularyRoute = VocabularyRouteImport.update({
   id: '/vocabulary',
   path: '/vocabulary',
@@ -137,6 +132,11 @@ const AnkiRoute = AnkiRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WritingPromptsIndexRoute = WritingPromptsIndexRouteImport.update({
+  id: '/writing-prompts/',
+  path: '/writing-prompts/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TutorsIndexRoute = TutorsIndexRouteImport.update({
@@ -215,9 +215,9 @@ const AiLessonsIndexRoute = AiLessonsIndexRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const WritingPromptsIdRoute = WritingPromptsIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => WritingPromptsRoute,
+  id: '/writing-prompts/$id',
+  path: '/writing-prompts/$id',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const TutorsNewRoute = TutorsNewRouteImport.update({
   id: '/tutors/new',
@@ -467,7 +467,6 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRoute
   '/vocab': typeof VocabRoute
   '/vocabulary': typeof VocabularyRoute
-  '/writing-prompts': typeof WritingPromptsRouteWithChildren
   '/ai-lessons/$slug': typeof AiLessonsSlugRoute
   '/ai-lessons/new': typeof AiLessonsNewRoute
   '/answer-sheets/$id': typeof AnswerSheetsIdRouteWithChildren
@@ -511,6 +510,7 @@ export interface FileRoutesByFullPath {
   '/shadowing/': typeof ShadowingIndexRoute
   '/sources/': typeof SourcesIndexRoute
   '/tutors/': typeof TutorsIndexRoute
+  '/writing-prompts/': typeof WritingPromptsIndexRoute
   '/answer-sheets/$id/edit': typeof AnswerSheetsIdEditRoute
   '/drill-sessions/$id/edit': typeof DrillSessionsIdEditRoute
   '/lessons/$id/edit': typeof LessonsIdEditRoute
@@ -543,7 +543,6 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/vocab': typeof VocabRoute
   '/vocabulary': typeof VocabularyRoute
-  '/writing-prompts': typeof WritingPromptsRouteWithChildren
   '/ai-lessons/$slug': typeof AiLessonsSlugRoute
   '/ai-lessons/new': typeof AiLessonsNewRoute
   '/answer-sheets/new': typeof AnswerSheetsNewRoute
@@ -577,6 +576,7 @@ export interface FileRoutesByTo {
   '/shadowing': typeof ShadowingIndexRoute
   '/sources': typeof SourcesIndexRoute
   '/tutors': typeof TutorsIndexRoute
+  '/writing-prompts': typeof WritingPromptsIndexRoute
   '/answer-sheets/$id/edit': typeof AnswerSheetsIdEditRoute
   '/drill-sessions/$id/edit': typeof DrillSessionsIdEditRoute
   '/lessons/$id/edit': typeof LessonsIdEditRoute
@@ -610,7 +610,6 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRoute
   '/vocab': typeof VocabRoute
   '/vocabulary': typeof VocabularyRoute
-  '/writing-prompts': typeof WritingPromptsRouteWithChildren
   '/ai-lessons/$slug': typeof AiLessonsSlugRoute
   '/ai-lessons/new': typeof AiLessonsNewRoute
   '/answer-sheets/$id': typeof AnswerSheetsIdRouteWithChildren
@@ -654,6 +653,7 @@ export interface FileRoutesById {
   '/shadowing/': typeof ShadowingIndexRoute
   '/sources/': typeof SourcesIndexRoute
   '/tutors/': typeof TutorsIndexRoute
+  '/writing-prompts/': typeof WritingPromptsIndexRoute
   '/answer-sheets/$id/edit': typeof AnswerSheetsIdEditRoute
   '/drill-sessions/$id/edit': typeof DrillSessionsIdEditRoute
   '/lessons/$id/edit': typeof LessonsIdEditRoute
@@ -688,7 +688,6 @@ export interface FileRouteTypes {
     | '/settings'
     | '/vocab'
     | '/vocabulary'
-    | '/writing-prompts'
     | '/ai-lessons/$slug'
     | '/ai-lessons/new'
     | '/answer-sheets/$id'
@@ -732,6 +731,7 @@ export interface FileRouteTypes {
     | '/shadowing/'
     | '/sources/'
     | '/tutors/'
+    | '/writing-prompts/'
     | '/answer-sheets/$id/edit'
     | '/drill-sessions/$id/edit'
     | '/lessons/$id/edit'
@@ -764,7 +764,6 @@ export interface FileRouteTypes {
     | '/settings'
     | '/vocab'
     | '/vocabulary'
-    | '/writing-prompts'
     | '/ai-lessons/$slug'
     | '/ai-lessons/new'
     | '/answer-sheets/new'
@@ -798,6 +797,7 @@ export interface FileRouteTypes {
     | '/shadowing'
     | '/sources'
     | '/tutors'
+    | '/writing-prompts'
     | '/answer-sheets/$id/edit'
     | '/drill-sessions/$id/edit'
     | '/lessons/$id/edit'
@@ -830,7 +830,6 @@ export interface FileRouteTypes {
     | '/settings'
     | '/vocab'
     | '/vocabulary'
-    | '/writing-prompts'
     | '/ai-lessons/$slug'
     | '/ai-lessons/new'
     | '/answer-sheets/$id'
@@ -874,6 +873,7 @@ export interface FileRouteTypes {
     | '/shadowing/'
     | '/sources/'
     | '/tutors/'
+    | '/writing-prompts/'
     | '/answer-sheets/$id/edit'
     | '/drill-sessions/$id/edit'
     | '/lessons/$id/edit'
@@ -907,7 +907,6 @@ export interface RootRouteChildren {
   SettingsRoute: typeof SettingsRoute
   VocabRoute: typeof VocabRoute
   VocabularyRoute: typeof VocabularyRoute
-  WritingPromptsRoute: typeof WritingPromptsRouteWithChildren
   AiLessonsSlugRoute: typeof AiLessonsSlugRoute
   AiLessonsNewRoute: typeof AiLessonsNewRoute
   AnswerSheetsIdRoute: typeof AnswerSheetsIdRouteWithChildren
@@ -935,6 +934,7 @@ export interface RootRouteChildren {
   SourcesIdRoute: typeof SourcesIdRoute
   TutorsIdRoute: typeof TutorsIdRouteWithChildren
   TutorsNewRoute: typeof TutorsNewRoute
+  WritingPromptsIdRoute: typeof WritingPromptsIdRoute
   AiLessonsIndexRoute: typeof AiLessonsIndexRoute
   AnswerSheetsIndexRoute: typeof AnswerSheetsIndexRoute
   BookExercisesIndexRoute: typeof BookExercisesIndexRoute
@@ -950,17 +950,11 @@ export interface RootRouteChildren {
   ShadowingIndexRoute: typeof ShadowingIndexRoute
   SourcesIndexRoute: typeof SourcesIndexRoute
   TutorsIndexRoute: typeof TutorsIndexRoute
+  WritingPromptsIndexRoute: typeof WritingPromptsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/writing-prompts': {
-      id: '/writing-prompts'
-      path: '/writing-prompts'
-      fullPath: '/writing-prompts'
-      preLoaderRoute: typeof WritingPromptsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/vocabulary': {
       id: '/vocabulary'
       path: '/vocabulary'
@@ -1029,6 +1023,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/writing-prompts/': {
+      id: '/writing-prompts/'
+      path: '/writing-prompts'
+      fullPath: '/writing-prompts/'
+      preLoaderRoute: typeof WritingPromptsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/tutors/': {
@@ -1138,10 +1139,10 @@ declare module '@tanstack/react-router' {
     }
     '/writing-prompts/$id': {
       id: '/writing-prompts/$id'
-      path: '/$id'
+      path: '/writing-prompts/$id'
       fullPath: '/writing-prompts/$id'
       preLoaderRoute: typeof WritingPromptsIdRouteImport
-      parentRoute: typeof WritingPromptsRoute
+      parentRoute: typeof rootRouteImport
     }
     '/tutors/new': {
       id: '/tutors/new'
@@ -1475,18 +1476,6 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface WritingPromptsRouteChildren {
-  WritingPromptsIdRoute: typeof WritingPromptsIdRoute
-}
-
-const WritingPromptsRouteChildren: WritingPromptsRouteChildren = {
-  WritingPromptsIdRoute: WritingPromptsIdRoute,
-}
-
-const WritingPromptsRouteWithChildren = WritingPromptsRoute._addFileChildren(
-  WritingPromptsRouteChildren,
-)
-
 interface AnswerSheetsIdRouteChildren {
   AnswerSheetsIdEditRoute: typeof AnswerSheetsIdEditRoute
   AnswerSheetsIdIndexRoute: typeof AnswerSheetsIdIndexRoute
@@ -1635,7 +1624,6 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRoute: SettingsRoute,
   VocabRoute: VocabRoute,
   VocabularyRoute: VocabularyRoute,
-  WritingPromptsRoute: WritingPromptsRouteWithChildren,
   AiLessonsSlugRoute: AiLessonsSlugRoute,
   AiLessonsNewRoute: AiLessonsNewRoute,
   AnswerSheetsIdRoute: AnswerSheetsIdRouteWithChildren,
@@ -1663,6 +1651,7 @@ const rootRouteChildren: RootRouteChildren = {
   SourcesIdRoute: SourcesIdRoute,
   TutorsIdRoute: TutorsIdRouteWithChildren,
   TutorsNewRoute: TutorsNewRoute,
+  WritingPromptsIdRoute: WritingPromptsIdRoute,
   AiLessonsIndexRoute: AiLessonsIndexRoute,
   AnswerSheetsIndexRoute: AnswerSheetsIndexRoute,
   BookExercisesIndexRoute: BookExercisesIndexRoute,
@@ -1678,6 +1667,7 @@ const rootRouteChildren: RootRouteChildren = {
   ShadowingIndexRoute: ShadowingIndexRoute,
   SourcesIndexRoute: SourcesIndexRoute,
   TutorsIndexRoute: TutorsIndexRoute,
+  WritingPromptsIndexRoute: WritingPromptsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

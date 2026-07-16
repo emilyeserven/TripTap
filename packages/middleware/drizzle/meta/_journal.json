@@ -253,6 +253,13 @@
       "when": 1784143073816,
       "tag": "0035_giant_cargill",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1784175595106,
+      "tag": "0036_sparkling_annihilus",
+      "breakpoints": true
     }
   ]
 }
