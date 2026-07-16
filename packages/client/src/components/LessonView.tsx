@@ -5,7 +5,7 @@ import { Link } from "@tanstack/react-router";
 
 import { LessonMySentences } from "@/components/LessonMySentences";
 import { LessonSections } from "@/components/LessonSections";
-import { NotesHighlightMenu } from "@/components/NotesHighlightMenu";
+import { NotesEditor } from "@/components/NotesEditor";
 import { Badge } from "@/components/ui/badge";
 import { useAnswerSheets } from "@/hooks/useAnswerSheets";
 import { useTutors } from "@/hooks/useTutors";
@@ -39,7 +39,13 @@ export function LessonView({
     sections.push({
       id: "notes",
       title: "Notes",
-      node: <NotesHighlightMenu lesson={lesson} />,
+      node: (
+        <NotesEditor
+          notesMarkdown={lesson.notes ?? ""}
+          editable={false}
+          lesson={lesson}
+        />
+      ),
     });
   }
 
