@@ -3,50 +3,122 @@ import type { MySentence } from "@sentence-bank/types";
 import { useState } from "react";
 
 import { Link } from "@tanstack/react-router";
-import { Eye, EyeOff, NotebookPen, PenLine, TriangleAlert } from "lucide-react";
+import { Check, Eye, EyeOff, NotebookPen, PenLine, TriangleAlert } from "lucide-react";
 
 import { CorrectionDiff } from "../lib/sentenceDiff";
 import { groupTermsByCategory, TERM_CATEGORIES } from "../lib/terms";
 
+import { SentenceCorrector } from "@/components/SentenceCorrector";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useUpdateMySentence } from "@/hooks/useMySentences";
 
 /**
- * One learner-produced sentence in the list — a compact, read-only summary that links to its own view
- * and edit pages. When a correction exists it's previewed as a word/char diff against the written
- * sentence.
+ * One learner-produced sentence in the list — the same correction flow as Answer Sheet entries. When it
+ * still needs correction it offers the inline track-changes {@link SentenceCorrector} (plus a ✓ to mark
+ * it as actually fine); once corrected it leads with the fix, hides the original behind a toggle, and
+ * exposes "Edit corrections" to revise inline. `readOnly` collapses it to a plain read-only summary.
  */
 export function MySentenceCard({
   mySentence: ms,
   onEdit,
+  readOnly = false,
 }: {
   mySentence: MySentence;
   /** When provided, "Edit" becomes an in-page button (this callback) instead of a link to the edit
    * route — used where the sentence is edited inline, e.g. within a lesson. */
   onEdit?: (id: string) => void;
+  /** Pure read-only summary — no inline corrector, ✓, or "Edit corrections". */
+  readOnly?: boolean;
 }) {
   const termGroups = groupTermsByCategory(ms.terms ?? []);
   const corrected = ms.correction?.trim() ? ms.correction : null;
   const [showOriginal, setShowOriginal] = useState(false);
+  const [correcting, setCorrecting] = useState(false);
+  const update = useUpdateMySentence();
+
+  // Un-reviewed = still flagged and not yet corrected → offer the inline corrector (unless read-only).
+  const unreviewed = !corrected && ms.needsCorrection;
+  const showCorrector = !readOnly && (unreviewed || correcting);
+
+  function saveCorrection(r: { correction: string;
+    marks: MySentence["marks"];
+    reasoning: string | null; }) {
+    update.mutate(
+      {
+        id: ms.id,
+        input: {
+          correction: r.correction,
+          marks: r.marks,
+          explanation: r.reasoning,
+        },
+      },
+      {
+        onSuccess: () => setCorrecting(false),
+      },
+    );
+  }
+
+  function markCorrect() {
+    update.mutate({
+      id: ms.id,
+      input: {
+        needsCorrection: false,
+      },
+    });
+  }
 
   return (
     <Card>
       <CardContent className="space-y-3 p-4">
-        <div className="flex items-start justify-between gap-2">
-          <Link
-            to="/my-sentences/$id"
-            params={{
-              id: ms.id,
-            }}
-            className="
-              text-lg font-semibold
-              hover:underline
-            "
-          >
-            {corrected ?? ms.text}
-          </Link>
-          <div className="flex shrink-0 items-center gap-2">
+        <div className="group flex items-start justify-between gap-2">
+          {showCorrector
+            ? <span className="text-lg font-semibold">Correct your sentence</span>
+            : (
+              <Link
+                to="/my-sentences/$id"
+                params={{
+                  id: ms.id,
+                }}
+                className="
+                  text-lg font-semibold
+                  hover:underline
+                "
+              >
+                {corrected ?? ms.text}
+              </Link>
+            )}
+          <div className="flex shrink-0 items-center gap-1">
+            {!readOnly && unreviewed && !correcting
+              ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Mark correct — no correction needed"
+                  className="
+                    size-8 text-green-600 opacity-0 transition-opacity
+                    group-hover:opacity-100
+                  "
+                  onClick={markCorrect}
+                >
+                  <Check className="size-4" />
+                </Button>
+              )
+              : null}
+            {!readOnly && corrected && !correcting
+              ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCorrecting(true)}
+                >
+                  Edit corrections
+                </Button>
+              )
+              : null}
             {onEdit
               ? (
                 <Button
@@ -77,7 +149,17 @@ export function MySentenceCard({
           </div>
         </div>
 
-        {corrected
+        {showCorrector
+          ? (
+            <SentenceCorrector
+              text={ms.text}
+              reasoning={ms.explanation}
+              onSave={saveCorrection}
+            />
+          )
+          : null}
+
+        {!showCorrector && corrected
           ? (
             <div className="space-y-1">
               <Button

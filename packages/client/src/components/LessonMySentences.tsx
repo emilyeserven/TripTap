@@ -107,6 +107,7 @@ export function LessonMySentences({
                 key={ms.id}
                 mySentence={ms}
                 onEdit={readOnly ? undefined : setEditingId}
+                readOnly={readOnly}
               />
             ))}
       </div>
