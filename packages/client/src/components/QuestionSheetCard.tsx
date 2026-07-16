@@ -3,6 +3,7 @@ import type { QuestionSheet } from "@sentence-bank/types";
 import { Link } from "@tanstack/react-router";
 import { CalendarCheck } from "lucide-react";
 
+import { LearningAreaBadges } from "@/components/LearningAreaBadges";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -45,6 +46,7 @@ export function QuestionSheetCard({
         >
           <Badge variant="secondary">{qs.layout === "grid" ? "Grid" : "List"}</Badge>
           {qs.page ? <Badge variant="outline">Page {qs.page}</Badge> : null}
+          <LearningAreaBadges areas={qs.learningAreas} />
           <span>{slotCount} {slotCount === 1 ? "slot" : "slots"}</span>
           {qs.bookmarkTitle
             ? (

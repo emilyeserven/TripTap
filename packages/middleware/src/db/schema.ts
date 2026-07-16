@@ -9,6 +9,7 @@ import type {
   GrammarExample,
   LessonListeningNote,
   LessonWordNote,
+  LearningArea,
   ListeningEntry,
   OcrBlock,
   PracticeGrammar,
@@ -319,6 +320,7 @@ export const questionSheets = pgTable("question_sheets", {
   dueDate: timestamp("due_date", {
     withTimezone: true,
   }),
+  learningAreas: jsonb("learning_areas").$type<LearningArea[]>(),
   layout: text("layout").notNull().default("list"),
   questions: jsonb("questions").$type<QuestionSheetQuestion[]>(),
   grid: jsonb("grid").$type<QuestionSheetGrid>(),

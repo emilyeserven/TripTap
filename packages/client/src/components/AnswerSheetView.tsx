@@ -10,6 +10,7 @@ import { useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { CalendarCheck, Check, Eye, EyeOff, X } from "lucide-react";
 
+import { LearningAreaBadges } from "@/components/LearningAreaBadges";
 import { Markdown } from "@/components/Markdown";
 import { SentenceCorrector } from "@/components/SentenceCorrector";
 import { Badge } from "@/components/ui/badge";
@@ -204,6 +205,7 @@ export function AnswerSheetView({
               </Link>
             )
             : <span>From a question sheet</span>}
+          {sheet ? <LearningAreaBadges areas={sheet.learningAreas} /> : null}
           <Badge variant="secondary">
             {as.entries.length} {as.entries.length === 1 ? "answer" : "answers"}
           </Badge>

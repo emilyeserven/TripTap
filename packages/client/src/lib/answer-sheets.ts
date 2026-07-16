@@ -1,4 +1,4 @@
-import type { AnswerSheet, QuestionSheet } from "@sentence-bank/types";
+import type { AnswerSheet, LearningArea, QuestionSheet } from "@sentence-bank/types";
 
 /** One answerable cell of a question sheet: a stable `id` and a human label for the input. */
 export interface QuestionSheetSlot {
@@ -86,4 +86,47 @@ export function answerSheetMeetsDueDate(qs: QuestionSheet, as: AnswerSheet): boo
 /** True when any of the given attempts meets the question sheet's due date. */
 export function dueDateMet(qs: QuestionSheet, answerSheets: AnswerSheet[]): boolean {
   return answerSheets.some(as => answerSheetMeetsDueDate(qs, as));
+}
+
+/** The sentinel filter value meaning "no filter applied" for the resource/learning-area dropdowns. */
+export const ALL_FILTER = "all";
+
+/** One `{ value, label }` choice for a filter dropdown. */
+export interface FilterOption {
+  value: string;
+  label: string;
+}
+
+/**
+ * Distinct resource (Textbook/Worksheet bookmark) filter options across the given question sheets,
+ * with an "all" sentinel first. Sheets with no bookmark contribute nothing. Value = `bookmarkId`,
+ * label = `bookmarkTitle`.
+ */
+export function resourceFilterOptions(sheets: QuestionSheet[]): FilterOption[] {
+  const seen = new Map<string, string>();
+  for (const s of sheets) {
+    if (s.bookmarkId && !seen.has(s.bookmarkId)) {
+      seen.set(s.bookmarkId, s.bookmarkTitle ?? s.bookmarkId);
+    }
+  }
+  return [
+    {
+      value: ALL_FILTER,
+      label: "All resources",
+    },
+    ...[...seen].map(([value, label]) => ({
+      value,
+      label,
+    })),
+  ];
+}
+
+/** True when a question sheet passes the resource filter (`ALL_FILTER` passes everything). */
+export function matchesResource(qs: QuestionSheet | undefined, resource: string): boolean {
+  return resource === ALL_FILTER || (qs?.bookmarkId ?? null) === resource;
+}
+
+/** True when a question sheet passes the Learning Area filter (`ALL_FILTER` passes everything). */
+export function matchesLearningArea(qs: QuestionSheet | undefined, area: string): boolean {
+  return area === ALL_FILTER || (qs?.learningAreas ?? []).includes(area as LearningArea);
 }

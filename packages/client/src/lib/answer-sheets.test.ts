@@ -2,7 +2,14 @@ import type { AnswerSheet, AnswerSheetEntry, QuestionSheet } from "@sentence-ban
 
 import { describe, expect, it } from "vitest";
 
-import { answerSheetMeetsDueDate, dueDateMet, isAnswerSheetComplete } from "./answer-sheets";
+import {
+  answerSheetMeetsDueDate,
+  dueDateMet,
+  isAnswerSheetComplete,
+  matchesLearningArea,
+  matchesResource,
+  resourceFilterOptions,
+} from "./answer-sheets";
 
 function entry(slotId: string, value: string): AnswerSheetEntry {
   return {
@@ -28,6 +35,7 @@ function listSheet(overrides: Partial<QuestionSheet> = {}): QuestionSheet {
     bookmarkTitle: null,
     bookmarkUrl: null,
     dueDate: "2026-07-31T00:00:00.000Z",
+    learningAreas: [],
     layout: "list",
     questions: [
       {
@@ -164,5 +172,96 @@ describe("dueDateMet", () => {
 
   it("is false with no attempts", () => {
     expect(dueDateMet(listSheet(), [])).toBe(false);
+  });
+});
+
+describe("resourceFilterOptions", () => {
+  it("collects distinct bookmarks with an 'all' sentinel first", () => {
+    const options = resourceFilterOptions([
+      listSheet({
+        id: "a",
+        bookmarkId: "b1",
+        bookmarkTitle: "Genki I",
+      }),
+      listSheet({
+        id: "b",
+        bookmarkId: "b1",
+        bookmarkTitle: "Genki I",
+      }),
+      listSheet({
+        id: "c",
+        bookmarkId: "b2",
+        bookmarkTitle: "Tobira",
+      }),
+      listSheet({
+        id: "d",
+        bookmarkId: null,
+      }),
+    ]);
+    expect(options).toEqual([
+      {
+        value: "all",
+        label: "All resources",
+      },
+      {
+        value: "b1",
+        label: "Genki I",
+      },
+      {
+        value: "b2",
+        label: "Tobira",
+      },
+    ]);
+  });
+
+  it("returns only the sentinel when no sheet has a resource", () => {
+    expect(resourceFilterOptions([listSheet()])).toEqual([
+      {
+        value: "all",
+        label: "All resources",
+      },
+    ]);
+  });
+});
+
+describe("matchesResource", () => {
+  it("passes everything for the 'all' sentinel", () => {
+    expect(matchesResource(listSheet({
+      bookmarkId: "b1",
+    }), "all")).toBe(true);
+    expect(matchesResource(undefined, "all")).toBe(true);
+  });
+
+  it("matches on bookmarkId", () => {
+    expect(matchesResource(listSheet({
+      bookmarkId: "b1",
+    }), "b1")).toBe(true);
+    expect(matchesResource(listSheet({
+      bookmarkId: "b2",
+    }), "b1")).toBe(false);
+  });
+
+  it("does not match an undefined parent when a resource is selected", () => {
+    expect(matchesResource(undefined, "b1")).toBe(false);
+  });
+});
+
+describe("matchesLearningArea", () => {
+  it("passes everything for the 'all' sentinel", () => {
+    expect(matchesLearningArea(listSheet(), "all")).toBe(true);
+    expect(matchesLearningArea(undefined, "all")).toBe(true);
+  });
+
+  it("matches when the sheet includes the area", () => {
+    expect(matchesLearningArea(listSheet({
+      learningAreas: ["Grammar", "Vocabulary"],
+    }), "Grammar")).toBe(true);
+    expect(matchesLearningArea(listSheet({
+      learningAreas: ["Grammar"],
+    }), "Reading")).toBe(false);
+  });
+
+  it("does not match an undefined parent when an area is selected", () => {
+    expect(matchesLearningArea(undefined, "Grammar")).toBe(false);
   });
 });
