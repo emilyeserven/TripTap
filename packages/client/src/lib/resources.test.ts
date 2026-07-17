@@ -18,6 +18,7 @@ function resource(over: Partial<BookmarkResource>): BookmarkResource {
     website: null,
     runtimeSeconds: null,
     mediaType: null,
+    imageUrl: null,
     ...over,
   };
 }

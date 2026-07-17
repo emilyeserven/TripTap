@@ -9,6 +9,7 @@ import {
   fetchTerms,
   fetchVocabulary,
   getBookmark,
+  getBookmarkImage,
   listBookmarkResources,
   listBookmarksForCategory,
 } from "@/services/bookmarks";
@@ -82,6 +83,19 @@ const recordParams = {
   required: ["id"],
   properties: {
     id: {
+      type: "string",
+    },
+  },
+} as const;
+
+const imageParams = {
+  type: "object",
+  required: ["bookmarkId", "imageId"],
+  properties: {
+    bookmarkId: {
+      type: "string",
+    },
+    imageId: {
       type: "string",
     },
   },
@@ -177,6 +191,29 @@ export async function bookmarksRoutes(app: FastifyInstance): Promise<void> {
   }, async (_req, reply) => {
     try {
       return await listBookmarkResources();
+    }
+    catch (err) {
+      return handleError(err, reply);
+    }
+  });
+
+  app.get("/api/bookmarks/:bookmarkId/images/:imageId", {
+    schema: {
+      tags: ["bookmarks"],
+      params: imageParams,
+    },
+  }, async (req, reply) => {
+    const {
+      bookmarkId, imageId,
+    } = req.params as { bookmarkId: string;
+      imageId: string; };
+    const qIndex = req.url.indexOf("?");
+    const query = qIndex >= 0 ? req.url.slice(qIndex) : "";
+    try {
+      const image = await getBookmarkImage(bookmarkId, imageId, query);
+      reply.header("Content-Type", image.contentType);
+      reply.header("Cache-Control", "private, max-age=86400");
+      return reply.send(image.body);
     }
     catch (err) {
       return handleError(err, reply);

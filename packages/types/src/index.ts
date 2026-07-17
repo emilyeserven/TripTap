@@ -484,4 +484,9 @@ export interface BookmarkResource {
   runtimeSeconds: number | null;
   /** The upstream media type name (e.g. "Video", "Podcast"); null when unknown. */
   mediaType: string | null;
+  /**
+   * The bookmark's thumbnail image URL — a same-origin `/api/bookmarks/{id}/images/{imageId}` path
+   * (from the upstream `image.url`) that the middleware proxies to the bookmarks host; null when none.
+   */
+  imageUrl: string | null;
 }
