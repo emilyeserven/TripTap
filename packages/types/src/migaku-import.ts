@@ -33,6 +33,11 @@ export interface MigakuCandidate {
   hasAudio: boolean;
   /** True when the card references an image present in the package. */
   hasImage: boolean;
+  /**
+   * True when a matching row already exists in the bank (same text as a sentence, or same term as a
+   * vocab item). Such candidates are deselected by default and skipped on commit to avoid duplicates.
+   */
+  alreadyExists: boolean;
 }
 
 /** A staged `.apkg` import. The raw package lives in object storage until committed or discarded. */
@@ -78,6 +83,8 @@ export interface CommitMigakuImportInput {
 export interface CommitMigakuImportResult {
   sentencesCreated: number;
   vocabCreated: number;
+  /** How many kept items were skipped because a matching row already existed. */
+  skipped: number;
 }
 
 /** Config status of the media object store, shown on the Settings page. Never includes secrets. */

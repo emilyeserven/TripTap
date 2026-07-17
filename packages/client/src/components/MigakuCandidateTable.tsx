@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -62,7 +63,8 @@ export function MigakuCandidateTable({
 
   const [rows, setRows] = useState<Record<string, RowState>>(() =>
     Object.fromEntries(detail.candidates.map(c => [c.id, {
-      include: true,
+      // Duplicates are deselected by default (and skipped on commit regardless).
+      include: !c.alreadyExists,
       kind: c.kind,
       text: c.text,
       meaning: c.meaning ?? "",
@@ -108,8 +110,11 @@ export function MigakuCandidateTable({
       },
     }, {
       onSuccess: (result) => {
+        const skipped = result.skipped
+          ? ` · skipped ${result.skipped} duplicate(s)`
+          : "";
         toast.success(
-          `Imported ${result.sentencesCreated} sentence(s) and ${result.vocabCreated} vocab item(s)`,
+          `Imported ${result.sentencesCreated} sentence(s) and ${result.vocabCreated} vocab item(s)${skipped}`,
         );
         navigate({
           to: "/migaku-import",
@@ -182,6 +187,9 @@ export function MigakuCandidateTable({
                         <SelectItem value="vocab">Vocab</SelectItem>
                       </SelectContent>
                     </Select>
+                    {c.alreadyExists
+                      ? <Badge variant="secondary">Already in bank</Badge>
+                      : null}
                     {c.hasAudio
                       ? (
                         <audio

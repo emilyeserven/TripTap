@@ -161,6 +161,9 @@ export const sentencesApi = {
     request<Sentence>(`/sentences/${id}/furigana`, {
       method: "POST",
     }),
+  /** Absolute path to a sentence's stored audio/image (present only when `hasAudio`/`hasImage`). */
+  audioUrl: (id: string) => `${BASE}/sentences/${id}/audio`,
+  imageUrl: (id: string) => `${BASE}/sentences/${id}/image`,
 };
 
 export const practiceSentencesApi = {
