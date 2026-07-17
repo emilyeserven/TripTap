@@ -199,20 +199,30 @@ function toBookmarkRecord(raw: unknown, includeSections: boolean): BookmarkRecor
   };
 }
 
-/** Bookmarks tagged with the given tag id, using a caller-resolved base URL. Sections omitted. */
-async function listBookmarksByTag(baseUrl: string, tagId: string): Promise<BookmarkRecord[]> {
+/** True when a value is a non-null object — i.e. a readable upstream bookmark/record. */
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object";
+}
+
+/** Raw upstream bookmark objects tagged with the given tag id, using a caller-resolved base URL. */
+async function fetchRawBookmarksByTag(baseUrl: string, tagId: string): Promise<Record<string, unknown>[]> {
   const raw = await fetchBookmarksJson<unknown>(
     apiUrl(baseUrl, `/bookmarks?tags=${encodeURIComponent(tagId)}`),
   );
-  return Array.isArray(raw)
-    ? raw.map(r => toBookmarkRecord(r, false)).filter((b): b is BookmarkRecord => b !== null)
-    : [];
+  return Array.isArray(raw) ? raw.filter(isRecord) : [];
 }
 
-/** One bookmark by id, using a caller-resolved base URL. Sections omitted (list rows don't need them). */
-async function listBookmarkById(baseUrl: string, id: string): Promise<BookmarkRecord | null> {
+/** The raw upstream bookmark object for one id, or null when not found/unreadable. */
+async function fetchRawBookmarkById(baseUrl: string, id: string): Promise<Record<string, unknown> | null> {
   const raw = await fetchBookmarksJson<unknown>(apiUrl(baseUrl, `/bookmarks/${encodeURIComponent(id)}`));
-  return toBookmarkRecord(raw, false);
+  return isRecord(raw) ? raw : null;
+}
+
+/** Bookmarks tagged with the given tag id, using a caller-resolved base URL. Sections omitted. */
+async function listBookmarksByTag(baseUrl: string, tagId: string): Promise<BookmarkRecord[]> {
+  return (await fetchRawBookmarksByTag(baseUrl, tagId))
+    .map(r => toBookmarkRecord(r, false))
+    .filter((b): b is BookmarkRecord => b !== null);
 }
 
 /** Bookmarks tagged with the given tag id, newest-app-order. Sections are not included in the list. */
@@ -256,25 +266,22 @@ function dedupeBookmarksByTitle(records: BookmarkRecord[]): BookmarkRecord[] {
 }
 
 /**
- * All bookmarks across one channel's configured source, deduped by id and sorted by title. The
- * upstream host lists bookmarks per id, but tags and taxonomy terms live in different id spaces, so
- * the two source kinds resolve differently:
+ * The raw upstream bookmark objects for one configured source, deduped by id. Shared by the narrow
+ * per-channel record list and the widened "Find a Resource" browser. The upstream host lists bookmarks
+ * per id, but tags and taxonomy terms live in different id spaces, so the two source kinds resolve
+ * differently:
  *
  * - **tag** — `?tags=` accepts tag ids directly, so query the parent tag plus each of its child tags.
  * - **taxonomy** — `?tags=` never matches taxonomy term ids, so gather the terms in scope (the
  *   drilled-down term plus its children, or the whole taxonomy when there's no drill-down) and pull
  *   the bookmarks assigned to any of them from the taxonomy assignment map.
  */
-export async function listBookmarksForCategory(
-  category: SentenceTermCategory = "vocabulary",
-): Promise<BookmarkRecord[]> {
-  const {
-    baseUrl, sources,
-  } = await resolveBookmarksConfig();
-  const source = sources[category];
-  if (!source) return [];
-  const children = await fetchVocabulary(category);
-
+async function listRawBookmarksForSource(
+  baseUrl: string,
+  source: BookmarksSource,
+  children: TagTermOption[],
+): Promise<Record<string, unknown>[]> {
+  let raws: Record<string, unknown>[];
   if (source.kind === "taxonomy") {
     const targetTerms = new Set<string>([
       ...(source.termId ? [source.termId] : []),
@@ -285,13 +292,35 @@ export async function listBookmarksForCategory(
     const ids = Object.entries(assignments)
       .filter(([, termIds]) => termIds.some(termId => targetTerms.has(termId)))
       .map(([bookmarkId]) => bookmarkId);
-    const records = await Promise.all(ids.map(id => listBookmarkById(baseUrl, id)));
-    return dedupeBookmarksByTitle(records.filter((b): b is BookmarkRecord => b !== null));
+    const fetched = await Promise.all(ids.map(id => fetchRawBookmarkById(baseUrl, id)));
+    raws = fetched.filter((r): r is Record<string, unknown> => r !== null);
   }
+  else {
+    const ids = [...new Set([source.id, ...children.map(item => item.id)])];
+    const lists = await Promise.all(ids.map(id => fetchRawBookmarksByTag(baseUrl, id)));
+    raws = lists.flat();
+  }
+  const byId = new Map<string, Record<string, unknown>>();
+  for (const raw of raws) {
+    if (typeof raw.id === "string" && !byId.has(raw.id)) byId.set(raw.id, raw);
+  }
+  return [...byId.values()];
+}
 
-  const ids = [...new Set([source.id, ...children.map(item => item.id)])];
-  const lists = await Promise.all(ids.map(id => listBookmarksByTag(baseUrl, id)));
-  return dedupeBookmarksByTitle(lists.flat());
+/** All bookmarks across one channel's configured source, deduped by id and sorted by title. */
+export async function listBookmarksForCategory(
+  category: SentenceTermCategory = "vocabulary",
+): Promise<BookmarkRecord[]> {
+  const {
+    baseUrl, sources,
+  } = await resolveBookmarksConfig();
+  const source = sources[category];
+  if (!source) return [];
+  const children = await fetchVocabulary(category);
+  const raws = await listRawBookmarksForSource(baseUrl, source, children);
+  return dedupeBookmarksByTitle(
+    raws.map(r => toBookmarkRecord(r, false)).filter((b): b is BookmarkRecord => b !== null),
+  );
 }
 
 /** A single bookmark by id, including its flattened timestamp sections. Null when not found/unreadable. */
@@ -366,21 +395,23 @@ async function resolveRuntimePropertyId(baseUrl: string): Promise<string | null>
 }
 
 /**
- * The whole bookmarks collection, widened for the "Find a Resource" browser (website + runtime + media
- * type), sorted by title (the client re-sorts by runtime). Unlike the per-channel record endpoints this
- * lists everything the host exposes. A failure to read the custom-property list degrades runtime to null
- * rather than failing the whole request.
+ * The bookmarks in the **listening** channel's configured source (Settings → Listening source), widened
+ * for the "Find a Resource" browser (website + runtime + media type) and sorted by title (the client
+ * re-sorts by runtime). Empty when no listening source is configured. A failure to read the
+ * custom-property list degrades runtime to null rather than failing the whole request.
  */
 export async function listBookmarkResources(): Promise<BookmarkResource[]> {
   const {
-    baseUrl,
+    baseUrl, sources,
   } = await resolveBookmarksConfig();
-  const [rawBookmarks, runtimePropId] = await Promise.all([
-    fetchBookmarksJson<unknown>(apiUrl(baseUrl, "/bookmarks")),
+  const source = sources.listening;
+  if (!source) return [];
+  const [children, runtimePropId] = await Promise.all([
+    fetchVocabulary("listening"),
     resolveRuntimePropertyId(baseUrl).catch(() => null),
   ]);
-  if (!Array.isArray(rawBookmarks)) return [];
-  return rawBookmarks
+  const raws = await listRawBookmarksForSource(baseUrl, source, children);
+  return raws
     .map(r => toBookmarkResource(r, runtimePropId))
     .filter((r): r is BookmarkResource => r !== null)
     .sort((a, b) => a.title.localeCompare(b.title));
