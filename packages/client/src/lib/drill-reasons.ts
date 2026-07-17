@@ -1,4 +1,11 @@
-import type { DrillMistakeReasonRef, DrillReasonCategory } from "@sentence-bank/types";
+import type {
+  CreateDrillReasonCategoryInput,
+  DrillMistakeReasonRef,
+  DrillReason,
+  DrillReasonCategory,
+  DrillSubcategory,
+  UpdateDrillReasonCategoryInput,
+} from "@sentence-bank/types";
 
 /** Separator used when rendering a reason's `Category › Subcategory › Reason` path. */
 export const REASON_PATH_SEP = " › ";
@@ -95,5 +102,106 @@ export function resolveReasonRef(
     subcategoryName,
     reasonName,
     label,
+  };
+}
+
+/** Where a new reason should live: a brand-new or existing category, with an optional subcategory. */
+export interface ReasonPlacement {
+  category: { kind: "new";
+    name: string; } | { kind: "existing";
+      category: DrillReasonCategory; };
+  sub: { kind: "none" } | { kind: "new";
+    name: string; } | { kind: "existing";
+      id: string; };
+}
+
+/** The taxonomy mutation that realises a {@link ReasonPlacement} for one new reason. */
+export type PlannedReasonAddition
+  = { kind: "create";
+    input: CreateDrillReasonCategoryInput;
+    subId: string | null; }
+    | { kind: "update";
+      categoryId: string;
+      input: UpdateDrillReasonCategoryInput;
+      subId: string | null; };
+
+/**
+ * Plan how to add one new reason to the taxonomy: create a whole category (optionally holding a new
+ * subcategory), or update an existing category (attach the reason directly, to a new subcategory, or
+ * to an existing one). Pure — `makeId` is injected so ids stay deterministic in tests.
+ */
+export function planReasonAddition(
+  placement: ReasonPlacement,
+  reason: DrillReason,
+  makeId: () => string,
+): PlannedReasonAddition {
+  if (placement.category.kind === "new") {
+    if (placement.sub.kind === "new") {
+      const subId = makeId();
+      return {
+        kind: "create",
+        input: {
+          name: placement.category.name.trim(),
+          subcategories: [{
+            id: subId,
+            name: placement.sub.name.trim(),
+            reasons: [reason],
+          }],
+        },
+        subId,
+      };
+    }
+    return {
+      kind: "create",
+      input: {
+        name: placement.category.name.trim(),
+        reasons: [reason],
+      },
+      subId: null,
+    };
+  }
+
+  const category = placement.category.category;
+  if (placement.sub.kind === "none") {
+    // Attach the reason directly to the category (no subcategory).
+    return {
+      kind: "update",
+      categoryId: category.id,
+      input: {
+        reasons: [...(category.reasons ?? []), reason],
+      },
+      subId: null,
+    };
+  }
+  const existing: DrillSubcategory[] = category.subcategories ?? [];
+  if (placement.sub.kind === "new") {
+    const subId = makeId();
+    return {
+      kind: "update",
+      categoryId: category.id,
+      input: {
+        subcategories: [...existing, {
+          id: subId,
+          name: placement.sub.name.trim(),
+          reasons: [reason],
+        }],
+      },
+      subId,
+    };
+  }
+  const subId = placement.sub.id;
+  return {
+    kind: "update",
+    categoryId: category.id,
+    input: {
+      subcategories: existing.map(s =>
+        s.id === subId
+          ? {
+            ...s,
+            reasons: [...s.reasons, reason],
+          }
+          : s),
+    },
+    subId,
   };
 }

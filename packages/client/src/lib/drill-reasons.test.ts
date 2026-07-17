@@ -3,7 +3,7 @@ import type { DrillReasonCategory } from "@sentence-bank/types";
 
 import { describe, expect, it } from "vitest";
 
-import { flattenReasons, resolveReasonRef } from "./drill-reasons";
+import { flattenReasons, planReasonAddition, resolveReasonRef } from "./drill-reasons";
 
 function category(over: Partial<DrillReasonCategory>): DrillReasonCategory {
   return {
@@ -120,5 +120,113 @@ describe("resolveReasonRef", () => {
       categoryId: "cat-2",
     });
     expect(resolved.label).toBe("Vocab");
+  });
+});
+
+describe("planReasonAddition", () => {
+  const reason = {
+    id: "r-new",
+    name: "Wrong particle",
+  };
+  const makeId = () => "generated-id";
+
+  it("creates a new category holding the reason directly", () => {
+    const plan = planReasonAddition({
+      category: {
+        kind: "new",
+        name: " Grammar ",
+      },
+      sub: {
+        kind: "none",
+      },
+    }, reason, makeId);
+    expect(plan).toEqual({
+      kind: "create",
+      input: {
+        name: "Grammar",
+        reasons: [reason],
+      },
+      subId: null,
+    });
+  });
+
+  it("creates a new category with a new subcategory holding the reason", () => {
+    const plan = planReasonAddition({
+      category: {
+        kind: "new",
+        name: "Grammar",
+      },
+      sub: {
+        kind: "new",
+        name: "Particles",
+      },
+    }, reason, makeId);
+    expect(plan.kind).toBe("create");
+    expect(plan.subId).toBe("generated-id");
+    if (plan.kind === "create") {
+      expect(plan.input.subcategories?.[0]).toMatchObject({
+        id: "generated-id",
+        name: "Particles",
+        reasons: [reason],
+      });
+    }
+  });
+
+  it("attaches the reason directly to an existing category", () => {
+    const category = taxonomy[1]; // "Vocab", one direct reason
+    const plan = planReasonAddition({
+      category: {
+        kind: "existing",
+        category,
+      },
+      sub: {
+        kind: "none",
+      },
+    }, reason, makeId);
+    expect(plan).toMatchObject({
+      kind: "update",
+      categoryId: "cat-2",
+      subId: null,
+    });
+    if (plan.kind === "update") {
+      expect(plan.input.reasons?.map(r => r.id)).toEqual(["r-3", "r-new"]);
+    }
+  });
+
+  it("appends the reason to an existing subcategory", () => {
+    const category = taxonomy[0]; // "Grammar" with sub-1
+    const plan = planReasonAddition({
+      category: {
+        kind: "existing",
+        category,
+      },
+      sub: {
+        kind: "existing",
+        id: "sub-1",
+      },
+    }, reason, makeId);
+    expect(plan.subId).toBe("sub-1");
+    if (plan.kind === "update") {
+      const sub = plan.input.subcategories?.find(s => s.id === "sub-1");
+      expect(sub?.reasons.map(r => r.id)).toEqual(["r-1", "r-new"]);
+    }
+  });
+
+  it("adds a new subcategory to an existing category", () => {
+    const category = taxonomy[0];
+    const plan = planReasonAddition({
+      category: {
+        kind: "existing",
+        category,
+      },
+      sub: {
+        kind: "new",
+        name: "Conjugation",
+      },
+    }, reason, makeId);
+    expect(plan.subId).toBe("generated-id");
+    if (plan.kind === "update") {
+      expect(plan.input.subcategories?.map(s => s.id)).toEqual(["sub-1", "generated-id"]);
+    }
   });
 });
