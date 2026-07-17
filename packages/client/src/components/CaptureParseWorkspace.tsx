@@ -7,8 +7,11 @@ import type {
   ParseTarget,
 } from "@sentence-bank/types";
 
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 
+import { ParsePreviewSection } from "./ParsePreviewSection";
+import { ParseSavedTemplatesBar } from "./ParseSavedTemplatesBar";
+import { ParseTemplateEditor } from "./ParseTemplateEditor";
 import { SharedCaptureFields } from "./SharedCaptureFields";
 
 import { Button } from "@/components/ui/button";
@@ -23,27 +26,16 @@ import { useUpdateCapture } from "@/hooks/useCaptures";
 import { useCreateParseTemplate, useDeleteParseTemplate, useParseTemplates } from "@/hooks/useParseTemplates";
 import { useCreateSentencesMany } from "@/hooks/useSentences";
 import { useCreateVocabMany, useVocab } from "@/hooks/useVocab";
+import {
+  DEFAULT_DIVIDER,
+  DEFAULT_TEMPLATE,
+  FIELD_CLASS,
+  REQUIRED,
+} from "@/lib/captureParseUi";
 import { parseTemplate, splitOnDivider } from "@/lib/parseTemplate";
-
-const fieldClass
-  = "mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none";
 
 /** Workspace mode: create sentences, vocab, or both at once from a divider-split text. */
 type Mode = ParseTarget | "merged";
-
-const TAGS: Record<ParseTarget, string[]> = {
-  sentence: ["text", "translation", "source", "page", "tags", "notes", "language"],
-  vocab: ["term", "reading", "meaning", "page", "tags", "notes", "language"],
-};
-const REQUIRED: Record<ParseTarget, string> = {
-  sentence: "text",
-  vocab: "term",
-};
-const DEFAULT_TEMPLATE: Record<ParseTarget, string> = {
-  sentence: "{{text}}\n{{translation}}",
-  vocab: "{{term}}\t{{meaning}}",
-};
-const DEFAULT_DIVIDER = "---";
 
 /** Prefer a per-item tag value, else the batch/shared value, else empty. */
 function pick(itemValue: string | undefined, shared: string): string {
@@ -68,8 +60,6 @@ export function CaptureParseWorkspace({
   const [divider, setDivider] = useState(DEFAULT_DIVIDER);
   const [boundary, setBoundary] = useState<ParseBoundary>("fixed");
   const [ignoreBlankLines, setIgnoreBlankLines] = useState(true);
-  const sentenceTemplateRef = useRef<HTMLTextAreaElement>(null);
-  const vocabTemplateRef = useRef<HTMLTextAreaElement>(null);
 
   // Shared (batch) values — applied to every item; a matching `{{tag}}` overrides per item.
   const [sourceId, setSourceId] = useState<string | null>(capture.sourceId);
@@ -96,13 +86,9 @@ export function CaptureParseWorkspace({
     sentence: sentenceTemplate,
     vocab: vocabTemplate,
   };
-  const setTemplateFor: Record<ParseTarget, (v: string | ((t: string) => string)) => void> = {
+  const setTemplateFor: Record<ParseTarget, (v: string) => void> = {
     sentence: setSentenceTemplate,
     vocab: setVocabTemplate,
-  };
-  const templateRefFor: Record<ParseTarget, React.RefObject<HTMLTextAreaElement | null>> = {
-    sentence: sentenceTemplateRef,
-    vocab: vocabTemplateRef,
   };
 
   // Saved templates only apply to the single-target modes.
@@ -158,23 +144,6 @@ export function CaptureParseWorkspace({
     setDone(null);
   }
 
-  function insertTag(target: ParseTarget, tag: string) {
-    const el = templateRefFor[target].current;
-    const token = `{{${tag}}}`;
-    if (!el) {
-      setTemplateFor[target](t => t + token);
-      return;
-    }
-    const start = el.selectionStart;
-    const end = el.selectionEnd;
-    setTemplateFor[target](t => t.slice(0, start) + token + t.slice(end));
-    // Restore focus after React re-renders.
-    requestAnimationFrame(() => {
-      el.focus();
-      el.selectionStart = el.selectionEnd = start + token.length;
-    });
-  }
-
   /** Existing vocab whose term appears in the given sentence text (auto-link suggestions). */
   function suggestLinks(text: string): string[] {
     return (vocab ?? []).filter(v => v.term && text.includes(v.term)).map(v => v.id);
@@ -190,7 +159,7 @@ export function CaptureParseWorkspace({
   }
   const vocabName = (id: string) => vocab?.find(v => v.id === id)?.term ?? id;
 
-  async function loadSaved(id: string) {
+  function loadSaved(id: string) {
     setSavedId(id);
     const t = savedForTarget.find(x => x.id === id);
     if (t) {
@@ -291,103 +260,6 @@ export function CaptureParseWorkspace({
     return `Create ${parts.join(" + ")}`;
   })();
 
-  /** Editable template with clickable tag chips for a single target. */
-  function templateEditor(target: ParseTarget, label: string) {
-    return (
-      <div>
-        <span className="block text-sm font-medium text-slate-700">{label}</span>
-        <div className="my-1 flex flex-wrap gap-1">
-          {TAGS[target].map(tag => (
-            <button
-              key={tag}
-              type="button"
-              onClick={() => insertTag(target, tag)}
-              className="
-                rounded-sm border border-slate-300 px-1.5 py-0.5 font-mono
-                text-xs text-slate-600
-                hover:border-blue-400
-              "
-            >
-              {`{{${tag}}}`}
-            </button>
-          ))}
-        </div>
-        <textarea
-          ref={templateRefFor[target]}
-          className={`
-            ${fieldClass}
-            mt-0 font-mono
-          `}
-          rows={2}
-          value={templateFor[target]}
-          onChange={e => setTemplateFor[target](e.target.value)}
-        />
-      </div>
-    );
-  }
-
-  /** Preview list for one parsed section. `target` drives which fields + validity label to show. */
-  function previewSection(target: ParseTarget, result: ParseResult) {
-    return (
-      <div className="space-y-2">
-        {result.items.length === 0
-          ? <p className="text-sm text-muted-foreground">Nothing to preview yet.</p>
-          : result.items.map((item, i) => (
-            <div
-              key={i}
-              className={`
-                rounded-md border p-2 text-sm
-                ${
-            item.valid
-              ? "border-input"
-              : "border-dashed border-input opacity-50"
-            }
-              `}
-            >
-              <div className="flex flex-wrap gap-x-3 gap-y-0.5">
-                {TAGS[target]
-                  .filter(f => item.fields[f])
-                  .map(f => (
-                    <span key={f}>
-                      <span className="text-xs text-muted-foreground">
-                        {f}
-                        :
-                      </span>
-                      {" "}
-                      {item.fields[f]}
-                    </span>
-                  ))}
-                {!item.valid ? <span className="text-xs text-destructive">missing {REQUIRED[target]}</span> : null}
-              </div>
-              {target === "sentence" && item.valid && linksFor(i, item.fields.text).length > 0
-                ? (
-                  <div className="mt-1 flex flex-wrap items-center gap-1">
-                    <span className="text-xs text-muted-foreground">vocab:</span>
-                    {linksFor(i, item.fields.text).map(id => (
-                      <button
-                        key={id}
-                        type="button"
-                        onClick={() => removeLink(i, item.fields.text, id)}
-                        className="
-                          rounded-full bg-blue-50 px-2 py-0.5 text-xs
-                          text-blue-700
-                          hover:line-through
-                        "
-                        title="Remove link"
-                      >
-                        {vocabName(id)}
-                        {" ×"}
-                      </button>
-                    ))}
-                  </div>
-                )
-                : null}
-            </div>
-          ))}
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-4">
       <Card>
@@ -417,54 +289,19 @@ export function CaptureParseWorkspace({
             ))}
           </div>
 
-          {/* Saved templates (single-target modes only) */}
           {mode !== "merged"
             ? (
-              <div className="flex flex-wrap items-center gap-2">
-                <select
-                  className={`
-                    ${fieldClass}
-                    mt-0 max-w-52
-                  `}
-                  value={savedId}
-                  onChange={e => void loadSaved(e.target.value)}
-                  aria-label="Load saved template"
-                >
-                  <option value="">Saved templates…</option>
-                  {savedForTarget.map(t => (
-                    <option
-                      key={t.id}
-                      value={t.id}
-                    >
-                      {t.name}
-                    </option>
-                  ))}
-                </select>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  onClick={() => void saveTemplate()}
-                  disabled={createTemplate.isPending}
-                >
-                  Save template
-                </Button>
-                {savedId
-                  ? (
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => {
-                        void deleteTemplate.mutateAsync(savedId);
-                        setSavedId("");
-                      }}
-                    >
-                      Delete
-                    </Button>
-                  )
-                  : null}
-              </div>
+              <ParseSavedTemplatesBar
+                templates={savedForTarget}
+                savedId={savedId}
+                savePending={createTemplate.isPending}
+                onLoad={loadSaved}
+                onSave={() => void saveTemplate()}
+                onDelete={(id) => {
+                  void deleteTemplate.mutateAsync(id);
+                  setSavedId("");
+                }}
+              />
             )
             : null}
 
@@ -473,7 +310,7 @@ export function CaptureParseWorkspace({
             Text to parse
             <textarea
               className={`
-                ${fieldClass}
+                ${FIELD_CLASS}
                 font-mono
               `}
               rows={8}
@@ -489,7 +326,7 @@ export function CaptureParseWorkspace({
                 Section divider (sentences above, vocab below)
                 <input
                   className={`
-                    ${fieldClass}
+                    ${FIELD_CLASS}
                     font-mono
                   `}
                   value={divider}
@@ -504,11 +341,28 @@ export function CaptureParseWorkspace({
           {mode === "merged"
             ? (
               <div className="space-y-3">
-                {templateEditor("sentence", "Sentence template")}
-                {templateEditor("vocab", "Vocab template")}
+                <ParseTemplateEditor
+                  target="sentence"
+                  label="Sentence template"
+                  value={sentenceTemplate}
+                  onChange={setSentenceTemplate}
+                />
+                <ParseTemplateEditor
+                  target="vocab"
+                  label="Vocab template"
+                  value={vocabTemplate}
+                  onChange={setVocabTemplate}
+                />
               </div>
             )
-            : templateEditor(singleTarget, "Template")}
+            : (
+              <ParseTemplateEditor
+                target={singleTarget}
+                label="Template"
+                value={templateFor[singleTarget]}
+                onChange={setTemplateFor[singleTarget]}
+              />
+            )}
 
           {/* Boundary */}
           <div className="flex flex-wrap items-center gap-4 text-sm">
@@ -583,7 +437,13 @@ export function CaptureParseWorkspace({
                     </h3>
                   )
                   : null}
-                {previewSection("sentence", parsed.sentence)}
+                <ParsePreviewSection
+                  target="sentence"
+                  result={parsed.sentence}
+                  linksFor={linksFor}
+                  onRemoveLink={removeLink}
+                  vocabName={vocabName}
+                />
               </div>
             )
             : null}
@@ -603,7 +463,10 @@ export function CaptureParseWorkspace({
                     </h3>
                   )
                   : null}
-                {previewSection("vocab", parsed.vocab)}
+                <ParsePreviewSection
+                  target="vocab"
+                  result={parsed.vocab}
+                />
               </div>
             )
             : null}
