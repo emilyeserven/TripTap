@@ -20,6 +20,7 @@ import { deleteMedia, getMedia, MEDIA_PREFIX, putMedia, type StoredMedia } from 
 import { extractApkgMedia } from "@/services/migaku/apkg";
 import { parseApkg } from "@/services/migaku/apkg";
 import { commitCandidates } from "@/services/migaku/commit";
+import { candidateExists, getExistingKeys } from "@/services/migaku/dedup";
 import { MigakuImportNotFoundError } from "@/services/migaku/errors";
 import { toPublicCandidate, type StoredMigakuCandidate } from "@/services/migaku/types";
 
@@ -28,7 +29,13 @@ export { reconcileMedia } from "@/services/migaku/reconcile";
 
 /** The stored candidates carry internal media filenames; cast back to that shape on read. */
 function storedCandidates(row: MigakuImportRow): StoredMigakuCandidate[] {
-  return row.candidates as StoredMigakuCandidate[];
+  return row.candidates as unknown as StoredMigakuCandidate[];
+}
+
+/** Map stored candidates to their public shape, flagging any that already exist in the bank. */
+async function toPublicCandidates(stored: StoredMigakuCandidate[]): Promise<MigakuCandidate[]> {
+  const existing = await getExistingKeys();
+  return stored.map(c => toPublicCandidate(c, candidateExists(c.kind, c.text, existing)));
 }
 
 function toImport(row: MigakuImportRow): MigakuImport {
@@ -59,7 +66,7 @@ export async function createImport(buffer: Buffer, filename: string): Promise<Mi
 
   return {
     ...toImport(row),
-    candidates: candidates.map(toPublicCandidate),
+    candidates: await toPublicCandidates(candidates),
   };
 }
 
@@ -73,7 +80,7 @@ export async function getImport(id: string): Promise<MigakuImportDetail | null> 
   if (!row) return null;
   return {
     ...toImport(row),
-    candidates: storedCandidates(row).map(toPublicCandidate),
+    candidates: await toPublicCandidates(storedCandidates(row)),
   };
 }
 

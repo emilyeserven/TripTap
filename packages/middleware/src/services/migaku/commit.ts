@@ -16,6 +16,7 @@ import { newId } from "@/lib/id";
 import { generateFurigana } from "@/services/furigana";
 import { MEDIA_PREFIX, putMedia } from "@/services/media";
 import { extractApkgMedia, mimeForFilename } from "@/services/migaku/apkg";
+import { getExistingKeysForLanguage } from "@/services/migaku/dedup";
 import type { StoredMigakuCandidate } from "@/services/migaku/types";
 
 /** Object-storage key for a piece of imported media, namespaced under the app's media prefix. */
@@ -68,10 +69,22 @@ export async function commitCandidates(
   const byId = new Map(stored.map(c => [c.id, c]));
   const kept = input.items.filter(item => item.include && item.text.trim());
 
+  // Authoritative dedup: never create a row whose text/term already exists for this language. The sets
+  // grow as we insert, so duplicates within this same batch are also collapsed.
+  const existing = await getExistingKeysForLanguage(input.language);
+
   let sentencesCreated = 0;
   let vocabCreated = 0;
+  let skipped = 0;
 
   for (const item of kept) {
+    const text = item.text.trim();
+    const seen = item.kind === "sentence" ? existing.sentenceTexts : existing.vocabTerms;
+    if (seen.has(text)) {
+      skipped += 1;
+      continue;
+    }
+    seen.add(text);
     const source = byId.get(item.id);
     const media = source
       ? await storeMedia(apkg, source)
@@ -126,5 +139,6 @@ export async function commitCandidates(
   return {
     sentencesCreated,
     vocabCreated,
+    skipped,
   };
 }
