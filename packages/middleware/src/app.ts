@@ -10,6 +10,7 @@ import { captureRoutes } from "@/routes/captures";
 import { dictionaryRoutes } from "@/routes/dictionary";
 import { drillReasonCategoryRoutes } from "@/routes/drill-reason-categories";
 import { drillSessionRoutes } from "@/routes/drill-sessions";
+import { grammarNoteRoutes } from "@/routes/grammar-notes";
 import { healthRoutes } from "@/routes/health";
 import { lessonRoutes } from "@/routes/lessons";
 import { listeningSessionsRoutes } from "@/routes/listening-sessions";
@@ -107,6 +108,10 @@ export async function buildApp(): Promise<FastifyInstance> {
           description: "Tutors who run lessons",
         },
         {
+          name: "grammar-notes",
+          description: "Rich notes on grammar usages, linking sentences, resources, and related grammar",
+        },
+        {
           name: "drill-sessions",
           description: "Drill Buddy — logged mistakes and reflections from drilling",
         },
@@ -171,6 +176,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(readingSessionsRoutes);
   await app.register(writingPromptRoutes);
   await app.register(tutorRoutes);
+  await app.register(grammarNoteRoutes);
   await app.register(lessonRoutes);
   await app.register(drillReasonCategoryRoutes);
   await app.register(drillSessionRoutes);

@@ -268,7 +268,7 @@ export function QuestionSheetForm({
       >
         <BookmarkPicker
           category="resource"
-          label="Textbook / Worksheet"
+          label="Resources"
           selectedBookmarkId={bookmarkId}
           selectedBookmarkTitle={bookmarkTitle}
           onPick={(record) => {

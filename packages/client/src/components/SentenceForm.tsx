@@ -191,7 +191,7 @@ export function SentenceForm({
         />
         <TermPicker
           category="resource"
-          label="Textbook / Worksheet"
+          label="Resources"
           value={resourceTerms}
           onChange={setResourceTerms}
         />

@@ -4,7 +4,8 @@ import type { GrammarItem } from "@sentence-bank/types";
 
 import { useState } from "react";
 
-import { Volume2 } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { ChevronRight, Volume2 } from "lucide-react";
 
 import { AiLessonBadge } from "./AiLessonBadge";
 import { GrammarTagsEditor } from "./GrammarTagsEditor";
@@ -14,13 +15,23 @@ import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/
 import { Button } from "@/components/ui/button";
 import { useUpdateAiLessonGrammarTerms } from "@/hooks/useAiLessons";
 
+/** A link from this grammar item to a matching grammar note (existing, or a tag to start one from). */
+export interface GrammarNoteLink {
+  /** An existing grammar note to open. */
+  noteId?: string;
+  /** A grammar tag to start a new note for, when none exists yet. */
+  createTag?: { id: string;
+    name: string; };
+}
+
 /** One grammar pattern as an accordion item. Render inside an <Accordion>. */
 export function GrammarItemRow({
-  grammar: g, aiLesson, onTagClick, linkedSentences,
+  grammar: g, aiLesson, onTagClick, linkedSentences, noteLink,
 }: { grammar: GrammarItem;
   aiLesson?: AiLessonRef;
   onTagClick?: (termId: string) => void;
-  linkedSentences?: LinkedSentence[]; }) {
+  linkedSentences?: LinkedSentence[];
+  noteLink?: GrammarNoteLink | null; }) {
   const updateTerms = useUpdateAiLessonGrammarTerms();
   const [revealed, setRevealed] = useState<Set<number>>(() => new Set());
   const toggle = (i: number) =>
@@ -58,6 +69,40 @@ export function GrammarItemRow({
             grammarTerms,
           })}
         />
+
+        {noteLink?.noteId
+          ? (
+            <Link
+              to="/grammar-notes/$id"
+              params={{
+                id: noteLink.noteId,
+              }}
+              className="
+                inline-flex items-center gap-1 text-sm font-medium
+                hover:underline
+              "
+            >
+              Grammar note
+              <ChevronRight className="size-4" />
+            </Link>
+          )
+          : noteLink?.createTag
+            ? (
+              <Link
+                to="/grammar-notes/new"
+                search={{
+                  tag: noteLink.createTag.id,
+                  name: noteLink.createTag.name,
+                }}
+                className="
+                  inline-flex items-center gap-1 text-sm text-muted-foreground
+                  hover:underline
+                "
+              >
+                ＋ Grammar note
+              </Link>
+            )
+            : null}
 
         <ul className="space-y-3">
           {g.ex.map((e, ei) => {

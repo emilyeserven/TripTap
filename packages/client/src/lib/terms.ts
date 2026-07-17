@@ -17,7 +17,7 @@ export const TERM_CATEGORIES: { category: SentenceTermCategory;
   },
   {
     category: "resource",
-    label: "Textbooks & Worksheets",
+    label: "Resources",
   },
   {
     category: "listening",

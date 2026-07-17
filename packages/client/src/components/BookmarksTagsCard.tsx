@@ -47,8 +47,8 @@ const CHANNELS: { category: SentenceTermCategory;
   },
   {
     category: "resource",
-    title: "Textbooks & Worksheets source",
-    hint: "Textbooks, worksheets, and other source material.",
+    title: "Resources source",
+    hint: "Videos, textbook pages, worksheets, and other resources.",
   },
   {
     category: "listening",

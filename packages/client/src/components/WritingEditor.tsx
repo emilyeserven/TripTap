@@ -223,7 +223,7 @@ export function WritingEditor({
         />
         <TermPicker
           category="resource"
-          label="Textbook / Worksheet"
+          label="Resources"
           value={termsFor("resource")}
           onChange={next => setTermsFor("resource", next)}
         />

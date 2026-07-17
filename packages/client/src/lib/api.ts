@@ -63,6 +63,9 @@ import type {
   Tutor,
   CreateTutorInput,
   UpdateTutorInput,
+  GrammarNote,
+  CreateGrammarNoteInput,
+  UpdateGrammarNoteInput,
   Lesson,
   CreateLessonInput,
   UpdateLessonInput,
@@ -327,6 +330,26 @@ export const tutorsApi = {
       body: JSON.stringify(input),
     }),
   remove: (id: string) => request<undefined>(`/tutors/${id}`, {
+    method: "DELETE",
+  }),
+};
+
+export const grammarNotesApi = {
+  list: () => request<GrammarNote[]>("/grammar-notes"),
+  get: (id: string) => request<GrammarNote>(`/grammar-notes/${id}`),
+  getByTag: (tagId: string) =>
+    request<GrammarNote>(`/grammar-notes/by-tag/${encodeURIComponent(tagId)}`),
+  create: (input: CreateGrammarNoteInput) =>
+    request<GrammarNote>("/grammar-notes", {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+  update: (id: string, input: UpdateGrammarNoteInput) =>
+    request<GrammarNote>(`/grammar-notes/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    }),
+  remove: (id: string) => request<undefined>(`/grammar-notes/${id}`, {
     method: "DELETE",
   }),
 };

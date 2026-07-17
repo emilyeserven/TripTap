@@ -30,6 +30,7 @@ import { Route as MyWritingIndexRouteImport } from './routes/my-writing.index'
 import { Route as MySentencesIndexRouteImport } from './routes/my-sentences.index'
 import { Route as ListeningSessionsIndexRouteImport } from './routes/listening-sessions.index'
 import { Route as LessonsIndexRouteImport } from './routes/lessons.index'
+import { Route as GrammarNotesIndexRouteImport } from './routes/grammar-notes.index'
 import { Route as FindResourceIndexRouteImport } from './routes/find-resource.index'
 import { Route as DrillSessionsIndexRouteImport } from './routes/drill-sessions.index'
 import { Route as CapturesIndexRouteImport } from './routes/captures.index'
@@ -55,6 +56,8 @@ import { Route as ListeningSessionsNewRouteImport } from './routes/listening-ses
 import { Route as ListeningSessionsIdRouteImport } from './routes/listening-sessions.$id'
 import { Route as LessonsNewRouteImport } from './routes/lessons.new'
 import { Route as LessonsIdRouteImport } from './routes/lessons.$id'
+import { Route as GrammarNotesNewRouteImport } from './routes/grammar-notes.new'
+import { Route as GrammarNotesIdRouteImport } from './routes/grammar-notes.$id'
 import { Route as DrillSessionsStatsRouteImport } from './routes/drill-sessions.stats'
 import { Route as DrillSessionsReasonsRouteImport } from './routes/drill-sessions.reasons'
 import { Route as DrillSessionsNewRouteImport } from './routes/drill-sessions.new'
@@ -72,6 +75,7 @@ import { Route as PracticeIdIndexRouteImport } from './routes/practice.$id.index
 import { Route as MySentencesIdIndexRouteImport } from './routes/my-sentences.$id.index'
 import { Route as ListeningSessionsIdIndexRouteImport } from './routes/listening-sessions.$id.index'
 import { Route as LessonsIdIndexRouteImport } from './routes/lessons.$id.index'
+import { Route as GrammarNotesIdIndexRouteImport } from './routes/grammar-notes.$id.index'
 import { Route as DrillSessionsIdIndexRouteImport } from './routes/drill-sessions.$id.index'
 import { Route as AnswerSheetsIdIndexRouteImport } from './routes/answer-sheets.$id.index'
 import { Route as TutorsIdEditRouteImport } from './routes/tutors.$id.edit'
@@ -82,6 +86,7 @@ import { Route as PracticeIdEditRouteImport } from './routes/practice.$id.edit'
 import { Route as MySentencesIdEditRouteImport } from './routes/my-sentences.$id.edit'
 import { Route as ListeningSessionsIdEditRouteImport } from './routes/listening-sessions.$id.edit'
 import { Route as LessonsIdEditRouteImport } from './routes/lessons.$id.edit'
+import { Route as GrammarNotesIdEditRouteImport } from './routes/grammar-notes.$id.edit'
 import { Route as DrillSessionsIdEditRouteImport } from './routes/drill-sessions.$id.edit'
 import { Route as AnswerSheetsIdEditRouteImport } from './routes/answer-sheets.$id.edit'
 
@@ -188,6 +193,11 @@ const ListeningSessionsIndexRoute = ListeningSessionsIndexRouteImport.update({
 const LessonsIndexRoute = LessonsIndexRouteImport.update({
   id: '/lessons/',
   path: '/lessons/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GrammarNotesIndexRoute = GrammarNotesIndexRouteImport.update({
+  id: '/grammar-notes/',
+  path: '/grammar-notes/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FindResourceIndexRoute = FindResourceIndexRouteImport.update({
@@ -315,6 +325,16 @@ const LessonsIdRoute = LessonsIdRouteImport.update({
   path: '/lessons/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GrammarNotesNewRoute = GrammarNotesNewRouteImport.update({
+  id: '/grammar-notes/new',
+  path: '/grammar-notes/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GrammarNotesIdRoute = GrammarNotesIdRouteImport.update({
+  id: '/grammar-notes/$id',
+  path: '/grammar-notes/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DrillSessionsStatsRoute = DrillSessionsStatsRouteImport.update({
   id: '/drill-sessions/stats',
   path: '/drill-sessions/stats',
@@ -401,6 +421,11 @@ const LessonsIdIndexRoute = LessonsIdIndexRouteImport.update({
   path: '/',
   getParentRoute: () => LessonsIdRoute,
 } as any)
+const GrammarNotesIdIndexRoute = GrammarNotesIdIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => GrammarNotesIdRoute,
+} as any)
 const DrillSessionsIdIndexRoute = DrillSessionsIdIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -451,6 +476,11 @@ const LessonsIdEditRoute = LessonsIdEditRouteImport.update({
   path: '/edit',
   getParentRoute: () => LessonsIdRoute,
 } as any)
+const GrammarNotesIdEditRoute = GrammarNotesIdEditRouteImport.update({
+  id: '/edit',
+  path: '/edit',
+  getParentRoute: () => GrammarNotesIdRoute,
+} as any)
 const DrillSessionsIdEditRoute = DrillSessionsIdEditRouteImport.update({
   id: '/edit',
   path: '/edit',
@@ -482,6 +512,8 @@ export interface FileRoutesByFullPath {
   '/drill-sessions/new': typeof DrillSessionsNewRoute
   '/drill-sessions/reasons': typeof DrillSessionsReasonsRoute
   '/drill-sessions/stats': typeof DrillSessionsStatsRoute
+  '/grammar-notes/$id': typeof GrammarNotesIdRouteWithChildren
+  '/grammar-notes/new': typeof GrammarNotesNewRoute
   '/lessons/$id': typeof LessonsIdRouteWithChildren
   '/lessons/new': typeof LessonsNewRoute
   '/listening-sessions/$id': typeof ListeningSessionsIdRouteWithChildren
@@ -507,6 +539,7 @@ export interface FileRoutesByFullPath {
   '/captures/': typeof CapturesIndexRoute
   '/drill-sessions/': typeof DrillSessionsIndexRoute
   '/find-resource/': typeof FindResourceIndexRoute
+  '/grammar-notes/': typeof GrammarNotesIndexRoute
   '/lessons/': typeof LessonsIndexRoute
   '/listening-sessions/': typeof ListeningSessionsIndexRoute
   '/my-sentences/': typeof MySentencesIndexRoute
@@ -520,6 +553,7 @@ export interface FileRoutesByFullPath {
   '/writing-prompts/': typeof WritingPromptsIndexRoute
   '/answer-sheets/$id/edit': typeof AnswerSheetsIdEditRoute
   '/drill-sessions/$id/edit': typeof DrillSessionsIdEditRoute
+  '/grammar-notes/$id/edit': typeof GrammarNotesIdEditRoute
   '/lessons/$id/edit': typeof LessonsIdEditRoute
   '/listening-sessions/$id/edit': typeof ListeningSessionsIdEditRoute
   '/my-sentences/$id/edit': typeof MySentencesIdEditRoute
@@ -530,6 +564,7 @@ export interface FileRoutesByFullPath {
   '/tutors/$id/edit': typeof TutorsIdEditRoute
   '/answer-sheets/$id/': typeof AnswerSheetsIdIndexRoute
   '/drill-sessions/$id/': typeof DrillSessionsIdIndexRoute
+  '/grammar-notes/$id/': typeof GrammarNotesIdIndexRoute
   '/lessons/$id/': typeof LessonsIdIndexRoute
   '/listening-sessions/$id/': typeof ListeningSessionsIdIndexRoute
   '/my-sentences/$id/': typeof MySentencesIdIndexRoute
@@ -557,6 +592,7 @@ export interface FileRoutesByTo {
   '/drill-sessions/new': typeof DrillSessionsNewRoute
   '/drill-sessions/reasons': typeof DrillSessionsReasonsRoute
   '/drill-sessions/stats': typeof DrillSessionsStatsRoute
+  '/grammar-notes/new': typeof GrammarNotesNewRoute
   '/lessons/new': typeof LessonsNewRoute
   '/listening-sessions/new': typeof ListeningSessionsNewRoute
   '/my-sentences/new': typeof MySentencesNewRoute
@@ -574,6 +610,7 @@ export interface FileRoutesByTo {
   '/captures': typeof CapturesIndexRoute
   '/drill-sessions': typeof DrillSessionsIndexRoute
   '/find-resource': typeof FindResourceIndexRoute
+  '/grammar-notes': typeof GrammarNotesIndexRoute
   '/lessons': typeof LessonsIndexRoute
   '/listening-sessions': typeof ListeningSessionsIndexRoute
   '/my-sentences': typeof MySentencesIndexRoute
@@ -587,6 +624,7 @@ export interface FileRoutesByTo {
   '/writing-prompts': typeof WritingPromptsIndexRoute
   '/answer-sheets/$id/edit': typeof AnswerSheetsIdEditRoute
   '/drill-sessions/$id/edit': typeof DrillSessionsIdEditRoute
+  '/grammar-notes/$id/edit': typeof GrammarNotesIdEditRoute
   '/lessons/$id/edit': typeof LessonsIdEditRoute
   '/listening-sessions/$id/edit': typeof ListeningSessionsIdEditRoute
   '/my-sentences/$id/edit': typeof MySentencesIdEditRoute
@@ -597,6 +635,7 @@ export interface FileRoutesByTo {
   '/tutors/$id/edit': typeof TutorsIdEditRoute
   '/answer-sheets/$id': typeof AnswerSheetsIdIndexRoute
   '/drill-sessions/$id': typeof DrillSessionsIdIndexRoute
+  '/grammar-notes/$id': typeof GrammarNotesIdIndexRoute
   '/lessons/$id': typeof LessonsIdIndexRoute
   '/listening-sessions/$id': typeof ListeningSessionsIdIndexRoute
   '/my-sentences/$id': typeof MySentencesIdIndexRoute
@@ -627,6 +666,8 @@ export interface FileRoutesById {
   '/drill-sessions/new': typeof DrillSessionsNewRoute
   '/drill-sessions/reasons': typeof DrillSessionsReasonsRoute
   '/drill-sessions/stats': typeof DrillSessionsStatsRoute
+  '/grammar-notes/$id': typeof GrammarNotesIdRouteWithChildren
+  '/grammar-notes/new': typeof GrammarNotesNewRoute
   '/lessons/$id': typeof LessonsIdRouteWithChildren
   '/lessons/new': typeof LessonsNewRoute
   '/listening-sessions/$id': typeof ListeningSessionsIdRouteWithChildren
@@ -652,6 +693,7 @@ export interface FileRoutesById {
   '/captures/': typeof CapturesIndexRoute
   '/drill-sessions/': typeof DrillSessionsIndexRoute
   '/find-resource/': typeof FindResourceIndexRoute
+  '/grammar-notes/': typeof GrammarNotesIndexRoute
   '/lessons/': typeof LessonsIndexRoute
   '/listening-sessions/': typeof ListeningSessionsIndexRoute
   '/my-sentences/': typeof MySentencesIndexRoute
@@ -665,6 +707,7 @@ export interface FileRoutesById {
   '/writing-prompts/': typeof WritingPromptsIndexRoute
   '/answer-sheets/$id/edit': typeof AnswerSheetsIdEditRoute
   '/drill-sessions/$id/edit': typeof DrillSessionsIdEditRoute
+  '/grammar-notes/$id/edit': typeof GrammarNotesIdEditRoute
   '/lessons/$id/edit': typeof LessonsIdEditRoute
   '/listening-sessions/$id/edit': typeof ListeningSessionsIdEditRoute
   '/my-sentences/$id/edit': typeof MySentencesIdEditRoute
@@ -675,6 +718,7 @@ export interface FileRoutesById {
   '/tutors/$id/edit': typeof TutorsIdEditRoute
   '/answer-sheets/$id/': typeof AnswerSheetsIdIndexRoute
   '/drill-sessions/$id/': typeof DrillSessionsIdIndexRoute
+  '/grammar-notes/$id/': typeof GrammarNotesIdIndexRoute
   '/lessons/$id/': typeof LessonsIdIndexRoute
   '/listening-sessions/$id/': typeof ListeningSessionsIdIndexRoute
   '/my-sentences/$id/': typeof MySentencesIdIndexRoute
@@ -706,6 +750,8 @@ export interface FileRouteTypes {
     | '/drill-sessions/new'
     | '/drill-sessions/reasons'
     | '/drill-sessions/stats'
+    | '/grammar-notes/$id'
+    | '/grammar-notes/new'
     | '/lessons/$id'
     | '/lessons/new'
     | '/listening-sessions/$id'
@@ -731,6 +777,7 @@ export interface FileRouteTypes {
     | '/captures/'
     | '/drill-sessions/'
     | '/find-resource/'
+    | '/grammar-notes/'
     | '/lessons/'
     | '/listening-sessions/'
     | '/my-sentences/'
@@ -744,6 +791,7 @@ export interface FileRouteTypes {
     | '/writing-prompts/'
     | '/answer-sheets/$id/edit'
     | '/drill-sessions/$id/edit'
+    | '/grammar-notes/$id/edit'
     | '/lessons/$id/edit'
     | '/listening-sessions/$id/edit'
     | '/my-sentences/$id/edit'
@@ -754,6 +802,7 @@ export interface FileRouteTypes {
     | '/tutors/$id/edit'
     | '/answer-sheets/$id/'
     | '/drill-sessions/$id/'
+    | '/grammar-notes/$id/'
     | '/lessons/$id/'
     | '/listening-sessions/$id/'
     | '/my-sentences/$id/'
@@ -781,6 +830,7 @@ export interface FileRouteTypes {
     | '/drill-sessions/new'
     | '/drill-sessions/reasons'
     | '/drill-sessions/stats'
+    | '/grammar-notes/new'
     | '/lessons/new'
     | '/listening-sessions/new'
     | '/my-sentences/new'
@@ -798,6 +848,7 @@ export interface FileRouteTypes {
     | '/captures'
     | '/drill-sessions'
     | '/find-resource'
+    | '/grammar-notes'
     | '/lessons'
     | '/listening-sessions'
     | '/my-sentences'
@@ -811,6 +862,7 @@ export interface FileRouteTypes {
     | '/writing-prompts'
     | '/answer-sheets/$id/edit'
     | '/drill-sessions/$id/edit'
+    | '/grammar-notes/$id/edit'
     | '/lessons/$id/edit'
     | '/listening-sessions/$id/edit'
     | '/my-sentences/$id/edit'
@@ -821,6 +873,7 @@ export interface FileRouteTypes {
     | '/tutors/$id/edit'
     | '/answer-sheets/$id'
     | '/drill-sessions/$id'
+    | '/grammar-notes/$id'
     | '/lessons/$id'
     | '/listening-sessions/$id'
     | '/my-sentences/$id'
@@ -850,6 +903,8 @@ export interface FileRouteTypes {
     | '/drill-sessions/new'
     | '/drill-sessions/reasons'
     | '/drill-sessions/stats'
+    | '/grammar-notes/$id'
+    | '/grammar-notes/new'
     | '/lessons/$id'
     | '/lessons/new'
     | '/listening-sessions/$id'
@@ -875,6 +930,7 @@ export interface FileRouteTypes {
     | '/captures/'
     | '/drill-sessions/'
     | '/find-resource/'
+    | '/grammar-notes/'
     | '/lessons/'
     | '/listening-sessions/'
     | '/my-sentences/'
@@ -888,6 +944,7 @@ export interface FileRouteTypes {
     | '/writing-prompts/'
     | '/answer-sheets/$id/edit'
     | '/drill-sessions/$id/edit'
+    | '/grammar-notes/$id/edit'
     | '/lessons/$id/edit'
     | '/listening-sessions/$id/edit'
     | '/my-sentences/$id/edit'
@@ -898,6 +955,7 @@ export interface FileRouteTypes {
     | '/tutors/$id/edit'
     | '/answer-sheets/$id/'
     | '/drill-sessions/$id/'
+    | '/grammar-notes/$id/'
     | '/lessons/$id/'
     | '/listening-sessions/$id/'
     | '/my-sentences/$id/'
@@ -928,6 +986,8 @@ export interface RootRouteChildren {
   DrillSessionsNewRoute: typeof DrillSessionsNewRoute
   DrillSessionsReasonsRoute: typeof DrillSessionsReasonsRoute
   DrillSessionsStatsRoute: typeof DrillSessionsStatsRoute
+  GrammarNotesIdRoute: typeof GrammarNotesIdRouteWithChildren
+  GrammarNotesNewRoute: typeof GrammarNotesNewRoute
   LessonsIdRoute: typeof LessonsIdRouteWithChildren
   LessonsNewRoute: typeof LessonsNewRoute
   ListeningSessionsIdRoute: typeof ListeningSessionsIdRouteWithChildren
@@ -953,6 +1013,7 @@ export interface RootRouteChildren {
   CapturesIndexRoute: typeof CapturesIndexRoute
   DrillSessionsIndexRoute: typeof DrillSessionsIndexRoute
   FindResourceIndexRoute: typeof FindResourceIndexRoute
+  GrammarNotesIndexRoute: typeof GrammarNotesIndexRoute
   LessonsIndexRoute: typeof LessonsIndexRoute
   ListeningSessionsIndexRoute: typeof ListeningSessionsIndexRoute
   MySentencesIndexRoute: typeof MySentencesIndexRoute
@@ -1113,6 +1174,13 @@ declare module '@tanstack/react-router' {
       path: '/lessons'
       fullPath: '/lessons/'
       preLoaderRoute: typeof LessonsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/grammar-notes/': {
+      id: '/grammar-notes/'
+      path: '/grammar-notes'
+      fullPath: '/grammar-notes/'
+      preLoaderRoute: typeof GrammarNotesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/find-resource/': {
@@ -1290,6 +1358,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LessonsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/grammar-notes/new': {
+      id: '/grammar-notes/new'
+      path: '/grammar-notes/new'
+      fullPath: '/grammar-notes/new'
+      preLoaderRoute: typeof GrammarNotesNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/grammar-notes/$id': {
+      id: '/grammar-notes/$id'
+      path: '/grammar-notes/$id'
+      fullPath: '/grammar-notes/$id'
+      preLoaderRoute: typeof GrammarNotesIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/drill-sessions/stats': {
       id: '/drill-sessions/stats'
       path: '/drill-sessions/stats'
@@ -1409,6 +1491,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LessonsIdIndexRouteImport
       parentRoute: typeof LessonsIdRoute
     }
+    '/grammar-notes/$id/': {
+      id: '/grammar-notes/$id/'
+      path: '/'
+      fullPath: '/grammar-notes/$id/'
+      preLoaderRoute: typeof GrammarNotesIdIndexRouteImport
+      parentRoute: typeof GrammarNotesIdRoute
+    }
     '/drill-sessions/$id/': {
       id: '/drill-sessions/$id/'
       path: '/'
@@ -1479,6 +1568,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LessonsIdEditRouteImport
       parentRoute: typeof LessonsIdRoute
     }
+    '/grammar-notes/$id/edit': {
+      id: '/grammar-notes/$id/edit'
+      path: '/edit'
+      fullPath: '/grammar-notes/$id/edit'
+      preLoaderRoute: typeof GrammarNotesIdEditRouteImport
+      parentRoute: typeof GrammarNotesIdRoute
+    }
     '/drill-sessions/$id/edit': {
       id: '/drill-sessions/$id/edit'
       path: '/edit'
@@ -1522,6 +1618,20 @@ const DrillSessionsIdRouteChildren: DrillSessionsIdRouteChildren = {
 
 const DrillSessionsIdRouteWithChildren = DrillSessionsIdRoute._addFileChildren(
   DrillSessionsIdRouteChildren,
+)
+
+interface GrammarNotesIdRouteChildren {
+  GrammarNotesIdEditRoute: typeof GrammarNotesIdEditRoute
+  GrammarNotesIdIndexRoute: typeof GrammarNotesIdIndexRoute
+}
+
+const GrammarNotesIdRouteChildren: GrammarNotesIdRouteChildren = {
+  GrammarNotesIdEditRoute: GrammarNotesIdEditRoute,
+  GrammarNotesIdIndexRoute: GrammarNotesIdIndexRoute,
+}
+
+const GrammarNotesIdRouteWithChildren = GrammarNotesIdRoute._addFileChildren(
+  GrammarNotesIdRouteChildren,
 )
 
 interface LessonsIdRouteChildren {
@@ -1653,6 +1763,8 @@ const rootRouteChildren: RootRouteChildren = {
   DrillSessionsNewRoute: DrillSessionsNewRoute,
   DrillSessionsReasonsRoute: DrillSessionsReasonsRoute,
   DrillSessionsStatsRoute: DrillSessionsStatsRoute,
+  GrammarNotesIdRoute: GrammarNotesIdRouteWithChildren,
+  GrammarNotesNewRoute: GrammarNotesNewRoute,
   LessonsIdRoute: LessonsIdRouteWithChildren,
   LessonsNewRoute: LessonsNewRoute,
   ListeningSessionsIdRoute: ListeningSessionsIdRouteWithChildren,
@@ -1678,6 +1790,7 @@ const rootRouteChildren: RootRouteChildren = {
   CapturesIndexRoute: CapturesIndexRoute,
   DrillSessionsIndexRoute: DrillSessionsIndexRoute,
   FindResourceIndexRoute: FindResourceIndexRoute,
+  GrammarNotesIndexRoute: GrammarNotesIndexRoute,
   LessonsIndexRoute: LessonsIndexRoute,
   ListeningSessionsIndexRoute: ListeningSessionsIndexRoute,
   MySentencesIndexRoute: MySentencesIndexRoute,
