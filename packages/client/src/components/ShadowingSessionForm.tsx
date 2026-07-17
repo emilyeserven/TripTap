@@ -15,6 +15,28 @@ import {
 } from "@/hooks/useShadowingSessions";
 import { parseYouTubeId } from "@/lib/time";
 
+/** A bookmark used to seed a brand-new session (e.g. from the Find a Resource page). */
+interface SeedBookmark {
+  id: string;
+  title: string;
+  url: string | null;
+}
+
+/** The form's initial field values: the session's values when editing, else seeded from the bookmark. */
+function initialFormState(session: ShadowingSession | undefined, initialBookmark: SeedBookmark | undefined) {
+  return {
+    title: session?.title ?? "",
+    language: session?.language ?? "Japanese",
+    videoUrl: session?.videoUrl ?? initialBookmark?.url ?? "",
+    bookmarkId: session?.bookmarkId ?? initialBookmark?.id ?? null,
+    bookmarkTitle: session?.bookmarkTitle ?? initialBookmark?.title ?? null,
+    bookmarkUrl: session?.bookmarkUrl ?? initialBookmark?.url ?? null,
+    defaultMaxReplays: session?.defaultMaxReplays ?? 3,
+    defaultGapMs: session?.defaultGapMs ?? 0,
+    segments: session?.segments ?? [],
+  };
+}
+
 /**
  * Create/edit form for a shadowing session. Beyond the usual metadata + bookmark association, it holds
  * the session's replay defaults and the segment list. When a video URL is present a preview player is
@@ -28,23 +50,22 @@ export function ShadowingSessionForm({
   session?: ShadowingSession;
   onSuccess?: (id: string) => void;
   /** Seed a brand-new session from a bookmark (e.g. from the Find a Resource page); ignored when editing. */
-  initialBookmark?: { id: string;
-    title: string;
-    url: string | null; };
+  initialBookmark?: SeedBookmark;
 }) {
   const create = useCreateShadowingSession();
   const update = useUpdateShadowingSession();
   const editing = session !== undefined;
 
-  const [title, setTitle] = useState(session?.title ?? "");
-  const [language, setLanguage] = useState(session?.language ?? "Japanese");
-  const [videoUrl, setVideoUrl] = useState(session?.videoUrl ?? initialBookmark?.url ?? "");
-  const [bookmarkId, setBookmarkId] = useState(session?.bookmarkId ?? initialBookmark?.id ?? null);
-  const [bookmarkTitle, setBookmarkTitle] = useState(session?.bookmarkTitle ?? initialBookmark?.title ?? null);
-  const [bookmarkUrl, setBookmarkUrl] = useState(session?.bookmarkUrl ?? initialBookmark?.url ?? null);
-  const [defaultMaxReplays, setDefaultMaxReplays] = useState(session?.defaultMaxReplays ?? 3);
-  const [defaultGapMs, setDefaultGapMs] = useState(session?.defaultGapMs ?? 0);
-  const [segments, setSegments] = useState<ShadowingSegment[]>(session?.segments ?? []);
+  const init = initialFormState(session, initialBookmark);
+  const [title, setTitle] = useState(init.title);
+  const [language, setLanguage] = useState(init.language);
+  const [videoUrl, setVideoUrl] = useState(init.videoUrl);
+  const [bookmarkId, setBookmarkId] = useState(init.bookmarkId);
+  const [bookmarkTitle, setBookmarkTitle] = useState(init.bookmarkTitle);
+  const [bookmarkUrl, setBookmarkUrl] = useState(init.bookmarkUrl);
+  const [defaultMaxReplays, setDefaultMaxReplays] = useState(init.defaultMaxReplays);
+  const [defaultGapMs, setDefaultGapMs] = useState(init.defaultGapMs);
+  const [segments, setSegments] = useState<ShadowingSegment[]>(init.segments);
 
   const playerRef = useRef<PlayerHandle>(null);
   const videoId = parseYouTubeId(videoUrl);
