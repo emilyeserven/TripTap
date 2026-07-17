@@ -27,6 +27,8 @@ const sentence: Sentence = {
   tags: "verbs, routine",
   terms: null,
   captureId: null,
+  hasAudio: false,
+  hasImage: false,
   createdAt: "2026-06-01T00:00:00.000Z",
 };
 

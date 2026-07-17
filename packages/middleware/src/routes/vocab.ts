@@ -5,9 +5,11 @@ import {
   createVocabMany,
   deleteVocab,
   getSentencesForVocab,
+  getVocabMedia,
   listVocab,
   updateVocab,
 } from "@/services/vocab";
+import { MediaNotConfiguredError, MediaUnavailableError } from "@/services/media";
 
 const vocabParams = {
   type: "object",
@@ -84,6 +86,37 @@ export async function vocabRoutes(app: FastifyInstance): Promise<void> {
       tags: ["vocab"],
     },
   }, async () => listVocab());
+
+  for (const which of ["audio", "image"] as const) {
+    app.get(`/api/vocab/:id/${which}`, {
+      schema: {
+        tags: ["vocab"],
+        params: vocabParams,
+      },
+    }, async (req, reply) => {
+      const {
+        id,
+      } = req.params as { id: string };
+      try {
+        const media = await getVocabMedia(id, which);
+        if (!media) return reply.code(404).send({
+          message: `No ${which} for this vocab item`,
+        });
+        reply.header("Content-Type", media.contentType);
+        reply.header("Cache-Control", "private, max-age=86400");
+        return reply.send(media.body);
+      }
+      catch (err) {
+        if (err instanceof MediaNotConfiguredError) return reply.code(503).send({
+          message: err.message,
+        });
+        if (err instanceof MediaUnavailableError) return reply.code(502).send({
+          message: err.message,
+        });
+        throw err;
+      }
+    });
+  }
 
   app.post("/api/vocab", {
     schema: {

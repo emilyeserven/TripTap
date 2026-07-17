@@ -78,6 +78,11 @@ import type {
   WritingPrompt,
   CreateWritingPromptInput,
   UpdateWritingPromptInput,
+  MigakuImport,
+  MigakuImportDetail,
+  CommitMigakuImportInput,
+  CommitMigakuImportResult,
+  MigakuReconcileResult,
 } from "@sentence-bank/types";
 
 /** Patchable capture fields (mirror of the middleware's `UpdateCaptureInput`). */
@@ -563,6 +568,40 @@ export const capturesApi = {
       throw new Error(body.message ?? `Request failed with ${res.status}`);
     }
     return (await res.json()) as Capture;
+  },
+};
+
+export const migakuImportsApi = {
+  list: () => request<MigakuImport[]>("/migaku-imports"),
+  get: (id: string) => request<MigakuImportDetail>(`/migaku-imports/${id}`),
+  commit: (id: string, input: CommitMigakuImportInput) =>
+    request<CommitMigakuImportResult>(`/migaku-imports/${id}/commit`, {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+  remove: (id: string) => request<undefined>(`/migaku-imports/${id}`, {
+    method: "DELETE",
+  }),
+  reconcile: (dryRun = false) =>
+    request<MigakuReconcileResult>(`/migaku-imports/reconcile?dryRun=${dryRun}`, {
+      method: "POST",
+    }),
+  /** Absolute path to a candidate's previewed audio/image. */
+  mediaUrl: (id: string, candidateId: string, which: "audio" | "image") =>
+    `${BASE}/migaku-imports/${id}/candidates/${candidateId}/${which}`,
+  // Multipart upload of the raw `.apkg`; bypasses `request()` so the browser sets the boundary.
+  upload: async (file: File): Promise<MigakuImportDetail> => {
+    const form = new FormData();
+    form.append("file", file);
+    const res = await fetch(`${BASE}/migaku-imports`, {
+      method: "POST",
+      body: form,
+    });
+    if (!res.ok) {
+      const body = (await res.json().catch(() => ({}))) as { message?: string };
+      throw new Error(body.message ?? `Request failed with ${res.status}`);
+    }
+    return (await res.json()) as MigakuImportDetail;
   },
 };
 

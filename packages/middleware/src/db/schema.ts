@@ -14,6 +14,7 @@ import type {
   LessonWordNote,
   LearningArea,
   ListeningEntry,
+  MigakuCandidate,
   OcrBlock,
   PracticeGrammar,
   PracticePasses,
@@ -91,6 +92,11 @@ export const sentences = pgTable("sentences", {
   // Manual ordering within a capture's created items. Null until the user reorders; rows then sort by
   // this ascending (nulls last, i.e. never-ordered/new sentences trail) with createdAt as tiebreaker.
   sortOrder: integer("sort_order"),
+  // Media imported from a Migaku/Anki card, stored as object-storage keys (not blobs). Null when none.
+  audioKey: text("audio_key"),
+  audioMime: text("audio_mime"),
+  imageKey: text("image_key"),
+  imageMime: text("image_mime"),
   createdAt: timestamp("created_at", {
     withTimezone: true,
   }).notNull().defaultNow(),
@@ -116,6 +122,11 @@ export const vocab = pgTable("vocab", {
   captureId: uuid("capture_id").references((): AnyPgColumn => captures.id, {
     onDelete: "set null",
   }),
+  // Media imported from a Migaku/Anki card, stored as object-storage keys (not blobs). Null when none.
+  audioKey: text("audio_key"),
+  audioMime: text("audio_mime"),
+  imageKey: text("image_key"),
+  imageMime: text("image_mime"),
   createdAt: timestamp("created_at", {
     withTimezone: true,
   }).notNull().defaultNow(),
@@ -798,3 +809,24 @@ export type AiLessonVocabRow = typeof aiLessonVocab.$inferSelect;
 export type AiLessonGrammarRow = typeof aiLessonGrammar.$inferSelect;
 export type AiLessonSourceSentenceRow = typeof aiLessonSourceSentences.$inferSelect;
 export type AiLessonCultureRow = typeof aiLessonCulture.$inferSelect;
+
+/**
+ * `migaku_imports` — a staged Migaku/Anki `.apkg` import awaiting review. The raw package is kept in
+ * object storage (`apkgKey`) so per-card media can be extracted at commit time; `candidates` holds the
+ * parsed cards. The row is discarded once committed or cancelled.
+ */
+export const migakuImports = pgTable("migaku_imports", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  filename: text("filename").notNull(),
+  // "parsed" = awaiting review; "committed" = promoted to sentences/vocab.
+  status: text("status").notNull().default("parsed"),
+  // Object-storage key of the uploaded `.apkg`; null after commit cleans it up.
+  apkgKey: text("apkg_key"),
+  candidates: jsonb("candidates").$type<MigakuCandidate[]>().notNull(),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+});
+
+export type MigakuImportRow = typeof migakuImports.$inferSelect;
+export type NewMigakuImportRow = typeof migakuImports.$inferInsert;

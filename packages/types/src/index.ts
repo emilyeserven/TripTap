@@ -12,6 +12,7 @@ export * from "./drill-session.js";
 export * from "./grammar-note.js";
 export * from "./lesson.js";
 export * from "./listening-session.js";
+export * from "./migaku-import.js";
 export * from "./my-sentence.js";
 export * from "./tutor.js";
 export * from "./practice-sentence.js";
@@ -91,6 +92,10 @@ export interface Sentence {
   terms: SentenceTermRef[] | null;
   /** The capture this sentence was mined from, or null. */
   captureId: string | null;
+  /** True when an audio clip is stored for this sentence (fetch from `/api/sentences/:id/audio`). */
+  hasAudio: boolean;
+  /** True when an image is stored for this sentence (fetch from `/api/sentences/:id/image`). */
+  hasImage: boolean;
   /** ISO-8601 timestamp of when the sentence was added. */
   createdAt: string;
 }
@@ -128,6 +133,10 @@ export interface Vocab {
   notes: string | null;
   /** The capture this vocab was mined from, or null. */
   captureId: string | null;
+  /** True when an audio clip is stored for this vocab item (fetch from `/api/vocab/:id/audio`). */
+  hasAudio: boolean;
+  /** True when an image is stored for this vocab item (fetch from `/api/vocab/:id/image`). */
+  hasImage: boolean;
   createdAt: string;
 }
 
