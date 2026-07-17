@@ -34,7 +34,7 @@ const TERM_GROUPS: { category: SentenceTermCategory;
   },
   {
     category: "resource",
-    label: "Textbooks & Worksheets",
+    label: "Resources",
   },
 ];
 

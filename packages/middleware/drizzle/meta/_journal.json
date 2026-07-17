@@ -274,6 +274,13 @@
       "when": 1784213994798,
       "tag": "0038_heavy_pretty_boy",
       "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "7",
+      "when": 1784295917354,
+      "tag": "0039_fresh_masque",
+      "breakpoints": true
     }
   ]
 }

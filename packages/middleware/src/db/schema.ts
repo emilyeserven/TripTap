@@ -6,7 +6,10 @@ import type {
   DrillReason,
   DrillSubcategory,
   FuriToken,
+  GrammarConstruction,
   GrammarExample,
+  GrammarRelation,
+  GrammarResourceRef,
   LessonListeningNote,
   LessonWordNote,
   LearningArea,
@@ -468,6 +471,35 @@ export const tutors = pgTable("tutors", {
 
 export type TutorRow = typeof tutors.$inferSelect;
 export type NewTutorRow = typeof tutors.$inferInsert;
+
+/**
+ * `grammar_notes` — a rich, personal write-up of a single grammar *usage*, keyed to one tag from the
+ * Grammar Source (bookmarks "grammar" channel). `tag_id` is unique: one note per usage. Distinct usages
+ * of the same surface form (topic は vs. contrastive は) are separate rows sharing a `title` but with
+ * different `nuance`; the "other usages" cross-link is derived at read time from matching titles. The
+ * jsonb columns (`constructions`/`relations`/`resources`) are denormalized like the sentence `terms`
+ * column, and are coalesced to `[]` when mapped to the wire type.
+ */
+export const grammarNotes = pgTable("grammar_notes", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  tagId: text("tag_id").notNull().unique(),
+  tagName: text("tag_name").notNull(),
+  title: text("title").notNull(),
+  nuance: text("nuance"),
+  summary: text("summary"),
+  constructions: jsonb("constructions").$type<GrammarConstruction[]>(),
+  relations: jsonb("relations").$type<GrammarRelation[]>(),
+  resources: jsonb("resources").$type<GrammarResourceRef[]>(),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+});
+
+export type GrammarNoteRow = typeof grammarNotes.$inferSelect;
+export type NewGrammarNoteRow = typeof grammarNotes.$inferInsert;
 
 /**
  * `lessons` — a tutoring session: a `date`, a single associated `tutor` (`onDelete: "set null"` so a

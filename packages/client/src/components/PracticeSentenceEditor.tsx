@@ -748,7 +748,7 @@ export function PracticeSentenceEditor({
             />
             <TermPicker
               category="resource"
-              label="Textbook / Worksheet"
+              label="Resources"
               value={termsFor("resource")}
               onChange={n => setTermsFor("resource", n)}
             />

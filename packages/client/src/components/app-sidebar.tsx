@@ -32,6 +32,7 @@ import {
   SendIcon,
   SettingsIcon,
   SparklesIcon,
+  SpellCheckIcon,
   TargetIcon,
   TelescopeIcon,
   UploadIcon,
@@ -126,6 +127,11 @@ const libraryItems = [
 
 /** Tools that act on the bank (exports, etc.). */
 const actionItems = [
+  {
+    title: "Grammar",
+    to: "/grammar-notes",
+    icon: SpellCheckIcon,
+  },
   {
     title: "Reading & Writing",
     icon: BookOpenTextIcon,
@@ -506,13 +512,22 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 
         <NavSection label="Action">
           <SidebarMenu>
-            {actionItems.map(item => (
-              <NavNestedItem
-                key={item.title}
-                item={item}
-                pathname={pathname}
-              />
-            ))}
+            {actionItems.map(item =>
+              "children" in item
+                ? (
+                  <NavNestedItem
+                    key={item.title}
+                    item={item}
+                    pathname={pathname}
+                  />
+                )
+                : (
+                  <NavItem
+                    key={item.title}
+                    item={item}
+                    pathname={pathname}
+                  />
+                ))}
           </SidebarMenu>
         </NavSection>
 

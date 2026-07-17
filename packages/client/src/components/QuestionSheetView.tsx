@@ -37,7 +37,7 @@ export function QuestionSheetView({
               <span
                 className="inline-flex max-w-full min-w-0 items-center gap-1"
               >
-                <span className="shrink-0">Textbook / Worksheet:</span>
+                <span className="shrink-0">Resources:</span>
                 <Badge
                   variant="outline"
                   className="

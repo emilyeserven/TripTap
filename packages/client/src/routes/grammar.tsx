@@ -10,9 +10,11 @@ import { GrammarItemRow } from "@/components/ai-lesson/GrammarItemRow";
 import { Accordion } from "@/components/ui/accordion";
 import { Combobox } from "@/components/ui/combobox";
 import { useAiLessonContent } from "@/hooks/useAiLessons";
+import { useGrammarNotes } from "@/hooks/useGrammarNotes";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useSentences } from "@/hooks/useSentences";
 import { dedupeGrammarTags, sentencesByGrammarTagId } from "@/lib/grammar-links";
+import { notesByTagId } from "@/lib/grammar-notes";
 
 export const Route = createFileRoute("/grammar")({
   component: GrammarPage,
@@ -26,8 +28,32 @@ function GrammarPage() {
   const {
     data: manualSentences,
   } = useSentences();
+  const {
+    data: grammarNotes,
+  } = useGrammarNotes();
   const [aiLesson, setAiLesson] = useState("all");
   const [grammarTag, setGrammarTag] = useState("all");
+
+  // A grammar item's tags → an existing note to open, or the first tag to start one from.
+  const noteByTag = useMemo(() => notesByTagId(grammarNotes ?? []), [grammarNotes]);
+  const noteLinkFor = (terms: { id: string;
+    name: string; }[]) => {
+    for (const t of terms) {
+      const existing = noteByTag.get(t.id);
+      if (existing) return {
+        noteId: existing.id,
+      };
+    }
+    const first = terms[0];
+    return first
+      ? {
+        createTag: {
+          id: first.id,
+          name: first.name,
+        },
+      }
+      : null;
+  };
 
   const items = useMemo(() => data?.grammar ?? [], [data]);
   const aiLessons = useMemo(() => uniqueAiLessons(items), [items]);
@@ -109,6 +135,7 @@ function GrammarPage() {
             }}
             onTagClick={setGrammarTag}
             linkedSentences={linkedFor((g.grammarTerms ?? []).map(t => t.id))}
+            noteLink={noteLinkFor(g.grammarTerms ?? [])}
           />
         ))}
       </Accordion>
