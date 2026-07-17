@@ -3,100 +3,27 @@ import type {
   BookmarkResource,
   BookmarksSource,
   BookmarksTaxonomy,
-  BookmarkSection,
   SentenceTermCategory,
   TagTermOption,
 } from "@sentence-bank/types";
-import { getBookmarksSettings } from "@/services/settings";
-import { BookmarksNotConfiguredError, BookmarksUnavailableError } from "@/services/bookmarks/errors";
-import { fetchBookmarksImage, fetchBookmarksJson } from "@/services/bookmarks/util";
+
 import type { BookmarksImage } from "@/services/bookmarks/util";
 
+import { apiUrl, resolveBookmarksConfig } from "@/services/bookmarks/config";
+import { BookmarksNotConfiguredError } from "@/services/bookmarks/errors";
+import {
+  createdOption,
+  dedupeBookmarksByTitle,
+  isRecord,
+  toBookmarkRecord,
+  toBookmarkResource,
+  toOptions,
+  toTaxonomy,
+} from "@/services/bookmarks/mappers";
+import { fetchBookmarksImage, fetchBookmarksJson } from "@/services/bookmarks/util";
+
 export { BookmarksNotConfiguredError, BookmarksUnavailableError } from "@/services/bookmarks/errors";
-
-/** Fallback base URL for the bookmarks API when neither the DB nor env configures one. */
-const DEFAULT_BOOKMARKS_URL = "https://eserve-raspi.seahorse-butterfly.ts.net";
-
-interface BookmarksConfig {
-  baseUrl: string;
-  /** The configured source per tagging channel; any may be null when that channel is unconfigured. */
-  sources: Record<SentenceTermCategory, BookmarksSource | null>;
-}
-
-/**
- * Resolve the effective bookmarks configuration for one request. The endpoint URL comes from the DB
- * Settings (entered on the Settings page) and takes precedence over `BOOKMARKS_API_URL`, then a
- * hardcoded default. The DB lookup is best-effort so this keeps working (and unit tests run) without
- * a database.
- */
-async function resolveBookmarksConfig(): Promise<BookmarksConfig> {
-  let dbEndpoint: string | null = null;
-  const sources: Record<SentenceTermCategory, BookmarksSource | null> = {
-    vocabulary: null,
-    grammar: null,
-    general: null,
-    resource: null,
-    listening: null,
-  };
-  try {
-    const settings = await getBookmarksSettings();
-    dbEndpoint = settings.endpointUrl;
-    sources.vocabulary = settings.source;
-    sources.grammar = settings.grammarSource;
-    sources.general = settings.generalSource;
-    sources.resource = settings.resourceSource;
-    sources.listening = settings.listeningSource;
-  }
-  catch {
-    // Database unavailable — fall back to environment/default.
-  }
-  const baseUrl = dbEndpoint || process.env.BOOKMARKS_API_URL || DEFAULT_BOOKMARKS_URL;
-  if (!baseUrl) throw new BookmarksNotConfiguredError();
-  return {
-    baseUrl,
-    sources,
-  };
-}
-
-/** Join a configured base URL with an `/api/...` path, tolerating a trailing slash or `/api` suffix. */
-function apiUrl(baseUrl: string, path: string): string {
-  const trimmed = baseUrl.replace(/\/+$/, "").replace(/\/api$/, "");
-  return `${trimmed}/api${path}`;
-}
-
-/** Pull the fields we depend on from an upstream tag/term object, ignoring the rest. */
-function toOption(raw: unknown): TagTermOption | null {
-  if (!raw || typeof raw !== "object") return null;
-  const o = raw as Record<string, unknown>;
-  if (typeof o.id !== "string" || typeof o.name !== "string") return null;
-  return {
-    id: o.id,
-    name: o.name,
-    parentId: typeof o.parentId === "string" ? o.parentId : null,
-    slug: typeof o.slug === "string" ? o.slug : null,
-    description: typeof o.description === "string" ? o.description : null,
-  };
-}
-
-function toOptions(raw: unknown): TagTermOption[] {
-  return Array.isArray(raw) ? raw.map(toOption).filter((o): o is TagTermOption => o !== null) : [];
-}
-
-/** Pull the fields we depend on from an upstream taxonomy object. */
-function toTaxonomy(raw: unknown): BookmarksTaxonomy | null {
-  if (!raw || typeof raw !== "object") return null;
-  const o = raw as Record<string, unknown>;
-  if (typeof o.id !== "string" || typeof o.name !== "string") return null;
-  return {
-    id: o.id,
-    name: o.name,
-    slug: typeof o.slug === "string" ? o.slug : "",
-    hierarchical: Boolean(o.hierarchical),
-    singleValue: Boolean(o.singleValue),
-    icon: typeof o.icon === "string" ? o.icon : null,
-    termCount: typeof o.termCount === "number" ? o.termCount : 0,
-  };
-}
+export { toBookmarkResource } from "@/services/bookmarks/mappers";
 
 /** All flat tags from the bookmarks app. */
 export async function fetchTags(): Promise<TagTermOption[]> {
@@ -151,60 +78,6 @@ export async function fetchVocabulary(
   return tags.filter(t => t.parentId === source.id);
 }
 
-/**
- * Recursively flatten a bookmark's `sectionsValues[].sections[]` tree into the timestamp sections we
- * surface. Only entries with `type === "timestamp"` and both a start and end value are kept.
- */
-function flattenTimestampSections(raw: unknown): BookmarkSection[] {
-  const out: BookmarkSection[] = [];
-  const walk = (sections: unknown): void => {
-    if (!Array.isArray(sections)) return;
-    for (const s of sections) {
-      if (!s || typeof s !== "object") continue;
-      const o = s as Record<string, unknown>;
-      if (
-        o.type === "timestamp"
-        && typeof o.startValue === "string"
-        && o.startValue !== ""
-        && typeof o.endValue === "string"
-        && o.endValue !== ""
-      ) {
-        out.push({
-          id: typeof o.id === "string" ? o.id : `${out.length}`,
-          label: typeof o.name === "string" ? o.name : null,
-          startValue: o.startValue,
-          endValue: o.endValue,
-        });
-      }
-      if (Array.isArray(o.children)) walk(o.children);
-    }
-  };
-  if (Array.isArray(raw)) {
-    for (const group of raw) {
-      if (group && typeof group === "object") walk((group as Record<string, unknown>).sections);
-    }
-  }
-  return out;
-}
-
-/** Pull the fields we depend on from an upstream bookmark record, optionally flattening its sections. */
-function toBookmarkRecord(raw: unknown, includeSections: boolean): BookmarkRecord | null {
-  if (!raw || typeof raw !== "object") return null;
-  const o = raw as Record<string, unknown>;
-  if (typeof o.id !== "string" || typeof o.title !== "string") return null;
-  return {
-    id: o.id,
-    title: o.title,
-    url: typeof o.url === "string" ? o.url : null,
-    sections: includeSections ? flattenTimestampSections(o.sectionsValues) : [],
-  };
-}
-
-/** True when a value is a non-null object — i.e. a readable upstream bookmark/record. */
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return Boolean(value) && typeof value === "object";
-}
-
 /** Raw upstream bookmark objects tagged with the given tag id, using a caller-resolved base URL. */
 async function fetchRawBookmarksByTag(baseUrl: string, tagId: string): Promise<Record<string, unknown>[]> {
   const raw = await fetchBookmarksJson<unknown>(
@@ -240,15 +113,6 @@ async function fetchTaxonomyBookmarkAssignments(
     }
   }
   return out;
-}
-
-/** Dedupe bookmark records by id (first occurrence wins) and sort by title. */
-function dedupeBookmarksByTitle(records: BookmarkRecord[]): BookmarkRecord[] {
-  const byId = new Map<string, BookmarkRecord>();
-  for (const record of records) {
-    if (!byId.has(record.id)) byId.set(record.id, record);
-  }
-  return [...byId.values()].sort((a, b) => a.title.localeCompare(b.title));
 }
 
 /**
@@ -335,67 +199,6 @@ export async function getBookmarkImage(
   return fetchBookmarksImage(apiUrl(baseUrl, path) + query);
 }
 
-/**
- * Widen one upstream bookmark into a {@link BookmarkResource} for the "Find a Resource" browser: pull its
- * `website`, its runtime (the `numberValues` entry for the resolved "Runtime" property, in seconds), and
- * its media-type name. Pure — the runtime property id is resolved once by the caller. Null when unreadable.
- */
-export function toBookmarkResource(raw: unknown, runtimePropId: string | null): BookmarkResource | null {
-  if (!raw || typeof raw !== "object") return null;
-  const o = raw as Record<string, unknown>;
-  if (typeof o.id !== "string" || typeof o.title !== "string") return null;
-
-  let website: BookmarkResource["website"] = null;
-  if (o.website && typeof o.website === "object") {
-    const w = o.website as Record<string, unknown>;
-    const domain = typeof w.domain === "string" ? w.domain : null;
-    const siteName = typeof w.siteName === "string" ? w.siteName : null;
-    if (domain || siteName) {
-      website = {
-        domain: domain ?? siteName ?? "",
-        siteName: siteName ?? domain ?? "",
-      };
-    }
-  }
-
-  let runtimeSeconds: number | null = null;
-  if (runtimePropId && Array.isArray(o.numberValues)) {
-    for (const nv of o.numberValues) {
-      if (nv && typeof nv === "object") {
-        const n = nv as Record<string, unknown>;
-        if (n.propertyId === runtimePropId && typeof n.value === "number") {
-          runtimeSeconds = n.value;
-          break;
-        }
-      }
-    }
-  }
-
-  let mediaType: string | null = null;
-  if (o.mediaType && typeof o.mediaType === "object") {
-    const m = o.mediaType as Record<string, unknown>;
-    if (typeof m.name === "string") mediaType = m.name;
-  }
-
-  // The upstream `image.url` is a relative `/api/bookmarks/{id}/images/{imageId}` path; passed through
-  // verbatim it hits our own bookmarks-image proxy (same namespace), which forwards it to the host.
-  let imageUrl: string | null = null;
-  if (o.image && typeof o.image === "object") {
-    const img = o.image as Record<string, unknown>;
-    if (typeof img.url === "string" && img.url !== "") imageUrl = img.url;
-  }
-
-  return {
-    id: o.id,
-    title: o.title,
-    url: typeof o.url === "string" ? o.url : null,
-    website,
-    runtimeSeconds,
-    mediaType,
-    imageUrl,
-  };
-}
-
 /** Resolve the upstream "Runtime" custom-property id (by name, then by a duration number format). */
 async function resolveRuntimePropertyId(baseUrl: string): Promise<string | null> {
   const raw = await fetchBookmarksJson<unknown>(apiUrl(baseUrl, "/custom-properties"));
@@ -427,15 +230,6 @@ export async function listBookmarkResources(): Promise<BookmarkResource[]> {
     .map(r => toBookmarkResource(r, runtimePropId))
     .filter((r): r is BookmarkResource => r !== null)
     .sort((a, b) => a.title.localeCompare(b.title));
-}
-
-/** Normalize an upstream create response into a {@link TagTermOption}, or fail if it can't be read. */
-function createdOption(raw: unknown): TagTermOption {
-  const option = toOption(raw);
-  if (!option) {
-    throw new BookmarksUnavailableError("Bookmarks host returned an unexpected create response");
-  }
-  return option;
 }
 
 /** Create a taxonomy term, optionally nested under a parent term. Returns the created term. */
