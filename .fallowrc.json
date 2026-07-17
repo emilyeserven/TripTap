@@ -11,7 +11,7 @@
     "**/drizzle.config.ts",
     "scripts/*.mjs"
   ],
-  "ignorePatterns": ["**/*.gen.ts", "**/dist/**", ".claude/**"],
+  "ignorePatterns": ["**/*.gen.ts", "**/dist/**", ".claude/**", "references/**"],
   "ignoreDependencies": ["pg"],
   "rules": {
     "unused-files": "error",

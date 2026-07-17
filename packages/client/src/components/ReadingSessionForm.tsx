@@ -3,7 +3,6 @@ import type {
   ReadingSession,
   ReadingTranslationMode,
   WordNote,
-  WordNoteStatus,
 } from "@sentence-bank/types";
 
 import { useState } from "react";
@@ -17,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { WordNoteControls } from "@/components/WordNoteControls";
 import {
   useCreateReadingSession,
   useUpdateReadingSession,
@@ -394,42 +394,17 @@ export function ReadingSessionForm({
                       aria-label="Meaning"
                     />
                   </div>
-                  <div className="flex flex-wrap items-center gap-3">
-                    <div className="flex gap-1">
-                      {(["shaky", "unknown"] as WordNoteStatus[]).map(status => (
-                        <Button
-                          key={status}
-                          type="button"
-                          size="sm"
-                          variant={w.status === status ? "default" : "outline"}
-                          onClick={() => patchWord(w.id, {
-                            status,
-                          })}
-                        >
-                          {status === "shaky" ? "Shaky" : "Didn't know"}
-                        </Button>
-                      ))}
-                    </div>
-                    <label className="flex items-center gap-2 text-sm">
-                      <Checkbox
-                        checked={w.flashcard}
-                        onCheckedChange={v => patchWord(w.id, {
-                          flashcard: v === true,
-                        })}
-                      />
-                      Add to flashcards later
-                    </label>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="ml-auto text-destructive"
-                      onClick={() => removeWord(w.id)}
-                      aria-label="Delete word"
-                    >
-                      <Trash2 className="size-4" />
-                    </Button>
-                  </div>
+                  <WordNoteControls
+                    status={w.status}
+                    flashcard={w.flashcard}
+                    onStatusChange={status => patchWord(w.id, {
+                      status,
+                    })}
+                    onFlashcardChange={flashcard => patchWord(w.id, {
+                      flashcard,
+                    })}
+                    onDelete={() => removeWord(w.id)}
+                  />
                 </li>
               ))}
             </ul>

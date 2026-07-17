@@ -8,7 +8,7 @@ import { db } from "@/db";
 import { drillSessions, type DrillSessionRow } from "@/db/schema";
 
 /** Map a DB row to the shared `DrillSession` wire type. */
-export function toDrillSession(row: DrillSessionRow): DrillSession {
+function toDrillSession(row: DrillSessionRow): DrillSession {
   return {
     id: row.id,
     date: row.date,

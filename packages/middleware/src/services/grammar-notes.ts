@@ -16,7 +16,7 @@ export class GrammarNoteExistsError extends Error {
 }
 
 /** Map a DB row to the shared `GrammarNote` wire type (jsonb arrays coalesced to `[]`). */
-export function toGrammarNote(row: GrammarNoteRow): GrammarNote {
+function toGrammarNote(row: GrammarNoteRow): GrammarNote {
   return {
     id: row.id,
     tagId: row.tagId,

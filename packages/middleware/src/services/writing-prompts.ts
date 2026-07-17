@@ -9,7 +9,7 @@ import { db } from "@/db";
 import { writingPrompts, type WritingPromptRow } from "@/db/schema";
 
 /** Map a DB row to the shared `WritingPrompt` wire type. */
-export function toWritingPrompt(row: WritingPromptRow): WritingPrompt {
+function toWritingPrompt(row: WritingPromptRow): WritingPrompt {
   return {
     id: row.id,
     title: row.title ?? null,

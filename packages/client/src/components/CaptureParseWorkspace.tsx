@@ -9,7 +9,7 @@ import type {
 
 import { useMemo, useRef, useState } from "react";
 
-import { SourcePicker } from "./SourcePicker";
+import { SharedCaptureFields } from "./SharedCaptureFields";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -537,54 +537,19 @@ export function CaptureParseWorkspace({
           </div>
 
           {/* Shared values */}
-          <div
-            className="
-              grid gap-3
-              sm:grid-cols-2
-            "
-          >
-            <SourcePicker
-              value={sourceId}
-              onChange={setSourceId}
-            />
-            <label className="block text-sm font-medium text-slate-700">
-              Page / location (shared)
-              <input
-                className={fieldClass}
-                value={page}
-                onChange={e => setPage(e.target.value)}
-              />
-            </label>
-            <label className="block text-sm font-medium text-slate-700">
-              Language (shared)
-              <input
-                className={fieldClass}
-                value={language}
-                onChange={e => setLanguage(e.target.value)}
-              />
-            </label>
-            <label className="block text-sm font-medium text-slate-700">
-              Tags (shared)
-              <input
-                className={fieldClass}
-                value={tags}
-                onChange={e => setTags(e.target.value)}
-              />
-            </label>
-            <label
-              className="
-                block text-sm font-medium text-slate-700
-                sm:col-span-2
-              "
-            >
-              Notes (shared)
-              <input
-                className={fieldClass}
-                value={notes}
-                onChange={e => setNotes(e.target.value)}
-              />
-            </label>
-          </div>
+          <SharedCaptureFields
+            sourceId={sourceId}
+            page={page}
+            language={language}
+            tags={tags}
+            notes={notes}
+            languageLabel="Language (shared)"
+            onSourceIdChange={setSourceId}
+            onPageChange={setPage}
+            onLanguageChange={setLanguage}
+            onTagsChange={setTags}
+            onNotesChange={setNotes}
+          />
         </CardContent>
       </Card>
 

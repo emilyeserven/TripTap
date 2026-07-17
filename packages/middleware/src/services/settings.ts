@@ -16,19 +16,13 @@ import { settings } from "@/db/schema";
  * Settings keys for cloud OCR credentials. Kept in one place so the OCR config resolver and the
  * settings routes agree on the storage keys.
  */
-export const OCR_SECRET_KEYS = {
+const OCR_SECRET_KEYS = {
   ocrSpaceApiKey: "ocr.ocrSpace.apiKey",
   googleVisionApiKey: "ocr.googleVision.apiKey",
 } as const;
 
-/** Read a single setting value, or `null` when it is not stored. */
-export async function getSetting(key: string): Promise<string | null> {
-  const [row] = await db.select().from(settings).where(eq(settings.key, key));
-  return row?.value ?? null;
-}
-
 /** Read several settings at once, returning a `key → value` map (absent keys are omitted). */
-export async function getSettings(keys: string[]): Promise<Record<string, string>> {
+async function getSettings(keys: string[]): Promise<Record<string, string>> {
   if (keys.length === 0) return {};
   const rows = await db.select().from(settings).where(inArray(settings.key, keys));
   return Object.fromEntries(rows.map(r => [r.key, r.value]));
@@ -38,7 +32,7 @@ export async function getSettings(keys: string[]): Promise<Record<string, string
  * Upsert a setting. A `null` or empty value deletes the row, so "unset" and "stored empty string"
  * never diverge.
  */
-export async function setSetting(key: string, value: string | null): Promise<void> {
+async function setSetting(key: string, value: string | null): Promise<void> {
   if (value === null || value === "") {
     await db.delete(settings).where(eq(settings.key, key));
     return;
@@ -110,7 +104,7 @@ export async function updateOcrSettings(input: UpdateOcrSettingsInput): Promise<
  * Settings keys for the external bookmarks tag/taxonomy integration. The chosen source is stored as a
  * JSON-encoded {@link BookmarksSource}. Neither value is a secret.
  */
-export const BOOKMARKS_KEYS = {
+const BOOKMARKS_KEYS = {
   endpointUrl: "bookmarks.endpointUrl",
   source: "bookmarks.source",
   grammarSource: "bookmarks.grammarSource",
@@ -196,7 +190,7 @@ export async function updateBookmarksSettings(
  * Settings keys for the Japanese dictionary lookup integration. Neither value is a secret: the base URL
  * of the upstream (Jisho or a self-hosted Jotoba) and the chosen provider.
  */
-export const DICTIONARY_KEYS = {
+const DICTIONARY_KEYS = {
   endpointUrl: "dictionary.endpointUrl",
   provider: "dictionary.provider",
 } as const;

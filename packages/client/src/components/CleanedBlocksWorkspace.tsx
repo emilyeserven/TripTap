@@ -7,7 +7,7 @@ import type {
 
 import { useEffect, useMemo, useState } from "react";
 
-import { SourcePicker } from "./SourcePicker";
+import { SharedCaptureFields } from "./SharedCaptureFields";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -43,8 +43,6 @@ import {
   updateLineText,
 } from "@/lib/cleanedBlocks";
 
-const fieldClass
-  = "mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none";
 const inlineClass
   = "rounded-md border border-slate-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none";
 
@@ -649,54 +647,19 @@ export function CleanedBlocksWorkspace({
           </div>
 
           {/* Shared values */}
-          <div
-            className="
-              grid gap-3
-              sm:grid-cols-2
-            "
-          >
-            <SourcePicker
-              value={sourceId}
-              onChange={setSourceId}
-            />
-            <label className="block text-sm font-medium text-slate-700">
-              Page / location (shared)
-              <input
-                className={fieldClass}
-                value={page}
-                onChange={e => setPage(e.target.value)}
-              />
-            </label>
-            <label className="block text-sm font-medium text-slate-700">
-              Language fallback (shared)
-              <input
-                className={fieldClass}
-                value={language}
-                onChange={e => setLanguage(e.target.value)}
-              />
-            </label>
-            <label className="block text-sm font-medium text-slate-700">
-              Tags (shared)
-              <input
-                className={fieldClass}
-                value={tags}
-                onChange={e => setTags(e.target.value)}
-              />
-            </label>
-            <label
-              className="
-                block text-sm font-medium text-slate-700
-                sm:col-span-2
-              "
-            >
-              Notes (shared)
-              <input
-                className={fieldClass}
-                value={notes}
-                onChange={e => setNotes(e.target.value)}
-              />
-            </label>
-          </div>
+          <SharedCaptureFields
+            sourceId={sourceId}
+            page={page}
+            language={language}
+            tags={tags}
+            notes={notes}
+            languageLabel="Language fallback (shared)"
+            onSourceIdChange={setSourceId}
+            onPageChange={setPage}
+            onLanguageChange={setLanguage}
+            onTagsChange={setTags}
+            onNotesChange={setNotes}
+          />
 
           <div className="flex flex-wrap items-center gap-2">
             <Button

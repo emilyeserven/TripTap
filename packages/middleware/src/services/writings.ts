@@ -8,7 +8,7 @@ import { db } from "@/db";
 import { writings, type WritingRow } from "@/db/schema";
 
 /** Map a DB row to the shared `Writing` wire type. */
-export function toWriting(row: WritingRow): Writing {
+function toWriting(row: WritingRow): Writing {
   return {
     id: row.id,
     text: row.text,

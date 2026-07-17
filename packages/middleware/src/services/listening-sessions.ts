@@ -8,7 +8,7 @@ import { db } from "@/db";
 import { listeningSessions, type ListeningSessionRow } from "@/db/schema";
 
 /** Map a DB row to the shared `ListeningSession` wire type. */
-export function toListeningSession(row: ListeningSessionRow): ListeningSession {
+function toListeningSession(row: ListeningSessionRow): ListeningSession {
   return {
     id: row.id,
     title: row.title,

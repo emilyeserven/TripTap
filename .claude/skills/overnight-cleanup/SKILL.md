@@ -91,6 +91,19 @@ The CI gate is the **Fallow Audit** workflow (`.github/workflows/fallow-audit.ym
 baseline file in this repo — the gate is the live `--fail-on-issues` run, so keep the working report
 clean rather than reconciling against a snapshot.
 
+Two facts about that gate, learned the hard way (verified 2026-07):
+
+- **Text-mode `--fail-on-issues` exits 1 on far more than dead-code errors** — it also fails on
+  warn-level unused-exports (including the intentional `components/ui/**` ones), on the *presence*
+  of clone groups (even under the 6.5 % budget), and on every function over the complexity caps
+  (~100 in this codebase). A fully "green" strict gate is therefore not reachable in one night —
+  don't chase it.
+- **The workflow pipes fallow through `tee` without `pipefail`** (`run:` steps default to
+  `bash -e` only), so the step's exit code is `tee`'s, and the audit is effectively advisory —
+  main's Fallow Audit shows green even while local `--fail-on-issues` exits 1. Do **not** "fix" the
+  workflow during a sweep: that would instantly turn CI red for every open PR. It's a decision for
+  the human; flag it in the final report instead.
+
 ---
 
 ## Safety rules (read before every phase)

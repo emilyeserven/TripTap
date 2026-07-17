@@ -57,16 +57,6 @@ export function useBookmarksGrammarVocabulary() {
   return useBookmarksVocabulary("grammar");
 }
 
-/** The General channel's vocabulary. */
-export function useBookmarksGeneralVocabulary() {
-  return useBookmarksVocabulary("general");
-}
-
-/** The Listening channel's vocabulary (the child tags used to filter listening bookmarks). */
-export function useBookmarksListeningVocabulary() {
-  return useBookmarksVocabulary("listening");
-}
-
 /** All bookmarks across one channel's configured source. */
 export function useBookmarkRecords(category: SentenceTermCategory) {
   return useQuery({

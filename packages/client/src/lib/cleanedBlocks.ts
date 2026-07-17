@@ -8,6 +8,8 @@ import type {
   CreateVocabInput,
 } from "@sentence-bank/types";
 
+import { newId } from "./id";
+
 /**
  * Pure logic for the Cleaned Blocks workbench: seeding the editable structure from a capture,
  * deriving sentence/vocab create-inputs from the grouped lines, and the immutable reducer helpers
@@ -29,17 +31,17 @@ export const LANG_NAMES: Record<string, string> = {
 };
 
 /** Language codes whose text runs together without inter-word spaces when lines are rejoined. */
-export const CJK_NO_SPACE = new Set(["ja", "zh", "zh-Hans", "zh-Hant"]);
+const CJK_NO_SPACE = new Set(["ja", "zh", "zh-Hans", "zh-Hant"]);
 
 /**
  * Languages the OCR occasionally mis-fires on for Japanese material (Chinese, Vietnamese, Thai,
  * Korean). Any of these present at seed time is added to `ignoredLangs` so those lines are excluded
  * by default; the user can re-include them from the language filter bar.
  */
-export const DEFAULT_IGNORED_LANGS = ["zh", "zh-Hans", "zh-Hant", "vi", "th", "ko"];
+const DEFAULT_IGNORED_LANGS = ["zh", "zh-Hans", "zh-Hant", "vi", "th", "ko"];
 
 /** True when the text is entirely kana (hira/kata, incl. the prolonged mark) — i.e. a reading. */
-export function isPureKana(text: string): boolean {
+function isPureKana(text: string): boolean {
   const stripped = text.replace(/\s/g, "");
   if (!stripped) return false;
   // Hiragana + katakana (incl. ー), katakana phonetic extensions, and halfwidth katakana.
@@ -61,7 +63,7 @@ const CJK_LANG_CODES = new Set(["ja", "zh", "zh-Hans", "zh-Hant", "ko"]);
  * Split text into maximal runs of CJK vs non-CJK, dropping the whitespace between runs. A block like
  * `"heel 脚后銀"` → `[{ text: "heel", cjk: false }, { text: "脚后銀", cjk: true }]`.
  */
-export function segmentByScript(text: string): { text: string;
+function segmentByScript(text: string): { text: string;
   cjk: boolean; }[] {
   const re = new RegExp(`[${CJK_CLASS}]+|[^${CJK_CLASS}\\s]+`, "g");
   return [...text.matchAll(re)].map(m => ({
@@ -80,7 +82,7 @@ export function hasScriptBoundary(text: string): boolean {
  * parent line's code when it's already a CJK language, else defaults to Japanese; anything else is
  * treated as English. The user can correct it with the per-line language selector.
  */
-export function guessLang(segmentText: string, cjk: boolean, parentLang: string): string {
+function guessLang(segmentText: string, cjk: boolean, parentLang: string): string {
   if (isPureKana(segmentText)) return "ja";
   if (cjk) return CJK_LANG_CODES.has(parentLang) ? parentLang : "ja";
   return "en";
@@ -89,25 +91,6 @@ export function guessLang(segmentText: string, cjk: boolean, parentLang: string)
 /** Resolve a line's language code to a display name, falling back to the batch default. */
 export function langNameFor(code: string, fallback: string): string {
   return LANG_NAMES[code] ?? fallback;
-}
-
-/**
- * Generate a stable id for a line/group. `crypto.randomUUID` only exists in a secure context
- * (HTTPS/localhost), so it's undefined when the app is served over plain HTTP — fall back to
- * `getRandomValues`, then `Math.random`. These ids are internal keys, not security-sensitive.
- */
-function newId(): string {
-  const c = globalThis.crypto;
-  if (c?.randomUUID) return c.randomUUID();
-  if (c?.getRandomValues) {
-    const bytes = c.getRandomValues(new Uint8Array(16));
-    // RFC-4122 v4 layout.
-    bytes[6] = (bytes[6] & 0x0f) | 0x40;
-    bytes[8] = (bytes[8] & 0x3f) | 0x80;
-    const hex = [...bytes].map(b => b.toString(16).padStart(2, "0"));
-    return `${hex.slice(0, 4).join("")}-${hex.slice(4, 6).join("")}-${hex.slice(6, 8).join("")}-${hex.slice(8, 10).join("")}-${hex.slice(10, 16).join("")}`;
-  }
-  return `id-${Date.now().toString(16)}-${Math.random().toString(16).slice(2, 10)}`;
 }
 
 /**

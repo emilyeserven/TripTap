@@ -2,8 +2,8 @@ import type { Sentence } from "@sentence-bank/types";
 import type { ReactElement } from "react";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 
 import { SentenceCard } from "./SentenceCard";
 
@@ -99,5 +99,42 @@ describe("SentenceCard", () => {
     expect(screen.getByText("毎朝")).toBeInTheDocument();
     expect(screen.getByText("ます-form")).toBeInTheDocument();
     expect(screen.getByText("丁寧")).toBeInTheDocument();
+  });
+
+  it("reveals the hidden translation on click", () => {
+    renderCard(
+      <SentenceCard
+        sentence={sentence}
+        showTranslation={false}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", {
+      name: "Reveal translation",
+    }));
+    expect(screen.getByText("I drink coffee every morning.")).toBeInTheDocument();
+  });
+
+  it("makes grammar badges clickable filters when onGrammarTagClick is provided", () => {
+    const onGrammarTagClick = vi.fn();
+    renderCard(
+      <SentenceCard
+        sentence={{
+          ...sentence,
+          terms: [
+            {
+              id: "g1",
+              name: "ます-form",
+              kind: "taxonomy",
+              sourceId: "s2",
+              sourceLabel: "Grammar",
+              category: "grammar",
+            },
+          ],
+        }}
+        onGrammarTagClick={onGrammarTagClick}
+      />,
+    );
+    fireEvent.click(screen.getByTitle("Filter by ます-form"));
+    expect(onGrammarTagClick).toHaveBeenCalledWith("g1");
   });
 });

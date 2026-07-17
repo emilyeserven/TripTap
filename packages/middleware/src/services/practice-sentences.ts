@@ -8,7 +8,7 @@ import { db } from "@/db";
 import { practiceSentences, type PracticeSentenceRow } from "@/db/schema";
 
 /** Map a DB row to the shared `PracticeSentence` wire type. */
-export function toPracticeSentence(row: PracticeSentenceRow): PracticeSentence {
+function toPracticeSentence(row: PracticeSentenceRow): PracticeSentence {
   return {
     id: row.id,
     text: row.text,

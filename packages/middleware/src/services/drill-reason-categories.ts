@@ -8,7 +8,7 @@ import { db } from "@/db";
 import { drillReasonCategories, type DrillReasonCategoryRow } from "@/db/schema";
 
 /** Map a DB row to the shared `DrillReasonCategory` wire type. */
-export function toDrillReasonCategory(row: DrillReasonCategoryRow): DrillReasonCategory {
+function toDrillReasonCategory(row: DrillReasonCategoryRow): DrillReasonCategory {
   return {
     id: row.id,
     name: row.name,

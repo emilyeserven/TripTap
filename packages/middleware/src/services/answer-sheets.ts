@@ -31,7 +31,7 @@ function normalizeEntry(e: AnswerSheetEntry): AnswerSheetEntry {
 }
 
 /** Map a DB row to the shared `AnswerSheet` wire type. */
-export function toAnswerSheet(row: AnswerSheetRow): AnswerSheet {
+function toAnswerSheet(row: AnswerSheetRow): AnswerSheet {
   return {
     id: row.id,
     questionSheetId: row.questionSheetId,

@@ -5,11 +5,8 @@ import { useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 
-import { DifficultySelect } from "@/components/DifficultySelect";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { WritingPromptFields } from "@/components/WritingPromptFields";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import {
   useDeleteWritingPrompt,
@@ -113,49 +110,18 @@ function EditWritingPromptForm({
         </p>
       </div>
 
-      <div className="space-y-4">
-        <div className="space-y-1.5">
-          <Label className="text-sm">Japanese title</Label>
-          <Input
-            value={title}
-            onChange={e => setTitle(e.target.value)}
-            placeholder="日本語のタイトル（任意）…"
-          />
-        </div>
-        <div className="space-y-1.5">
-          <Label className="text-sm">English title</Label>
-          <Input
-            value={titleEn}
-            onChange={e => setTitleEn(e.target.value)}
-            placeholder="English title (optional)…"
-          />
-        </div>
-        <div className="space-y-1.5">
-          <Label className="text-sm">Japanese</Label>
-          <Textarea
-            value={text}
-            onChange={e => setText(e.target.value)}
-            placeholder="日本語のプロンプト…"
-            rows={3}
-          />
-        </div>
-        <div className="space-y-1.5">
-          <Label className="text-sm">English</Label>
-          <Textarea
-            value={textEn}
-            onChange={e => setTextEn(e.target.value)}
-            placeholder="English version (optional)…"
-            rows={3}
-          />
-        </div>
-        <div className="space-y-1.5">
-          <Label className="text-sm">Difficulty</Label>
-          <DifficultySelect
-            value={difficulty}
-            onChange={setDifficulty}
-          />
-        </div>
-      </div>
+      <WritingPromptFields
+        title={title}
+        titleEn={titleEn}
+        text={text}
+        textEn={textEn}
+        difficulty={difficulty}
+        onTitleChange={setTitle}
+        onTitleEnChange={setTitleEn}
+        onTextChange={setText}
+        onTextEnChange={setTextEn}
+        onDifficultyChange={setDifficulty}
+      />
 
       <div className="flex items-center justify-between gap-2">
         <Button

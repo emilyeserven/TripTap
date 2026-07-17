@@ -51,7 +51,7 @@ function resolveConfig(): MediaConfig | null {
 }
 
 /** True when media storage is configured (used by routes to 503 early with a clear message). */
-export function isMediaConfigured(): boolean {
+function isMediaConfigured(): boolean {
   return resolveConfig() !== null;
 }
 
