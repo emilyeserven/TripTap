@@ -10,9 +10,9 @@ import { FuriganaToggle } from "@/components/ai-lesson/FuriganaToggle";
 import { matches } from "@/components/ai-lesson/search";
 import { SourceCard } from "@/components/ai-lesson/SourceCard";
 import { SentenceCard } from "@/components/SentenceCard";
+import { SentenceFilters } from "@/components/SentenceFilters";
 import { SentenceForm } from "@/components/SentenceForm";
 import { Button } from "@/components/ui/button";
-import { Combobox } from "@/components/ui/combobox";
 import {
   Dialog,
   DialogContent,
@@ -214,52 +214,38 @@ function SentencesPage() {
         aria-label="Search sentences"
       />
 
-      <div className="flex flex-wrap items-center gap-2">
-        {aiLessonOptions.length > 1
-          ? (
-            <Combobox
-              value={filter}
-              onChange={setFilter}
-              options={aiLessonOptions}
-              ariaLabel="Filter by AI Lesson"
-              searchPlaceholder="Search AI Lessons…"
-              className="w-52"
-            />
-          )
-          : null}
-        <Combobox
-          value={sourceFilter}
-          onChange={setSourceFilter}
-          options={sourceOptions}
-          ariaLabel="Filter by source"
-          searchPlaceholder="Search sources…"
-          className="w-52"
-        />
-        {grammarTagOptions.length > 1
-          ? (
-            <Combobox
-              value={grammarTag}
-              onChange={setGrammarTag}
-              options={grammarTagOptions}
-              ariaLabel="Filter by grammar tag"
-              searchPlaceholder="Search grammar tags…"
-              className="w-52"
-            />
-          )
-          : null}
-        {deckOptions.length > 1
-          ? (
-            <Combobox
-              value={deckFilter}
-              onChange={setDeckFilter}
-              options={deckOptions}
-              ariaLabel="Filter by Migaku deck"
-              searchPlaceholder="Search decks…"
-              className="w-52"
-            />
-          )
-          : null}
-      </div>
+      <SentenceFilters
+        sections={[
+          {
+            key: "aiLesson",
+            label: "AI Lesson",
+            value: filter,
+            onChange: setFilter,
+            options: aiLessonOptions,
+          },
+          {
+            key: "source",
+            label: "Source",
+            value: sourceFilter,
+            onChange: setSourceFilter,
+            options: sourceOptions,
+          },
+          {
+            key: "grammar",
+            label: "Grammar tag",
+            value: grammarTag,
+            onChange: setGrammarTag,
+            options: grammarTagOptions,
+          },
+          {
+            key: "deck",
+            label: "Migaku deck",
+            value: deckFilter,
+            onChange: setDeckFilter,
+            options: deckOptions,
+          },
+        ]}
+      />
 
       {error ? <p className="text-destructive">{error.message}</p> : null}
       {isLoading ? <p className="text-muted-foreground">Loading…</p> : null}

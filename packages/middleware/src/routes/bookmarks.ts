@@ -39,7 +39,7 @@ const taxonomyParams = {
   },
 } as const;
 
-const CATEGORY_ENUM = ["vocabulary", "grammar", "general", "resource", "listening"] as const;
+const CATEGORY_ENUM = ["vocabulary", "grammar", "general", "resource"] as const;
 
 const vocabularyQuery = {
   type: "object",

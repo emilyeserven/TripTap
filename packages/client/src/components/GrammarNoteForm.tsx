@@ -194,14 +194,17 @@ export function GrammarNoteForm({
 
       {/* Summary */}
       <div className="space-y-1.5">
-        <Label htmlFor="grammar-summary">Summary (optional)</Label>
+        <Label htmlFor="grammar-summary">Summary (optional, Markdown)</Label>
         <Textarea
           id="grammar-summary"
           value={summary}
           onChange={e => setSummary(e.target.value)}
-          placeholder="An overview of this grammar point."
+          placeholder="An overview of this grammar point. Markdown supported."
           rows={4}
         />
+        <p className="text-xs text-muted-foreground">
+          Supports Markdown — headings, lists, bold/italic, links, and code.
+        </p>
       </div>
 
       <GrammarConstructionsEditor

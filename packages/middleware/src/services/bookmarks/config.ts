@@ -25,7 +25,6 @@ export async function resolveBookmarksConfig(): Promise<BookmarksConfig> {
     grammar: null,
     general: null,
     resource: null,
-    listening: null,
   };
   try {
     const settings = await getBookmarksSettings();
@@ -34,7 +33,6 @@ export async function resolveBookmarksConfig(): Promise<BookmarksConfig> {
     sources.grammar = settings.grammarSource;
     sources.general = settings.generalSource;
     sources.resource = settings.resourceSource;
-    sources.listening = settings.listeningSource;
   }
   catch {
     // Database unavailable — fall back to environment/default.

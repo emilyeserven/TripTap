@@ -7,6 +7,7 @@ import { Plus } from "lucide-react";
 import { toast } from "sonner";
 
 import { AiLessonBadge } from "@/components/ai-lesson/AiLessonBadge";
+import { Markdown } from "@/components/Markdown";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAiLessonContent } from "@/hooks/useAiLessons";
@@ -108,7 +109,7 @@ export function GrammarNoteView({
       </div>
 
       {note.summary
-        ? <p className="text-sm whitespace-pre-wrap">{note.summary}</p>
+        ? <Markdown content={note.summary} />
         : null}
 
       {note.constructions.length > 0

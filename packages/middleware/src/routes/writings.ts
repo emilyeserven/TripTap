@@ -44,7 +44,7 @@ const termsSchema = {
       },
       category: {
         type: "string",
-        enum: ["vocabulary", "grammar", "general", "resource", "listening"],
+        enum: ["vocabulary", "grammar", "general", "resource"],
       },
     },
   },

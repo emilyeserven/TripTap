@@ -26,7 +26,7 @@ import { Label } from "@/components/ui/label";
 import { useBookmarksTags, useBookmarksTaxonomies, useBookmarksTerms } from "@/hooks/useBookmarks";
 import { useBookmarksSettings, useUpdateBookmarksSettings } from "@/hooks/useSettings";
 
-/** The five tagging channels, each backed by its own configured source. */
+/** The tagging channels, each backed by its own configured source. */
 const CHANNELS: { category: SentenceTermCategory;
   title: string;
   hint: string; }[] = [
@@ -48,12 +48,7 @@ const CHANNELS: { category: SentenceTermCategory;
   {
     category: "resource",
     title: "Resources source",
-    hint: "Videos, textbook pages, worksheets, and other resources.",
-  },
-  {
-    category: "listening",
-    title: "Listening source",
-    hint: "Bookmarks to shadow — the tag whose child tags group your listening material.",
+    hint: "Videos, textbook pages, worksheets, and other resources. Items with a runtime power Find a Resource.",
   },
 ];
 
@@ -275,9 +270,6 @@ export function BookmarksTagsCard() {
     resource: {
       ...EMPTY_DRAFT,
     },
-    listening: {
-      ...EMPTY_DRAFT,
-    },
   });
   const [saved, setSaved] = useState(false);
 
@@ -292,7 +284,6 @@ export function BookmarksTagsCard() {
       grammar: draftFromSource(settings.data.grammarSource),
       general: draftFromSource(settings.data.generalSource),
       resource: draftFromSource(settings.data.resourceSource),
-      listening: draftFromSource(settings.data.listeningSource),
     });
   }, [settings.data]);
 
@@ -308,7 +299,6 @@ export function BookmarksTagsCard() {
       grammarSource: draftToSource(drafts.grammar),
       generalSource: draftToSource(drafts.general),
       resourceSource: draftToSource(drafts.resource),
-      listeningSource: draftToSource(drafts.listening),
     });
     flashSaved();
   }
@@ -318,7 +308,6 @@ export function BookmarksTagsCard() {
     grammar: settings.data?.grammarSource,
     general: settings.data?.generalSource,
     resource: settings.data?.resourceSource,
-    listening: settings.data?.listeningSource,
   };
 
   return (

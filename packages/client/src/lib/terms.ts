@@ -19,15 +19,16 @@ export const TERM_CATEGORIES: { category: SentenceTermCategory;
     category: "resource",
     label: "Resources",
   },
-  {
-    category: "listening",
-    label: "Listening",
-  },
 ];
 
-/** A term's channel, defaulting rows created before channels existed to "vocabulary". */
+/**
+ * A term's channel. Rows created before channels existed default to "vocabulary"; a term tagged with a
+ * retired channel (e.g. the old "listening") is folded into "resource" so it still renders.
+ */
 export function termCategory(term: SentenceTermRef): SentenceTermCategory {
-  return (term.category as SentenceTermCategory | undefined) ?? "vocabulary";
+  const raw = term.category as string | undefined;
+  if (raw === "vocabulary" || raw === "grammar" || raw === "general" || raw === "resource") return raw;
+  return raw ? "resource" : "vocabulary";
 }
 
 /** True when two term lists differ (order-insensitive, by id). */
@@ -46,7 +47,6 @@ export function groupTermsByCategory(
     grammar: [],
     general: [],
     resource: [],
-    listening: [],
   };
   for (const term of terms) groups[termCategory(term)].push(term);
   return groups;

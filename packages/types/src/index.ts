@@ -96,6 +96,8 @@ export interface Sentence {
   hasAudio: boolean;
   /** True when an image is stored for this sentence (fetch from `/api/sentences/:id/image`). */
   hasImage: boolean;
+  /** How many vocab items are linked to this sentence (drives the "Break it down" affordance). */
+  vocabCount: number;
   /** ISO-8601 timestamp of when the sentence was added. */
   createdAt: string;
 }
@@ -360,7 +362,7 @@ export type BookmarksSourceKind = "tag" | "taxonomy";
  * and its own sentence-form picker. Older stored terms predate this field — default them to
  * `"vocabulary"` when absent.
  */
-export type SentenceTermCategory = "vocabulary" | "grammar" | "general" | "resource" | "listening";
+export type SentenceTermCategory = "vocabulary" | "grammar" | "general" | "resource";
 
 /** The configured vocabulary source: a chosen parent tag or taxonomy in the bookmarks app. */
 export interface BookmarksSource {
@@ -391,10 +393,8 @@ export interface BookmarksSettings {
   grammarSource: BookmarksSource | null;
   /** The selected General source, or null when unconfigured. */
   generalSource: BookmarksSource | null;
-  /** The selected Textbooks & Worksheets source, or null when unconfigured. */
+  /** The selected Textbooks & Worksheets / Resources source, or null when unconfigured. */
   resourceSource: BookmarksSource | null;
-  /** The selected Listening source, or null when unconfigured. */
-  listeningSource: BookmarksSource | null;
 }
 
 /**
@@ -407,7 +407,6 @@ export interface UpdateBookmarksSettingsInput {
   grammarSource?: BookmarksSource | null;
   generalSource?: BookmarksSource | null;
   resourceSource?: BookmarksSource | null;
-  listeningSource?: BookmarksSource | null;
 }
 
 /**

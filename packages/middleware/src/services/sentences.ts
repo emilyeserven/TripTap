@@ -1,9 +1,34 @@
-import { and, asc, desc, eq, isNull } from "drizzle-orm";
+import { and, asc, count, desc, eq, inArray, isNull } from "drizzle-orm";
 import type { CreateSentenceInput, Sentence, UpdateSentenceInput } from "@sentence-bank/types";
 import { db } from "@/db";
 import { sentences, sentenceVocab, type SentenceRow, vocab } from "@/db/schema";
 import { generateFurigana } from "@/services/furigana";
 import { deleteMedia, getMedia, type StoredMedia } from "@/services/media";
+
+/** Number of vocab items linked to one sentence. */
+async function vocabCountFor(id: string): Promise<number> {
+  const [row] = await db
+    .select({
+      n: count(),
+    })
+    .from(sentenceVocab)
+    .where(eq(sentenceVocab.sentenceId, id));
+  return Number(row?.n ?? 0);
+}
+
+/** Linked-vocab counts for a set of sentence ids, keyed by id (missing ids imply 0). */
+async function vocabCountMap(ids: string[]): Promise<Map<string, number>> {
+  if (ids.length === 0) return new Map();
+  const rows = await db
+    .select({
+      sentenceId: sentenceVocab.sentenceId,
+      n: count(),
+    })
+    .from(sentenceVocab)
+    .where(inArray(sentenceVocab.sentenceId, ids))
+    .groupBy(sentenceVocab.sentenceId);
+  return new Map(rows.map(r => [r.sentenceId, Number(r.n)]));
+}
 
 /**
  * Reading overrides for the furigana analyzer, sourced from the vocab bank: any vocab with a reading
@@ -23,8 +48,8 @@ async function getFuriganaOverrides(): Promise<Map<string, string>> {
   return map;
 }
 
-/** Map a DB row to the shared `Sentence` wire type. */
-export function toSentence(row: SentenceRow): Sentence {
+/** Map a DB row to the shared `Sentence` wire type. `vocabCount` is supplied by the caller. */
+export function toSentence(row: SentenceRow, vocabCount = 0): Sentence {
   return {
     id: row.id,
     text: row.text,
@@ -41,6 +66,7 @@ export function toSentence(row: SentenceRow): Sentence {
     captureId: row.captureId,
     hasAudio: row.audioKey != null,
     hasImage: row.imageKey != null,
+    vocabCount,
     createdAt:
       row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
   };
@@ -64,12 +90,13 @@ function toInsert(input: CreateSentenceInput) {
 
 export async function listSentences(): Promise<Sentence[]> {
   const rows = await db.select().from(sentences).orderBy(desc(sentences.createdAt));
-  return rows.map(toSentence);
+  const counts = await vocabCountMap(rows.map(r => r.id));
+  return rows.map(row => toSentence(row, counts.get(row.id) ?? 0));
 }
 
 export async function getSentence(id: string): Promise<Sentence | null> {
   const [row] = await db.select().from(sentences).where(eq(sentences.id, id));
-  return row ? toSentence(row) : null;
+  return row ? toSentence(row, await vocabCountFor(id)) : null;
 }
 
 /**
@@ -83,7 +110,8 @@ export async function listSentencesByCapture(captureId: string): Promise<Sentenc
     .from(sentences)
     .where(eq(sentences.captureId, captureId))
     .orderBy(asc(sentences.sortOrder), asc(sentences.createdAt));
-  return rows.map(toSentence);
+  const counts = await vocabCountMap(rows.map(r => r.id));
+  return rows.map(row => toSentence(row, counts.get(row.id) ?? 0));
 }
 
 /**
@@ -130,7 +158,7 @@ export async function createSentence(input: CreateSentenceInput): Promise<Senten
     }).returning();
     const links = linkRows(row.id, input.vocabIds);
     if (links.length > 0) await tx.insert(sentenceVocab).values(links);
-    return toSentence(row);
+    return toSentence(row, links.length);
   });
 }
 
@@ -150,7 +178,7 @@ export async function createSentencesMany(inputs: CreateSentenceInput[]): Promis
       .returning();
     const links = rows.flatMap((row, i) => linkRows(row.id, inputs[i].vocabIds));
     if (links.length > 0) await tx.insert(sentenceVocab).values(links);
-    return rows.map(toSentence);
+    return rows.map((row, i) => toSentence(row, linkRows(row.id, inputs[i].vocabIds).length));
   });
 }
 
@@ -182,7 +210,7 @@ export async function updateSentence(id: string, input: UpdateSentenceInput): Pr
     };
   }
   const [row] = await db.update(sentences).set(patch).where(eq(sentences.id, id)).returning();
-  return row ? toSentence(row) : null;
+  return row ? toSentence(row, await vocabCountFor(id)) : null;
 }
 
 /** Re-run furigana generation for one sentence (applies current vocab overrides). */
@@ -201,7 +229,7 @@ export async function regenerateSentenceFurigana(id: string): Promise<Sentence |
     reading: tokens,
     readingError: error,
   }).where(eq(sentences.id, id)).returning();
-  return row ? toSentence(row) : null;
+  return row ? toSentence(row, await vocabCountFor(id)) : null;
 }
 
 /**
