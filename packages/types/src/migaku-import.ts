@@ -80,6 +80,35 @@ export interface CommitMigakuImportResult {
   vocabCreated: number;
 }
 
+/** Config status of the media object store, shown on the Settings page. Never includes secrets. */
+export interface MediaStorageStatus {
+  /** True when the essential S3/Garage env vars are all set. */
+  configured: boolean;
+  /** The configured endpoint URL (not a secret), or null when unconfigured. */
+  endpoint: string | null;
+  /** The configured bucket name, or null. */
+  bucket: string | null;
+  /** The configured region label, or null. */
+  region: string | null;
+}
+
+/** Per-operation outcome of a live media-storage connectivity test. */
+export interface MediaConnectionChecks {
+  list: boolean;
+  write: boolean;
+  read: boolean;
+  delete: boolean;
+}
+
+/** Result of the Settings "Test connection" round-trip against the bucket. */
+export interface MediaConnectionTestResult {
+  /** True only when every check passed. */
+  ok: boolean;
+  checks: MediaConnectionChecks;
+  /** The failure reason when `ok` is false, else null. */
+  error: string | null;
+}
+
 /** Result of a media reconciliation sweep of the object-storage bucket. */
 export interface MigakuReconcileResult {
   /** Objects listed under the media prefix. */

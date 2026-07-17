@@ -83,6 +83,8 @@ import type {
   CommitMigakuImportInput,
   CommitMigakuImportResult,
   MigakuReconcileResult,
+  MediaStorageStatus,
+  MediaConnectionTestResult,
 } from "@sentence-bank/types";
 
 /** Patchable capture fields (mirror of the middleware's `UpdateCaptureInput`). */
@@ -624,6 +626,10 @@ export const settingsApi = {
       method: "PATCH",
       body: JSON.stringify(input),
     }),
+  getMedia: () => request<MediaStorageStatus>("/settings/media"),
+  testMedia: () => request<MediaConnectionTestResult>("/settings/media/test", {
+    method: "POST",
+  }),
 };
 
 /** Read-only proxy to the external bookmarks tag/taxonomy API (all calls go server-side). */

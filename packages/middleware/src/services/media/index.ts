@@ -14,6 +14,8 @@ import {
   PutObjectCommand,
   S3Client,
 } from "@aws-sdk/client-s3";
+import type { MediaConnectionTestResult, MediaStorageStatus } from "@sentence-bank/types";
+import { newId } from "@/lib/id";
 import { MediaNotConfiguredError, MediaUnavailableError } from "@/services/media/errors";
 
 export { MediaNotConfiguredError, MediaUnavailableError } from "@/services/media/errors";
@@ -51,6 +53,77 @@ function resolveConfig(): MediaConfig | null {
 /** True when media storage is configured (used by routes to 503 early with a clear message). */
 export function isMediaConfigured(): boolean {
   return resolveConfig() !== null;
+}
+
+/** Non-secret config summary for the Settings page. */
+export function mediaStatus(): MediaStorageStatus {
+  const config = resolveConfig();
+  if (!config) {
+    return {
+      configured: false,
+      endpoint: null,
+      bucket: null,
+      region: null,
+    };
+  }
+  return {
+    configured: true,
+    endpoint: config.endpoint,
+    bucket: config.bucket,
+    region: config.region,
+  };
+}
+
+/**
+ * Exercise the bucket end-to-end: list, then write/read/delete a tiny probe object. Returns which
+ * steps succeeded plus any error, so the Settings page can pinpoint where connectivity breaks. Never
+ * throws — configuration/credential/network failures are captured in the result.
+ */
+export async function testMediaConnection(): Promise<MediaConnectionTestResult> {
+  const checks = {
+    list: false,
+    write: false,
+    read: false,
+    delete: false,
+  };
+  if (!isMediaConfigured()) {
+    return {
+      ok: false,
+      checks,
+      error: "Not configured — set S3_ENDPOINT, S3_BUCKET, S3_ACCESS_KEY_ID, and S3_SECRET_ACCESS_KEY.",
+    };
+  }
+  const probeKey = `${MEDIA_PREFIX}.healthcheck-${newId()}`;
+  const payload = Buffer.from("triptap-healthcheck");
+  try {
+    await listMediaObjects(MEDIA_PREFIX);
+    checks.list = true;
+    await putMedia(probeKey, payload, "text/plain");
+    checks.write = true;
+    const got = await getMedia(probeKey);
+    checks.read = got != null && got.body.equals(payload);
+    await deleteMedia(probeKey);
+    checks.delete = true;
+    return {
+      ok: checks.list && checks.write && checks.read && checks.delete,
+      checks,
+      error: checks.read ? null : "Wrote the probe object but read back unexpected contents.",
+    };
+  }
+  catch (err) {
+    // Best-effort cleanup so a partial failure doesn't leave the probe object behind.
+    try {
+      await deleteMedia(probeKey);
+    }
+    catch {
+      // ignore — the probe may never have been written
+    }
+    return {
+      ok: false,
+      checks,
+      error: err instanceof Error ? err.message : String(err),
+    };
+  }
 }
 
 let cachedClient: { client: S3Client;
