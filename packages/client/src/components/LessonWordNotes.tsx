@@ -1,21 +1,19 @@
 import type { LessonWordNote } from "@sentence-bank/types";
 
-import { Plus, Trash2 } from "lucide-react";
+import { Plus } from "lucide-react";
 import { toKana } from "wanakana";
 
 import { CollapsibleSection } from "@/components/CollapsibleSection";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { WordLookup } from "@/components/WordLookup";
+import { WordNoteControls } from "@/components/WordNoteControls";
 import { newId } from "@/lib/id";
 import { WORD_COLUMN_CLASS } from "@/lib/lessonLayout";
 import { cn } from "@/lib/utils";
 import { useDisplayStore } from "@/stores/displayStore";
 import { useUiStore } from "@/stores/uiStore";
-
-type WordNoteStatus = LessonWordNote["status"];
 
 /**
  * The word-note editor for a lesson — adapted from the Reading Session word-note block, but every
@@ -134,42 +132,17 @@ export function LessonWordNotes({
                   aria-label="Word notes"
                   rows={2}
                 />
-                <div className="flex flex-wrap items-center gap-3">
-                  <div className="flex gap-1">
-                    {(["shaky", "unknown"] as WordNoteStatus[]).map(status => (
-                      <Button
-                        key={status}
-                        type="button"
-                        size="sm"
-                        variant={w.status === status ? "default" : "outline"}
-                        onClick={() => patchWord(w.id, {
-                          status,
-                        })}
-                      >
-                        {status === "shaky" ? "Shaky" : "Didn't know"}
-                      </Button>
-                    ))}
-                  </div>
-                  <label className="flex items-center gap-2 text-sm">
-                    <Checkbox
-                      checked={w.flashcard}
-                      onCheckedChange={v => patchWord(w.id, {
-                        flashcard: v === true,
-                      })}
-                    />
-                    Add to flashcards later
-                  </label>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="ml-auto text-destructive"
-                    onClick={() => removeWord(w.id)}
-                    aria-label="Delete word"
-                  >
-                    <Trash2 className="size-4" />
-                  </Button>
-                </div>
+                <WordNoteControls
+                  status={w.status}
+                  flashcard={w.flashcard}
+                  onStatusChange={status => patchWord(w.id, {
+                    status,
+                  })}
+                  onFlashcardChange={flashcard => patchWord(w.id, {
+                    flashcard,
+                  })}
+                  onDelete={() => removeWord(w.id)}
+                />
               </li>
             ))}
           </ul>
