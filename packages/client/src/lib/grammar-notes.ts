@@ -1,7 +1,7 @@
 import type { GrammarNote, GrammarRelationKind } from "@sentence-bank/types";
 
 /** Normalize a surface form for "same form" grouping (width/case-insensitive). */
-export function normalizeTitle(title: string): string {
+function normalizeTitle(title: string): string {
   return title.trim().normalize("NFKC").toLowerCase();
 }
 

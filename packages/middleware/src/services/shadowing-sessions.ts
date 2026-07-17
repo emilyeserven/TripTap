@@ -8,7 +8,7 @@ import { db } from "@/db";
 import { shadowingSessions, type ShadowingSessionRow } from "@/db/schema";
 
 /** Map a DB row to the shared `ShadowingSession` wire type. */
-export function toShadowingSession(row: ShadowingSessionRow): ShadowingSession {
+function toShadowingSession(row: ShadowingSessionRow): ShadowingSession {
   return {
     id: row.id,
     title: row.title,

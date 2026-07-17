@@ -219,21 +219,6 @@ async function fetchRawBookmarkById(baseUrl: string, id: string): Promise<Record
   return isRecord(raw) ? raw : null;
 }
 
-/** Bookmarks tagged with the given tag id, using a caller-resolved base URL. Sections omitted. */
-async function listBookmarksByTag(baseUrl: string, tagId: string): Promise<BookmarkRecord[]> {
-  return (await fetchRawBookmarksByTag(baseUrl, tagId))
-    .map(r => toBookmarkRecord(r, false))
-    .filter((b): b is BookmarkRecord => b !== null);
-}
-
-/** Bookmarks tagged with the given tag id, newest-app-order. Sections are not included in the list. */
-export async function listBookmarks(tagId: string): Promise<BookmarkRecord[]> {
-  const {
-    baseUrl,
-  } = await resolveBookmarksConfig();
-  return listBookmarksByTag(baseUrl, tagId);
-}
-
 /**
  * The bookmark → assigned-term-id map for one taxonomy (owner type `bookmark`). The upstream host
  * cannot filter bookmarks by a taxonomy term through `?tags=` (that only matches tags), so a taxonomy
@@ -454,7 +439,7 @@ function createdOption(raw: unknown): TagTermOption {
 }
 
 /** Create a taxonomy term, optionally nested under a parent term. Returns the created term. */
-export async function createTerm(
+async function createTerm(
   baseUrl: string,
   taxonomyId: string,
   name: string,
@@ -476,7 +461,7 @@ export async function createTerm(
 }
 
 /** Create a child tag nested under a parent tag. Returns the created tag. */
-export async function createTag(
+async function createTag(
   baseUrl: string,
   name: string,
   parentId: string,

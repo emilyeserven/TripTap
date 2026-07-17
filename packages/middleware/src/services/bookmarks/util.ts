@@ -1,7 +1,7 @@
 import { BookmarksUnavailableError } from "@/services/bookmarks/errors";
 
 /** Per-request timeout for bookmarks calls — small JSON GETs over the local Tailnet. */
-export const REQUEST_TIMEOUT_MS = 10_000;
+const REQUEST_TIMEOUT_MS = 10_000;
 
 /** Optional request shape for {@link fetchBookmarksJson} — defaults to a GET with no body. */
 export interface FetchBookmarksOptions {

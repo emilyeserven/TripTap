@@ -9,7 +9,7 @@ export interface FilterOption {
 }
 
 /** The website filter's key for a resource (its site name, falling back to domain); "" when unknown. */
-export function websiteKey(r: BookmarkResource): string {
+function websiteKey(r: BookmarkResource): string {
   return r.website?.siteName || r.website?.domain || "";
 }
 

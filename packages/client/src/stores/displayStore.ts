@@ -65,8 +65,8 @@ interface DisplayState {
 }
 
 /** Bounds for the pinned-video width drag handle. */
-export const PINNED_VIDEO_MIN = 160;
-export const PINNED_VIDEO_MAX = 640;
+const PINNED_VIDEO_MIN = 160;
+const PINNED_VIDEO_MAX = 640;
 
 /**
  * Persisted display preferences (theme, text size, focus mode, content width), surfaced through the

@@ -1,7 +1,7 @@
 import { DictionaryUnavailableError } from "@/services/dictionary/errors";
 
 /** Per-request timeout for dictionary calls — small JSON lookups against an external host. */
-export const REQUEST_TIMEOUT_MS = 10_000;
+const REQUEST_TIMEOUT_MS = 10_000;
 
 /** Optional request shape for {@link fetchDictionaryJson} — defaults to a GET with no body. */
 export interface FetchDictionaryOptions {

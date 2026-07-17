@@ -8,7 +8,7 @@ import { db } from "@/db";
 import { questionSheets, type QuestionSheetRow } from "@/db/schema";
 
 /** Map a DB row to the shared `QuestionSheet` wire type. */
-export function toQuestionSheet(row: QuestionSheetRow): QuestionSheet {
+function toQuestionSheet(row: QuestionSheetRow): QuestionSheet {
   return {
     id: row.id,
     title: row.title,

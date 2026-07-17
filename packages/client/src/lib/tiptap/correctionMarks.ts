@@ -4,11 +4,11 @@ import { Mark, mergeAttributes } from "@tiptap/core";
  * Tailwind classes for the two correction marks, shared with any read-only rendering.
  * `correct` = green affirmation (kept in the result); `incorrect` = red strikethrough (dropped).
  */
-export const MARK_CORRECT_CLASS = `
+const MARK_CORRECT_CLASS = `
   rounded-sm bg-emerald-500/15 text-emerald-700
   dark:text-emerald-400
 `;
-export const MARK_INCORRECT_CLASS = "rounded-sm text-destructive line-through decoration-destructive/60";
+const MARK_INCORRECT_CLASS = "rounded-sm text-destructive line-through decoration-destructive/60";
 
 /** A span the learner affirmed as correct — tinted green, kept in the derived correction. */
 export const CorrectMark = Mark.create({

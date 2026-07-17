@@ -29,17 +29,17 @@ export const LANG_NAMES: Record<string, string> = {
 };
 
 /** Language codes whose text runs together without inter-word spaces when lines are rejoined. */
-export const CJK_NO_SPACE = new Set(["ja", "zh", "zh-Hans", "zh-Hant"]);
+const CJK_NO_SPACE = new Set(["ja", "zh", "zh-Hans", "zh-Hant"]);
 
 /**
  * Languages the OCR occasionally mis-fires on for Japanese material (Chinese, Vietnamese, Thai,
  * Korean). Any of these present at seed time is added to `ignoredLangs` so those lines are excluded
  * by default; the user can re-include them from the language filter bar.
  */
-export const DEFAULT_IGNORED_LANGS = ["zh", "zh-Hans", "zh-Hant", "vi", "th", "ko"];
+const DEFAULT_IGNORED_LANGS = ["zh", "zh-Hans", "zh-Hant", "vi", "th", "ko"];
 
 /** True when the text is entirely kana (hira/kata, incl. the prolonged mark) — i.e. a reading. */
-export function isPureKana(text: string): boolean {
+function isPureKana(text: string): boolean {
   const stripped = text.replace(/\s/g, "");
   if (!stripped) return false;
   // Hiragana + katakana (incl. ー), katakana phonetic extensions, and halfwidth katakana.
@@ -61,7 +61,7 @@ const CJK_LANG_CODES = new Set(["ja", "zh", "zh-Hans", "zh-Hant", "ko"]);
  * Split text into maximal runs of CJK vs non-CJK, dropping the whitespace between runs. A block like
  * `"heel 脚后銀"` → `[{ text: "heel", cjk: false }, { text: "脚后銀", cjk: true }]`.
  */
-export function segmentByScript(text: string): { text: string;
+function segmentByScript(text: string): { text: string;
   cjk: boolean; }[] {
   const re = new RegExp(`[${CJK_CLASS}]+|[^${CJK_CLASS}\\s]+`, "g");
   return [...text.matchAll(re)].map(m => ({
@@ -80,7 +80,7 @@ export function hasScriptBoundary(text: string): boolean {
  * parent line's code when it's already a CJK language, else defaults to Japanese; anything else is
  * treated as English. The user can correct it with the per-line language selector.
  */
-export function guessLang(segmentText: string, cjk: boolean, parentLang: string): string {
+function guessLang(segmentText: string, cjk: boolean, parentLang: string): string {
   if (isPureKana(segmentText)) return "ja";
   if (cjk) return CJK_LANG_CODES.has(parentLang) ? parentLang : "ja";
   return "en";

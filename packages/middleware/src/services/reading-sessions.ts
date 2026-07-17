@@ -14,7 +14,7 @@ function toMode(mode: string | null): ReadingTranslationMode {
 }
 
 /** Map a DB row to the shared `ReadingSession` wire type. */
-export function toReadingSession(row: ReadingSessionRow): ReadingSession {
+function toReadingSession(row: ReadingSessionRow): ReadingSession {
   return {
     id: row.id,
     title: row.title,
