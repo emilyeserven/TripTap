@@ -465,3 +465,23 @@ export interface BookmarkRecord {
   /** Flattened timestamp sections; empty on the list endpoint, populated on the single-record fetch. */
   sections: BookmarkSection[];
 }
+
+/**
+ * A bookmark surfaced for the "Find a Resource" browser — the whole bookmarks collection with the extra
+ * fields that page sorts/filters by: the runtime (from the upstream "Runtime" custom property, in
+ * seconds) and the website it lives on. Distinct from {@link BookmarkRecord}, which is the narrow
+ * per-channel shape used by the term pickers.
+ */
+export interface BookmarkResource {
+  id: string;
+  title: string;
+  /** The bookmark's primary link; null when it has none. */
+  url: string | null;
+  /** The website the bookmark belongs to (for the website filter); null when unknown. */
+  website: { domain: string;
+    siteName: string; } | null;
+  /** Runtime in seconds (from the upstream "Runtime" duration property); null when not set. */
+  runtimeSeconds: number | null;
+  /** The upstream media type name (e.g. "Video", "Podcast"); null when unknown. */
+  mediaType: string | null;
+}

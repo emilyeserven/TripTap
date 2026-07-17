@@ -7,11 +7,30 @@ import { usePageTitle } from "@/hooks/usePageTitle";
 
 export const Route = createFileRoute("/shadowing/new")({
   component: NewShadowingSessionPage,
+  validateSearch: (search: Record<string, unknown>): {
+    bookmarkId?: string;
+    bookmarkTitle?: string;
+    bookmarkUrl?: string;
+  } => ({
+    bookmarkId: typeof search.bookmarkId === "string" ? search.bookmarkId : undefined,
+    bookmarkTitle: typeof search.bookmarkTitle === "string" ? search.bookmarkTitle : undefined,
+    bookmarkUrl: typeof search.bookmarkUrl === "string" ? search.bookmarkUrl : undefined,
+  }),
 });
 
 function NewShadowingSessionPage() {
   usePageTitle("New shadowing session");
   const navigate = useNavigate();
+  const {
+    bookmarkId, bookmarkTitle, bookmarkUrl,
+  } = Route.useSearch();
+  const initialBookmark = bookmarkId
+    ? {
+      id: bookmarkId,
+      title: bookmarkTitle ?? "",
+      url: bookmarkUrl ?? null,
+    }
+    : undefined;
 
   return (
     <section className="max-w-3xl space-y-6">
@@ -31,6 +50,7 @@ function NewShadowingSessionPage() {
         </p>
       </div>
       <ShadowingSessionForm
+        initialBookmark={initialBookmark}
         onSuccess={id =>
           navigate({
             to: "/shadowing/$id",

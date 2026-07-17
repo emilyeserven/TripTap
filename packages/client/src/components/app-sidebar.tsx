@@ -33,6 +33,7 @@ import {
   SettingsIcon,
   SparklesIcon,
   TargetIcon,
+  TelescopeIcon,
   UploadIcon,
   UserRoundIcon,
 } from "lucide-react";
@@ -181,6 +182,11 @@ const actionItems = [
         title: "Shadowing Practice",
         to: "/shadowing",
         icon: Repeat2Icon,
+      },
+      {
+        title: "Find a Resource",
+        to: "/find-resource",
+        icon: TelescopeIcon,
       },
     ],
   },

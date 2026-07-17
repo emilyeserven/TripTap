@@ -23,9 +23,14 @@ import { parseYouTubeId } from "@/lib/time";
 export function ShadowingSessionForm({
   session,
   onSuccess,
+  initialBookmark,
 }: {
   session?: ShadowingSession;
   onSuccess?: (id: string) => void;
+  /** Seed a brand-new session from a bookmark (e.g. from the Find a Resource page); ignored when editing. */
+  initialBookmark?: { id: string;
+    title: string;
+    url: string | null; };
 }) {
   const create = useCreateShadowingSession();
   const update = useUpdateShadowingSession();
@@ -33,10 +38,10 @@ export function ShadowingSessionForm({
 
   const [title, setTitle] = useState(session?.title ?? "");
   const [language, setLanguage] = useState(session?.language ?? "Japanese");
-  const [videoUrl, setVideoUrl] = useState(session?.videoUrl ?? "");
-  const [bookmarkId, setBookmarkId] = useState(session?.bookmarkId ?? null);
-  const [bookmarkTitle, setBookmarkTitle] = useState(session?.bookmarkTitle ?? null);
-  const [bookmarkUrl, setBookmarkUrl] = useState(session?.bookmarkUrl ?? null);
+  const [videoUrl, setVideoUrl] = useState(session?.videoUrl ?? initialBookmark?.url ?? "");
+  const [bookmarkId, setBookmarkId] = useState(session?.bookmarkId ?? initialBookmark?.id ?? null);
+  const [bookmarkTitle, setBookmarkTitle] = useState(session?.bookmarkTitle ?? initialBookmark?.title ?? null);
+  const [bookmarkUrl, setBookmarkUrl] = useState(session?.bookmarkUrl ?? initialBookmark?.url ?? null);
   const [defaultMaxReplays, setDefaultMaxReplays] = useState(session?.defaultMaxReplays ?? 3);
   const [defaultGapMs, setDefaultGapMs] = useState(session?.defaultGapMs ?? 0);
   const [segments, setSegments] = useState<ShadowingSegment[]>(session?.segments ?? []);
