@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 
+import { ImportedDeckCard } from "@/components/ImportedDeckCard";
 import { MigakuImportUpload } from "@/components/MigakuImportUpload";
 import { Card } from "@/components/ui/card";
 import { useMigakuImports } from "@/hooks/useMigakuImports";
@@ -16,6 +17,7 @@ function MigakuImportPage() {
   } = useMigakuImports();
 
   const pending = (imports ?? []).filter(i => i.status === "parsed");
+  const committed = (imports ?? []).filter(i => i.status === "committed");
 
   return (
     <section className="space-y-6">
@@ -80,6 +82,20 @@ function MigakuImportPage() {
                   <span className="text-sm text-muted-foreground">{imp.candidateCount} cards</span>
                 </Card>
               </Link>
+            ))}
+          </div>
+        )
+        : null}
+
+      {committed.length > 0
+        ? (
+          <div className="space-y-2">
+            <h2 className="text-sm font-medium text-muted-foreground">Imported decks</h2>
+            {committed.map(imp => (
+              <ImportedDeckCard
+                key={imp.id}
+                imp={imp}
+              />
             ))}
           </div>
         )

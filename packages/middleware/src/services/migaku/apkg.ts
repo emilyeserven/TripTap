@@ -142,7 +142,49 @@ function stripTags(html: string): string {
  * Parse a `.apkg` into staged candidates. Each Anki note becomes one candidate; media references are
  * recorded by filename (bytes are pulled later from the stored package by {@link extractApkgMedia}).
  */
-export async function parseApkg(buffer: Buffer): Promise<StoredMigakuCandidate[]> {
+/**
+ * Best-effort Anki deck name from the collection: the most-populated non-"Default" deck. Legacy
+ * `.apkg`s keep decks as a JSON map in `col.decks`; returns null when unavailable.
+ */
+function extractDeckName(db: InstanceType<Awaited<ReturnType<typeof initSqlJs>>["Database"]>): string | null {
+  try {
+    const decksRes = db.exec("SELECT decks FROM col LIMIT 1");
+    if (!decksRes.length || !decksRes[0].values.length) return null;
+    const decks = JSON.parse(String(decksRes[0].values[0][0])) as Record<string, { name?: string }>;
+
+    let didByCount: string[] = [];
+    try {
+      const cardsRes = db.exec("SELECT did, COUNT(*) AS n FROM cards GROUP BY did ORDER BY n DESC");
+      if (cardsRes.length) didByCount = cardsRes[0].values.map(v => String(v[0]));
+    }
+    catch {
+      // `cards` table missing or unreadable — fall back to the raw decks map below.
+    }
+
+    const isReal = (name: string | undefined): name is string =>
+      !!name && name.trim().length > 0 && name.trim().toLowerCase() !== "default";
+
+    for (const did of didByCount) {
+      const name = decks[did]?.name;
+      if (isReal(name)) return name.trim();
+    }
+    for (const deck of Object.values(decks)) {
+      if (isReal(deck?.name)) return deck.name.trim();
+    }
+    return null;
+  }
+  catch {
+    return null;
+  }
+}
+
+export interface ParsedApkg {
+  /** Parsed Anki deck name, or null when the package didn't yield one. */
+  deckName: string | null;
+  candidates: StoredMigakuCandidate[];
+}
+
+export async function parseApkg(buffer: Buffer): Promise<ParsedApkg> {
   const {
     collection,
   } = readZip(buffer);
@@ -152,6 +194,7 @@ export async function parseApkg(buffer: Buffer): Promise<StoredMigakuCandidate[]
   });
   const db = new SQL.Database(collection);
   try {
+    const deckName = extractDeckName(db);
     const colRes = db.exec("SELECT models FROM col LIMIT 1");
     if (!colRes.length || !colRes[0].values.length) {
       throw new MigakuParseError("The Anki collection has no note types.");
@@ -159,7 +202,10 @@ export async function parseApkg(buffer: Buffer): Promise<StoredMigakuCandidate[]
     const models = JSON.parse(String(colRes[0].values[0][0])) as Record<string, AnkiModel>;
 
     const notesRes = db.exec("SELECT mid, flds, tags FROM notes");
-    if (!notesRes.length) return [];
+    if (!notesRes.length) return {
+      deckName,
+      candidates: [],
+    };
 
     const candidates: StoredMigakuCandidate[] = [];
     for (const row of notesRes[0].values) {
@@ -196,7 +242,10 @@ export async function parseApkg(buffer: Buffer): Promise<StoredMigakuCandidate[]
         imageFile,
       });
     }
-    return candidates;
+    return {
+      deckName,
+      candidates,
+    };
   }
   finally {
     db.close();

@@ -4,6 +4,7 @@ import { MediaNotConfiguredError, MediaUnavailableError } from "@/services/media
 import {
   commitImport,
   createImport,
+  deleteImportedDeck,
   discardImport,
   getCandidateMedia,
   getImport,
@@ -43,10 +44,14 @@ const mediaParams = {
 
 const commitBody = {
   type: "object",
-  required: ["language", "items"],
+  required: ["language", "deckName", "items"],
   additionalProperties: false,
   properties: {
     language: {
+      type: "string",
+      minLength: 1,
+    },
+    deckName: {
       type: "string",
       minLength: 1,
     },
@@ -238,5 +243,22 @@ export async function migakuImportRoutes(app: FastifyInstance): Promise<void> {
       message: "Import not found",
     });
     return reply.code(204).send();
+  });
+
+  // Destructive: delete every bank row imported under this deck (by tag) and the import record.
+  app.delete("/api/migaku-imports/:id/cards", {
+    schema: {
+      tags: ["migaku-import"],
+      params: importParams,
+    },
+  }, async (req, reply) => {
+    const {
+      id,
+    } = req.params as { id: string };
+    const result = await deleteImportedDeck(id);
+    if (!result) return reply.code(404).send({
+      message: "Import not found",
+    });
+    return result;
   });
 }

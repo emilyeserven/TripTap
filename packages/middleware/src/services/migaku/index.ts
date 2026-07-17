@@ -9,6 +9,7 @@ import { desc, eq } from "drizzle-orm";
 import type {
   CommitMigakuImportInput,
   CommitMigakuImportResult,
+  DeleteDeckCardsResult,
   MigakuCandidate,
   MigakuImport,
   MigakuImportDetail,
@@ -20,6 +21,7 @@ import { deleteMedia, getMedia, MEDIA_PREFIX, putMedia, type StoredMedia } from 
 import { extractApkgMedia } from "@/services/migaku/apkg";
 import { parseApkg } from "@/services/migaku/apkg";
 import { commitCandidates } from "@/services/migaku/commit";
+import { deckNameFromFilename, deleteDeckCards } from "@/services/migaku/deck";
 import { candidateExists, getExistingKeys } from "@/services/migaku/dedup";
 import { MigakuImportNotFoundError } from "@/services/migaku/errors";
 import { toPublicCandidate, type StoredMigakuCandidate } from "@/services/migaku/types";
@@ -42,15 +44,21 @@ function toImport(row: MigakuImportRow): MigakuImport {
   return {
     id: row.id,
     filename: row.filename,
+    deckName: row.deckName ?? deckNameFromFilename(row.filename),
     status: row.status as MigakuImport["status"],
     candidateCount: row.candidates.length,
+    sentencesCreated: row.sentencesCreated ?? null,
+    vocabCreated: row.vocabCreated ?? null,
+    skipped: row.skipped ?? null,
     createdAt: row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
   };
 }
 
 /** Parse an uploaded `.apkg`, stash it in object storage, and stage its candidates for review. */
 export async function createImport(buffer: Buffer, filename: string): Promise<MigakuImportDetail> {
-  const candidates = await parseApkg(buffer);
+  const {
+    deckName, candidates,
+  } = await parseApkg(buffer);
   const id = newId();
   const apkgKey = `${MEDIA_PREFIX}imports/${id}.apkg`;
   await putMedia(apkgKey, buffer, "application/zip");
@@ -58,6 +66,7 @@ export async function createImport(buffer: Buffer, filename: string): Promise<Mi
   const [row] = await db.insert(migakuImports).values({
     id,
     filename,
+    deckName: deckName ?? deckNameFromFilename(filename),
     status: "parsed",
     apkgKey,
     // Stored shape includes internal media filenames; the column is typed to the public candidate.
@@ -128,6 +137,10 @@ export async function commitImport(
     .set({
       status: "committed",
       apkgKey: null,
+      deckName: input.deckName.trim() || row.deckName,
+      sentencesCreated: result.sentencesCreated,
+      vocabCreated: result.vocabCreated,
+      skipped: result.skipped,
     })
     .where(eq(migakuImports.id, id));
 
@@ -141,4 +154,18 @@ export async function discardImport(id: string): Promise<boolean> {
   await deleteMedia(row.apkgKey);
   await db.delete(migakuImports).where(eq(migakuImports.id, id));
   return true;
+}
+
+/**
+ * Delete every bank row imported under this import's deck (matched by its `deck:<name>` tag), then
+ * remove the import record. Returns null when the import doesn't exist.
+ */
+export async function deleteImportedDeck(id: string): Promise<DeleteDeckCardsResult | null> {
+  const [row] = await db.select().from(migakuImports).where(eq(migakuImports.id, id));
+  if (!row) return null;
+  const deckName = row.deckName ?? deckNameFromFilename(row.filename);
+  const result = await deleteDeckCards(deckName);
+  await deleteMedia(row.apkgKey);
+  await db.delete(migakuImports).where(eq(migakuImports.id, id));
+  return result;
 }

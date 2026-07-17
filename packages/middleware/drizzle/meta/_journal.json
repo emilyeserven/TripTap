@@ -288,6 +288,13 @@
       "when": 1784298321988,
       "tag": "0040_third_whirlwind",
       "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1784311844429,
+      "tag": "0041_steep_jubilee",
+      "breakpoints": true
     }
   ]
 }

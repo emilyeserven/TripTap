@@ -1,6 +1,6 @@
 import type { CommitMigakuImportInput } from "@sentence-bank/types";
 
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { useEntityCacheSync } from "./useEntityCacheSync";
@@ -59,6 +59,28 @@ export function useDeleteMigakuImport() {
     mutationFn: (id: string) => migakuImportsApi.remove(id),
     onSuccess: invalidate,
     onError: err => toast.error("Couldn't discard the import", {
+      description: err instanceof Error ? err.message : undefined,
+    }),
+  });
+}
+
+/** Delete every card imported under a deck; also refreshes the sentence & vocab banks. */
+export function useDeleteDeckCards() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => migakuImportsApi.deleteCards(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: MIGAKU_IMPORTS_KEY,
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["sentences"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["vocab"],
+      });
+    },
+    onError: err => toast.error("Couldn't delete the deck's cards", {
       description: err instanceof Error ? err.message : undefined,
     }),
   });

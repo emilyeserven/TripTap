@@ -151,6 +151,9 @@ export const vocabApi = {
     method: "DELETE",
   }),
   sentences: (id: string) => request<Sentence[]>(`/vocab/${id}/sentences`),
+  /** Absolute path to a vocab item's stored audio/image (present only when `hasAudio`/`hasImage`). */
+  audioUrl: (id: string) => `${BASE}/vocab/${id}/audio`,
+  imageUrl: (id: string) => `${BASE}/vocab/${id}/image`,
 };
 
 export const sourcesApi = {
