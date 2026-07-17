@@ -3,33 +3,14 @@ import type { Writing, WritingCorrection } from "@sentence-bank/types";
 
 import { useState } from "react";
 
-import { Link } from "@tanstack/react-router";
-import { CheckCircle2, Eye, EyeOff, PlusIcon } from "lucide-react";
+import { PlusIcon } from "lucide-react";
 
-import { CorrectionDiff } from "../lib/sentenceDiff";
-
-import { SentenceCorrector } from "@/components/SentenceCorrector";
-import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { WritingCorrectedSegment } from "@/components/WritingCorrectedSegment";
+import { WritingUncorrectedSegment } from "@/components/WritingUncorrectedSegment";
 import { useCreateMySentence, useUpdateMySentence } from "@/hooks/useMySentences";
 import { useUpdateWriting } from "@/hooks/useWritings";
-
-/**
- * Split free-form text into sentence segments. A boundary is any run of terminal punctuation
- * (。！？.!?) or the end of a non-empty line — so an unpunctuated line still counts as one sentence.
- */
-function splitSentences(text: string): string[] {
-  const segments: string[] = [];
-  for (const line of text.split("\n")) {
-    if (!line.trim()) continue;
-    const matches = line.match(/[^。！？.!?]*[。！？.!?]+|[^。！？.!?]+$/g) ?? [line];
-    for (const m of matches) {
-      const trimmed = m.trim();
-      if (trimmed) segments.push(trimmed);
-    }
-  }
-  return segments;
-}
+import { splitSentences } from "@/lib/writing-corrections";
 
 /**
  * Correction mode for a writing — the same track-changes flow as My Sentences and Answer Sheets. Each
@@ -169,121 +150,24 @@ export function WritingCorrections({
             >
               {existing
                 ? (
-                  <div className="space-y-2">
-                    <div
-                      className="
-                        flex flex-wrap items-center justify-between gap-2
-                      "
-                    >
-                      {editingId === existing.id
-                        ? <span className="text-lg font-semibold">Edit your correction</span>
-                        : <p className="text-lg">{existing.corrected || segment}</p>}
-                      <div className="flex shrink-0 items-center gap-1">
-                        <Link
-                          to="/my-sentences"
-                          className="
-                            inline-flex items-center gap-1 text-sm text-primary
-                            hover:underline
-                          "
-                        >
-                          <CheckCircle2 className="size-4" />
-                          In My Sentences
-                        </Link>
-                        {editingId === existing.id
-                          ? null
-                          : (
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="outline"
-                              onClick={() => setEditingId(existing.id)}
-                            >
-                              Edit corrections
-                            </Button>
-                          )}
-                      </div>
-                    </div>
-
-                    {editingId === existing.id
-                      ? (
-                        <SentenceCorrector
-                          text={existing.corrected || segment}
-                          reasoning={existing.note}
-                          onSave={r => void saveEdit(existing, r)}
-                        />
-                      )
-                      : (
-                        <>
-                          {existing.note
-                            ? <p className="text-sm text-muted-foreground">{existing.note}</p>
-                            : null}
-                          <div className="space-y-1">
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => toggleOriginal(existing.id)}
-                            >
-                              {showOriginal.has(existing.id)
-                                ? <EyeOff className="size-4" />
-                                : <Eye className="size-4" />}
-                              {showOriginal.has(existing.id) ? "Hide original" : "Show your original"}
-                            </Button>
-                            {showOriginal.has(existing.id)
-                              ? (
-                                <div
-                                  className="
-                                    space-y-1 rounded-md border bg-muted/30 p-2
-                                  "
-                                >
-                                  <CorrectionDiff
-                                    written={existing.original}
-                                    correct={existing.corrected}
-                                    language={writing.language}
-                                  />
-                                </div>
-                              )
-                              : null}
-                          </div>
-                        </>
-                      )}
-                  </div>
+                  <WritingCorrectedSegment
+                    segment={segment}
+                    correction={existing}
+                    language={writing.language}
+                    editing={editingId === existing.id}
+                    showOriginal={showOriginal.has(existing.id)}
+                    onStartEdit={() => setEditingId(existing.id)}
+                    onToggleOriginal={() => toggleOriginal(existing.id)}
+                    onSaveEdit={r => void saveEdit(existing, r)}
+                  />
                 )
                 : (
-                  <div className="space-y-2">
-                    <div
-                      className="
-                        flex flex-wrap items-center justify-between gap-2
-                      "
-                    >
-                      {addingIndex === index
-                        ? <span className="text-lg font-semibold">Correct your sentence</span>
-                        : <p className="text-lg">{segment}</p>}
-                      {addingIndex === index
-                        ? null
-                        : (
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="outline"
-                            onClick={() => setAddingIndex(index)}
-                          >
-                            <PlusIcon className="size-4" />
-                            Correct
-                          </Button>
-                        )}
-                    </div>
-
-                    {addingIndex === index
-                      ? (
-                        <SentenceCorrector
-                          text={segment}
-                          onSave={r => void officiallyAdd(segment, r)}
-                          saveLabel="Add to My Sentences"
-                        />
-                      )
-                      : null}
-                  </div>
+                  <WritingUncorrectedSegment
+                    segment={segment}
+                    adding={addingIndex === index}
+                    onStartAdd={() => setAddingIndex(index)}
+                    onSave={r => void officiallyAdd(segment, r)}
+                  />
                 )}
             </li>
           );
