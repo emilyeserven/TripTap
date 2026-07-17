@@ -9,13 +9,12 @@ import { useBookmarksSettings } from "@/hooks/useSettings";
 /** Which configured source backs each channel. */
 const SOURCE_KEY: Record<
   SentenceTermCategory,
-  "source" | "grammarSource" | "generalSource" | "resourceSource" | "listeningSource"
+  "source" | "grammarSource" | "generalSource" | "resourceSource"
 > = {
   vocabulary: "source",
   grammar: "grammarSource",
   general: "generalSource",
   resource: "resourceSource",
-  listening: "listeningSource",
 };
 
 /**

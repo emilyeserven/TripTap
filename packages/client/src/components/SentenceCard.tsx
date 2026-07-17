@@ -27,6 +27,7 @@ interface SentenceCardProps {
 export function SentenceCard({
   sentence, showTranslation = true, sourceName, onDelete, onGrammarTagClick,
 }: SentenceCardProps) {
+  const hasMedia = sentence.hasAudio || sentence.hasImage;
   return (
     <Card>
       <CardContent className="p-4">
@@ -50,7 +51,7 @@ export function SentenceCard({
                   />
                 </p>
               </div>
-              {onDelete
+              {onDelete && !hasMedia
                 ? (
                   <button
                     type="button"
@@ -81,7 +82,24 @@ export function SentenceCard({
 
             <SentenceCardTools sentence={sentence} />
           </div>
-          <SentenceCardMedia sentence={sentence} />
+          {onDelete && hasMedia
+            ? (
+              <div className="relative shrink-0">
+                <SentenceCardMedia sentence={sentence} />
+                <button
+                  type="button"
+                  onClick={() => onDelete(sentence.id)}
+                  className="
+                    absolute top-1 right-1 rounded-sm bg-background/80 px-1.5
+                    py-0.5 text-xs text-destructive backdrop-blur-sm
+                    hover:underline
+                  "
+                >
+                  Delete
+                </button>
+              </div>
+            )
+            : <SentenceCardMedia sentence={sentence} />}
         </div>
       </CardContent>
     </Card>

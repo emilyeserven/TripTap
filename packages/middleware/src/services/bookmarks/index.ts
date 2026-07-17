@@ -210,25 +210,28 @@ async function resolveRuntimePropertyId(baseUrl: string): Promise<string | null>
 }
 
 /**
- * The bookmarks in the **listening** channel's configured source (Settings → Listening source), widened
- * for the "Find a Resource" browser (website + runtime + media type) and sorted by title (the client
- * re-sorts by runtime). Empty when no listening source is configured. A failure to read the
- * custom-property list degrades runtime to null rather than failing the whole request.
+ * The bookmarks in the **resource** channel's configured source (Settings → Resources source),
+ * filtered to those that have a runtime and widened for the "Find a Resource" browser (website +
+ * runtime + media type), sorted by title (the client re-sorts by runtime). Empty when no resource
+ * source is configured. A failure to read the custom-property list degrades runtime to null (which
+ * then filters everything out) rather than failing the whole request.
  */
 export async function listBookmarkResources(): Promise<BookmarkResource[]> {
   const {
     baseUrl, sources,
   } = await resolveBookmarksConfig();
-  const source = sources.listening;
+  const source = sources.resource;
   if (!source) return [];
   const [children, runtimePropId] = await Promise.all([
-    fetchVocabulary("listening"),
+    fetchVocabulary("resource"),
     resolveRuntimePropertyId(baseUrl).catch(() => null),
   ]);
   const raws = await listRawBookmarksForSource(baseUrl, source, children);
   return raws
     .map(r => toBookmarkResource(r, runtimePropId))
     .filter((r): r is BookmarkResource => r !== null)
+    // Only surface resources that actually have a runtime (audio/video to listen to/shadow).
+    .filter(r => r.runtimeSeconds != null)
     .sort((a, b) => a.title.localeCompare(b.title));
 }
 

@@ -56,7 +56,7 @@ function FindResourcePage() {
       <div>
         <h1 className="text-2xl font-semibold">Find a Resource</h1>
         <p className="text-sm text-muted-foreground">
-          Browse the bookmarks in your Listening source and start a listening or shadowing session from one.
+          Browse the resources in your Resources source that have a runtime, and start a listening or shadowing session from one.
         </p>
       </div>
 
@@ -102,7 +102,7 @@ function FindResourcePage() {
       {nothing
         ? (
           <p className="text-sm text-muted-foreground">
-            No bookmarks found. Set a Listening source on the Settings page to populate this list.
+            No resources with a runtime found. Set a Resources source on the Settings page (and give its items a runtime) to populate this list.
           </p>
         )
         : null}

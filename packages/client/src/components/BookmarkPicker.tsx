@@ -14,7 +14,7 @@ export function BookmarkPicker({
   selectedBookmarkId,
   selectedBookmarkTitle,
   onPick,
-  category = "listening",
+  category = "resource",
   label = "Bookmark",
 }: {
   selectedBookmarkId: string | null;

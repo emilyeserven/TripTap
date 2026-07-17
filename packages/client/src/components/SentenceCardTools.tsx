@@ -31,20 +31,24 @@ export function SentenceCardTools({
   return (
     <div>
       <div className="flex flex-wrap items-center gap-1">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setShowBreak(v => !v)}
-        >
-          <Layers className="size-4" />
-          {showBreak ? "Hide breakdown" : "Break it down"}
-          <ChevronDown
-            className={`
-              size-4 transition-transform
-              ${showBreak ? "rotate-180" : ""}
-            `}
-          />
-        </Button>
+        {sentence.vocabCount > 0
+          ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowBreak(v => !v)}
+            >
+              <Layers className="size-4" />
+              {showBreak ? "Hide breakdown" : "Break it down"}
+              <ChevronDown
+                className={`
+                  size-4 transition-transform
+                  ${showBreak ? "rotate-180" : ""}
+                `}
+              />
+            </Button>
+          )
+          : null}
         {hasKanji
           ? (
             <Button
