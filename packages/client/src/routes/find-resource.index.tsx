@@ -56,7 +56,7 @@ function FindResourcePage() {
       <div>
         <h1 className="text-2xl font-semibold">Find a Resource</h1>
         <p className="text-sm text-muted-foreground">
-          Browse your bookmarks and start a listening or shadowing session from one.
+          Browse the bookmarks in your Listening source and start a listening or shadowing session from one.
         </p>
       </div>
 
@@ -99,7 +99,13 @@ function FindResourcePage() {
 
       {error ? <p className="text-sm text-destructive">{error.message}</p> : null}
       {isLoading ? <p className="text-sm text-muted-foreground">Loading…</p> : null}
-      {nothing ? <p className="text-sm text-muted-foreground">No bookmarks found.</p> : null}
+      {nothing
+        ? (
+          <p className="text-sm text-muted-foreground">
+            No bookmarks found. Set a Listening source on the Settings page to populate this list.
+          </p>
+        )
+        : null}
 
       <div className="space-y-3">
         {shown.map(r => (
