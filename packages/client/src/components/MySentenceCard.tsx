@@ -3,13 +3,12 @@ import type { MySentence } from "@sentence-bank/types";
 import { useState } from "react";
 
 import { Link } from "@tanstack/react-router";
-import { Check, Eye, EyeOff, NotebookPen, PenLine, TriangleAlert } from "lucide-react";
+import { Check, Eye, EyeOff } from "lucide-react";
 
 import { CorrectionDiff } from "../lib/sentenceDiff";
-import { groupTermsByCategory, TERM_CATEGORIES } from "../lib/terms";
 
+import { MySentenceMetaBadges } from "@/components/MySentenceMetaBadges";
 import { SentenceCorrector } from "@/components/SentenceCorrector";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useUpdateMySentence } from "@/hooks/useMySentences";
@@ -33,7 +32,6 @@ export function MySentenceCard({
   /** Pure read-only summary — no inline corrector, ✓, or "Edit corrections". */
   readOnly?: boolean;
 }) {
-  const termGroups = groupTermsByCategory(ms.terms ?? []);
   const corrected = ms.correction?.trim() ? ms.correction : null;
   const [showOriginal, setShowOriginal] = useState(false);
   const [correcting, setCorrecting] = useState(false);
@@ -197,81 +195,7 @@ export function MySentenceCard({
 
         {ms.translation ? <p className="text-sm text-muted-foreground">Meant: {ms.translation}</p> : null}
 
-        <div
-          className="
-            flex flex-wrap items-center gap-2 text-xs text-muted-foreground
-          "
-        >
-          <Badge variant="secondary">{ms.language}</Badge>
-          {!corrected && ms.needsCorrection
-            ? (
-              <Badge
-                variant="outline"
-                className="gap-1 border-destructive/40 text-destructive"
-              >
-                <TriangleAlert className="size-3" />
-                Needs correction
-              </Badge>
-            )
-            : <Badge variant="outline">Corrected</Badge>}
-          {ms.practiceSentenceId
-            ? (
-              <Link
-                to="/practice/$id"
-                params={{
-                  id: ms.practiceSentenceId,
-                }}
-                className="
-                  inline-flex items-center gap-1
-                  hover:text-foreground
-                "
-              >
-                <NotebookPen className="size-3" />
-                From practice
-              </Link>
-            )
-            : null}
-          {ms.writingId
-            ? (
-              <Link
-                to="/my-writing/$id"
-                params={{
-                  id: ms.writingId,
-                }}
-                className="
-                  inline-flex items-center gap-1
-                  hover:text-foreground
-                "
-              >
-                <PenLine className="size-3" />
-                From writing
-              </Link>
-            )
-            : null}
-          {TERM_CATEGORIES.map(({
-            category, label,
-          }) => {
-            const terms = termGroups[category];
-            if (terms.length === 0) return null;
-            return (
-              <span
-                key={category}
-                className="inline-flex flex-wrap items-center gap-1"
-              >
-                <span>{label}:</span>
-                {terms.map(term => (
-                  <Badge
-                    key={`${term.sourceId}:${term.id}`}
-                    variant="outline"
-                    title={term.sourceLabel ? `${term.sourceLabel} (${term.kind})` : undefined}
-                  >
-                    {term.name}
-                  </Badge>
-                ))}
-              </span>
-            );
-          })}
-        </div>
+        <MySentenceMetaBadges mySentence={ms} />
       </CardContent>
     </Card>
   );

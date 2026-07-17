@@ -3,8 +3,7 @@ import type { Writing } from "@sentence-bank/types";
 import { Link } from "@tanstack/react-router";
 import { SparklesIcon } from "lucide-react";
 
-import { groupTermsByCategory, TERM_CATEGORIES } from "../lib/terms";
-
+import { TermCategoryBadges } from "@/components/TermCategoryBadges";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -17,7 +16,6 @@ export function WritingCard({
 }: {
   writing: Writing;
 }) {
-  const termGroups = groupTermsByCategory(writing.terms ?? []);
   const correctionCount = writing.corrections?.length ?? 0;
 
   return (
@@ -60,29 +58,7 @@ export function WritingCard({
               </Badge>
             )
             : null}
-          {TERM_CATEGORIES.map(({
-            category, label,
-          }) => {
-            const terms = termGroups[category];
-            if (terms.length === 0) return null;
-            return (
-              <span
-                key={category}
-                className="inline-flex flex-wrap items-center gap-1"
-              >
-                <span>{label}:</span>
-                {terms.map(term => (
-                  <Badge
-                    key={`${term.sourceId}:${term.id}`}
-                    variant="outline"
-                    title={term.sourceLabel ? `${term.sourceLabel} (${term.kind})` : undefined}
-                  >
-                    {term.name}
-                  </Badge>
-                ))}
-              </span>
-            );
-          })}
+          <TermCategoryBadges terms={writing.terms} />
         </div>
       </CardContent>
     </Card>
