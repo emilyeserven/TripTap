@@ -8,6 +8,7 @@ import { answerSheetRoutes } from "@/routes/answer-sheets";
 import { bookmarksRoutes } from "@/routes/bookmarks";
 import { captureRoutes } from "@/routes/captures";
 import { dictionaryRoutes } from "@/routes/dictionary";
+import { tatoebaRoutes } from "@/routes/tatoeba";
 import { drillReasonCategoryRoutes } from "@/routes/drill-reason-categories";
 import { drillSessionRoutes } from "@/routes/drill-sessions";
 import { grammarNoteRoutes } from "@/routes/grammar-notes";
@@ -160,6 +161,10 @@ export async function buildApp(): Promise<FastifyInstance> {
           name: "dictionary",
           description: "Japanese dictionary lookup proxy (Jisho / Jotoba)",
         },
+        {
+          name: "tatoeba",
+          description: "Tatoeba example-sentence lookup proxy",
+        },
       ],
     },
   });
@@ -170,6 +175,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(healthRoutes);
   await app.register(bookmarksRoutes);
   await app.register(dictionaryRoutes);
+  await app.register(tatoebaRoutes);
   await app.register(sentenceRoutes);
   await app.register(practiceSentenceRoutes);
   await app.register(mySentenceRoutes);

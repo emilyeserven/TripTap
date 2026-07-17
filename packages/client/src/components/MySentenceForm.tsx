@@ -24,6 +24,7 @@ export function MySentenceForm({
   onSuccess,
   lessonId,
   defaultLanguage,
+  prefill,
   embedded = false,
 }: {
   mySentence?: MySentence;
@@ -32,6 +33,18 @@ export function MySentenceForm({
   lessonId?: string;
   /** Seeds the language field for a fresh sentence (e.g. the lesson's language). */
   defaultLanguage?: string;
+  /**
+   * Seed fields for a *new* sentence (create mode only; ignored when editing). Used to pre-populate the
+   * form from a drill mistake — its text/correction/explanation and its tagged reasons.
+   */
+  prefill?: {
+    text?: string;
+    translation?: string | null;
+    correction?: string | null;
+    explanation?: string | null;
+    reasons?: DrillMistakeReasonRef[] | null;
+    needsCorrection?: boolean;
+  };
   /**
    * Render without a `<form>` element (a plain `<div>`, submitting on button click). Use when nesting
    * inside another form — e.g. the lesson editor — since nested forms cause the outer form to submit
@@ -43,16 +56,20 @@ export function MySentenceForm({
   const update = useUpdateMySentence();
   const editing = mySentence !== undefined;
 
-  const [text, setText] = useState(mySentence?.text ?? "");
-  const [translation, setTranslation] = useState(mySentence?.translation ?? "");
-  const [correction, setCorrection] = useState(mySentence?.correction ?? "");
+  const [text, setText] = useState(mySentence?.text ?? prefill?.text ?? "");
+  const [translation, setTranslation] = useState(mySentence?.translation ?? prefill?.translation ?? "");
+  const [correction, setCorrection] = useState(mySentence?.correction ?? prefill?.correction ?? "");
   const [actualMeaning, setActualMeaning] = useState(mySentence?.actualMeaning ?? "");
-  const [explanation, setExplanation] = useState(mySentence?.explanation ?? "");
+  const [explanation, setExplanation] = useState(mySentence?.explanation ?? prefill?.explanation ?? "");
   const [language, setLanguage] = useState(
     mySentence?.language ?? defaultLanguage ?? "Japanese",
   );
-  const [needsCorrection, setNeedsCorrection] = useState(mySentence?.needsCorrection ?? true);
-  const [reasons, setReasons] = useState<DrillMistakeReasonRef[]>(mySentence?.reasons ?? []);
+  const [needsCorrection, setNeedsCorrection] = useState(
+    mySentence?.needsCorrection ?? prefill?.needsCorrection ?? true,
+  );
+  const [reasons, setReasons] = useState<DrillMistakeReasonRef[]>(
+    mySentence?.reasons ?? prefill?.reasons ?? [],
+  );
 
   const initialTerms = mySentence?.terms ?? [];
   const [vocabTerms, setVocabTerms] = useState<SentenceTermRef[]>(
