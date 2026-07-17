@@ -1,118 +1,22 @@
-import type { Capture } from "@sentence-bank/types";
-
-import { useState } from "react";
-
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Trash2 } from "lucide-react";
 
 import { CaptureCreatedItems } from "@/components/CaptureCreatedItems";
 import { CaptureParseWorkspace } from "@/components/CaptureParseWorkspace";
+import { CaptureSourceReference } from "@/components/CaptureSourceReference";
+import { CaptureTextCard } from "@/components/CaptureTextCard";
 import { CleanedBlocksWorkspace } from "@/components/CleanedBlocksWorkspace";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
-import { useCapture, useDeleteCapture, useUpdateCapture } from "@/hooks/useCaptures";
+import { useCapture, useDeleteCapture } from "@/hooks/useCaptures";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useSources } from "@/hooks/useSources";
-import { capturesApi } from "@/lib/api";
-
-/**
- * Left box of the capture detail page. Edits a persisted, tidied-up copy of the OCR text
- * (`cleanedText`, seeded from the raw `text` when unset) and keeps the pristine source text
- * viewable behind a collapsible toggle.
- */
-function CaptureTextCard({
-  capture,
-}: { capture: Capture }) {
-  const [cleaned, setCleaned] = useState(capture.cleanedText ?? capture.text);
-  const [saved, setSaved] = useState(false);
-  const updateCapture = useUpdateCapture();
-
-  const dirty = cleaned !== (capture.cleanedText ?? capture.text);
-
-  async function save() {
-    setSaved(false);
-    await updateCapture.mutateAsync({
-      id: capture.id,
-      // An empty box clears the cleaned copy (falls back to the source text everywhere).
-      input: {
-        cleanedText: cleaned.trim() ? cleaned : null,
-      },
-    });
-    setSaved(true);
-  }
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Cleaned text</CardTitle>
-        <CardDescription>
-          An editable, tidied-up copy of the text. The original OCR output is preserved below.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <textarea
-          className="
-            max-h-[70vh] w-full rounded-md border border-input bg-transparent
-            px-3 py-2 font-sans text-sm whitespace-pre-wrap
-            focus:border-blue-500 focus:outline-none
-          "
-          rows={16}
-          value={cleaned}
-          onChange={(e) => {
-            setCleaned(e.target.value);
-            setSaved(false);
-          }}
-          aria-label="Cleaned text"
-        />
-        <div className="flex flex-wrap items-center gap-2">
-          <Button
-            type="button"
-            onClick={() => void save()}
-            disabled={updateCapture.isPending || !dirty}
-          >
-            {updateCapture.isPending ? "Saving…" : "Save"}
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => {
-              setCleaned(capture.text);
-              setSaved(false);
-            }}
-          >
-            Reset to source
-          </Button>
-          {saved && !dirty ? <span className="text-sm text-green-700">Saved.</span> : null}
-          {updateCapture.isError ? <span className="text-sm text-destructive">Could not save.</span> : null}
-        </div>
-        <details className="text-sm">
-          <summary className="cursor-pointer text-muted-foreground">Show original source text</summary>
-          <pre
-            className="
-              mt-2 max-h-[50vh] overflow-auto font-sans text-sm
-              whitespace-pre-wrap text-foreground
-            "
-          >
-            {capture.text}
-          </pre>
-        </details>
-      </CardContent>
-    </Card>
-  );
-}
 
 export const Route = createFileRoute("/captures/$id")({
   component: CaptureDetailPage,
@@ -247,63 +151,7 @@ function CaptureDetailPage() {
               value="source"
               className="space-y-6"
             >
-              {capture.hasImage && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Image</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <img
-                      src={capturesApi.imageUrl(capture.id)}
-                      alt="Captured page"
-                      className="
-                        max-h-[70vh] w-auto rounded-md border border-input
-                      "
-                    />
-                  </CardContent>
-                </Card>
-              )}
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Blocks</CardTitle>
-                  <CardDescription>
-                    {capture.blocks.length}
-                    {" "}
-                    recognized region(s), preserved for later parsing.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead className="text-left text-muted-foreground">
-                        <tr>
-                          <th className="py-1 pr-4 font-medium">Text</th>
-                          <th className="py-1 pr-4 font-medium">Lang</th>
-                          <th className="py-1 pr-4 font-medium">Engine</th>
-                          <th className="py-1 font-medium">Conf.</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {capture.blocks.map((block, i) => (
-                          <tr
-                            key={i}
-                            className="border-t border-border align-top"
-                          >
-                            <td className="py-1 pr-4">{block.text}</td>
-                            <td className="py-1 pr-4 text-muted-foreground">{block.lang}</td>
-                            <td className="py-1 pr-4 text-muted-foreground">{block.engine}</td>
-                            <td className="py-1 text-muted-foreground">
-                              {Math.round(block.confidence * 100)}
-                              %
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </CardContent>
-              </Card>
+              <CaptureSourceReference capture={capture} />
             </TabsContent>
           </Tabs>
         </>

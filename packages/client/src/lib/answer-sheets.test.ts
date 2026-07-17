@@ -7,6 +7,9 @@ import {
   dueDateMet,
   isAnswerSheetComplete,
   matchesLearningArea,
+  hasCorrectionDetail,
+  isEntryAnswered,
+  isEntryTouched,
   matchesResource,
   resourceFilterOptions,
 } from "./answer-sheets";
@@ -263,5 +266,45 @@ describe("matchesLearningArea", () => {
 
   it("does not match an undefined parent when an area is selected", () => {
     expect(matchesLearningArea(undefined, "Grammar")).toBe(false);
+  });
+});
+
+describe("entry state helpers", () => {
+  it("isEntryTouched is false for a blank entry and true for any filled field", () => {
+    expect(isEntryTouched(entry("s1", ""))).toBe(false);
+    expect(isEntryTouched(entry("s1", "答え"))).toBe(true);
+    expect(isEntryTouched({
+      ...entry("s1", ""),
+      correct: true,
+    })).toBe(true);
+    expect(isEntryTouched({
+      ...entry("s1", ""),
+      reasoning: "particle mix-up",
+    })).toBe(true);
+    expect(isEntryTouched({
+      ...entry("s1", ""),
+      correction: "   ",
+    })).toBe(false);
+  });
+
+  it("hasCorrectionDetail requires a correction-side field, not just an answer", () => {
+    expect(hasCorrectionDetail(entry("s1", "答え"))).toBe(false);
+    expect(hasCorrectionDetail({
+      ...entry("s1", "答え"),
+      intendedMeaning: "what I meant",
+    })).toBe(true);
+  });
+
+  it("isEntryAnswered accepts an answer, a verdict, or a correction", () => {
+    expect(isEntryAnswered(entry("s1", ""))).toBe(false);
+    expect(isEntryAnswered(entry("s1", "答え"))).toBe(true);
+    expect(isEntryAnswered({
+      ...entry("s1", ""),
+      correct: false,
+    })).toBe(true);
+    expect(isEntryAnswered({
+      ...entry("s1", ""),
+      correction: "直した",
+    })).toBe(true);
   });
 });

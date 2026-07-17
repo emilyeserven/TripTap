@@ -1,4 +1,4 @@
-import type { AnswerSheet, LearningArea, QuestionSheet } from "@sentence-bank/types";
+import type { AnswerSheet, AnswerSheetEntry, LearningArea, QuestionSheet } from "@sentence-bank/types";
 
 /** One answerable cell of a question sheet: a stable `id` and a human label for the input. */
 export interface QuestionSheetSlot {
@@ -130,3 +130,46 @@ export function matchesResource(qs: QuestionSheet | undefined, resource: string)
 export function matchesLearningArea(qs: QuestionSheet | undefined, area: string): boolean {
   return area === ALL_FILTER || (qs?.learningAreas ?? []).includes(area as LearningArea);
 }
+
+/** A blank entry for one slot, ready to be filled by the review actions. */
+export function emptyAnswerEntry(slotId: string): AnswerSheetEntry {
+  return {
+    slotId,
+    value: "",
+    correct: null,
+    correction: null,
+    reasoning: null,
+    intendedMeaning: null,
+    actualMeaning: null,
+    marks: null,
+  };
+}
+
+/** True once an entry holds anything worth saving (an answer, a review verdict, or a correction field). */
+export function isEntryTouched(e: AnswerSheetEntry): boolean {
+  return e.value.trim().length > 0
+    || e.correct != null
+    || Boolean(e.correction?.trim())
+    || Boolean(e.reasoning?.trim())
+    || Boolean(e.intendedMeaning?.trim())
+    || Boolean(e.actualMeaning?.trim())
+    || (e.marks?.length ?? 0) > 0;
+}
+
+/** True when an entry carries any correction detail worth showing beyond the raw answer. */
+export function hasCorrectionDetail(e: AnswerSheetEntry): boolean {
+  return Boolean(e.correction || e.reasoning || e.intendedMeaning || e.actualMeaning);
+}
+
+/** True once a slot has been engaged with — an answer, a verdict, or a correction. */
+export function isEntryAnswered(e: AnswerSheetEntry): boolean {
+  return e.value.trim().length > 0 || e.correct != null || hasCorrectionDetail(e);
+}
+
+/** Persist an inline correction built from span marks + typed insertions for one slot. */
+export type SaveCorrection = (
+  slotId: string,
+  result: { correction: string;
+    marks: AnswerSheetEntry["marks"];
+    reasoning: string | null; },
+) => void;
