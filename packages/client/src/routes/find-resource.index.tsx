@@ -1,11 +1,11 @@
 import { useMemo, useState } from "react";
 
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ExternalLink, Headphones, Repeat2 } from "lucide-react";
+import { ExternalLink, Headphones, ImageOff, Repeat2 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Combobox } from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
 import {
@@ -107,81 +107,104 @@ function FindResourcePage() {
         )
         : null}
 
-      <div className="space-y-3">
+      <div
+        className="
+          grid gap-4
+          sm:grid-cols-2
+          lg:grid-cols-3
+        "
+      >
         {shown.map(r => (
-          <Card key={r.id}>
-            <CardContent
-              className="flex flex-wrap items-center justify-between gap-3 p-4"
-            >
-              <div className="min-w-0 space-y-1">
-                {r.url
-                  ? (
-                    <a
-                      href={r.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="
-                        inline-flex items-center gap-1 font-medium
-                        hover:underline
-                      "
-                    >
-                      <span className="truncate">{r.title}</span>
-                      <ExternalLink
-                        className="size-3.5 shrink-0 text-muted-foreground"
-                      />
-                    </a>
-                  )
-                  : <span className="font-medium">{r.title}</span>}
-                <div
-                  className="
-                    flex flex-wrap items-center gap-2 text-xs
-                    text-muted-foreground
-                  "
-                >
-                  {r.website ? <Badge variant="secondary">{r.website.siteName}</Badge> : null}
-                  {r.mediaType ? <Badge variant="outline">{r.mediaType}</Badge> : null}
-                  {r.runtimeSeconds != null
-                    ? <span className="font-mono">{formatRuntime(r.runtimeSeconds)}</span>
-                    : null}
-                </div>
-              </div>
-              <div className="flex shrink-0 items-center gap-2">
-                <Button
-                  asChild
-                  variant="outline"
-                  size="sm"
-                >
-                  <Link
-                    to="/listening-sessions/new"
-                    search={{
-                      bookmarkId: r.id,
-                      bookmarkTitle: r.title,
-                      bookmarkUrl: r.url ?? undefined,
-                    }}
+          <Card
+            key={r.id}
+            className="flex flex-col gap-0 overflow-hidden py-0"
+          >
+            <div className="aspect-video w-full overflow-hidden bg-muted">
+              {r.imageUrl
+                ? (
+                  <img
+                    src={r.imageUrl}
+                    alt=""
+                    loading="lazy"
+                    className="size-full object-cover"
+                  />
+                )
+                : (
+                  <div className="flex size-full items-center justify-center">
+                    <ImageOff className="size-8 text-muted-foreground" />
+                  </div>
+                )}
+            </div>
+            <CardContent className="flex-1 space-y-2 p-4">
+              {r.url
+                ? (
+                  <a
+                    href={r.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="
+                      flex items-center gap-1 font-medium
+                      hover:underline
+                    "
                   >
-                    <Headphones className="size-4" />
-                    Listening
-                  </Link>
-                </Button>
-                <Button
-                  asChild
-                  variant="outline"
-                  size="sm"
-                >
-                  <Link
-                    to="/shadowing/new"
-                    search={{
-                      bookmarkId: r.id,
-                      bookmarkTitle: r.title,
-                      bookmarkUrl: r.url ?? undefined,
-                    }}
-                  >
-                    <Repeat2 className="size-4" />
-                    Shadowing
-                  </Link>
-                </Button>
+                    <span className="truncate">{r.title}</span>
+                    <ExternalLink
+                      className="size-3.5 shrink-0 text-muted-foreground"
+                    />
+                  </a>
+                )
+                : <span className="block truncate font-medium">{r.title}</span>}
+              <div
+                className="
+                  flex flex-wrap items-center gap-2 text-xs
+                  text-muted-foreground
+                "
+              >
+                {r.website ? <Badge variant="secondary">{r.website.siteName}</Badge> : null}
+                {r.mediaType ? <Badge variant="outline">{r.mediaType}</Badge> : null}
+                {r.runtimeSeconds != null
+                  ? <span className="font-mono">{formatRuntime(r.runtimeSeconds)}</span>
+                  : null}
               </div>
             </CardContent>
+            <CardFooter className="gap-2 p-4 pt-0">
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+                className="flex-1"
+              >
+                <Link
+                  to="/listening-sessions/new"
+                  search={{
+                    bookmarkId: r.id,
+                    bookmarkTitle: r.title,
+                    bookmarkUrl: r.url ?? undefined,
+                  }}
+                >
+                  <Headphones className="size-4" />
+                  Listening
+                </Link>
+              </Button>
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+                className="flex-1"
+              >
+                <Link
+                  to="/shadowing/new"
+                  search={{
+                    bookmarkId: r.id,
+                    bookmarkTitle: r.title,
+                    bookmarkUrl: r.url ?? undefined,
+                  }}
+                >
+                  <Repeat2 className="size-4" />
+                  Shadowing
+                </Link>
+              </Button>
+            </CardFooter>
           </Card>
         ))}
       </div>

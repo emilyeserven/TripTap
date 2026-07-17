@@ -184,6 +184,11 @@ test("toBookmarkResource extracts website, runtime, and media type", () => {
     mediaType: {
       name: "Video",
     },
+    image: {
+      id: "img1",
+      url: "/api/bookmarks/b1/images/img1?v=1",
+      isMain: true,
+    },
     numberValues: [{
       propertyId: RUNTIME_PROP,
       value: 1652,
@@ -199,6 +204,7 @@ test("toBookmarkResource extracts website, runtime, and media type", () => {
     },
     runtimeSeconds: 1652,
     mediaType: "Video",
+    imageUrl: "/api/bookmarks/b1/images/img1?v=1",
   });
 });
 
@@ -214,6 +220,7 @@ test("toBookmarkResource degrades missing website/runtime/mediaType to null", ()
     website: null,
     runtimeSeconds: null,
     mediaType: null,
+    imageUrl: null,
   });
 });
 

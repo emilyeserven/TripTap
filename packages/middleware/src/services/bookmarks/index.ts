@@ -9,7 +9,8 @@ import type {
 } from "@sentence-bank/types";
 import { getBookmarksSettings } from "@/services/settings";
 import { BookmarksNotConfiguredError, BookmarksUnavailableError } from "@/services/bookmarks/errors";
-import { fetchBookmarksJson } from "@/services/bookmarks/util";
+import { fetchBookmarksImage, fetchBookmarksJson } from "@/services/bookmarks/util";
+import type { BookmarksImage } from "@/services/bookmarks/util";
 
 export { BookmarksNotConfiguredError, BookmarksUnavailableError } from "@/services/bookmarks/errors";
 
@@ -333,6 +334,23 @@ export async function getBookmark(id: string): Promise<BookmarkRecord | null> {
 }
 
 /**
+ * Proxy one bookmark's thumbnail bytes from the host (the `image.url` surfaced on {@link BookmarkResource}
+ * points at `/api/bookmarks/{bookmarkId}/images/{imageId}`, so the browser can load it same-origin). The
+ * optional `query` re-attaches the upstream cache-buster (`?v=…`) the image URL was stamped with.
+ */
+export async function getBookmarkImage(
+  bookmarkId: string,
+  imageId: string,
+  query = "",
+): Promise<BookmarksImage> {
+  const {
+    baseUrl,
+  } = await resolveBookmarksConfig();
+  const path = `/bookmarks/${encodeURIComponent(bookmarkId)}/images/${encodeURIComponent(imageId)}`;
+  return fetchBookmarksImage(apiUrl(baseUrl, path) + query);
+}
+
+/**
  * Widen one upstream bookmark into a {@link BookmarkResource} for the "Find a Resource" browser: pull its
  * `website`, its runtime (the `numberValues` entry for the resolved "Runtime" property, in seconds), and
  * its media-type name. Pure — the runtime property id is resolved once by the caller. Null when unreadable.
@@ -374,6 +392,14 @@ export function toBookmarkResource(raw: unknown, runtimePropId: string | null): 
     if (typeof m.name === "string") mediaType = m.name;
   }
 
+  // The upstream `image.url` is a relative `/api/bookmarks/{id}/images/{imageId}` path; passed through
+  // verbatim it hits our own bookmarks-image proxy (same namespace), which forwards it to the host.
+  let imageUrl: string | null = null;
+  if (o.image && typeof o.image === "object") {
+    const img = o.image as Record<string, unknown>;
+    if (typeof img.url === "string" && img.url !== "") imageUrl = img.url;
+  }
+
   return {
     id: o.id,
     title: o.title,
@@ -381,6 +407,7 @@ export function toBookmarkResource(raw: unknown, runtimePropId: string | null): 
     website,
     runtimeSeconds,
     mediaType,
+    imageUrl,
   };
 }
 

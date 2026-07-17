@@ -60,3 +60,46 @@ export async function fetchBookmarksJson<T>(url: string, opts: FetchBookmarksOpt
     throw new BookmarksUnavailableError(`Bookmarks host returned invalid JSON: ${reason}`);
   }
 }
+
+/** The raw bytes of a bookmarks image, plus the upstream content type for the proxied response. */
+export interface BookmarksImage {
+  body: Buffer;
+  contentType: string;
+}
+
+/**
+ * Fetch binary image bytes from the bookmarks host (the same abort/timeout + error mapping as
+ * {@link fetchBookmarksJson}, but for `image/*` rather than JSON). Used by the thumbnail proxy so the
+ * browser never has to reach the Tailnet-only host directly.
+ */
+export async function fetchBookmarksImage(url: string): Promise<BookmarksImage> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        Accept: "image/*",
+      },
+    });
+  }
+  catch (err) {
+    const reason = err instanceof Error ? err.message : String(err);
+    throw new BookmarksUnavailableError(`Bookmarks host unreachable: ${reason}`);
+  }
+  finally {
+    clearTimeout(timeout);
+  }
+
+  if (!res.ok) {
+    throw new BookmarksUnavailableError(`Bookmarks host returned ${res.status}`);
+  }
+
+  const body = Buffer.from(await res.arrayBuffer());
+  return {
+    body,
+    contentType: res.headers.get("content-type") ?? "application/octet-stream",
+  };
+}
