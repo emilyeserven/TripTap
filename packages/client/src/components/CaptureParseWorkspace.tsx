@@ -1,8 +1,6 @@
-import type { ParseResult } from "@/lib/parseTemplate";
+import type { ParseMode } from "@/lib/captureParseInputs";
 import type {
   Capture,
-  CreateSentenceInput,
-  CreateVocabInput,
   ParseBoundary,
   ParseTarget,
 } from "@sentence-bank/types";
@@ -26,21 +24,12 @@ import { useUpdateCapture } from "@/hooks/useCaptures";
 import { useCreateParseTemplate, useDeleteParseTemplate, useParseTemplates } from "@/hooks/useParseTemplates";
 import { useCreateSentencesMany } from "@/hooks/useSentences";
 import { useCreateVocabMany, useVocab } from "@/hooks/useVocab";
+import { buildSentenceInputs, buildVocabInputs, parseForMode } from "@/lib/captureParseInputs";
 import {
   DEFAULT_DIVIDER,
   DEFAULT_TEMPLATE,
   FIELD_CLASS,
-  REQUIRED,
 } from "@/lib/captureParseUi";
-import { parseTemplate, splitOnDivider } from "@/lib/parseTemplate";
-
-/** Workspace mode: create sentences, vocab, or both at once from a divider-split text. */
-type Mode = ParseTarget | "merged";
-
-/** Prefer a per-item tag value, else the batch/shared value, else empty. */
-function pick(itemValue: string | undefined, shared: string): string {
-  return (itemValue && itemValue.trim()) || shared.trim();
-}
 
 /**
  * Right-hand workspace of the capture detail page: parse the capture text into Sentences and/or
@@ -52,7 +41,7 @@ function pick(itemValue: string | undefined, shared: string): string {
 export function CaptureParseWorkspace({
   capture,
 }: { capture: Capture }) {
-  const [mode, setMode] = useState<Mode>("sentence");
+  const [mode, setMode] = useState<ParseMode>("sentence");
   const [workingText, setWorkingText] = useState(capture.cleanedText ?? capture.text);
   // Separate templates per target so "merged" mode can drive both at once.
   const [sentenceTemplate, setSentenceTemplate] = useState(DEFAULT_TEMPLATE.sentence);
@@ -96,47 +85,21 @@ export function CaptureParseWorkspace({
   const savedForTarget = (templatesQuery.data ?? []).filter(t => t.target === singleTarget);
 
   // Parse each active target's section into items. In merged mode the text is split on the divider.
-  const parsed = useMemo(() => {
-    const shared = {
-      boundary,
-      ignoreBlankLines,
-    };
-    if (mode === "merged") {
-      const [sentenceText, vocabText] = splitOnDivider(workingText, divider);
-      return {
-        sentence: parseTemplate(sentenceText, sentenceTemplate, {
-          ...shared,
-          requiredField: REQUIRED.sentence,
-        }),
-        vocab: parseTemplate(vocabText, vocabTemplate, {
-          ...shared,
-          requiredField: REQUIRED.vocab,
-        }),
-      };
-    }
-    if (mode === "sentence") {
-      return {
-        sentence: parseTemplate(workingText, sentenceTemplate, {
-          ...shared,
-          requiredField: REQUIRED.sentence,
-        }),
-        vocab: undefined,
-      };
-    }
-    return {
-      sentence: undefined,
-      vocab: parseTemplate(workingText, vocabTemplate, {
-        ...shared,
-        requiredField: REQUIRED.vocab,
-      }),
-    };
-  }, [mode, workingText, divider, sentenceTemplate, vocabTemplate, boundary, ignoreBlankLines]);
+  const parsed = useMemo(() => parseForMode({
+    mode,
+    workingText,
+    divider,
+    sentenceTemplate,
+    vocabTemplate,
+    boundary,
+    ignoreBlankLines,
+  }), [mode, workingText, divider, sentenceTemplate, vocabTemplate, boundary, ignoreBlankLines]);
 
   const sentenceValid = parsed.sentence?.validCount ?? 0;
   const vocabValid = parsed.vocab?.validCount ?? 0;
   const totalValid = sentenceValid + vocabValid;
 
-  function switchMode(next: Mode) {
+  function switchMode(next: ParseMode) {
     if (next === mode) return;
     setMode(next);
     setLinkOverrides({});
@@ -181,53 +144,19 @@ export function CaptureParseWorkspace({
     });
   }
 
-  /** Turn a parsed sentence section into create inputs, carrying shared metadata + vocab links. */
-  function buildSentenceInputs(result: ParseResult): CreateSentenceInput[] {
-    return result.items
-      .map((item, index) => ({
-        item,
-        index,
-      }))
-      .filter(({
-        item,
-      }) => item.valid)
-      .map(({
-        item, index,
-      }) => ({
-        text: item.fields.text,
-        translation: (item.fields.translation ?? "").trim() || null,
-        language: pick(item.fields.language, language) || "Japanese",
-        source: (item.fields.source ?? "").trim() || null,
-        sourceId,
-        page: pick(item.fields.page, page) || null,
-        tags: pick(item.fields.tags, tags) || null,
-        notes: pick(item.fields.notes, notes) || null,
-        captureId: capture.id,
-        vocabIds: linksFor(index, item.fields.text),
-      }));
-  }
-
-  /** Turn a parsed vocab section into create inputs, carrying shared metadata. */
-  function buildVocabInputs(result: ParseResult): CreateVocabInput[] {
-    return result.items
-      .filter(item => item.valid)
-      .map(item => ({
-        term: item.fields.term,
-        reading: (item.fields.reading ?? "").trim() || null,
-        meaning: (item.fields.meaning ?? "").trim() || null,
-        language: pick(item.fields.language, language) || "Japanese",
-        sourceId,
-        page: pick(item.fields.page, page) || null,
-        tags: pick(item.fields.tags, tags) || null,
-        notes: pick(item.fields.notes, notes) || null,
-        captureId: capture.id,
-      }));
-  }
+  const sharedValues = {
+    captureId: capture.id,
+    sourceId,
+    page,
+    language,
+    tags,
+    notes,
+  };
 
   async function create() {
     setDone(null);
-    const sentenceInputs = parsed.sentence ? buildSentenceInputs(parsed.sentence) : [];
-    const vocabInputs = parsed.vocab ? buildVocabInputs(parsed.vocab) : [];
+    const sentenceInputs = parsed.sentence ? buildSentenceInputs(parsed.sentence, sharedValues, linksFor) : [];
+    const vocabInputs = parsed.vocab ? buildVocabInputs(parsed.vocab, sharedValues) : [];
     if (sentenceInputs.length === 0 && vocabInputs.length === 0) return;
 
     const parts: string[] = [];
