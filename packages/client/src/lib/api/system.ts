@@ -6,6 +6,7 @@ import type {
   BookmarksTaxonomy,
   DictionaryEntry,
   DictionarySettings,
+  ExampleSentence,
   OcrSettings,
   SentenceTermCategory,
   TagTermOption,
@@ -70,4 +71,12 @@ export const bookmarksApi = {
 export const dictionaryApi = {
   search: (keyword: string) =>
     request<DictionaryEntry[]>(`/dictionary/search?keyword=${encodeURIComponent(keyword)}`),
+};
+
+/** Proxy to Tatoeba example-sentence search (server-side; CC-BY 2.0 FR — attribute Tatoeba). */
+export const tatoebaApi = {
+  search: (query: string, limit = 5) =>
+    request<ExampleSentence[]>(
+      `/tatoeba/search?query=${encodeURIComponent(query)}&limit=${limit}`,
+    ),
 };

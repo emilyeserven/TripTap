@@ -1,5 +1,6 @@
 import type { DrillMistake, DrillReasonCategory } from "@sentence-bank/types";
 
+import { AddSentenceFromMistakeDialog } from "@/components/AddSentenceFromMistakeDialog";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { resolveReasonRef } from "@/lib/drill-reasons";
@@ -55,6 +56,9 @@ export function DrillMistakeCard({
         {mistake.reflection
           ? <p className="text-sm whitespace-pre-wrap italic">{mistake.reflection}</p>
           : null}
+        <div className="pt-1">
+          <AddSentenceFromMistakeDialog mistake={mistake} />
+        </div>
       </CardContent>
     </Card>
   );
