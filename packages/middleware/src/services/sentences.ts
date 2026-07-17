@@ -3,6 +3,7 @@ import type { CreateSentenceInput, Sentence, UpdateSentenceInput } from "@senten
 import { db } from "@/db";
 import { sentences, sentenceVocab, type SentenceRow, vocab } from "@/db/schema";
 import { generateFurigana } from "@/services/furigana";
+import { deleteMedia, getMedia, type StoredMedia } from "@/services/media";
 
 /**
  * Reading overrides for the furigana analyzer, sourced from the vocab bank: any vocab with a reading
@@ -38,6 +39,8 @@ export function toSentence(row: SentenceRow): Sentence {
     tags: row.tags,
     terms: row.terms ?? null,
     captureId: row.captureId,
+    hasAudio: row.audioKey != null,
+    hasImage: row.imageKey != null,
     createdAt:
       row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
   };
@@ -241,9 +244,41 @@ export async function backfillFurigana(): Promise<{ updated: number;
   };
 }
 
+/** Fetch a sentence's stored audio/image bytes from object storage, or null when it has none. */
+export async function getSentenceMedia(
+  id: string,
+  which: "audio" | "image",
+): Promise<StoredMedia | null> {
+  const [row] = await db
+    .select({
+      audioKey: sentences.audioKey,
+      audioMime: sentences.audioMime,
+      imageKey: sentences.imageKey,
+      imageMime: sentences.imageMime,
+    })
+    .from(sentences)
+    .where(eq(sentences.id, id));
+  if (!row) return null;
+  const key = which === "audio" ? row.audioKey : row.imageKey;
+  const mime = which === "audio" ? row.audioMime : row.imageMime;
+  if (!key) return null;
+  const media = await getMedia(key);
+  return media
+    ? {
+      body: media.body,
+      contentType: mime ?? media.contentType,
+    }
+    : null;
+}
+
 export async function deleteSentence(id: string): Promise<boolean> {
   const rows = await db.delete(sentences).where(eq(sentences.id, id)).returning({
     id: sentences.id,
+    audioKey: sentences.audioKey,
+    imageKey: sentences.imageKey,
   });
-  return rows.length > 0;
+  if (rows.length === 0) return false;
+  // Best-effort media cleanup so deleting a sentence doesn't orphan its blobs in object storage.
+  await Promise.all([deleteMedia(rows[0].audioKey), deleteMedia(rows[0].imageKey)]);
+  return true;
 }

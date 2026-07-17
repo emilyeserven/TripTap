@@ -11,6 +11,22 @@ import { settingsApi } from "../lib/api";
 const OCR_SETTINGS_KEY = ["settings", "ocr"] as const;
 const BOOKMARKS_SETTINGS_KEY = ["settings", "bookmarks"] as const;
 const DICTIONARY_SETTINGS_KEY = ["settings", "dictionary"] as const;
+const MEDIA_SETTINGS_KEY = ["settings", "media"] as const;
+
+/** Non-secret status of the media object store (S3/Garage) config. */
+export function useMediaSettings() {
+  return useQuery({
+    queryKey: MEDIA_SETTINGS_KEY,
+    queryFn: settingsApi.getMedia,
+  });
+}
+
+/** Runs a live write/read/delete round-trip against the media bucket. */
+export function useTestMediaConnection() {
+  return useMutation({
+    mutationFn: () => settingsApi.testMedia(),
+  });
+}
 
 /** Masked view of the stored cloud OCR credentials (presence + hint, never the raw secrets). */
 export function useOcrSettings() {

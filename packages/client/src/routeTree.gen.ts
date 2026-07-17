@@ -28,6 +28,7 @@ import { Route as QuestionSheetsIndexRouteImport } from './routes/question-sheet
 import { Route as PracticeIndexRouteImport } from './routes/practice.index'
 import { Route as MyWritingIndexRouteImport } from './routes/my-writing.index'
 import { Route as MySentencesIndexRouteImport } from './routes/my-sentences.index'
+import { Route as MigakuImportIndexRouteImport } from './routes/migaku-import.index'
 import { Route as ListeningSessionsIndexRouteImport } from './routes/listening-sessions.index'
 import { Route as LessonsIndexRouteImport } from './routes/lessons.index'
 import { Route as GrammarNotesIndexRouteImport } from './routes/grammar-notes.index'
@@ -52,6 +53,7 @@ import { Route as PracticeIdRouteImport } from './routes/practice.$id'
 import { Route as MyWritingIdRouteImport } from './routes/my-writing.$id'
 import { Route as MySentencesNewRouteImport } from './routes/my-sentences.new'
 import { Route as MySentencesIdRouteImport } from './routes/my-sentences.$id'
+import { Route as MigakuImportIdRouteImport } from './routes/migaku-import.$id'
 import { Route as ListeningSessionsNewRouteImport } from './routes/listening-sessions.new'
 import { Route as ListeningSessionsIdRouteImport } from './routes/listening-sessions.$id'
 import { Route as LessonsNewRouteImport } from './routes/lessons.new'
@@ -185,6 +187,11 @@ const MySentencesIndexRoute = MySentencesIndexRouteImport.update({
   path: '/my-sentences/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MigakuImportIndexRoute = MigakuImportIndexRouteImport.update({
+  id: '/migaku-import/',
+  path: '/migaku-import/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ListeningSessionsIndexRoute = ListeningSessionsIndexRouteImport.update({
   id: '/listening-sessions/',
   path: '/listening-sessions/',
@@ -303,6 +310,11 @@ const MySentencesNewRoute = MySentencesNewRouteImport.update({
 const MySentencesIdRoute = MySentencesIdRouteImport.update({
   id: '/my-sentences/$id',
   path: '/my-sentences/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MigakuImportIdRoute = MigakuImportIdRouteImport.update({
+  id: '/migaku-import/$id',
+  path: '/migaku-import/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ListeningSessionsNewRoute = ListeningSessionsNewRouteImport.update({
@@ -518,6 +530,7 @@ export interface FileRoutesByFullPath {
   '/lessons/new': typeof LessonsNewRoute
   '/listening-sessions/$id': typeof ListeningSessionsIdRouteWithChildren
   '/listening-sessions/new': typeof ListeningSessionsNewRoute
+  '/migaku-import/$id': typeof MigakuImportIdRoute
   '/my-sentences/$id': typeof MySentencesIdRouteWithChildren
   '/my-sentences/new': typeof MySentencesNewRoute
   '/my-writing/$id': typeof MyWritingIdRoute
@@ -542,6 +555,7 @@ export interface FileRoutesByFullPath {
   '/grammar-notes/': typeof GrammarNotesIndexRoute
   '/lessons/': typeof LessonsIndexRoute
   '/listening-sessions/': typeof ListeningSessionsIndexRoute
+  '/migaku-import/': typeof MigakuImportIndexRoute
   '/my-sentences/': typeof MySentencesIndexRoute
   '/my-writing/': typeof MyWritingIndexRoute
   '/practice/': typeof PracticeIndexRoute
@@ -595,6 +609,7 @@ export interface FileRoutesByTo {
   '/grammar-notes/new': typeof GrammarNotesNewRoute
   '/lessons/new': typeof LessonsNewRoute
   '/listening-sessions/new': typeof ListeningSessionsNewRoute
+  '/migaku-import/$id': typeof MigakuImportIdRoute
   '/my-sentences/new': typeof MySentencesNewRoute
   '/my-writing/$id': typeof MyWritingIdRoute
   '/practice/new': typeof PracticeNewRoute
@@ -613,6 +628,7 @@ export interface FileRoutesByTo {
   '/grammar-notes': typeof GrammarNotesIndexRoute
   '/lessons': typeof LessonsIndexRoute
   '/listening-sessions': typeof ListeningSessionsIndexRoute
+  '/migaku-import': typeof MigakuImportIndexRoute
   '/my-sentences': typeof MySentencesIndexRoute
   '/my-writing': typeof MyWritingIndexRoute
   '/practice': typeof PracticeIndexRoute
@@ -672,6 +688,7 @@ export interface FileRoutesById {
   '/lessons/new': typeof LessonsNewRoute
   '/listening-sessions/$id': typeof ListeningSessionsIdRouteWithChildren
   '/listening-sessions/new': typeof ListeningSessionsNewRoute
+  '/migaku-import/$id': typeof MigakuImportIdRoute
   '/my-sentences/$id': typeof MySentencesIdRouteWithChildren
   '/my-sentences/new': typeof MySentencesNewRoute
   '/my-writing/$id': typeof MyWritingIdRoute
@@ -696,6 +713,7 @@ export interface FileRoutesById {
   '/grammar-notes/': typeof GrammarNotesIndexRoute
   '/lessons/': typeof LessonsIndexRoute
   '/listening-sessions/': typeof ListeningSessionsIndexRoute
+  '/migaku-import/': typeof MigakuImportIndexRoute
   '/my-sentences/': typeof MySentencesIndexRoute
   '/my-writing/': typeof MyWritingIndexRoute
   '/practice/': typeof PracticeIndexRoute
@@ -756,6 +774,7 @@ export interface FileRouteTypes {
     | '/lessons/new'
     | '/listening-sessions/$id'
     | '/listening-sessions/new'
+    | '/migaku-import/$id'
     | '/my-sentences/$id'
     | '/my-sentences/new'
     | '/my-writing/$id'
@@ -780,6 +799,7 @@ export interface FileRouteTypes {
     | '/grammar-notes/'
     | '/lessons/'
     | '/listening-sessions/'
+    | '/migaku-import/'
     | '/my-sentences/'
     | '/my-writing/'
     | '/practice/'
@@ -833,6 +853,7 @@ export interface FileRouteTypes {
     | '/grammar-notes/new'
     | '/lessons/new'
     | '/listening-sessions/new'
+    | '/migaku-import/$id'
     | '/my-sentences/new'
     | '/my-writing/$id'
     | '/practice/new'
@@ -851,6 +872,7 @@ export interface FileRouteTypes {
     | '/grammar-notes'
     | '/lessons'
     | '/listening-sessions'
+    | '/migaku-import'
     | '/my-sentences'
     | '/my-writing'
     | '/practice'
@@ -909,6 +931,7 @@ export interface FileRouteTypes {
     | '/lessons/new'
     | '/listening-sessions/$id'
     | '/listening-sessions/new'
+    | '/migaku-import/$id'
     | '/my-sentences/$id'
     | '/my-sentences/new'
     | '/my-writing/$id'
@@ -933,6 +956,7 @@ export interface FileRouteTypes {
     | '/grammar-notes/'
     | '/lessons/'
     | '/listening-sessions/'
+    | '/migaku-import/'
     | '/my-sentences/'
     | '/my-writing/'
     | '/practice/'
@@ -992,6 +1016,7 @@ export interface RootRouteChildren {
   LessonsNewRoute: typeof LessonsNewRoute
   ListeningSessionsIdRoute: typeof ListeningSessionsIdRouteWithChildren
   ListeningSessionsNewRoute: typeof ListeningSessionsNewRoute
+  MigakuImportIdRoute: typeof MigakuImportIdRoute
   MySentencesIdRoute: typeof MySentencesIdRouteWithChildren
   MySentencesNewRoute: typeof MySentencesNewRoute
   MyWritingIdRoute: typeof MyWritingIdRoute
@@ -1016,6 +1041,7 @@ export interface RootRouteChildren {
   GrammarNotesIndexRoute: typeof GrammarNotesIndexRoute
   LessonsIndexRoute: typeof LessonsIndexRoute
   ListeningSessionsIndexRoute: typeof ListeningSessionsIndexRoute
+  MigakuImportIndexRoute: typeof MigakuImportIndexRoute
   MySentencesIndexRoute: typeof MySentencesIndexRoute
   MyWritingIndexRoute: typeof MyWritingIndexRoute
   PracticeIndexRoute: typeof PracticeIndexRoute
@@ -1160,6 +1186,13 @@ declare module '@tanstack/react-router' {
       path: '/my-sentences'
       fullPath: '/my-sentences/'
       preLoaderRoute: typeof MySentencesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/migaku-import/': {
+      id: '/migaku-import/'
+      path: '/migaku-import'
+      fullPath: '/migaku-import/'
+      preLoaderRoute: typeof MigakuImportIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/listening-sessions/': {
@@ -1328,6 +1361,13 @@ declare module '@tanstack/react-router' {
       path: '/my-sentences/$id'
       fullPath: '/my-sentences/$id'
       preLoaderRoute: typeof MySentencesIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/migaku-import/$id': {
+      id: '/migaku-import/$id'
+      path: '/migaku-import/$id'
+      fullPath: '/migaku-import/$id'
+      preLoaderRoute: typeof MigakuImportIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/listening-sessions/new': {
@@ -1769,6 +1809,7 @@ const rootRouteChildren: RootRouteChildren = {
   LessonsNewRoute: LessonsNewRoute,
   ListeningSessionsIdRoute: ListeningSessionsIdRouteWithChildren,
   ListeningSessionsNewRoute: ListeningSessionsNewRoute,
+  MigakuImportIdRoute: MigakuImportIdRoute,
   MySentencesIdRoute: MySentencesIdRouteWithChildren,
   MySentencesNewRoute: MySentencesNewRoute,
   MyWritingIdRoute: MyWritingIdRoute,
@@ -1793,6 +1834,7 @@ const rootRouteChildren: RootRouteChildren = {
   GrammarNotesIndexRoute: GrammarNotesIndexRoute,
   LessonsIndexRoute: LessonsIndexRoute,
   ListeningSessionsIndexRoute: ListeningSessionsIndexRoute,
+  MigakuImportIndexRoute: MigakuImportIndexRoute,
   MySentencesIndexRoute: MySentencesIndexRoute,
   MyWritingIndexRoute: MyWritingIndexRoute,
   PracticeIndexRoute: PracticeIndexRoute,

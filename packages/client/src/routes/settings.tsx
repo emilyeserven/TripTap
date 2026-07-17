@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { BookmarksTagsCard } from "@/components/BookmarksTagsCard";
 import { DictionaryCard } from "@/components/DictionaryCard";
+import { MediaStorageCard } from "@/components/MediaStorageCard";
 import { OcrKeysCard } from "@/components/OcrKeysCard";
 import { SkillInstallCard } from "@/components/SkillInstallCard";
 import { usePageTitle } from "@/hooks/usePageTitle";
@@ -22,6 +23,7 @@ function SettingsPage() {
       <OcrKeysCard />
       <BookmarksTagsCard />
       <DictionaryCard />
+      <MediaStorageCard />
       <SkillInstallCard />
     </section>
   );

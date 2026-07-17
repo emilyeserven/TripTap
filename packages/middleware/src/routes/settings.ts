@@ -12,6 +12,7 @@ import {
   updateDictionarySettings,
   updateOcrSettings,
 } from "@/services/settings";
+import { mediaStatus, testMediaConnection } from "@/services/media";
 
 const updateOcrSettingsBody = {
   type: "object",
@@ -113,6 +114,18 @@ export async function settingsRoutes(app: FastifyInstance): Promise<void> {
   }, async (req) => {
     return updateBookmarksSettings(req.body as UpdateBookmarksSettingsInput);
   });
+
+  app.get("/api/settings/media", {
+    schema: {
+      tags: ["settings"],
+    },
+  }, async () => mediaStatus());
+
+  app.post("/api/settings/media/test", {
+    schema: {
+      tags: ["settings"],
+    },
+  }, async () => testMediaConnection());
 
   app.get("/api/settings/dictionary", {
     schema: {

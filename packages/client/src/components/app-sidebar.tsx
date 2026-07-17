@@ -13,6 +13,7 @@ import {
   ClipboardCheckIcon,
   ClipboardListIcon,
   DatabaseIcon,
+  DownloadIcon,
   DrillIcon,
   FolderTreeIcon,
   GraduationCapIcon,
@@ -210,6 +211,17 @@ const actionItems = [
         title: "Statistics",
         to: "/drill-sessions/stats",
         icon: ChartColumnIcon,
+      },
+    ],
+  },
+  {
+    title: "Import",
+    icon: DownloadIcon,
+    children: [
+      {
+        title: "Migaku import",
+        to: "/migaku-import",
+        icon: LayersIcon,
       },
     ],
   },

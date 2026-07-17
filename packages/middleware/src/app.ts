@@ -14,6 +14,7 @@ import { grammarNoteRoutes } from "@/routes/grammar-notes";
 import { healthRoutes } from "@/routes/health";
 import { lessonRoutes } from "@/routes/lessons";
 import { listeningSessionsRoutes } from "@/routes/listening-sessions";
+import { migakuImportRoutes } from "@/routes/migaku-import";
 import { mySentenceRoutes } from "@/routes/my-sentences";
 import { ocrRoutes } from "@/routes/ocr";
 import { parseTemplateRoutes } from "@/routes/parse-templates";
@@ -82,6 +83,10 @@ export async function buildApp(): Promise<FastifyInstance> {
         {
           name: "listening-sessions",
           description: "Listen and Shadow sessions — video + timestamped notes",
+        },
+        {
+          name: "migaku-import",
+          description: "Import Migaku/Anki .apkg decks as sentences & vocab (with media)",
         },
         {
           name: "shadowing-sessions",
@@ -186,6 +191,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(parseTemplateRoutes);
   await app.register(aiLessonRoutes);
   await app.register(ocrRoutes);
+  await app.register(migakuImportRoutes);
   await app.register(settingsRoutes);
 
   return app;

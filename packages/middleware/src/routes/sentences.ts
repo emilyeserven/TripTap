@@ -7,10 +7,12 @@ import {
   createSentencesMany,
   deleteSentence,
   getSentence,
+  getSentenceMedia,
   listSentences,
   regenerateSentenceFurigana,
   updateSentence,
 } from "@/services/sentences";
+import { MediaNotConfiguredError, MediaUnavailableError } from "@/services/media";
 
 const sentenceParams = {
   type: "object",
@@ -176,6 +178,37 @@ export async function sentenceRoutes(app: FastifyInstance): Promise<void> {
     });
     return sentence;
   });
+
+  for (const which of ["audio", "image"] as const) {
+    app.get(`/api/sentences/:id/${which}`, {
+      schema: {
+        tags: ["sentences"],
+        params: sentenceParams,
+      },
+    }, async (req, reply) => {
+      const {
+        id,
+      } = req.params as { id: string };
+      try {
+        const media = await getSentenceMedia(id, which);
+        if (!media) return reply.code(404).send({
+          message: `No ${which} for this sentence`,
+        });
+        reply.header("Content-Type", media.contentType);
+        reply.header("Cache-Control", "private, max-age=86400");
+        return reply.send(media.body);
+      }
+      catch (err) {
+        if (err instanceof MediaNotConfiguredError) return reply.code(503).send({
+          message: err.message,
+        });
+        if (err instanceof MediaUnavailableError) return reply.code(502).send({
+          message: err.message,
+        });
+        throw err;
+      }
+    });
+  }
 
   app.post("/api/sentences", {
     schema: {
