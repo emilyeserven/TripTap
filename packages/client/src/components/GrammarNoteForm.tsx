@@ -2,35 +2,23 @@ import type {
   GrammarConstruction,
   GrammarNote,
   GrammarRelation,
-  GrammarRelationKind,
   GrammarResourceRef,
 } from "@sentence-bank/types";
 
 import { useMemo, useState } from "react";
 
-import { Plus, Trash2 } from "lucide-react";
-
+import { GrammarConstructionsEditor } from "@/components/GrammarConstructionsEditor";
+import { GrammarRelationsEditor } from "@/components/GrammarRelationsEditor";
+import { GrammarResourcesEditor } from "@/components/GrammarResourcesEditor";
+import { GrammarTagPicker } from "@/components/GrammarTagPicker";
 import { Button } from "@/components/ui/button";
-import { Combobox } from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { MultiSelect } from "@/components/ui/multi-select";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useBookmarkRecords, useBookmarksGrammarVocabulary } from "@/hooks/useBookmarks";
 import { useCreateGrammarNote, useGrammarNotes, useUpdateGrammarNote } from "@/hooks/useGrammarNotes";
 import { useSentences } from "@/hooks/useSentences";
 import { usageLabel } from "@/lib/grammar-notes";
-
-function newId(): string {
-  return crypto.randomUUID();
-}
 
 /**
  * Create/edit form for a grammar note. One component powers both the new and edit pages — pass a `note`
@@ -120,6 +108,8 @@ export function GrammarNoteForm({
     [resourceRecords.data],
   );
 
+  const tagNameOf = (id: string) => (grammarTags.data ?? []).find(t => t.id === id)?.name ?? "";
+
   const pending = create.isPending || update.isPending;
   const canSubmit = tagId.trim().length > 0 && title.trim().length > 0 && !pending;
 
@@ -146,30 +136,6 @@ export function GrammarNoteForm({
     onSuccess?.(saved.id);
   };
 
-  const setConstruction = (id: string, patch: Partial<GrammarConstruction>) =>
-    setConstructions(prev => prev.map(c => (c.id === id
-      ? {
-        ...c,
-        ...patch,
-      }
-      : c)));
-
-  const setRelation = (index: number, patch: Partial<GrammarRelation>) =>
-    setRelations(prev => prev.map((r, i) => (i === index
-      ? {
-        ...r,
-        ...patch,
-      }
-      : r)));
-
-  const setResource = (id: string, patch: Partial<GrammarResourceRef>) =>
-    setResources(prev => prev.map(r => (r.id === id
-      ? {
-        ...r,
-        ...patch,
-      }
-      : r)));
-
   return (
     <form
       className="space-y-8"
@@ -178,52 +144,20 @@ export function GrammarNoteForm({
         void submit();
       }}
     >
-      {/* Grammar tag (new only) */}
-      {editing
-        ? (
-          <div className="space-y-1.5">
-            <Label>Grammar point</Label>
-            <p className="text-sm text-muted-foreground">
-              {tagName} — from the Grammar source. The tag can’t be changed after creation.
-            </p>
-          </div>
-        )
-        : (
-          <div className="space-y-1.5">
-            <Label htmlFor="grammar-tag">Grammar tag</Label>
-            {grammarTags.isLoading
-              ? <p className="text-sm text-muted-foreground">Loading grammar tags…</p>
-              : grammarTags.error
-                ? (
-                  <p className="text-sm text-destructive">
-                    Couldn’t reach the Grammar source. Configure it in Settings → Bookmarks.
-                  </p>
-                )
-                : tagOptions.length === 0
-                  ? (
-                    <p className="text-sm text-muted-foreground">
-                      No grammar tags left to note. Add tags to the Grammar source in Settings →
-                      Bookmarks, or every tag already has a note.
-                    </p>
-                  )
-                  : (
-                    <Combobox
-                      value={tagId}
-                      onChange={(value) => {
-                        const picked = (grammarTags.data ?? []).find(t => t.id === value);
-                        setTagId(value);
-                        setTagName(picked?.name ?? "");
-                        if (!title.trim()) setTitle(picked?.name ?? "");
-                      }}
-                      options={tagOptions}
-                      placeholder="Pick a grammar tag…"
-                      searchPlaceholder="Search grammar tags…"
-                      ariaLabel="Grammar tag"
-                      className="w-full max-w-md"
-                    />
-                  )}
-          </div>
-        )}
+      <GrammarTagPicker
+        editing={editing}
+        tagName={tagName}
+        tagId={tagId}
+        options={tagOptions}
+        isLoading={grammarTags.isLoading}
+        hasError={Boolean(grammarTags.error)}
+        onPick={(value) => {
+          const name = tagNameOf(value);
+          setTagId(value);
+          setTagName(name);
+          if (!title.trim()) setTitle(name);
+        }}
+      />
 
       {/* Title + nuance */}
       <div
@@ -270,268 +204,34 @@ export function GrammarNoteForm({
         />
       </div>
 
-      {/* Constructions */}
-      <section className="space-y-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-sm font-semibold">Constructions</h3>
-            <p className="text-xs text-muted-foreground">
-              Possible patterns for this grammar point, each with its own example sentences.
-            </p>
-          </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() =>
-              setConstructions(prev => [...prev, {
-                id: newId(),
-                pattern: "",
-                note: null,
-                sentenceIds: [],
-              }])}
-          >
-            <Plus className="size-4" />
-            Add construction
-          </Button>
-        </div>
-        {constructions.length === 0
-          ? <p className="text-sm text-muted-foreground italic">No constructions yet.</p>
-          : (
-            <ul className="space-y-4">
-              {constructions.map(c => (
-                <li
-                  key={c.id}
-                  className="space-y-3 rounded-md border p-3"
-                >
-                  <div className="flex items-start gap-2">
-                    <Input
-                      value={c.pattern}
-                      onChange={e => setConstruction(c.id, {
-                        pattern: e.target.value,
-                      })}
-                      placeholder="Pattern, e.g. 〜ないといけない"
-                      aria-label="Construction pattern"
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="shrink-0 text-destructive"
-                      aria-label="Remove construction"
-                      onClick={() => setConstructions(prev => prev.filter(x => x.id !== c.id))}
-                    >
-                      <Trash2 className="size-4" />
-                    </Button>
-                  </div>
-                  <Textarea
-                    value={c.note ?? ""}
-                    onChange={e => setConstruction(c.id, {
-                      note: e.target.value || null,
-                    })}
-                    placeholder="How this construction works."
-                    rows={2}
-                    aria-label="Construction note"
-                  />
-                  <div className="space-y-1.5">
-                    <Label className="text-xs text-muted-foreground">Example sentences</Label>
-                    <MultiSelect
-                      value={c.sentenceIds}
-                      onChange={ids => setConstruction(c.id, {
-                        sentenceIds: ids,
-                      })}
-                      options={sentenceOptions}
-                      placeholder="Link bank sentences…"
-                      searchPlaceholder="Search sentences…"
-                      emptyText="No sentences."
-                      ariaLabel="Link sentences to this construction"
-                    />
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-      </section>
+      <GrammarConstructionsEditor
+        constructions={constructions}
+        onChange={setConstructions}
+        sentenceOptions={sentenceOptions}
+      />
 
-      {/* Related grammar */}
-      <section className="space-y-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-sm font-semibold">Related grammar</h3>
-            <p className="text-xs text-muted-foreground">
-              Similar or opposite grammar points. Shown on both notes.
-            </p>
-          </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={relationTagOptions.length === 0}
-            onClick={() =>
-              setRelations(prev => [...prev, {
-                tagId: "",
-                tagName: "",
-                kind: "similar",
-                note: null,
-              }])}
-          >
-            <Plus className="size-4" />
-            Add relation
-          </Button>
-        </div>
-        {relations.length === 0
-          ? <p className="text-sm text-muted-foreground italic">No related grammar yet.</p>
-          : (
-            <ul className="space-y-4">
-              {relations.map((r, i) => (
-                <li
-                  key={i}
-                  className="space-y-3 rounded-md border p-3"
-                >
-                  <div className="flex flex-wrap items-start gap-2">
-                    <div className="min-w-48 flex-1">
-                      <Combobox
-                        value={r.tagId}
-                        onChange={(value) => {
-                          const picked = (grammarTags.data ?? []).find(t => t.id === value);
-                          setRelation(i, {
-                            tagId: value,
-                            tagName: picked?.name ?? "",
-                          });
-                        }}
-                        options={relationTagOptions}
-                        placeholder="Pick a grammar point…"
-                        searchPlaceholder="Search grammar…"
-                        ariaLabel="Related grammar point"
-                        className="w-full"
-                      />
-                    </div>
-                    <Select
-                      value={r.kind}
-                      onValueChange={value => setRelation(i, {
-                        kind: value as GrammarRelationKind,
-                      })}
-                    >
-                      <SelectTrigger
-                        className="w-36"
-                        aria-label="Relation kind"
-                      >
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="similar">Similar</SelectItem>
-                        <SelectItem value="antonym">Antonym</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="shrink-0 text-destructive"
-                      aria-label="Remove relation"
-                      onClick={() => setRelations(prev => prev.filter((_, x) => x !== i))}
-                    >
-                      <Trash2 className="size-4" />
-                    </Button>
-                  </div>
-                  <Input
-                    value={r.note ?? ""}
-                    onChange={e => setRelation(i, {
-                      note: e.target.value || null,
-                    })}
-                    placeholder="How they relate (optional)."
-                    aria-label="Relation note"
-                  />
-                </li>
-              ))}
-            </ul>
-          )}
-      </section>
+      <GrammarRelationsEditor
+        relations={relations}
+        onChange={setRelations}
+        relationTagOptions={relationTagOptions}
+        tagNameOf={tagNameOf}
+      />
 
-      {/* Resources */}
-      <section className="space-y-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-sm font-semibold">Resources</h3>
-            <p className="text-xs text-muted-foreground">
-              Videos, textbook pages, and worksheets from the Resources source.
-            </p>
-          </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() =>
-              setResources(prev => [...prev, {
-                id: newId(),
-                title: "",
-                url: null,
-                note: null,
-              }])}
-          >
-            <Plus className="size-4" />
-            Add resource
-          </Button>
-        </div>
-        {resourceRecords.error
-          ? (
-            <p className="text-sm text-muted-foreground">
-              Couldn’t reach the Resources source. Configure it in Settings → Bookmarks.
-            </p>
-          )
-          : null}
-        {resources.length === 0
-          ? <p className="text-sm text-muted-foreground italic">No resources yet.</p>
-          : (
-            <ul className="space-y-4">
-              {resources.map(r => (
-                <li
-                  key={r.id}
-                  className="space-y-3 rounded-md border p-3"
-                >
-                  <div className="flex flex-wrap items-start gap-2">
-                    <div className="min-w-48 flex-1">
-                      <Combobox
-                        value={resourceOptions.some(o => o.value === r.id) ? r.id : ""}
-                        onChange={(value) => {
-                          const picked = (resourceRecords.data ?? []).find(x => x.id === value);
-                          setResource(r.id, {
-                            id: value,
-                            title: picked?.title ?? r.title,
-                            url: picked?.url ?? null,
-                          });
-                        }}
-                        options={resourceOptions}
-                        placeholder={r.title || "Pick a resource…"}
-                        searchPlaceholder="Search resources…"
-                        ariaLabel="Resource"
-                        className="w-full"
-                      />
-                    </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="shrink-0 text-destructive"
-                      aria-label="Remove resource"
-                      onClick={() => setResources(prev => prev.filter(x => x.id !== r.id))}
-                    >
-                      <Trash2 className="size-4" />
-                    </Button>
-                  </div>
-                  <Input
-                    value={r.note ?? ""}
-                    onChange={e => setResource(r.id, {
-                      note: e.target.value || null,
-                    })}
-                    placeholder="Locator, e.g. Genki I p.42 or watch 3:10–4:00 (optional)."
-                    aria-label="Resource note"
-                  />
-                </li>
-              ))}
-            </ul>
-          )}
-      </section>
+      <GrammarResourcesEditor
+        resources={resources}
+        onChange={setResources}
+        resourceOptions={resourceOptions}
+        resolveResource={(id) => {
+          const picked = (resourceRecords.data ?? []).find(x => x.id === id);
+          return picked
+            ? {
+              title: picked.title,
+              url: picked.url,
+            }
+            : undefined;
+        }}
+        loadError={Boolean(resourceRecords.error)}
+      />
 
       <div className="flex items-center gap-2">
         <Button
