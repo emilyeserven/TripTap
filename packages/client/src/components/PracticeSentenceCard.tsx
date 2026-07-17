@@ -1,22 +1,16 @@
 import type { PracticeSentence } from "@sentence-bank/types";
 
-import { useState } from "react";
-
 import { Link } from "@tanstack/react-router";
-import { Camera, ChevronDown, Database, Pencil, ScrollText, TriangleAlert, Volume2 } from "lucide-react";
+import { Pencil, Volume2 } from "lucide-react";
 
 import { speak } from "./ai-lesson/speak";
+import { PracticeSentenceBreakdown } from "./PracticeSentenceBreakdown";
+import { PracticeSentenceCardMeta } from "./PracticeSentenceCardMeta";
+import { SentenceTranslationReveal } from "./SentenceTranslationReveal";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-
-/** Short labels for the comprehension badge. */
-const COMPREHENSION_LABEL = {
-  ready: "Ready to card",
-  studying: "Studying",
-  skip: "Skip",
-} as const;
 
 /** The study passes, in order, with short labels for the card summary. */
 const PASS_LABELS: { k: keyof NonNullable<PracticeSentence["passes"]>;
@@ -55,14 +49,7 @@ export function PracticeSentenceCard({
   showTranslation = true,
   sourceName,
 }: PracticeSentenceCardProps) {
-  const [revealed, setRevealed] = useState(false);
-  const [showBreak, setShowBreak] = useState(false);
-
-  const pageLabel = ps.page ? `p. ${ps.page}` : null;
-  const words = ps.words ?? [];
-  const grammar = ps.grammar ?? [];
   const donePasses = PASS_LABELS.filter(p => ps.passes?.[p.k]);
-  const hasBreakdown = words.length > 0 || grammar.length > 0;
 
   return (
     <Card>
@@ -113,127 +100,15 @@ export function PracticeSentenceCard({
 
         {ps.reading ? <p className="text-sm text-muted-foreground">{ps.reading}</p> : null}
 
-        {ps.translation
-          ? (
-            showTranslation
-              ? <p className="text-sm text-muted-foreground">{ps.translation}</p>
-              : (
-                <button
-                  type="button"
-                  onClick={() => setRevealed(v => !v)}
-                  className="
-                    w-full rounded-md border bg-muted/40 px-3 py-2 text-left
-                    text-sm
-                    hover:bg-muted
-                  "
-                >
-                  {revealed ? ps.translation : "Reveal translation"}
-                </button>
-              )
-          )
-          : null}
+        <SentenceTranslationReveal
+          translation={ps.translation}
+          showTranslation={showTranslation}
+        />
 
-        <div
-          className="
-            flex flex-wrap items-center gap-2 text-xs text-muted-foreground
-          "
-        >
-          <Badge variant="secondary">{ps.language}</Badge>
-          {ps.comprehension
-            ? (
-              <Badge
-                variant={ps.comprehension === "ready" ? "default" : "outline"}
-                title="How well you understand this sentence (Tofugu curation)"
-              >
-                {COMPREHENSION_LABEL[ps.comprehension]}
-              </Badge>
-            )
-            : null}
-          {ps.needsCorrection
-            ? (
-              <Badge
-                variant="outline"
-                className="gap-1 border-destructive/40 text-destructive"
-                title="Not professionally written — may need corrections"
-              >
-                <TriangleAlert className="size-3" />
-                Needs correction
-              </Badge>
-            )
-            : null}
-          {ps.target
-            ? (
-              <Badge
-                className="gap-1"
-                title={ps.targetKind ?? undefined}
-              >
-                {ps.target}
-              </Badge>
-            )
-            : null}
-          {ps.register ? <span>{ps.register}</span> : null}
-          {ps.sourceId && sourceName
-            ? (
-              <Button
-                asChild
-                variant="outline"
-                size="sm"
-                className="h-6 gap-1 px-2"
-              >
-                <Link
-                  to="/sources/$id"
-                  params={{
-                    id: ps.sourceId,
-                  }}
-                >
-                  <Database className="size-3" />
-                  {sourceName}
-                </Link>
-              </Button>
-            )
-            : null}
-          {pageLabel ? <span>{pageLabel}</span> : null}
-          {ps.captureId
-            ? (
-              <Link
-                to="/captures/$id"
-                params={{
-                  id: ps.captureId,
-                }}
-                className="
-                  inline-flex items-center gap-1
-                  hover:text-foreground
-                "
-              >
-                <Camera className="size-3" />
-                Capture
-              </Link>
-            )
-            : null}
-          {ps.sentenceId
-            ? (
-              <Link
-                to="/sentences"
-                className="
-                  inline-flex items-center gap-1
-                  hover:text-foreground
-                "
-              >
-                <ScrollText className="size-3" />
-                From a sentence
-              </Link>
-            )
-            : null}
-          {(ps.terms ?? []).map(term => (
-            <Badge
-              key={`${term.sourceId}:${term.id}`}
-              variant="outline"
-              title={`${term.category ?? "vocabulary"}${term.sourceLabel ? ` · ${term.sourceLabel}` : ""}`}
-            >
-              {term.name}
-            </Badge>
-          ))}
-        </div>
+        <PracticeSentenceCardMeta
+          practiceSentence={ps}
+          sourceName={sourceName}
+        />
 
         {ps.nuance ? <p className="text-sm">{ps.nuance}</p> : null}
 
@@ -253,76 +128,10 @@ export function PracticeSentenceCard({
           )
           : null}
 
-        {hasBreakdown
-          ? (
-            <div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowBreak(v => !v)}
-              >
-                {showBreak ? "Hide breakdown" : "Break it down"}
-                <ChevronDown
-                  className={`
-                    size-4 transition-transform
-                    ${showBreak
-              ? "rotate-180"
-              : ""}
-                  `}
-                />
-              </Button>
-              {showBreak
-                ? (
-                  <div className="mt-2 space-y-3 rounded-md border p-3 text-sm">
-                    {words.length > 0
-                      ? (
-                        <div>
-                          <p
-                            className="
-                              mb-1 text-xs font-medium text-muted-foreground
-                              uppercase
-                            "
-                          >Words
-                          </p>
-                          <ul className="space-y-0.5">
-                            {words.map((w, i) => (
-                              <li key={i}>
-                                <span className="font-medium">{w.w}</span>
-                                {w.r ? <span className="text-muted-foreground">{` (${w.r})`}</span> : null}
-                                {w.m ? ` — ${w.m}` : null}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )
-                      : null}
-                    {grammar.length > 0
-                      ? (
-                        <div>
-                          <p
-                            className="
-                              mb-1 text-xs font-medium text-muted-foreground
-                              uppercase
-                            "
-                          >Grammar
-                          </p>
-                          <ul className="space-y-0.5">
-                            {grammar.map((g, i) => (
-                              <li key={i}>
-                                <span className="font-medium">{g.p}</span>
-                                {g.n ? ` — ${g.n}` : null}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )
-                      : null}
-                  </div>
-                )
-                : null}
-            </div>
-          )
-          : null}
+        <PracticeSentenceBreakdown
+          words={ps.words ?? []}
+          grammar={ps.grammar ?? []}
+        />
       </CardContent>
     </Card>
   );
