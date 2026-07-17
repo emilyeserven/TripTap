@@ -120,6 +120,12 @@ still pass. The two suites that require a live DB are gated behind `RUN_DB_TESTS
 - **Conventional Commits** are enforced by commitlint (commit-msg hook) and the `pr-title` workflow.
   Valid types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`,
   `revert`. release-please derives `CHANGELOG.md` and version bumps from them.
+  - **The PR title itself must be a valid Conventional Commit** (e.g. `feat(client): add resource
+    thumbnails`), not a prose sentence like "Add resource thumbnails" — the `pr-title` workflow
+    (`amannn/action-semantic-pull-request`) lints the **title**, which fails independently of the
+    commit messages. When a PR is opened (or auto-titled by a tool), set/rename the title to
+    `<type>(optional-scope): <summary>` before relying on the check. Squash-merge titles inherit the
+    PR title, so a bad title also pollutes `main`'s history and the changelog.
 - **Git hooks** (Husky): pre-commit runs `lint-staged`; commit-msg runs commitlint.
 - **Path alias:** the middleware uses `@/*` → `src/*` (resolved at build time by `tsc-alias`).
 
