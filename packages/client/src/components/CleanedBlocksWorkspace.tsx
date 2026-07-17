@@ -2,11 +2,14 @@ import type {
   Capture,
   CleanedBlocks,
   CleanedGroupKind,
-  CleanedLineRole,
 } from "@sentence-bank/types";
 
 import { useEffect, useMemo, useState } from "react";
 
+import { CleanedBulkActionBar } from "./CleanedBulkActionBar";
+import { CleanedItemsPreview } from "./CleanedItemsPreview";
+import { CleanedLangFilterBar } from "./CleanedLangFilterBar";
+import { CleanedLineRow } from "./CleanedLineRow";
 import { SharedCaptureFields } from "./SharedCaptureFields";
 
 import { Button } from "@/components/ui/button";
@@ -24,7 +27,6 @@ import {
   deleteLine,
   deleteLines,
   deriveItems,
-  hasScriptBoundary,
   LANG_NAMES,
   linkGroups,
   moveItem,
@@ -42,43 +44,7 @@ import {
   updateLineRole,
   updateLineText,
 } from "@/lib/cleanedBlocks";
-
-const inlineClass
-  = "rounded-md border border-slate-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none";
-
-const ROLES: { value: CleanedLineRole;
-  label: string; }[] = [
-  {
-    value: "text",
-    label: "Text",
-  },
-  {
-    value: "translation",
-    label: "Translation",
-  },
-  {
-    value: "furigana",
-    label: "Furigana",
-  },
-  {
-    value: "structure",
-    label: "Structure",
-  },
-  {
-    value: "ignore",
-    label: "Ignore",
-  },
-];
-
-/** Left-border tints cycled per group so grouped lines read as one unit. */
-const GROUP_TINTS = [
-  "border-l-blue-400",
-  "border-l-emerald-400",
-  "border-l-amber-400",
-  "border-l-violet-400",
-  "border-l-rose-400",
-  "border-l-cyan-400",
-];
+import { GROUP_TINTS } from "@/lib/cleanedBlocksUi";
 
 /**
  * Alternative to {@link CaptureParseWorkspace}: an editable, per-line view of the OCR blocks. The
@@ -211,14 +177,6 @@ export function CleanedBlocksWorkspace({
 
   const selectedIds = () => [...selected];
 
-  function bulkRole(role: CleanedLineRole) {
-    setDraft(d => setLinesRole(d, selectedIds(), role));
-  }
-
-  function bulkKind(kind: CleanedGroupKind) {
-    setDraft(d => setKindForLines(d, selectedIds(), kind));
-  }
-
   function bulkDelete() {
     const ids = selectedIds();
     setDraft(d => deleteLines(d, ids));
@@ -288,7 +246,6 @@ export function CleanedBlocksWorkspace({
   }
 
   const busy = createSentences.isPending || createVocab.isPending;
-  const totalValid = preview.sentences.length + preview.vocab.length;
 
   return (
     <div
@@ -326,319 +283,61 @@ export function CleanedBlocksWorkspace({
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Language filter bar */}
-          {presentLangs.length > 0
-            ? (
-              <div className="flex flex-wrap items-center gap-2 text-sm">
-                <span className="font-medium text-slate-700">Ignore language:</span>
-                {presentLangs.map(code => (
-                  <button
-                    key={code}
-                    type="button"
-                    onClick={() => setDraft(d => toggleIgnoredLang(d, code))}
-                    className={`
-                      rounded-full border px-2 py-0.5 text-xs
-                      ${
-                  ignored.has(code)
-                    ? `
-                      border-destructive bg-red-50 text-destructive line-through
-                    `
-                    : `
-                      border-slate-300 text-slate-600
-                      hover:border-blue-400
-                    `
-                  }
-                    `}
-                    title={ignored.has(code) ? "Include again" : "Exclude these lines"}
-                  >
-                    {code}
-                    {" "}
-                    (
-                    {LANG_NAMES[code] ?? "?"}
-                    )
-                  </button>
-                ))}
-              </div>
-            )
-            : null}
+          <CleanedLangFilterBar
+            presentLangs={presentLangs}
+            ignoredLangs={ignored}
+            onToggle={code => setDraft(d => toggleIgnoredLang(d, code))}
+          />
 
-          {/* Bulk action bar — always occupies its space; visibility toggles so rows never shift. */}
-          <div
-            className={`
-              sticky top-2 z-10 flex flex-wrap items-center gap-2 rounded-md
-              border border-blue-300 bg-blue-50 p-2 text-sm
-              ${selected.size > 0 ? "visible" : "invisible"}
-            `}
-            aria-hidden={selected.size === 0}
-          >
-            <span className="font-medium text-blue-900">
-              {selected.size}
-              {" "}
-              selected
-            </span>
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              onClick={() => setDraft(d => stitchLines(d, selectedIds()))}
-              title="Stitch continuation lines into one text"
-            >
-              Stitch
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              onClick={() => setDraft(d => unstitchLines(d, selectedIds()))}
-              title="Split each selected line into its own stitch"
-            >
-              Unstitch
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              onClick={() => setDraft(d => linkGroups(d, selectedIds()))}
-              title="Link a text block to its translation (they derive as one item)"
-            >
-              Link
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              onClick={() => setDraft(d => unlinkGroups(d, selectedIds()))}
-              title="Unlink the selected items"
-            >
-              Unlink
-            </Button>
-            <select
-              className={inlineClass}
-              value=""
-              onChange={(e) => {
-                if (e.target.value) bulkRole(e.target.value as CleanedLineRole);
-              }}
-              aria-label="Set role for selected lines"
-            >
-              <option value="">Set role…</option>
-              {ROLES.map(r => (
-                <option
-                  key={r.value}
-                  value={r.value}
-                >
-                  {r.label}
-                </option>
-              ))}
-            </select>
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              onClick={() => bulkKind("vocab")}
-              title="Make the selected items vocab"
-            >
-              → Vocab
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              onClick={() => bulkKind("sentence")}
-              title="Make the selected items sentences"
-            >
-              → Sentence
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
-              onClick={bulkDelete}
-            >
-              Delete
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
-              onClick={clearSelection}
-            >
-              Clear
-            </Button>
-          </div>
+          <CleanedBulkActionBar
+            selectedCount={selected.size}
+            onStitch={() => setDraft(d => stitchLines(d, selectedIds()))}
+            onUnstitch={() => setDraft(d => unstitchLines(d, selectedIds()))}
+            onLink={() => setDraft(d => linkGroups(d, selectedIds()))}
+            onUnlink={() => setDraft(d => unlinkGroups(d, selectedIds()))}
+            onSetRole={role => setDraft(d => setLinesRole(d, selectedIds(), role))}
+            onSetKind={kind => setDraft(d => setKindForLines(d, selectedIds(), kind))}
+            onDelete={bulkDelete}
+            onClear={clearSelection}
+          />
 
           {/* Line editor */}
           <div className="space-y-1.5">
             {draft.lines.map((line, i) => {
               const itemKey = linkOf.get(line.group) ?? line.group;
-              const opensItem = firstLineOfItem.get(itemKey) === line.id;
-              const dimmed = line.role === "structure" || line.role === "ignore" || ignored.has(line.lang);
               const itemIdx = itemOrder.indexOf(itemKey);
-              const isLinked = linkedGroupIds.has(line.group);
               return (
-                <div
+                <CleanedLineRow
                   key={line.id}
-                  className={`
-                    flex flex-wrap items-center gap-1.5 rounded-md border
-                    border-l-4 border-input bg-card p-1.5
-                    ${itemTint.get(itemKey) ?? ""}
-                    ${selected.has(line.id) ? "ring-2 ring-blue-400" : ""}
-                    ${dimmed ? "opacity-50" : ""}
-                  `}
-                >
-                  <input
-                    type="checkbox"
-                    className="size-4 shrink-0"
-                    checked={selected.has(line.id)}
-                    onChange={e => toggleSelect(i, (e.nativeEvent as MouseEvent).shiftKey)}
-                    aria-label="Select line"
-                  />
-
-                  {opensItem
-                    ? (
-                      <div className="flex shrink-0 items-center gap-0.5">
-                        <select
-                          className={inlineClass}
-                          value={kindOf.get(line.group) ?? "sentence"}
-                          onChange={e =>
-                            setDraft(d => setGroupKind(d, line.group, e.target.value as CleanedGroupKind))}
-                          aria-label="Item kind"
-                          title="What this item produces"
-                        >
-                          <option value="sentence">Sentence</option>
-                          <option value="vocab">Vocab</option>
-                        </select>
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="ghost"
-                          disabled={itemIdx <= 0}
-                          onClick={() => setDraft(d => moveItem(d, line.group, "up"))}
-                          title="Move item up"
-                        >
-                          ↑
-                        </Button>
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="ghost"
-                          disabled={itemIdx === itemOrder.length - 1}
-                          onClick={() => setDraft(d => moveItem(d, line.group, "down"))}
-                          title="Move item down"
-                        >
-                          ↓
-                        </Button>
-                        {isLinked
-                          ? (
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => unlinkItem(line.group)}
-                              title="Unlink this item"
-                            >
-                              🔗✕
-                            </Button>
-                          )
-                          : null}
-                      </div>
-                    )
-                    : (
-                      <span
-                        className={`
-                          shrink-0
-                          ${isLinked
-                        ? "w-7 text-center text-xs text-blue-500"
-                        : "w-28"}
-                        `}
-                        aria-hidden
-                      >
-                        {isLinked ? "🔗" : null}
-                      </span>
-                    )}
-
-                  <input
-                    className={`
-                      ${inlineClass}
-                      min-w-40 flex-1
-                    `}
-                    value={line.text}
-                    onChange={e => setDraft(d => updateLineText(d, line.id, e.target.value))}
-                    onSelect={e =>
-                      setCaret({
-                        id: line.id,
-                        index: e.currentTarget.selectionStart ?? 0,
-                      })}
-                    aria-label="Line text"
-                  />
-
-                  <select
-                    className={inlineClass}
-                    value={line.lang}
-                    onChange={e => setDraft(d => updateLineLang(d, line.id, e.target.value))}
-                    aria-label="Line language"
-                  >
-                    {langOptions.map(code => (
-                      <option
-                        key={code}
-                        value={code}
-                      >
-                        {code}
-                      </option>
-                    ))}
-                  </select>
-
-                  <select
-                    className={inlineClass}
-                    value={line.role}
-                    onChange={e => setDraft(d => updateLineRole(d, line.id, e.target.value as CleanedLineRole))}
-                    aria-label="Line role"
-                  >
-                    {ROLES.map(r => (
-                      <option
-                        key={r.value}
-                        value={r.value}
-                      >
-                        {r.label}
-                      </option>
-                    ))}
-                  </select>
-
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => setDraft(d => splitLineByScript(d, line.id))}
-                    disabled={!hasScriptBoundary(line.text)}
-                    title="Split into separate lines by language/script"
-                  >
-                    あ/A
-                  </Button>
-
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => {
-                      if (caret) setDraft(d => splitLineAt(d, line.id, caret.index));
-                    }}
-                    disabled={
-                      caret?.id !== line.id || caret.index <= 0 || caret.index >= line.text.length
-                    }
-                    title="Split this line into two at the cursor"
-                  >
-                    ✂
-                  </Button>
-
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => removeLine(line.id)}
-                    title="Delete line"
-                  >
-                    ✕
-                  </Button>
-                </div>
+                  line={line}
+                  checked={selected.has(line.id)}
+                  dimmed={line.role === "structure" || line.role === "ignore" || ignored.has(line.lang)}
+                  tintClass={itemTint.get(itemKey) ?? ""}
+                  opensItem={firstLineOfItem.get(itemKey) === line.id}
+                  isLinked={linkedGroupIds.has(line.group)}
+                  kind={kindOf.get(line.group) ?? "sentence"}
+                  canMoveUp={itemIdx > 0}
+                  canMoveDown={itemIdx !== itemOrder.length - 1}
+                  langOptions={langOptions}
+                  caretIndex={caret?.id === line.id ? caret.index : null}
+                  onToggleSelect={shift => toggleSelect(i, shift)}
+                  onKindChange={kind => setDraft(d => setGroupKind(d, line.group, kind))}
+                  onMoveUp={() => setDraft(d => moveItem(d, line.group, "up"))}
+                  onMoveDown={() => setDraft(d => moveItem(d, line.group, "down"))}
+                  onUnlinkItem={() => unlinkItem(line.group)}
+                  onTextChange={text => setDraft(d => updateLineText(d, line.id, text))}
+                  onCaretChange={index => setCaret({
+                    id: line.id,
+                    index,
+                  })}
+                  onLangChange={lang => setDraft(d => updateLineLang(d, line.id, lang))}
+                  onRoleChange={role => setDraft(d => updateLineRole(d, line.id, role))}
+                  onSplitByScript={() => setDraft(d => splitLineByScript(d, line.id))}
+                  onSplitAtCaret={() => {
+                    if (caret) setDraft(d => splitLineAt(d, line.id, caret.index));
+                  }}
+                  onRemove={() => removeLine(line.id)}
+                />
               );
             })}
             {draft.lines.length === 0
@@ -684,106 +383,14 @@ export function CleanedBlocksWorkspace({
         </CardContent>
       </Card>
 
-      {/* Preview */}
-      <Card>
-        <CardHeader>
-          <CardTitle>
-            Resulting items —
-            {" "}
-            {totalValid}
-          </CardTitle>
-          <CardDescription>
-            Live preview of what each group produces. Groups with no text line are skipped.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {preview.sentences.length > 0
-            ? (
-              <div className="space-y-2">
-                <h3 className="text-sm font-semibold text-slate-700">
-                  Sentences —
-                  {" "}
-                  {preview.sentences.length}
-                </h3>
-                {preview.sentences.map((s, i) => (
-                  <div
-                    key={i}
-                    className="rounded-md border border-input p-2 text-sm"
-                  >
-                    <div className="font-medium">{s.text}</div>
-                    {s.translation ? <div className="text-muted-foreground">{s.translation}</div> : null}
-                    <div className="mt-0.5 flex flex-wrap items-center gap-1">
-                      <span className="text-xs text-muted-foreground">
-                        {s.language}
-                      </span>
-                      {(s.vocabIds ?? []).map(id => (
-                        <span
-                          key={id}
-                          className="
-                            rounded-full bg-blue-50 px-2 py-0.5 text-xs
-                            text-blue-700
-                          "
-                        >
-                          {vocabName(id)}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )
-            : null}
-
-          {preview.vocab.length > 0
-            ? (
-              <div className="space-y-2">
-                <h3 className="text-sm font-semibold text-slate-700">
-                  Vocab —
-                  {" "}
-                  {preview.vocab.length}
-                </h3>
-                {preview.vocab.map((v, i) => (
-                  <div
-                    key={i}
-                    className="rounded-md border border-input p-2 text-sm"
-                  >
-                    <span className="font-medium">{v.term}</span>
-                    {v.reading ? <span className="ml-2 text-muted-foreground">{v.reading}</span> : null}
-                    {v.meaning ? <span className="ml-2">{v.meaning}</span> : null}
-                    <span className="ml-2 text-xs text-muted-foreground">{v.language}</span>
-                  </div>
-                ))}
-              </div>
-            )
-            : null}
-
-          {totalValid === 0
-            ? <p className="text-sm text-muted-foreground">Nothing to create yet.</p>
-            : null}
-          {preview.skipped > 0
-            ? (
-              <p className="text-xs text-muted-foreground">
-                {preview.skipped}
-                {" "}
-                group(s) skipped (no text line).
-              </p>
-            )
-            : null}
-
-          {done ? <p className="text-sm font-medium text-green-700">{done}</p> : null}
-          {createSentences.isError || createVocab.isError
-            ? <p className="text-sm text-destructive">Could not create items.</p>
-            : null}
-
-          <Button
-            type="button"
-            onClick={() => void create()}
-            disabled={busy || totalValid === 0}
-          >
-            {busy ? "Creating…" : `Create ${totalValid} item(s)`}
-          </Button>
-        </CardContent>
-      </Card>
+      <CleanedItemsPreview
+        preview={preview}
+        vocabName={vocabName}
+        done={done}
+        hasError={createSentences.isError || createVocab.isError}
+        busy={busy}
+        onCreate={() => void create()}
+      />
     </div>
   );
 }

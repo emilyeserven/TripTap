@@ -6,6 +6,14 @@
 /** How a quick-added part is labelled: letters "(a)", numbers "(1)", or roman "(i)". */
 export type PartLabelStyle = "letter" | "number" | "roman";
 
+let idCounter = 0;
+
+/** Client-side unique id for questions/parts/rows (unique within one sheet is enough). */
+export function newSheetItemId(prefix: string): string {
+  idCounter += 1;
+  return `${prefix}-${Date.now().toString(36)}-${idCounter}`;
+}
+
 /** Convert a 1-based number to a lowercase Roman numeral (1 → "i", 4 → "iv", 9 → "ix"). */
 export function toRoman(n: number): string {
   const table: [number, string][] = [
