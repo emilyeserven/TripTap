@@ -13,6 +13,7 @@ import type {
   MigakuImportDetail,
   CommitMigakuImportInput,
   CommitMigakuImportResult,
+  DeleteDeckCardsResult,
   MigakuReconcileResult,
 } from "@sentence-bank/types";
 
@@ -112,6 +113,11 @@ export const migakuImportsApi = {
   remove: (id: string) => request<undefined>(`/migaku-imports/${id}`, {
     method: "DELETE",
   }),
+  /** Destructive: delete every bank row imported under this deck, plus the import record. */
+  deleteCards: (id: string) =>
+    request<DeleteDeckCardsResult>(`/migaku-imports/${id}/cards`, {
+      method: "DELETE",
+    }),
   reconcile: (dryRun = false) =>
     request<MigakuReconcileResult>(`/migaku-imports/reconcile?dryRun=${dryRun}`, {
       method: "POST",

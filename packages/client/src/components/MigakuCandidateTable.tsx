@@ -60,6 +60,7 @@ export function MigakuCandidateTable({
   const commit = useCommitMigakuImport();
   const discard = useDeleteMigakuImport();
   const [language, setLanguage] = useState("Japanese");
+  const [deckName, setDeckName] = useState(detail.deckName);
 
   const [rows, setRows] = useState<Record<string, RowState>>(() =>
     Object.fromEntries(detail.candidates.map(c => [c.id, {
@@ -96,6 +97,7 @@ export function MigakuCandidateTable({
       id: detail.id,
       input: {
         language: language.trim() || "Japanese",
+        deckName: deckName.trim() || detail.deckName,
         items: detail.candidates.map((c) => {
           const r = rows[c.id];
           return {
@@ -126,14 +128,25 @@ export function MigakuCandidateTable({
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
-        <div className="space-y-1">
-          <Label htmlFor="migaku-language">Language for imported items</Label>
-          <Input
-            id="migaku-language"
-            value={language}
-            onChange={e => setLanguage(e.target.value)}
-            className="max-w-48"
-          />
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="space-y-1">
+            <Label htmlFor="migaku-deck">Deck name</Label>
+            <Input
+              id="migaku-deck"
+              value={deckName}
+              onChange={e => setDeckName(e.target.value)}
+              className="max-w-56"
+            />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="migaku-language">Language for imported items</Label>
+            <Input
+              id="migaku-language"
+              value={language}
+              onChange={e => setLanguage(e.target.value)}
+              className="max-w-48"
+            />
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <Button

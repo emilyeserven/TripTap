@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 
+import { deckNamesFromTags, hasDeckTag } from "@sentence-bank/types";
 import { createFileRoute } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
 
@@ -64,6 +65,7 @@ function SentencesPage() {
   const [filter, setFilter] = useState("all"); // "all" | "mine" | AI Lesson slug
   const [sourceFilter, setSourceFilter] = useState(sourceParam ?? "all");
   const [grammarTag, setGrammarTag] = useState("all"); // "all" | grammar-tag id
+  const [deckFilter, setDeckFilter] = useState("all"); // "all" | migaku deck name
 
   const manual = sentences ?? [];
 
@@ -116,17 +118,37 @@ function SentencesPage() {
     })),
   ], [sources]);
 
+  // Migaku deck options: every `deck:*` tag in use across the manual (bank) sentences.
+  const deckOptions = useMemo(() => {
+    const names = new Set<string>();
+    for (const s of manual) {
+      for (const name of deckNamesFromTags(s.tags)) names.add(name);
+    }
+    return [
+      {
+        value: "all",
+        label: "All decks",
+      },
+      ...[...names].sort().map(name => ({
+        value: name,
+        label: name,
+      })),
+    ];
+  }, [manual]);
+
   const bySource = (id: string | null) => sourceFilter === "all" || id === sourceFilter;
+  const byDeck = (tags: string | null) => deckFilter === "all" || hasDeckTag(tags, deckFilter);
   const byGrammarTag = (terms: { id: string }[]) =>
     grammarTag === "all" || terms.some(t => t.id === grammarTag);
   const manualShown = filter === "all" || filter === "mine"
     ? manual.filter(s =>
       bySource(s.sourceId)
+      && byDeck(s.tags)
       && byGrammarTag(grammarTermsOf(s))
       && matches(search, s.text, s.translation, s.source, s.tags, s.notes))
     : [];
-  // AI-Lesson-mined sentences carry no source, so a specific source filter hides them.
-  const aiLessonShown = (sourceFilter !== "all"
+  // AI-Lesson-mined sentences carry no source or deck tag, so those filters hide them.
+  const aiLessonShown = (sourceFilter !== "all" || deckFilter !== "all"
     ? []
     : filter === "mine"
       ? []
@@ -221,6 +243,18 @@ function SentencesPage() {
               options={grammarTagOptions}
               ariaLabel="Filter by grammar tag"
               searchPlaceholder="Search grammar tags…"
+              className="w-52"
+            />
+          )
+          : null}
+        {deckOptions.length > 1
+          ? (
+            <Combobox
+              value={deckFilter}
+              onChange={setDeckFilter}
+              options={deckOptions}
+              ariaLabel="Filter by Migaku deck"
+              searchPlaceholder="Search decks…"
               className="w-52"
             />
           )

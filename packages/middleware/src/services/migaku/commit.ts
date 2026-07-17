@@ -10,6 +10,7 @@ import type {
   CommitMigakuImportResult,
   FuriToken,
 } from "@sentence-bank/types";
+import { deckTag } from "@sentence-bank/types";
 import { db } from "@/db";
 import { sentences, vocab } from "@/db/schema";
 import { newId } from "@/lib/id";
@@ -23,6 +24,13 @@ import type { StoredMigakuCandidate } from "@/services/migaku/types";
 function mediaKey(filename: string): string {
   const ext = filename.includes(".") ? filename.slice(filename.lastIndexOf(".")) : "";
   return `${MEDIA_PREFIX}${newId()}${ext}`;
+}
+
+/** Merge a deck tag into a comma-separated `tags` string, deduped. */
+function withDeckTag(tags: string, deck: string): string {
+  const list = tags.split(",").map(t => t.trim()).filter(Boolean);
+  if (!list.includes(deck)) list.push(deck);
+  return list.join(", ");
 }
 
 interface ResolvedMedia {
@@ -68,6 +76,7 @@ export async function commitCandidates(
 ): Promise<CommitMigakuImportResult> {
   const byId = new Map(stored.map(c => [c.id, c]));
   const kept = input.items.filter(item => item.include && item.text.trim());
+  const deck = input.deckName.trim() ? deckTag(input.deckName) : null;
 
   // Authoritative dedup: never create a row whose text/term already exists for this language. The sets
   // grow as we insert, so duplicates within this same batch are also collapsed.
@@ -94,7 +103,8 @@ export async function commitCandidates(
         imageKey: null,
         imageMime: null,
       };
-    const tags = item.tags ?? source?.tags ?? "migaku";
+    const baseTags = item.tags ?? source?.tags ?? "migaku";
+    const tags = deck ? withDeckTag(baseTags, deck) : baseTags;
 
     if (item.kind === "sentence") {
       // Prefer the card's Migaku furigana; fall back to generating it when the card had none.

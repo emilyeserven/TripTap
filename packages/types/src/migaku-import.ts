@@ -45,10 +45,18 @@ export interface MigakuImport {
   id: string;
   /** Original uploaded filename, e.g. "Japanese.apkg". */
   filename: string;
+  /** Deck name (parsed from the `.apkg`, or derived from the filename); editable before commit. */
+  deckName: string;
   /** `"parsed"` = awaiting review; `"committed"` = promoted to bank rows. */
   status: "parsed" | "committed";
   /** How many candidates were extracted. */
   candidateCount: number;
+  /** Sentences created at commit; null until committed. */
+  sentencesCreated: number | null;
+  /** Vocab created at commit; null until committed. */
+  vocabCreated: number | null;
+  /** Candidates skipped as duplicates at commit; null until committed. */
+  skipped: number | null;
   createdAt: string;
 }
 
@@ -76,6 +84,8 @@ export interface CommitMigakuItemInput {
 export interface CommitMigakuImportInput {
   /** Target language stamped on every created row, e.g. "Japanese". */
   language: string;
+  /** Deck name tagged onto every created row (as `deck:<name>`). */
+  deckName: string;
   items: CommitMigakuItemInput[];
 }
 
@@ -85,6 +95,40 @@ export interface CommitMigakuImportResult {
   vocabCreated: number;
   /** How many kept items were skipped because a matching row already existed. */
   skipped: number;
+}
+
+/** Result of deleting all bank rows imported under a deck. */
+export interface DeleteDeckCardsResult {
+  sentencesDeleted: number;
+  vocabDeleted: number;
+}
+
+/**
+ * Deck tags. Imported rows are tagged `deck:<name>` in their free-text `tags` column so they can be
+ * filtered and bulk-deleted by deck. Shared between middleware (tagging + deletion) and client
+ * (filter dropdown) so the format lives in one place.
+ */
+export const DECK_TAG_PREFIX = "deck:";
+
+/** Build the deck tag for a name (commas stripped so it can't break the comma-separated `tags`). */
+export function deckTag(deckName: string): string {
+  return `${DECK_TAG_PREFIX}${deckName.replace(/,/g, " ").trim()}`;
+}
+
+/** Extract the deck names from a comma-separated `tags` string (the `deck:` prefix removed). */
+export function deckNamesFromTags(tags: string | null | undefined): string[] {
+  if (!tags) return [];
+  return tags
+    .split(",")
+    .map(t => t.trim())
+    .filter(t => t.startsWith(DECK_TAG_PREFIX))
+    .map(t => t.slice(DECK_TAG_PREFIX.length))
+    .filter(Boolean);
+}
+
+/** Whether a `tags` string carries the tag for the given deck. */
+export function hasDeckTag(tags: string | null | undefined, deckName: string): boolean {
+  return deckNamesFromTags(tags).includes(deckName.replace(/,/g, " ").trim());
 }
 
 /** Config status of the media object store, shown on the Settings page. Never includes secrets. */

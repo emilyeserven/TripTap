@@ -818,11 +818,17 @@ export type AiLessonCultureRow = typeof aiLessonCulture.$inferSelect;
 export const migakuImports = pgTable("migaku_imports", {
   id: uuid("id").primaryKey().defaultRandom(),
   filename: text("filename").notNull(),
+  // Deck name (parsed from the .apkg or derived from the filename); tagged onto created rows.
+  deckName: text("deck_name"),
   // "parsed" = awaiting review; "committed" = promoted to sentences/vocab.
   status: text("status").notNull().default("parsed"),
   // Object-storage key of the uploaded `.apkg`; null after commit cleans it up.
   apkgKey: text("apkg_key"),
   candidates: jsonb("candidates").$type<MigakuCandidate[]>().notNull(),
+  // Commit outcome, filled when status flips to "committed"; null while awaiting review.
+  sentencesCreated: integer("sentences_created"),
+  vocabCreated: integer("vocab_created"),
+  skipped: integer("skipped"),
   createdAt: timestamp("created_at", {
     withTimezone: true,
   }).notNull().defaultNow(),

@@ -34,8 +34,19 @@ async function buildApkg(): Promise<Buffer> {
       ],
     },
   };
-  db.run("CREATE TABLE col (models text);");
-  db.run("INSERT INTO col (models) VALUES (?);", [JSON.stringify(models)]);
+  const decks = {
+    1: {
+      name: "Default",
+    },
+    1678886400000: {
+      name: "Japanese N5",
+    },
+  };
+  db.run("CREATE TABLE col (models text, decks text);");
+  db.run("INSERT INTO col (models, decks) VALUES (?, ?);", [
+    JSON.stringify(models),
+    JSON.stringify(decks),
+  ]);
   db.run("CREATE TABLE notes (mid integer, flds text, tags text);");
   // Two notes: a sentence card (with audio) and a single-word vocab card.
   db.run("INSERT INTO notes (mid, flds, tags) VALUES (?, ?, ?);", [
@@ -48,6 +59,10 @@ async function buildApkg(): Promise<Buffer> {
     "猫[ねこ]\x1fcat\x1f",
     "",
   ]);
+  // Both cards live in the non-Default deck, so that's the dominant deck name.
+  db.run("CREATE TABLE cards (did integer);");
+  db.run("INSERT INTO cards (did) VALUES (1678886400000);");
+  db.run("INSERT INTO cards (did) VALUES (1678886400000);");
   const collection = db.export();
   db.close();
 
@@ -66,8 +81,17 @@ describe("parseApkg", () => {
     apkg = await buildApkg();
   });
 
+  it("extracts the dominant non-Default deck name", async () => {
+    const {
+      deckName,
+    } = await parseApkg(apkg);
+    assert.equal(deckName, "Japanese N5");
+  });
+
   it("extracts candidates with parsed furigana and detected kinds", async () => {
-    const candidates = await parseApkg(apkg);
+    const {
+      candidates,
+    } = await parseApkg(apkg);
     assert.equal(candidates.length, 2);
 
     const sentence = candidates.find(c => c.text.includes("好き"));
