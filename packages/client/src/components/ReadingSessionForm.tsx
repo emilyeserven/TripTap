@@ -7,21 +7,18 @@ import type {
 
 import { useState } from "react";
 
-import { Plus, Trash2 } from "lucide-react";
-
+import { ReadingLineEditor } from "@/components/ReadingLineEditor";
+import { ReadingWordNotesEditor } from "@/components/ReadingWordNotesEditor";
 import { SourcePicker } from "@/components/SourcePicker";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { WordNoteControls } from "@/components/WordNoteControls";
 import {
   useCreateReadingSession,
   useUpdateReadingSession,
 } from "@/hooks/useReadingSessions";
-import { newId } from "@/lib/id";
 
 /**
  * Create/edit form for a reading session. The learner records where the passage came from, then
@@ -53,57 +50,9 @@ export function ReadingSessionForm({
   const [summary, setSummary] = useState(session?.summary ?? "");
   const [lines, setLines] = useState<ReadingLine[]>(session?.lines ?? []);
   const [wordNotes, setWordNotes] = useState<WordNote[]>(session?.wordNotes ?? []);
-  const [pasteBuffer, setPasteBuffer] = useState("");
 
   const pending = create.isPending || update.isPending;
   const canSubmit = title.trim().length > 0 && language.trim().length > 0 && !pending;
-
-  // Line-by-line helpers.
-  function splitIntoLines() {
-    const next = pasteBuffer
-      .split(/\r?\n/)
-      .map(s => s.trim())
-      .filter(Boolean)
-      .map((text): ReadingLine => ({
-        id: newId(),
-        text,
-        translation: null,
-        summaryOnly: false,
-        correction: null,
-        needsCorrection: false,
-      }));
-    if (next.length) {
-      setLines([...lines, ...next]);
-      setPasteBuffer("");
-    }
-  }
-  const patchLine = (id: string, patch: Partial<ReadingLine>) =>
-    setLines(lines.map(l => (l.id === id
-      ? {
-        ...l,
-        ...patch,
-      }
-      : l)));
-  const removeLine = (id: string) => setLines(lines.filter(l => l.id !== id));
-
-  // Word-note helpers.
-  const addWordNote = () =>
-    setWordNotes([...wordNotes, {
-      id: newId(),
-      word: "",
-      reading: null,
-      meaning: null,
-      status: "shaky",
-      flashcard: false,
-    }]);
-  const patchWord = (id: string, patch: Partial<WordNote>) =>
-    setWordNotes(wordNotes.map(w => (w.id === id
-      ? {
-        ...w,
-        ...patch,
-      }
-      : w)));
-  const removeWord = (id: string) => setWordNotes(wordNotes.filter(w => w.id !== id));
 
   const submit = async () => {
     if (!canSubmit) return;
@@ -245,171 +194,17 @@ export function ReadingSessionForm({
           value="line-by-line"
           className="space-y-4 pt-4"
         >
-          <div className="space-y-1.5">
-            <Label htmlFor="rs-paste">Paste the lines</Label>
-            <Textarea
-              id="rs-paste"
-              value={pasteBuffer}
-              onChange={e => setPasteBuffer(e.target.value)}
-              placeholder="Paste the passage here, one line per row, then split it into lines below."
-              rows={4}
-            />
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={splitIntoLines}
-              disabled={pasteBuffer.trim().length === 0}
-            >
-              Split into lines
-            </Button>
-          </div>
-
-          {lines.length === 0
-            ? (
-              <p className="text-sm text-muted-foreground">
-                No lines yet. Paste the passage above and split it into lines.
-              </p>
-            )
-            : (
-              <ul className="space-y-3">
-                {lines.map(line => (
-                  <li
-                    key={line.id}
-                    className="space-y-2 rounded-md border p-3"
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <p className="text-base">{line.text}</p>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="text-destructive"
-                        onClick={() => removeLine(line.id)}
-                        aria-label="Delete line"
-                      >
-                        <Trash2 className="size-4" />
-                      </Button>
-                    </div>
-                    <label className="flex items-center gap-2 text-sm">
-                      <Checkbox
-                        checked={line.summaryOnly}
-                        onCheckedChange={v => patchLine(line.id, {
-                          summaryOnly: v === true,
-                        })}
-                      />
-                      Summary only (not a literal translation)
-                    </label>
-                    <Textarea
-                      value={line.translation ?? ""}
-                      onChange={e => patchLine(line.id, {
-                        translation: e.target.value,
-                      })}
-                      placeholder={line.summaryOnly ? "Summary of this line" : "Translation of this line"}
-                      rows={2}
-                      aria-label={line.summaryOnly ? "Line summary" : "Line translation"}
-                    />
-                    <label className="flex items-center gap-2 text-sm">
-                      <Checkbox
-                        checked={line.needsCorrection}
-                        onCheckedChange={v => patchLine(line.id, {
-                          needsCorrection: v === true,
-                        })}
-                      />
-                      Needs correction
-                    </label>
-                    {line.needsCorrection && (
-                      <Textarea
-                        value={line.correction ?? ""}
-                        onChange={e => patchLine(line.id, {
-                          correction: e.target.value,
-                        })}
-                        placeholder="The corrected translation"
-                        rows={2}
-                        aria-label="Line correction"
-                      />
-                    )}
-                  </li>
-                ))}
-              </ul>
-            )}
+          <ReadingLineEditor
+            lines={lines}
+            onChange={setLines}
+          />
         </TabsContent>
       </Tabs>
 
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <Label>Word notes</Label>
-            <p className="text-xs text-muted-foreground">
-              Words you were shaky on or didn’t know. Flag any you want on a flashcard list later.
-            </p>
-          </div>
-          <Button
-            type="button"
-            size="sm"
-            onClick={addWordNote}
-          >
-            <Plus className="size-4" />
-            Add word
-          </Button>
-        </div>
-
-        {wordNotes.length === 0
-          ? <p className="text-sm text-muted-foreground">No words noted yet.</p>
-          : (
-            <ul className="space-y-3">
-              {wordNotes.map(w => (
-                <li
-                  key={w.id}
-                  className="space-y-2 rounded-md border p-3"
-                >
-                  <div
-                    className="
-                      grid gap-2
-                      sm:grid-cols-3
-                    "
-                  >
-                    <Input
-                      value={w.word}
-                      onChange={e => patchWord(w.id, {
-                        word: e.target.value,
-                      })}
-                      placeholder="Word"
-                      aria-label="Word"
-                    />
-                    <Input
-                      value={w.reading ?? ""}
-                      onChange={e => patchWord(w.id, {
-                        reading: e.target.value,
-                      })}
-                      placeholder="Reading (optional)"
-                      aria-label="Reading"
-                    />
-                    <Input
-                      value={w.meaning ?? ""}
-                      onChange={e => patchWord(w.id, {
-                        meaning: e.target.value,
-                      })}
-                      placeholder="Meaning (optional)"
-                      aria-label="Meaning"
-                    />
-                  </div>
-                  <WordNoteControls
-                    status={w.status}
-                    flashcard={w.flashcard}
-                    onStatusChange={status => patchWord(w.id, {
-                      status,
-                    })}
-                    onFlashcardChange={flashcard => patchWord(w.id, {
-                      flashcard,
-                    })}
-                    onDelete={() => removeWord(w.id)}
-                  />
-                </li>
-              ))}
-            </ul>
-          )}
-      </div>
+      <ReadingWordNotesEditor
+        wordNotes={wordNotes}
+        onChange={setWordNotes}
+      />
 
       <div className="flex items-center gap-2">
         <Button
