@@ -1,10 +1,10 @@
-import type { QuestionSheetPart, QuestionSheetQuestion } from "@sentence-bank/types";
+import type { QuestionSheetQuestion } from "@sentence-bank/types";
 
 import { useState } from "react";
 
 import { ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react";
 
-import { PartQuickAdd } from "@/components/PartQuickAdd";
+import { PartsEditor } from "@/components/PartsEditor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -66,52 +66,6 @@ export function QuestionListEditor({
     if (target < 0 || target >= next.length) return;
     [next[index], next[target]] = [next[target], next[index]];
     onChange(next);
-  }
-  function addPart(questionId: string) {
-    onChange(questions.map(q =>
-      (q.id === questionId
-        ? {
-          ...q,
-          parts: [...(q.parts ?? []), {
-            id: newSheetItemId("p"),
-            label: "",
-          }],
-        }
-        : q)));
-  }
-  /** Append a batch of pre-labelled parts to a question (used by the quick-add controls). */
-  function addParts(questionId: string, newParts: QuestionSheetPart[]) {
-    if (newParts.length === 0) return;
-    onChange(questions.map(q =>
-      (q.id === questionId
-        ? {
-          ...q,
-          parts: [...(q.parts ?? []), ...newParts],
-        }
-        : q)));
-  }
-  function updatePart(questionId: string, partId: string, label: string) {
-    onChange(questions.map(q =>
-      (q.id === questionId
-        ? {
-          ...q,
-          parts: (q.parts ?? []).map(p => (p.id === partId
-            ? {
-              ...p,
-              label,
-            }
-            : p)),
-        }
-        : q)));
-  }
-  function removePart(questionId: string, partId: string) {
-    onChange(questions.map(q =>
-      (q.id === questionId
-        ? {
-          ...q,
-          parts: (q.parts ?? []).filter(p => p.id !== partId),
-        }
-        : q)));
   }
 
   return (
@@ -197,40 +151,11 @@ export function QuestionListEditor({
             </div>
           </div>
 
-          {(q.parts ?? []).length > 0
-            ? (
-              <div className="space-y-2 pl-4">
-                {(q.parts ?? []).map(part => (
-                  <div
-                    key={part.id}
-                    className="flex items-center gap-2"
-                  >
-                    <Input
-                      value={part.label}
-                      onChange={e => updatePart(q.id, part.id, e.target.value)}
-                      placeholder="Part label, e.g. (a)"
-                      aria-label="Part label"
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="text-destructive"
-                      aria-label="Remove part"
-                      onClick={() => removePart(q.id, part.id)}
-                    >
-                      <Trash2 className="size-4" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            )
-            : null}
-
-          <PartQuickAdd
-            existingCount={(q.parts ?? []).length}
-            onAddPart={() => addPart(q.id)}
-            onAddParts={parts => addParts(q.id, parts)}
+          <PartsEditor
+            parts={q.parts ?? []}
+            onChange={parts => updateQuestion(q.id, {
+              parts,
+            })}
           />
         </div>
       ))}

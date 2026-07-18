@@ -79,25 +79,67 @@ describe("QuestionSheetForm quick-add parts", () => {
     render(<QuestionSheetForm />);
     addQuestion();
 
-    const countInput = screen.getByLabelText("Number of parts to add");
-    const addParts = screen.getByRole("button", {
+    // First batch via the inline adder shown on an empty question.
+    fireEvent.change(screen.getByLabelText("Number of parts to add"), {
+      target: {
+        value: "2",
+      },
+    });
+    fireEvent.click(screen.getByRole("button", {
       name: /^Add parts$/,
-    });
+    }));
 
-    fireEvent.change(countInput, {
+    // Adding collapsed the adder; re-open it (the only "Add parts" button now is the toggle).
+    fireEvent.click(screen.getByRole("button", {
+      name: /^Add parts$/,
+    }));
+    fireEvent.change(screen.getByLabelText("Number of parts to add"), {
       target: {
         value: "2",
       },
     });
-    fireEvent.click(addParts);
-    fireEvent.change(countInput, {
-      target: {
-        value: "2",
-      },
-    });
-    fireEvent.click(addParts);
+    fireEvent.click(screen.getByRole("button", {
+      name: /^Add parts$/,
+    }));
 
     expect(partLabels()).toEqual(["(a)", "(b)", "(c)", "(d)"]);
+  });
+
+  it("collapses the parts adder once a part exists and offers a nested sub-part adder", () => {
+    render(<QuestionSheetForm />);
+    addQuestion();
+
+    fireEvent.click(screen.getByRole("button", {
+      name: /^Add part$/,
+    }));
+
+    // The inline count adder is gone (collapsed) and replaced by a compact toggle.
+    expect(screen.queryByLabelText("Number of parts to add")).toBeNull();
+    expect(screen.getByRole("button", {
+      name: /^Add parts$/,
+    })).toBeTruthy();
+    // The new part exposes its own collapsed sub-part adder.
+    expect(screen.getByRole("button", {
+      name: /^Add sub-parts$/,
+    })).toBeTruthy();
+  });
+
+  it("adds a sub-part under a part", () => {
+    render(<QuestionSheetForm />);
+    addQuestion();
+
+    fireEvent.click(screen.getByRole("button", {
+      name: /^Add part$/,
+    }));
+    // Expand the nested sub-part adder, then add one sub-part.
+    fireEvent.click(screen.getByRole("button", {
+      name: /^Add sub-parts$/,
+    }));
+    fireEvent.click(screen.getByRole("button", {
+      name: /^Add sub-part$/,
+    }));
+
+    expect(screen.getByLabelText("Sub-part label")).toBeTruthy();
   });
 
   it("appends pasted labels verbatim, dropping blank lines", () => {

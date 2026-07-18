@@ -16,10 +16,15 @@ export const LEARNING_AREAS = [
 /** One skill area from {@link LEARNING_AREAS}. */
 export type LearningArea = (typeof LEARNING_AREAS)[number];
 
-/** One labelled sub-part of a list question (e.g. "(a)", "(b)"). Each part is its own answer slot. */
+/**
+ * One labelled sub-part of a list question (e.g. "(a)", "(b)"). Parts nest recursively: a part with
+ * no `parts` is a leaf and its own answer slot; a part that has `parts` is a heading whose leaf
+ * descendants are the answer slots.
+ */
 export interface QuestionSheetPart {
   id: string;
   label: string;
+  parts?: QuestionSheetPart[];
 }
 
 /** One question in a "list" layout. A question with no parts is a single slot; each part is a slot. */

@@ -146,6 +146,68 @@ test("POST /api/question-sheets accepts a valid list sheet with parts, a bookmar
   await app.close();
 });
 
+test("POST /api/question-sheets accepts a list sheet with nested sub-parts", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/question-sheets",
+    payload: {
+      title: "Nested drills",
+      layout: "list",
+      questions: [{
+        id: "q1",
+        prompt: "Answer each part.",
+        parts: [{
+          id: "p1",
+          label: "(a)",
+          parts: [{
+            id: "p1i",
+            label: "(i)",
+          }, {
+            id: "p1ii",
+            label: "(ii)",
+            parts: [{
+              id: "p1ii1",
+              label: "•",
+            }],
+          }],
+        }, {
+          id: "p2",
+          label: "(b)",
+        }],
+      }],
+    },
+  });
+  // Valid recursive payload — 201 with a DB, or a 5xx without one, but never a 400.
+  assert.notEqual(res.statusCode, 400);
+  await app.close();
+});
+
+test("POST /api/question-sheets rejects a nested sub-part missing its label", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/question-sheets",
+    payload: {
+      title: "Nested drills",
+      layout: "list",
+      questions: [{
+        id: "q1",
+        prompt: "Answer each part.",
+        parts: [{
+          id: "p1",
+          label: "(a)",
+          parts: [{
+            id: "p1i", // missing required `label` — the recursive schema must validate at every depth
+          }],
+        }],
+      }],
+    },
+  });
+  assert.equal(res.statusCode, 400);
+  await app.close();
+});
+
 test("POST /api/question-sheets accepts valid learning areas", async () => {
   const app = await buildApp();
   const res = await app.inject({

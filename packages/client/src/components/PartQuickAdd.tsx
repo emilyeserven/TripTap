@@ -33,10 +33,13 @@ export function PartQuickAdd({
   existingCount,
   onAddPart,
   onAddParts,
+  noun = "part",
 }: {
   existingCount: number;
   onAddPart: () => void;
   onAddParts: (parts: QuestionSheetPart[]) => void;
+  /** What one item is called in the button/aria labels — "part" at the top level, "sub-part" deeper. */
+  noun?: string;
 }) {
   const [count, setCount] = useState("");
   const [style, setStyle] = useState<PartLabelStyle>("letter");
@@ -76,7 +79,9 @@ export function PartQuickAdd({
           onClick={onAddPart}
         >
           <Plus className="size-4" />
-          Add part
+          Add
+          {" "}
+          {noun}
         </Button>
         <div className="space-y-1.5">
           <Label className="text-xs text-muted-foreground">Quick add</Label>
@@ -87,7 +92,7 @@ export function PartQuickAdd({
               value={count}
               onChange={e => setCount(e.target.value)}
               placeholder="4"
-              aria-label="Number of parts to add"
+              aria-label={`Number of ${noun}s to add`}
               className="w-20"
             />
             <Select
@@ -96,7 +101,7 @@ export function PartQuickAdd({
             >
               <SelectTrigger
                 className="w-28"
-                aria-label="Part label style"
+                aria-label={`${noun} label style`}
               >
                 <SelectValue />
               </SelectTrigger>
@@ -113,14 +118,17 @@ export function PartQuickAdd({
               onClick={addByCount}
             >
               <Plus className="size-4" />
-              Add parts
+              Add
+              {" "}
+              {noun}
+              s
             </Button>
           </div>
         </div>
       </div>
       <div className="space-y-1.5">
         <Label className="text-xs text-muted-foreground">
-          Or paste part labels — one per line
+          Or paste {noun} labels — one per line
         </Label>
         <div className="flex items-end gap-2">
           <Textarea
@@ -128,7 +136,7 @@ export function PartQuickAdd({
             onChange={e => setPaste(e.target.value)}
             placeholder={"(a)\n(b)\n(c)"}
             rows={2}
-            aria-label="Paste part labels"
+            aria-label={`Paste ${noun} labels`}
             className="flex-1"
           />
           <Button

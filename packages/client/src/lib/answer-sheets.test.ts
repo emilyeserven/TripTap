@@ -11,6 +11,7 @@ import {
   isEntryAnswered,
   isEntryTouched,
   matchesResource,
+  questionSheetSlots,
   resourceFilterOptions,
 } from "./answer-sheets";
 
@@ -307,5 +308,106 @@ describe("entry state helpers", () => {
       ...entry("s1", ""),
       correction: "直した",
     })).toBe(true);
+  });
+});
+
+describe("questionSheetSlots", () => {
+  it("makes one slot per question when a question has no parts", () => {
+    const slots = questionSheetSlots(listSheet());
+    expect(slots).toEqual([
+      {
+        id: "q1",
+        label: "One",
+      },
+      {
+        id: "q2",
+        label: "Two",
+      },
+    ]);
+  });
+
+  it("falls back to a positional label for a blank prompt", () => {
+    const slots = questionSheetSlots(listSheet({
+      questions: [{
+        id: "q1",
+        prompt: "  ",
+      }],
+    }));
+    expect(slots).toEqual([{
+      id: "q1",
+      label: "Question 1",
+    }]);
+  });
+
+  it("makes one slot per flat part, labelled with the prompt and part label", () => {
+    const slots = questionSheetSlots(listSheet({
+      questions: [{
+        id: "q1",
+        prompt: "Conjugate",
+        parts: [
+          {
+            id: "p1",
+            label: "(a)",
+          },
+          {
+            id: "p2",
+            label: "(b)",
+          },
+        ],
+      }],
+    }));
+    expect(slots).toEqual([
+      {
+        id: "p1",
+        label: "Conjugate — (a)",
+      },
+      {
+        id: "p2",
+        label: "Conjugate — (b)",
+      },
+    ]);
+  });
+
+  it("recurses to leaves: a part with sub-parts is a heading, only its leaves are slots", () => {
+    const slots = questionSheetSlots(listSheet({
+      questions: [{
+        id: "q1",
+        prompt: "Q",
+        parts: [
+          {
+            id: "p1",
+            label: "(a)",
+            parts: [
+              {
+                id: "p1i",
+                label: "(i)",
+              },
+              {
+                id: "p1ii",
+                label: "(ii)",
+              },
+            ],
+          },
+          {
+            id: "p2",
+            label: "(b)",
+          },
+        ],
+      }],
+    }));
+    expect(slots).toEqual([
+      {
+        id: "p1i",
+        label: "Q — (a) — (i)",
+      },
+      {
+        id: "p1ii",
+        label: "Q — (a) — (ii)",
+      },
+      {
+        id: "p2",
+        label: "Q — (b)",
+      },
+    ]);
   });
 });
