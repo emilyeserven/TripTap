@@ -6,8 +6,10 @@
  */
 
 import type { RenshuuExampleSentence } from "@sentence-bank/types";
+import { generateFurigana } from "@/services/furigana";
 import { fetchJsonWithTimeout } from "@/services/http";
 import { RenshuuNotConfiguredError, RenshuuUnavailableError } from "@/services/renshuu/errors";
+import { normalizeJapaneseOrthography } from "@/services/renshuu/orthography";
 import { getRenshuuApiKey } from "@/services/settings";
 
 export { RenshuuNotConfiguredError, RenshuuUnavailableError } from "@/services/renshuu/errors";
@@ -31,15 +33,18 @@ interface RenshuuSearchResponse {
   reibuns?: RenshuuReibun[];
 }
 
-/** Map a raw Renshuu reibun to our wire shape, or null when it lacks an id/text. */
+/**
+ * Map a raw Renshuu reibun to our wire shape (text normalized toward the common written form; furigana
+ * filled in separately by {@link searchExampleSentences}), or null when it lacks an id/text.
+ */
 export function toExampleSentence(raw: RenshuuReibun): RenshuuExampleSentence | null {
   if (typeof raw.id !== "number" || typeof raw.japanese !== "string" || !raw.japanese.trim()) {
     return null;
   }
   return {
     id: raw.id,
-    text: raw.japanese,
-    reading: typeof raw.hiragana === "string" && raw.hiragana.trim() ? raw.hiragana : null,
+    text: normalizeJapaneseOrthography(raw.japanese),
+    reading: null,
     translation: typeof raw.meaning?.en === "string" && raw.meaning.en.trim() ? raw.meaning.en : null,
   };
 }
@@ -78,8 +83,20 @@ export async function searchExampleSentences(
   );
 
   // Renshuu paginates at 10/page; cap client-side so the picker stays a short list.
-  return (body.reibuns ?? [])
+  const mapped = (body.reibuns ?? [])
     .slice(0, Math.min(Math.max(1, limit), MAX_LIMIT))
     .map(toExampleSentence)
     .filter((s): s is RenshuuExampleSentence => s !== null);
+
+  // Generate ruby furigana over the normalized text so results render like bank sentences. Best-effort:
+  // a generation failure just leaves that sentence without furigana (never fails the whole search).
+  return Promise.all(mapped.map(async (s) => {
+    const {
+      tokens,
+    } = await generateFurigana(s.text);
+    return {
+      ...s,
+      reading: tokens,
+    };
+  }));
 }
