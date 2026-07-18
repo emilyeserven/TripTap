@@ -178,14 +178,23 @@ export async function listBookmarksForCategory(
  * {@link listBookmarksForCategory} (which resolves a whole configured source), this targets one tag
  * directly — used to auto-gather the bookmarks under a grammar note's Grammar Source tag.
  */
-export async function listBookmarksByTag(tagId: string): Promise<BookmarkRecord[]> {
+export async function listBookmarksByTag(tagId: string): Promise<BookmarkResource[]> {
   const {
     baseUrl,
   } = await resolveBookmarksConfig();
   const raws = await fetchRawBookmarksByTag(baseUrl, tagId);
-  return dedupeBookmarksByTitle(
-    raws.map(r => toBookmarkRecord(r, false)).filter((b): b is BookmarkRecord => b !== null),
-  );
+  // Widen to the resource shape (thumbnail + website) so the grammar note can show images and sources.
+  // Runtime isn't needed here, so skip resolving the runtime property (pass null → runtimeSeconds null).
+  const seen = new Set<string>();
+  const out: BookmarkResource[] = [];
+  for (const raw of raws) {
+    const resource = toBookmarkResource(raw, null);
+    if (resource && !seen.has(resource.id)) {
+      seen.add(resource.id);
+      out.push(resource);
+    }
+  }
+  return out.sort((a, b) => a.title.localeCompare(b.title));
 }
 
 /** A single bookmark by id, including its flattened timestamp sections. Null when not found/unreadable. */

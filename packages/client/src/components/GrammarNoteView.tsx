@@ -3,7 +3,7 @@ import type { GrammarNote } from "@sentence-bank/types";
 import { useMemo } from "react";
 
 import { Link } from "@tanstack/react-router";
-import { Plus } from "lucide-react";
+import { ExternalLink, ImageOff, Plus } from "lucide-react";
 import { toast } from "sonner";
 
 import { AiLessonBadge } from "@/components/ai-lesson/AiLessonBadge";
@@ -388,27 +388,60 @@ export function GrammarNoteView({
       {tagBookmarks.data && tagBookmarks.data.length > 0
         ? (
           <Section title={`Bookmarks tagged “${note.tagName}”`}>
-            <ul className="space-y-1.5">
+            <ul className="space-y-2">
               {tagBookmarks.data.map(b => (
                 <li
                   key={b.id}
-                  className="text-sm"
+                  className="flex items-start gap-3 text-sm"
                 >
-                  {b.url
-                    ? (
-                      <a
-                        href={b.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="
-                          font-medium
-                          hover:underline
-                        "
-                      >
-                        {b.title}
-                      </a>
-                    )
-                    : <span className="font-medium">{b.title}</span>}
+                  <div
+                    className="
+                      aspect-video h-12 shrink-0 overflow-hidden rounded-sm
+                      border bg-muted
+                    "
+                  >
+                    {b.imageUrl
+                      ? (
+                        <img
+                          src={b.imageUrl}
+                          alt=""
+                          loading="lazy"
+                          className="size-full object-cover"
+                        />
+                      )
+                      : (
+                        <div
+                          className="flex size-full items-center justify-center"
+                        >
+                          <ImageOff className="size-4 text-muted-foreground" />
+                        </div>
+                      )}
+                  </div>
+                  <div className="min-w-0 space-y-0.5">
+                    {b.url
+                      ? (
+                        <a
+                          href={b.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="
+                            flex items-center gap-1 font-medium
+                            hover:underline
+                          "
+                        >
+                          <span className="truncate">{b.title}</span>
+                          <ExternalLink
+                            className="size-3.5 shrink-0 text-muted-foreground"
+                          />
+                        </a>
+                      )
+                      : <span className="block truncate font-medium">{b.title}</span>}
+                    {b.website
+                      ? (
+                        <Badge variant="secondary">{b.website.siteName}</Badge>
+                      )
+                      : null}
+                  </div>
                 </li>
               ))}
             </ul>
