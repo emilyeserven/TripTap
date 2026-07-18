@@ -4,6 +4,9 @@ import { useState } from "react";
 
 import { Download, Search } from "lucide-react";
 
+import { FuriganaScope } from "@/components/ai-lesson/FuriganaScope";
+import { BlurReveal } from "@/components/BlurReveal";
+import { SentenceText } from "@/components/SentenceText";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -128,34 +131,49 @@ export function TatoebaImportDialog() {
 
           {results.length > 0
             ? (
-              <div
-                className="
-                  max-h-72 space-y-1 overflow-y-auto rounded-md border p-2
-                "
-              >
-                {results.map(r => (
-                  <label
-                    key={r.id}
-                    className="
-                      flex cursor-pointer items-start gap-2 rounded-sm px-1.5
-                      py-1 text-sm
-                      hover:bg-muted
-                    "
-                  >
-                    <Checkbox
-                      className="mt-0.5"
-                      checked={selected.has(r.id)}
-                      onCheckedChange={() => setSelected(prev => toggle(prev, r.id))}
-                    />
-                    <span>
-                      <span lang="ja">{r.text}</span>
-                      {r.translation
-                        ? <span className="block text-xs text-muted-foreground">{r.translation}</span>
-                        : null}
-                    </span>
-                  </label>
-                ))}
-              </div>
+              <FuriganaScope>
+                <div
+                  className="
+                    max-h-72 space-y-1 overflow-y-auto rounded-md border p-2
+                  "
+                >
+                  {results.map(r => (
+                    <label
+                      key={r.id}
+                      className="
+                        flex cursor-pointer items-start gap-2 rounded-sm px-1.5
+                        py-1 text-sm
+                        hover:bg-muted
+                      "
+                    >
+                      <Checkbox
+                        className="mt-0.5"
+                        checked={selected.has(r.id)}
+                        onCheckedChange={() => setSelected(prev => toggle(prev, r.id))}
+                      />
+                      <span>
+                        <span lang="ja">
+                          <SentenceText
+                            text={r.text}
+                            reading={r.reading}
+                          />
+                        </span>
+                        {r.translation
+                          ? (
+                            <BlurReveal
+                              className="
+                                mt-0.5 block text-xs text-muted-foreground
+                              "
+                            >
+                              {r.translation}
+                            </BlurReveal>
+                          )
+                          : null}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </FuriganaScope>
             )
             : null}
 

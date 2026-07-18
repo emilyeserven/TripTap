@@ -2,6 +2,9 @@ import { useState } from "react";
 
 import { Search } from "lucide-react";
 
+import { FuriganaScope } from "@/components/ai-lesson/FuriganaScope";
+import { BlurReveal } from "@/components/BlurReveal";
+import { SentenceText } from "@/components/SentenceText";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useExampleSentences } from "@/hooks/useTatoeba";
@@ -58,19 +61,30 @@ export function TatoebaExamplePicker({
 
       {results.length > 0
         ? (
-          <ul className="max-h-56 space-y-1 overflow-y-auto">
-            {results.map(r => (
-              <li
-                key={r.id}
-                className="rounded-sm p-2"
-              >
-                <p lang="ja">{r.text}</p>
-                {r.translation
-                  ? <p className="text-sm text-muted-foreground">{r.translation}</p>
-                  : null}
-              </li>
-            ))}
-          </ul>
+          <FuriganaScope>
+            <ul className="max-h-56 space-y-1 overflow-y-auto">
+              {results.map(r => (
+                <li
+                  key={r.id}
+                  className="rounded-sm p-2"
+                >
+                  <p lang="ja">
+                    <SentenceText
+                      text={r.text}
+                      reading={r.reading}
+                    />
+                  </p>
+                  {r.translation
+                    ? (
+                      <BlurReveal className="text-sm text-muted-foreground">
+                        {r.translation}
+                      </BlurReveal>
+                    )
+                    : null}
+                </li>
+              ))}
+            </ul>
+          </FuriganaScope>
         )
         : null}
 

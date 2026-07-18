@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { toExampleSentence } from "@/services/tatoeba";
+import { parseTranscription, pickReading, toExampleSentence } from "@/services/tatoeba";
 
 describe("toExampleSentence", () => {
   it("prefers a direct English translation", () => {
@@ -25,6 +25,7 @@ describe("toExampleSentence", () => {
     assert.deepEqual(result, {
       id: 1,
       text: "猫は魚を食べる。",
+      reading: null,
       translation: "The cat eats fish.",
       license: "CC BY 2.0 FR",
       owner: "someone",
@@ -78,5 +79,113 @@ describe("toExampleSentence", () => {
       translations: [],
     });
     assert.equal(result?.license, "CC BY 2.0 FR");
+  });
+
+  it("parses furigana from the Japanese transcription", () => {
+    const result = toExampleSentence({
+      id: 6,
+      text: "犬が好きです。",
+      transcriptions: [{
+        script: "Hrkt",
+        text: "犬[いぬ]が 好[す]きです。",
+      }],
+    });
+    assert.deepEqual(result?.reading, [
+      {
+        t: "犬",
+        r: "いぬ",
+      },
+      {
+        t: "が",
+        r: null,
+      },
+      {
+        t: "好",
+        r: "す",
+      },
+      {
+        t: "きです。",
+        r: null,
+      },
+    ]);
+  });
+});
+
+describe("parseTranscription", () => {
+  it("groups a multi-kanji compound under one reading", () => {
+    assert.deepEqual(parseTranscription("勉強[べんきょう]します"), [
+      {
+        t: "勉強",
+        r: "べんきょう",
+      },
+      {
+        t: "します",
+        r: null,
+      },
+    ]);
+  });
+
+  it("splits separately-annotated adjacent kanji", () => {
+    assert.deepEqual(parseTranscription("一[いっ]緒[しょ]"), [
+      {
+        t: "一",
+        r: "いっ",
+      },
+      {
+        t: "緒",
+        r: "しょ",
+      },
+    ]);
+  });
+
+  it("keeps kanji without a following reading as plain text", () => {
+    assert.deepEqual(parseTranscription("本を 読[よ]む"), [
+      {
+        t: "本を",
+        r: null,
+      },
+      {
+        t: "読",
+        r: "よ",
+      },
+      {
+        t: "む",
+        r: null,
+      },
+    ]);
+  });
+});
+
+describe("pickReading", () => {
+  it("prefers the Hrkt transcription", () => {
+    const reading = pickReading([
+      {
+        script: "Latn",
+        text: "inu ga suki desu.",
+      },
+      {
+        script: "Hrkt",
+        text: "犬[いぬ]が",
+      },
+    ]);
+    assert.deepEqual(reading, [
+      {
+        t: "犬",
+        r: "いぬ",
+      },
+      {
+        t: "が",
+        r: null,
+      },
+    ]);
+  });
+
+  it("returns null when no transcription carries bracket furigana", () => {
+    assert.equal(pickReading([{
+      script: "Latn",
+      text: "inu ga suki desu.",
+    }]), null);
+    assert.equal(pickReading([]), null);
+    assert.equal(pickReading(undefined), null);
   });
 });
