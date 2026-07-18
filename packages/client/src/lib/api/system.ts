@@ -72,8 +72,8 @@ export const bookmarksApi = {
     request<BookmarkRecord[]>(`/bookmarks/records?category=${category}`),
   /** A single bookmark with its flattened timestamp sections. */
   record: (id: string) => request<BookmarkRecord>(`/bookmarks/records/${encodeURIComponent(id)}`),
-  /** All bookmarks carrying a specific tag id (e.g. a grammar note's Grammar Source tag). */
-  byTag: (tagId: string) => request<BookmarkRecord[]>(`/bookmarks/by-tag/${encodeURIComponent(tagId)}`),
+  /** All bookmarks (with thumbnail + website) carrying a specific tag id (e.g. a grammar note's tag). */
+  byTag: (tagId: string) => request<BookmarkResource[]>(`/bookmarks/by-tag/${encodeURIComponent(tagId)}`),
   /** The whole bookmarks collection with website + runtime, for the Find a Resource browser. */
   resources: () => request<BookmarkResource[]>("/bookmarks/resources"),
 };
