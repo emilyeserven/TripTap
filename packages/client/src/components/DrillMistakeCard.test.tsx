@@ -66,6 +66,32 @@ describe("DrillMistakeCard", () => {
     expect(screen.getByText("食べた")).toBeInTheDocument();
   });
 
+  it("prefills the Tatoeba search box with the question when one exists", () => {
+    renderCard(
+      <DrillMistakeCard
+        mistake={mistake({
+          question: "昨日、何をしましたか",
+          correctAnswer: "食べた",
+        })}
+        categories={categories}
+      />,
+    );
+    expect(screen.getByLabelText<HTMLInputElement>("Tatoeba search").value)
+      .toBe("昨日、何をしましたか");
+  });
+
+  it("falls back to the correct answer, then the prompt, when there is no question", () => {
+    renderCard(
+      <DrillMistakeCard
+        mistake={mistake({
+          correctAnswer: "食べた",
+        })}
+        categories={categories}
+      />,
+    );
+    expect(screen.getByLabelText<HTMLInputElement>("Tatoeba search").value).toBe("食べた");
+  });
+
   it("resolves reason refs to their taxonomy labels, falling back for deleted refs", () => {
     renderCard(
       <DrillMistakeCard
