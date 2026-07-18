@@ -57,7 +57,7 @@ export function DrillMistakeCard({
         {mistake.reflection
           ? <p className="text-sm whitespace-pre-wrap italic">{mistake.reflection}</p>
           : null}
-        <TatoebaExamplePicker defaultQuery={mistake.correctAnswer ?? mistake.prompt} />
+        <TatoebaExamplePicker defaultQuery={mistake.question ?? mistake.correctAnswer ?? mistake.prompt} />
         <div className="pt-1">
           <AddSentenceFromMistakeDialog mistake={mistake} />
         </div>
