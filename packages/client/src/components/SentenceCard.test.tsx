@@ -120,6 +120,52 @@ describe("SentenceCard", () => {
     expect(screen.getByText("I drink coffee every morning.")).toBeInTheDocument();
   });
 
+  it("blurs the furigana when the sentence declares a target vocab (has linked vocab)", () => {
+    const reading = [
+      {
+        t: "毎朝",
+        r: "まいあさ",
+      },
+      {
+        t: "コーヒー。",
+        r: null,
+      },
+    ];
+    // Linked vocab present → the reading is blurred behind the standard reveal control.
+    const {
+      unmount,
+    } = renderCard(
+      <SentenceCard
+        sentence={{
+          ...sentence,
+          reading,
+          vocabCount: 2,
+        }}
+      />,
+    );
+    const reveal = screen.getByRole("button", {
+      name: "Reveal reading",
+    });
+    expect(reveal).toHaveTextContent("まいあさ");
+    expect(reveal.className).toContain("blur-[3px]");
+    unmount();
+
+    // No linked vocab → the reading shows crisp (no reveal control).
+    renderCard(
+      <SentenceCard
+        sentence={{
+          ...sentence,
+          reading,
+          vocabCount: 0,
+        }}
+      />,
+    );
+    expect(screen.queryByRole("button", {
+      name: "Reveal reading",
+    })).not.toBeInTheDocument();
+    expect(screen.getByText("まいあさ")).toBeInTheDocument();
+  });
+
   it("calls onEdit with the sentence when the Edit button is clicked", () => {
     const onEdit = vi.fn();
     renderCard(
