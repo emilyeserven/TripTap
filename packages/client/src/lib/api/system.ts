@@ -2,6 +2,7 @@
 import type {
   BookmarkRecord,
   BookmarkResource,
+  BookmarkResourceList,
   BookmarksSettings,
   BookmarksTaxonomy,
   DictionaryEntry,
@@ -74,8 +75,8 @@ export const bookmarksApi = {
   record: (id: string) => request<BookmarkRecord>(`/bookmarks/records/${encodeURIComponent(id)}`),
   /** All bookmarks (with thumbnail + website) carrying a specific tag id (e.g. a grammar note's tag). */
   byTag: (tagId: string) => request<BookmarkResource[]>(`/bookmarks/by-tag/${encodeURIComponent(tagId)}`),
-  /** The whole bookmarks collection with website + runtime, for the Find a Resource browser. */
-  resources: () => request<BookmarkResource[]>("/bookmarks/resources"),
+  /** The whole bookmarks collection (+ complexity-scale metadata) for the Collections browser. */
+  resources: () => request<BookmarkResourceList>("/bookmarks/resources"),
 };
 
 /** Proxy to the external Japanese dictionary lookup (all calls go server-side; provider is swappable). */

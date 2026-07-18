@@ -495,10 +495,32 @@ export interface BookmarkRecord {
 }
 
 /**
- * A bookmark surfaced for the "Find a Resource" browser — the whole bookmarks collection with the extra
+ * A bookmark's complexity level, read from the upstream "Complexity Scale" rating property and
+ * normalized to a band. A single-value bookmark has `min === max`; a range-valued one spans them.
+ */
+export interface BookmarkComplexity {
+  /** Lower bound of the level (0-based). */
+  min: number;
+  /** Upper bound of the level (equals `min` unless the bookmark holds a range). */
+  max: number;
+}
+
+/**
+ * The "Complexity Scale" rating property's shape, so the client can render the level filter and label
+ * a resource's complexity. Resolved once per request from the bookmarks host's custom-property list.
+ */
+export interface ComplexityScale {
+  /** Highest level on the scale (e.g. 5). The scale is assumed to start at 0. */
+  max: number;
+  /** Per-level labels keyed by the numeric level as a string, e.g. `{ "0": "Absolute Beginner" }`. */
+  labels: Record<string, string>;
+}
+
+/**
+ * A bookmark surfaced for the Collections browser — the whole bookmarks collection with the extra
  * fields that page sorts/filters by: the runtime (from the upstream "Runtime" custom property, in
- * seconds) and the website it lives on. Distinct from {@link BookmarkRecord}, which is the narrow
- * per-channel shape used by the term pickers.
+ * seconds), the media type, the complexity level, and the website it lives on. Distinct from
+ * {@link BookmarkRecord}, which is the narrow per-channel shape used by the term pickers.
  */
 export interface BookmarkResource {
   id: string;
@@ -510,11 +532,23 @@ export interface BookmarkResource {
     siteName: string; } | null;
   /** Runtime in seconds (from the upstream "Runtime" duration property); null when not set. */
   runtimeSeconds: number | null;
-  /** The upstream media type name (e.g. "Video", "Podcast"); null when unknown. */
+  /** The upstream media type name (e.g. "Video", "Book", "Article"); null when unknown. */
   mediaType: string | null;
+  /** The bookmark's complexity band (from the "Complexity Scale" property); null when unset. */
+  complexity: BookmarkComplexity | null;
   /**
    * The bookmark's thumbnail image URL — a same-origin `/api/bookmarks/{id}/images/{imageId}` path
    * (from the upstream `image.url`) that the middleware proxies to the bookmarks host; null when none.
    */
   imageUrl: string | null;
+}
+
+/**
+ * Response of `GET /api/bookmarks/resources`: the whole Collections list plus the complexity-scale
+ * metadata the client needs to build the level filter. `complexityScale` is null when the bookmarks
+ * host has no "Complexity Scale" property.
+ */
+export interface BookmarkResourceList {
+  resources: BookmarkResource[];
+  complexityScale: ComplexityScale | null;
 }

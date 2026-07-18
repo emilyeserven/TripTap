@@ -125,7 +125,7 @@ export function useBookmarkRecords(category: SentenceTermCategory) {
   });
 }
 
-/** The whole bookmarks collection (website + runtime) for the Find a Resource browser. */
+/** The whole bookmarks collection (+ complexity-scale metadata) for the Collections browser. */
 export function useBookmarkResources() {
   return useQuery({
     queryKey: [...BOOKMARKS_KEY, "resources"],

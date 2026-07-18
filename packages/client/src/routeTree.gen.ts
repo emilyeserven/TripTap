@@ -34,6 +34,7 @@ import { Route as LessonsIndexRouteImport } from './routes/lessons.index'
 import { Route as GrammarNotesIndexRouteImport } from './routes/grammar-notes.index'
 import { Route as FindResourceIndexRouteImport } from './routes/find-resource.index'
 import { Route as DrillSessionsIndexRouteImport } from './routes/drill-sessions.index'
+import { Route as CollectionsIndexRouteImport } from './routes/collections.index'
 import { Route as CapturesIndexRouteImport } from './routes/captures.index'
 import { Route as BookExercisesIndexRouteImport } from './routes/book-exercises.index'
 import { Route as AnswerSheetsIndexRouteImport } from './routes/answer-sheets.index'
@@ -215,6 +216,11 @@ const FindResourceIndexRoute = FindResourceIndexRouteImport.update({
 const DrillSessionsIndexRoute = DrillSessionsIndexRouteImport.update({
   id: '/drill-sessions/',
   path: '/drill-sessions/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CollectionsIndexRoute = CollectionsIndexRouteImport.update({
+  id: '/collections/',
+  path: '/collections/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CapturesIndexRoute = CapturesIndexRouteImport.update({
@@ -550,6 +556,7 @@ export interface FileRoutesByFullPath {
   '/answer-sheets/': typeof AnswerSheetsIndexRoute
   '/book-exercises/': typeof BookExercisesIndexRoute
   '/captures/': typeof CapturesIndexRoute
+  '/collections/': typeof CollectionsIndexRoute
   '/drill-sessions/': typeof DrillSessionsIndexRoute
   '/find-resource/': typeof FindResourceIndexRoute
   '/grammar-notes/': typeof GrammarNotesIndexRoute
@@ -623,6 +630,7 @@ export interface FileRoutesByTo {
   '/answer-sheets': typeof AnswerSheetsIndexRoute
   '/book-exercises': typeof BookExercisesIndexRoute
   '/captures': typeof CapturesIndexRoute
+  '/collections': typeof CollectionsIndexRoute
   '/drill-sessions': typeof DrillSessionsIndexRoute
   '/find-resource': typeof FindResourceIndexRoute
   '/grammar-notes': typeof GrammarNotesIndexRoute
@@ -708,6 +716,7 @@ export interface FileRoutesById {
   '/answer-sheets/': typeof AnswerSheetsIndexRoute
   '/book-exercises/': typeof BookExercisesIndexRoute
   '/captures/': typeof CapturesIndexRoute
+  '/collections/': typeof CollectionsIndexRoute
   '/drill-sessions/': typeof DrillSessionsIndexRoute
   '/find-resource/': typeof FindResourceIndexRoute
   '/grammar-notes/': typeof GrammarNotesIndexRoute
@@ -794,6 +803,7 @@ export interface FileRouteTypes {
     | '/answer-sheets/'
     | '/book-exercises/'
     | '/captures/'
+    | '/collections/'
     | '/drill-sessions/'
     | '/find-resource/'
     | '/grammar-notes/'
@@ -867,6 +877,7 @@ export interface FileRouteTypes {
     | '/answer-sheets'
     | '/book-exercises'
     | '/captures'
+    | '/collections'
     | '/drill-sessions'
     | '/find-resource'
     | '/grammar-notes'
@@ -951,6 +962,7 @@ export interface FileRouteTypes {
     | '/answer-sheets/'
     | '/book-exercises/'
     | '/captures/'
+    | '/collections/'
     | '/drill-sessions/'
     | '/find-resource/'
     | '/grammar-notes/'
@@ -1036,6 +1048,7 @@ export interface RootRouteChildren {
   AnswerSheetsIndexRoute: typeof AnswerSheetsIndexRoute
   BookExercisesIndexRoute: typeof BookExercisesIndexRoute
   CapturesIndexRoute: typeof CapturesIndexRoute
+  CollectionsIndexRoute: typeof CollectionsIndexRoute
   DrillSessionsIndexRoute: typeof DrillSessionsIndexRoute
   FindResourceIndexRoute: typeof FindResourceIndexRoute
   GrammarNotesIndexRoute: typeof GrammarNotesIndexRoute
@@ -1228,6 +1241,13 @@ declare module '@tanstack/react-router' {
       path: '/drill-sessions'
       fullPath: '/drill-sessions/'
       preLoaderRoute: typeof DrillSessionsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/collections/': {
+      id: '/collections/'
+      path: '/collections'
+      fullPath: '/collections/'
+      preLoaderRoute: typeof CollectionsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/captures/': {
@@ -1829,6 +1849,7 @@ const rootRouteChildren: RootRouteChildren = {
   AnswerSheetsIndexRoute: AnswerSheetsIndexRoute,
   BookExercisesIndexRoute: BookExercisesIndexRoute,
   CapturesIndexRoute: CapturesIndexRoute,
+  CollectionsIndexRoute: CollectionsIndexRoute,
   DrillSessionsIndexRoute: DrillSessionsIndexRoute,
   FindResourceIndexRoute: FindResourceIndexRoute,
   GrammarNotesIndexRoute: GrammarNotesIndexRoute,
