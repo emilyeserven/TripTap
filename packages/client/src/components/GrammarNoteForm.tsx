@@ -49,6 +49,9 @@ export function GrammarNoteForm({
   const [tagId, setTagId] = useState(note?.tagId ?? presetTagId ?? "");
   const [tagName, setTagName] = useState(note?.tagName ?? presetTagName ?? "");
   const [title, setTitle] = useState(note?.title ?? presetTagName ?? "");
+  // In create mode the title tracks the picked tag (following drill-down) until the user types into it;
+  // in edit mode it's already the user's, so never auto-overwrite.
+  const [titleTouched, setTitleTouched] = useState(editing);
   const [nuance, setNuance] = useState(note?.nuance ?? "");
   const [summary, setSummary] = useState(note?.summary ?? "");
   const [constructions, setConstructions] = useState<GrammarConstruction[]>(note?.constructions ?? []);
@@ -142,7 +145,8 @@ export function GrammarNoteForm({
         onPick={(id, name) => {
           setTagId(id);
           setTagName(name);
-          if (!title.trim()) setTitle(name);
+          // Title follows the latest (deepest) tag selection until the user edits it directly.
+          if (!titleTouched) setTitle(name);
         }}
       />
 
@@ -158,7 +162,10 @@ export function GrammarNoteForm({
           <Input
             id="grammar-title"
             value={title}
-            onChange={e => setTitle(e.target.value)}
+            onChange={(e) => {
+              setTitle(e.target.value);
+              setTitleTouched(true);
+            }}
             placeholder="は"
           />
           <p className="text-xs text-muted-foreground">
