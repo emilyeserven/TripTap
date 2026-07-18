@@ -7,7 +7,9 @@ import { LearningAreaBadges } from "@/components/LearningAreaBadges";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { useAnswerSheetsForQuestionSheet } from "@/hooks/useAnswerSheets";
+import { useBookmarksSettings } from "@/hooks/useSettings";
 import { dueDateMet } from "@/lib/answer-sheets";
+import { bookmarkAppUrl } from "@/lib/bookmarks";
 import { formatDueDate, isOverdue } from "@/lib/due-date";
 
 /** Read-only render of a question sheet's structure — a numbered list (with parts) or a grid. */
@@ -19,6 +21,9 @@ export function QuestionSheetView({
   const {
     data: answerSheets,
   } = useAnswerSheetsForQuestionSheet(qs.id);
+  const {
+    data: bookmarksSettings,
+  } = useBookmarksSettings();
   const met = dueDateMet(qs, answerSheets ?? []);
 
   return (
@@ -46,10 +51,10 @@ export function QuestionSheetView({
                     max-w-full min-w-0 shrink wrap-break-word whitespace-normal
                   "
                 >
-                  {qs.bookmarkUrl
+                  {qs.bookmarkId
                     ? (
                       <a
-                        href={qs.bookmarkUrl}
+                        href={bookmarkAppUrl(bookmarksSettings?.endpointUrl, qs.bookmarkId)}
                         target="_blank"
                         rel="noreferrer"
                         className="hover:underline"

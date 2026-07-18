@@ -8,7 +8,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAnswerSheets } from "@/hooks/useAnswerSheets";
+import { useBookmarksSettings } from "@/hooks/useSettings";
 import { dueDateMet, questionSheetSlots } from "@/lib/answer-sheets";
+import { bookmarkAppUrl } from "@/lib/bookmarks";
 import { formatDueDate, isOverdue } from "@/lib/due-date";
 
 /** Compact list-item for one Question Sheet: title link, layout + slot count. */
@@ -20,6 +22,9 @@ export function QuestionSheetCard({
   const slotCount = questionSheetSlots(qs).length;
   // One shared, cached query for all answer sheets — filtered here rather than one request per card.
   const answerSheets = useAnswerSheets();
+  const {
+    data: bookmarksSettings,
+  } = useBookmarksSettings();
   const met = dueDateMet(qs, (answerSheets.data ?? []).filter(as => as.questionSheetId === qs.id));
 
   return (
@@ -56,10 +61,10 @@ export function QuestionSheetCard({
                   max-w-full min-w-0 shrink wrap-break-word whitespace-normal
                 "
               >
-                {qs.bookmarkUrl
+                {qs.bookmarkId
                   ? (
                     <a
-                      href={qs.bookmarkUrl}
+                      href={bookmarkAppUrl(bookmarksSettings?.endpointUrl, qs.bookmarkId)}
                       target="_blank"
                       rel="noreferrer"
                       className="hover:underline"
