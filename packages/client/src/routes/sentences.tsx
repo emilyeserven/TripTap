@@ -12,6 +12,7 @@ import { SourceCard } from "@/components/ai-lesson/SourceCard";
 import { SentenceCard } from "@/components/SentenceCard";
 import { SentenceFilters } from "@/components/SentenceFilters";
 import { SentenceForm } from "@/components/SentenceForm";
+import { TatoebaImportDialog } from "@/components/TatoebaImportDialog";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -187,6 +188,7 @@ function SentencesPage() {
                 ? `Furigana +${backfillFurigana.data.updated}`
                 : "Generate furigana"}
           </Button>
+          <TatoebaImportDialog />
           <Dialog
             open={dialogOpen}
             onOpenChange={setDialogOpen}
