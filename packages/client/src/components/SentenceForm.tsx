@@ -1,15 +1,27 @@
 import type { Sentence, SentenceTermRef } from "@sentence-bank/types";
 
-import { useState } from "react";
+import { useId, useMemo, useState } from "react";
 
 import { useForm } from "@tanstack/react-form";
+import { PenLine } from "lucide-react";
 import { z } from "zod";
 
+import { FuriganaEditor } from "./FuriganaEditor";
 import { SourcePicker } from "./SourcePicker";
 import { TermPicker } from "./TermPicker";
 import { VocabLinkPicker } from "./VocabLinkPicker";
-import { useCreateSentence, useUpdateSentence } from "../hooks/useSentences";
+import {
+  useCreateSentence,
+  useDeleteSentence,
+  useSentences,
+  useUpdateSentence,
+} from "../hooks/useSentences";
 
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { MultiSelect } from "@/components/ui/multi-select";
+import { Textarea } from "@/components/ui/textarea";
 import { groupTermsByCategory } from "@/lib/terms";
 
 const sentenceSchema = z.object({
@@ -22,8 +34,12 @@ const sentenceSchema = z.object({
   notes: z.string(),
 });
 
-const fieldClass
-  = "mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none";
+const KANJI = /[㐀-䶿一-鿿々]/;
+
+/** Split the free-text comma-separated `tags` string into trimmed, non-empty tag names. */
+function splitTags(value: string): string[] {
+  return value.split(",").map(tag => tag.trim()).filter(Boolean);
+}
 
 /** The prefillable text fields — a subset of the form used to seed it (e.g. from the Capture flow). */
 export interface SentenceFormInitialValues {
@@ -38,8 +54,9 @@ export interface SentenceFormInitialValues {
 
 /**
  * Sentence form. In create mode it owns a create mutation; pass an existing `sentence` to switch to
- * edit mode (hydrates every field + the four term channels and saves via the update mutation). Owns
- * its own mutation so the page stays focused on the list.
+ * edit mode (hydrates every field + the four term channels and saves via the update mutation). Edit
+ * mode also hosts the per-sentence Delete and furigana editor. Owns its own mutations so the page
+ * stays focused on the list.
  */
 export function SentenceForm({
   onSuccess,
@@ -54,7 +71,20 @@ export function SentenceForm({
   const isEdit = Boolean(sentence);
   const createSentence = useCreateSentence();
   const updateSentence = useUpdateSentence();
+  const deleteSentence = useDeleteSentence();
   const mutation = isEdit ? updateSentence : createSentence;
+
+  // All existing bank tags, offered as combobox options (plus whatever is already selected).
+  const {
+    data: allSentences,
+  } = useSentences();
+  const allTags = useMemo(() => {
+    const set = new Set<string>();
+    for (const s of allSentences ?? []) {
+      for (const tag of splitTags(s.tags ?? "")) set.add(tag);
+    }
+    return [...set].sort();
+  }, [allSentences]);
 
   // In edit mode, seed the per-channel pickers from the sentence's stored terms.
   const termGroups = sentence ? groupTermsByCategory(sentence.terms ?? []) : null;
@@ -67,6 +97,9 @@ export function SentenceForm({
   const [grammarTerms, setGrammarTerms] = useState<SentenceTermRef[]>(termGroups?.grammar ?? []);
   const [generalTerms, setGeneralTerms] = useState<SentenceTermRef[]>(termGroups?.general ?? []);
   const [resourceTerms, setResourceTerms] = useState<SentenceTermRef[]>(termGroups?.resource ?? []);
+  const [editFuri, setEditFuri] = useState(false);
+
+  const hasKanji = sentence ? KANJI.test(sentence.text) : false;
 
   const form = useForm({
     defaultValues: {
@@ -118,10 +151,18 @@ export function SentenceForm({
     },
   });
 
+  function remove() {
+    if (!sentence) return;
+    if (!globalThis.confirm("Delete this sentence?")) return;
+    deleteSentence.mutate(sentence.id, {
+      onSuccess,
+    });
+  }
+
   return (
     <form
       className="
-        grid gap-4 rounded-lg border border-slate-200 bg-white p-4
+        grid gap-4
         sm:grid-cols-2
       "
       onSubmit={(event) => {
@@ -184,15 +225,36 @@ export function SentenceForm({
       </form.Field>
 
       <form.Field name="tags">
-        {field => (
-          <TextField
-            label="Tags (comma-separated)"
-            value={field.state.value}
-            errors={field.state.meta.errors}
-            onBlur={field.handleBlur}
-            onChange={field.handleChange}
-          />
-        )}
+        {(field) => {
+          const selected = splitTags(field.state.value);
+          const options = [...new Set([...allTags, ...selected])].map(tag => ({
+            value: tag,
+            label: tag,
+          }));
+          return (
+            <div
+              className="
+                space-y-1.5
+                sm:col-span-2
+              "
+            >
+              <Label>Tags</Label>
+              <MultiSelect
+                value={selected}
+                onChange={next => field.handleChange(next.join(", "))}
+                options={options}
+                ariaLabel="Tags"
+                placeholder="Add tags…"
+                searchPlaceholder="Search or create a tag…"
+                emptyText="No tags yet — type to create one."
+                creatable
+                onCreate={(name) => {
+                  if (!selected.includes(name)) field.handleChange([...selected, name].join(", "));
+                }}
+              />
+            </div>
+          );
+        }}
       </form.Field>
 
       <div
@@ -240,41 +302,85 @@ export function SentenceForm({
 
       <form.Field name="notes">
         {field => (
-          <label
+          <div
             className="
-              block text-sm font-medium text-slate-700
+              space-y-1.5
               sm:col-span-2
             "
           >
-            Notes
-            <textarea
-              className={fieldClass}
+            <Label htmlFor="sentence-notes">Notes</Label>
+            <Textarea
+              id="sentence-notes"
               rows={2}
               value={field.state.value}
               onBlur={field.handleBlur}
               onChange={event => field.handleChange(event.target.value)}
             />
-          </label>
+          </div>
         )}
       </form.Field>
 
-      <div className="sm:col-span-2">
-        <form.Subscribe selector={state => [state.canSubmit, state.isSubmitting] as const}>
-          {([canSubmit, isSubmitting]) => (
-            <button
-              type="submit"
-              disabled={!canSubmit}
-              className="
-                rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white
-                hover:bg-blue-700
-                disabled:opacity-50
-              "
+      {isEdit && sentence && hasKanji
+        ? (
+          <div
+            className="
+              space-y-2
+              sm:col-span-2
+            "
+          >
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setEditFuri(v => !v)}
             >
-              {isSubmitting ? "Saving…" : isEdit ? "Save changes" : "Add sentence"}
-            </button>
-          )}
-        </form.Subscribe>
-        {mutation.isError ? <p className="mt-2 text-sm text-red-600">{mutation.error?.message}</p> : null}
+              <PenLine className="size-4" />
+              {editFuri ? "Close furigana" : "Edit furigana"}
+            </Button>
+            {editFuri
+              ? (
+                <FuriganaEditor
+                  sentence={sentence}
+                  onClose={() => setEditFuri(false)}
+                />
+              )
+              : null}
+          </div>
+        )
+        : null}
+
+      <div
+        className="
+          space-y-2
+          sm:col-span-2
+        "
+      >
+        <div className="flex items-center gap-3">
+          <form.Subscribe selector={state => [state.canSubmit, state.isSubmitting] as const}>
+            {([canSubmit, isSubmitting]) => (
+              <Button
+                type="submit"
+                disabled={!canSubmit}
+              >
+                {isSubmitting ? "Saving…" : isEdit ? "Save changes" : "Add sentence"}
+              </Button>
+            )}
+          </form.Subscribe>
+          {isEdit
+            ? (
+              <Button
+                type="button"
+                variant="ghost"
+                className="ml-auto text-destructive"
+                disabled={deleteSentence.isPending}
+                onClick={remove}
+              >
+                {deleteSentence.isPending ? "Deleting…" : "Delete"}
+              </Button>
+            )
+            : null}
+        </div>
+        {mutation.isError ? <p className="text-sm text-destructive">{mutation.error?.message}</p> : null}
       </div>
     </form>
   );
@@ -298,20 +404,21 @@ function fieldMessages(errors: unknown[]): string[] {
 function TextField({
   label, value, errors, type = "text", onBlur, onChange,
 }: TextFieldProps) {
+  const id = useId();
   const messages = fieldMessages(errors);
 
   return (
-    <label className="block text-sm font-medium text-slate-700">
-      {label}
-      <input
+    <div className="space-y-1.5">
+      <Label htmlFor={id}>{label}</Label>
+      <Input
+        id={id}
         type={type}
-        className={fieldClass}
         value={value}
         onBlur={onBlur}
         onChange={event => onChange(event.target.value)}
       />
-      {messages.length > 0 ? <span className="mt-1 block text-xs text-red-600">{messages.join(", ")}</span> : null}
-    </label>
+      {messages.length > 0 ? <p className="text-xs text-destructive">{messages.join(", ")}</p> : null}
+    </div>
   );
 }
 
@@ -326,19 +433,20 @@ interface TextAreaFieldProps {
 function TextAreaField({
   label, value, errors, onBlur, onChange,
 }: TextAreaFieldProps) {
+  const id = useId();
   const messages = fieldMessages(errors);
 
   return (
-    <label className="block text-sm font-medium text-slate-700">
-      {label}
-      <textarea
-        className={fieldClass}
+    <div className="space-y-1.5">
+      <Label htmlFor={id}>{label}</Label>
+      <Textarea
+        id={id}
         rows={2}
         value={value}
         onBlur={onBlur}
         onChange={event => onChange(event.target.value)}
       />
-      {messages.length > 0 ? <span className="mt-1 block text-xs text-red-600">{messages.join(", ")}</span> : null}
-    </label>
+      {messages.length > 0 ? <p className="text-xs text-destructive">{messages.join(", ")}</p> : null}
+    </div>
   );
 }

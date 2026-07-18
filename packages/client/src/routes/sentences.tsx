@@ -11,6 +11,7 @@ import { FuriganaScope } from "@/components/ai-lesson/FuriganaScope";
 import { FuriganaToggle } from "@/components/ai-lesson/FuriganaToggle";
 import { matches } from "@/components/ai-lesson/search";
 import { SourceCard } from "@/components/ai-lesson/SourceCard";
+import { RenshuuImportDialog } from "@/components/RenshuuImportDialog";
 import { SentenceCard } from "@/components/SentenceCard";
 import { SentenceFilters } from "@/components/SentenceFilters";
 import { SentenceForm } from "@/components/SentenceForm";
@@ -31,10 +32,9 @@ import {
 } from "@/components/ui/popover";
 import { useAiLessonContent } from "@/hooks/useAiLessons";
 import { usePageTitle } from "@/hooks/usePageTitle";
-import { useBackfillFurigana, useDeleteSentence, useSentences } from "@/hooks/useSentences";
+import { useBackfillFurigana, useSentences } from "@/hooks/useSentences";
 import { useSources } from "@/hooks/useSources";
 import { dedupeGrammarTags, grammarTermsOf } from "@/lib/grammar-links";
-import { useUiStore } from "@/stores/uiStore";
 
 export const Route = createFileRoute("/sentences")({
   component: SentencesPage,
@@ -49,14 +49,11 @@ function SentencesPage() {
     data: sentences, isLoading, error,
   } = useSentences();
   const backfillFurigana = useBackfillFurigana();
-  const deleteSentence = useDeleteSentence();
   const {
     data: sources,
   } = useSources();
   const sourceName = (id: string | null) =>
     (id ? sources?.find(s => s.id === id)?.name ?? null : null);
-  const showTranslations = useUiStore(s => s.showTranslations);
-  const toggleShowTranslations = useUiStore(s => s.toggleShowTranslations);
 
   const {
     data: content,
@@ -70,6 +67,7 @@ function SentencesPage() {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [tatoebaOpen, setTatoebaOpen] = useState(false);
+  const [renshuuOpen, setRenshuuOpen] = useState(false);
   const [editing, setEditing] = useState<Sentence | null>(null);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all"); // "all" | "mine" | AI Lesson slug
@@ -174,16 +172,6 @@ function SentencesPage() {
           <p className="text-sm text-muted-foreground">Your own sentences and those mined from AI Lessons.</p>
         </div>
         <div className="flex items-center gap-4">
-          <label
-            className="flex items-center gap-2 text-sm text-muted-foreground"
-          >
-            <input
-              type="checkbox"
-              checked={showTranslations}
-              onChange={toggleShowTranslations}
-            />
-            Show translations
-          </label>
           <FuriganaToggle />
           <Button
             variant="outline"
@@ -208,7 +196,12 @@ function SentencesPage() {
                   New sentence
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-2xl">
+              <DialogContent
+                className="
+                  max-h-[85vh] overflow-y-auto
+                  sm:max-w-2xl
+                "
+              >
                 <DialogHeader>
                   <DialogTitle>New sentence</DialogTitle>
                 </DialogHeader>
@@ -241,6 +234,18 @@ function SentencesPage() {
                   <Download className="size-4" />
                   Import from Tatoeba
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setRenshuuOpen(true)}
+                  className="
+                    flex w-full items-center gap-2 rounded-sm px-2 py-1.5
+                    text-sm
+                    hover:bg-muted
+                  "
+                >
+                  <Download className="size-4" />
+                  Import from Renshuu
+                </button>
               </PopoverContent>
             </Popover>
           </div>
@@ -252,13 +257,23 @@ function SentencesPage() {
         onOpenChange={setTatoebaOpen}
       />
 
+      <RenshuuImportDialog
+        open={renshuuOpen}
+        onOpenChange={setRenshuuOpen}
+      />
+
       <Dialog
         open={editing !== null}
         onOpenChange={(open) => {
           if (!open) setEditing(null);
         }}
       >
-        <DialogContent className="sm:max-w-2xl">
+        <DialogContent
+          className="
+            max-h-[85vh] overflow-y-auto
+            sm:max-w-2xl
+          "
+        >
           <DialogHeader>
             <DialogTitle>Edit sentence</DialogTitle>
           </DialogHeader>
@@ -323,12 +338,10 @@ function SentencesPage() {
             <SentenceCard
               key={s.id}
               sentence={s}
-              showTranslation={showTranslations}
+              showTranslation={false}
               sourceName={sourceName(s.sourceId)}
               onEdit={setEditing}
-              onDelete={(id) => {
-                if (globalThis.confirm("Delete this sentence?")) deleteSentence.mutate(id);
-              }}
+              allowFuriganaEdit={false}
               onGrammarTagClick={setGrammarTag}
             />
           ))}

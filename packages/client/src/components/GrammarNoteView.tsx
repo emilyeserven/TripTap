@@ -11,6 +11,7 @@ import { Markdown } from "@/components/Markdown";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAiLessonContent } from "@/hooks/useAiLessons";
+import { useBookmarksByTag } from "@/hooks/useBookmarks";
 import { useGrammarNotes, useUpdateGrammarNote } from "@/hooks/useGrammarNotes";
 import { useQuestionSheets } from "@/hooks/useQuestionSheets";
 import { useSentences } from "@/hooks/useSentences";
@@ -55,6 +56,9 @@ export function GrammarNoteView({
       qs.grammarTerms.some(t => t.id === note.tagId)),
     [questionSheets.data, note.tagId],
   );
+
+  // Auto-gathered from the bookmarks app: every bookmark carrying this note's Grammar Source tag.
+  const tagBookmarks = useBookmarksByTag(note.tagId);
 
   const sentenceById = useMemo(
     () => new Map((sentences.data ?? []).map(s => [s.id, s] as const)),
@@ -374,6 +378,37 @@ export function GrammarNoteView({
                     <Plus className="size-4" />
                     Add to note
                   </Button>
+                </li>
+              ))}
+            </ul>
+          </Section>
+        )
+        : null}
+
+      {tagBookmarks.data && tagBookmarks.data.length > 0
+        ? (
+          <Section title={`Bookmarks tagged “${note.tagName}”`}>
+            <ul className="space-y-1.5">
+              {tagBookmarks.data.map(b => (
+                <li
+                  key={b.id}
+                  className="text-sm"
+                >
+                  {b.url
+                    ? (
+                      <a
+                        href={b.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="
+                          font-medium
+                          hover:underline
+                        "
+                      >
+                        {b.title}
+                      </a>
+                    )
+                    : <span className="font-medium">{b.title}</span>}
                 </li>
               ))}
             </ul>

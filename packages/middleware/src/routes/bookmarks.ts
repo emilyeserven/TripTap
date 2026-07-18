@@ -11,6 +11,7 @@ import {
   getBookmark,
   getBookmarkImage,
   listBookmarkResources,
+  listBookmarksByTag,
   listBookmarksForCategory,
 } from "@/services/bookmarks";
 
@@ -83,6 +84,16 @@ const recordParams = {
   required: ["id"],
   properties: {
     id: {
+      type: "string",
+    },
+  },
+} as const;
+
+const byTagParams = {
+  type: "object",
+  required: ["tagId"],
+  properties: {
+    tagId: {
       type: "string",
     },
   },
@@ -191,6 +202,23 @@ export async function bookmarksRoutes(app: FastifyInstance): Promise<void> {
   }, async (_req, reply) => {
     try {
       return await listBookmarkResources();
+    }
+    catch (err) {
+      return handleError(err, reply);
+    }
+  });
+
+  app.get("/api/bookmarks/by-tag/:tagId", {
+    schema: {
+      tags: ["bookmarks"],
+      params: byTagParams,
+    },
+  }, async (req, reply) => {
+    const {
+      tagId,
+    } = req.params as { tagId: string };
+    try {
+      return await listBookmarksByTag(tagId);
     }
     catch (err) {
       return handleError(err, reply);

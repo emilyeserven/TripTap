@@ -75,6 +75,16 @@ export function useBookmarkResources() {
   });
 }
 
+/** The bookmarks carrying a specific tag id. Deferred until a tag id is provided. */
+export function useBookmarksByTag(tagId: string | null) {
+  return useQuery({
+    queryKey: [...BOOKMARKS_KEY, "by-tag", tagId],
+    queryFn: () => bookmarksApi.byTag(tagId as string),
+    enabled: Boolean(tagId),
+    retry: false,
+  });
+}
+
 /** A single bookmark (with its timestamp sections). Deferred until an id is provided. */
 export function useBookmarkRecord(id: string | null) {
   return useQuery({

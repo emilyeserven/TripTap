@@ -40,7 +40,7 @@ describe("SentenceCard", () => {
     expect(screen.getByText("I drink coffee every morning.")).toBeInTheDocument();
   });
 
-  it("hides the translation when showTranslation is false", () => {
+  it("blurs the translation behind a reveal control when showTranslation is false", () => {
     renderCard(
       <SentenceCard
         sentence={sentence}
@@ -48,7 +48,12 @@ describe("SentenceCard", () => {
       />,
     );
     expect(screen.getByText("毎朝コーヒーを飲みます。")).toBeInTheDocument();
-    expect(screen.queryByText("I drink coffee every morning.")).not.toBeInTheDocument();
+    // The translation stays in the DOM but blurred behind the standard reveal control (study mode).
+    const reveal = screen.getByRole("button", {
+      name: "Reveal translation",
+    });
+    expect(reveal).toHaveTextContent("I drink coffee every morning.");
+    expect(reveal.className).toContain("blur-[3px]");
   });
 
   it("groups term badges by channel and defaults uncategorized terms to Vocabulary", () => {
@@ -113,6 +118,52 @@ describe("SentenceCard", () => {
       name: "Reveal translation",
     }));
     expect(screen.getByText("I drink coffee every morning.")).toBeInTheDocument();
+  });
+
+  it("blurs the furigana when the sentence declares a target vocab (has linked vocab)", () => {
+    const reading = [
+      {
+        t: "毎朝",
+        r: "まいあさ",
+      },
+      {
+        t: "コーヒー。",
+        r: null,
+      },
+    ];
+    // Linked vocab present → the reading is blurred behind the standard reveal control.
+    const {
+      unmount,
+    } = renderCard(
+      <SentenceCard
+        sentence={{
+          ...sentence,
+          reading,
+          vocabCount: 2,
+        }}
+      />,
+    );
+    const reveal = screen.getByRole("button", {
+      name: "Reveal reading",
+    });
+    expect(reveal).toHaveTextContent("まいあさ");
+    expect(reveal.className).toContain("blur-[3px]");
+    unmount();
+
+    // No linked vocab → the reading shows crisp (no reveal control).
+    renderCard(
+      <SentenceCard
+        sentence={{
+          ...sentence,
+          reading,
+          vocabCount: 0,
+        }}
+      />,
+    );
+    expect(screen.queryByRole("button", {
+      name: "Reveal reading",
+    })).not.toBeInTheDocument();
+    expect(screen.getByText("まいあさ")).toBeInTheDocument();
   });
 
   it("calls onEdit with the sentence when the Edit button is clicked", () => {

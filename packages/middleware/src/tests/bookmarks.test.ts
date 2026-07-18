@@ -169,6 +169,24 @@ test("GET /api/bookmarks/tags returns 502 when the configured host is unreachabl
   }
 });
 
+test("GET /api/bookmarks/by-tag/:tagId returns 502 when the configured host is unreachable", async () => {
+  const prev = process.env.BOOKMARKS_API_URL;
+  process.env.BOOKMARKS_API_URL = "http://127.0.0.1:1";
+  try {
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/bookmarks/by-tag/tag-123",
+    });
+    assert.equal(res.statusCode, 502);
+    await app.close();
+  }
+  finally {
+    if (prev === undefined) delete process.env.BOOKMARKS_API_URL;
+    else process.env.BOOKMARKS_API_URL = prev;
+  }
+});
+
 const RUNTIME_PROP = "9c231589-0bf9-45cc-8b38-f76bdafe6a7b";
 
 test("toBookmarkResource extracts website, runtime, and media type", () => {

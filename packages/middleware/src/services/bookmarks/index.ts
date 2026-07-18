@@ -173,6 +173,21 @@ export async function listBookmarksForCategory(
   );
 }
 
+/**
+ * All bookmarks carrying a specific tag id, deduped by id and sorted by title. Unlike
+ * {@link listBookmarksForCategory} (which resolves a whole configured source), this targets one tag
+ * directly — used to auto-gather the bookmarks under a grammar note's Grammar Source tag.
+ */
+export async function listBookmarksByTag(tagId: string): Promise<BookmarkRecord[]> {
+  const {
+    baseUrl,
+  } = await resolveBookmarksConfig();
+  const raws = await fetchRawBookmarksByTag(baseUrl, tagId);
+  return dedupeBookmarksByTitle(
+    raws.map(r => toBookmarkRecord(r, false)).filter((b): b is BookmarkRecord => b !== null),
+  );
+}
+
 /** A single bookmark by id, including its flattened timestamp sections. Null when not found/unreadable. */
 export async function getBookmark(id: string): Promise<BookmarkRecord | null> {
   const {
