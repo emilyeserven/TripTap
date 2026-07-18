@@ -11,7 +11,7 @@ const examples: RenshuuExampleSentence[] = [
   {
     id: 2184,
     text: "一度に沢山食べると、お腹を壊すよ。",
-    reading: "いちどにたくさんたべると、おなかをこわすよ。",
+    reading: null,
     translation: "If you eat too much at once, you'll get a stomachache.",
   },
   {
@@ -57,10 +57,9 @@ describe("RenshuuExamplePicker", () => {
     expect(screen.getByLabelText<HTMLInputElement>("Renshuu search").value).toBe("食べる");
   });
 
-  it("renders each result with its reading and English", () => {
+  it("renders each result with its text and English", () => {
     render(<RenshuuExamplePicker defaultQuery="食べる" />);
     expect(screen.getByText("一度に沢山食べると、お腹を壊すよ。")).toBeInTheDocument();
-    expect(screen.getByText("いちどにたくさんたべると、おなかをこわすよ。")).toBeInTheDocument();
     expect(
       screen.getByText("If you eat too much at once, you'll get a stomachache."),
     ).toBeInTheDocument();

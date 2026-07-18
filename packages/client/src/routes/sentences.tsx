@@ -11,6 +11,7 @@ import { FuriganaScope } from "@/components/ai-lesson/FuriganaScope";
 import { FuriganaToggle } from "@/components/ai-lesson/FuriganaToggle";
 import { matches } from "@/components/ai-lesson/search";
 import { SourceCard } from "@/components/ai-lesson/SourceCard";
+import { RenshuuImportDialog } from "@/components/RenshuuImportDialog";
 import { SentenceCard } from "@/components/SentenceCard";
 import { SentenceFilters } from "@/components/SentenceFilters";
 import { SentenceForm } from "@/components/SentenceForm";
@@ -66,6 +67,7 @@ function SentencesPage() {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [tatoebaOpen, setTatoebaOpen] = useState(false);
+  const [renshuuOpen, setRenshuuOpen] = useState(false);
   const [editing, setEditing] = useState<Sentence | null>(null);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all"); // "all" | "mine" | AI Lesson slug
@@ -232,6 +234,18 @@ function SentencesPage() {
                   <Download className="size-4" />
                   Import from Tatoeba
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setRenshuuOpen(true)}
+                  className="
+                    flex w-full items-center gap-2 rounded-sm px-2 py-1.5
+                    text-sm
+                    hover:bg-muted
+                  "
+                >
+                  <Download className="size-4" />
+                  Import from Renshuu
+                </button>
               </PopoverContent>
             </Popover>
           </div>
@@ -241,6 +255,11 @@ function SentencesPage() {
       <TatoebaImportDialog
         open={tatoebaOpen}
         onOpenChange={setTatoebaOpen}
+      />
+
+      <RenshuuImportDialog
+        open={renshuuOpen}
+        onOpenChange={setRenshuuOpen}
       />
 
       <Dialog

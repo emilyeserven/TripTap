@@ -5,7 +5,9 @@ import { useState } from "react";
 import { Check, Plus, Search } from "lucide-react";
 import { toast } from "sonner";
 
+import { FuriganaScope } from "@/components/ai-lesson/FuriganaScope";
 import { BlurReveal } from "@/components/BlurReveal";
+import { SentenceText } from "@/components/SentenceText";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useRenshuuExamples } from "@/hooks/useRenshuu";
@@ -26,16 +28,12 @@ function ResultRow({
   return (
     <li className="flex items-start justify-between gap-2 rounded-sm p-2">
       <div className="min-w-0 space-y-0.5">
-        <p lang="ja">{sentence.text}</p>
-        {sentence.reading
-          ? (
-            <p
-              lang="ja"
-              className="text-xs text-muted-foreground"
-            >{sentence.reading}
-            </p>
-          )
-          : null}
+        <p lang="ja">
+          <SentenceText
+            text={sentence.text}
+            reading={sentence.reading}
+          />
+        </p>
         {sentence.translation
           ? (
             <BlurReveal className="text-sm text-muted-foreground">
@@ -131,17 +129,19 @@ export function RenshuuExamplePicker({
 
       {results.length > 0
         ? (
-          <ul className="max-h-56 space-y-1 overflow-y-auto">
-            {results.map(r => (
-              <ResultRow
-                key={r.id}
-                sentence={r}
-                added={added.has(r.id)}
-                onAdd={() => void add(r)}
-                disabled={create.isPending}
-              />
-            ))}
-          </ul>
+          <FuriganaScope>
+            <ul className="max-h-56 space-y-1 overflow-y-auto">
+              {results.map(r => (
+                <ResultRow
+                  key={r.id}
+                  sentence={r}
+                  added={added.has(r.id)}
+                  onAdd={() => void add(r)}
+                  disabled={create.isPending}
+                />
+              ))}
+            </ul>
+          </FuriganaScope>
         )
         : null}
 
