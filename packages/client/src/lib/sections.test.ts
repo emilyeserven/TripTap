@@ -2,7 +2,7 @@ import type { BookmarkSectionRef } from "@sentence-bank/types";
 
 import { describe, expect, it } from "vitest";
 
-import { sectionRefStartMs, sectionRefToSegment } from "./sections";
+import { sectionRefPage, sectionRefStartMs, sectionRefToSegment } from "./sections";
 
 function ref(over: Partial<BookmarkSectionRef>): BookmarkSectionRef {
   return {
@@ -59,6 +59,38 @@ describe("sectionRefStartMs", () => {
       type: "name",
     }))).toBeNull();
     expect(sectionRefStartMs(ref({
+      startValue: null,
+    }))).toBeNull();
+  });
+});
+
+describe("sectionRefPage", () => {
+  it("returns the page for a single-page section and a range when end differs", () => {
+    expect(sectionRefPage(ref({
+      type: "page",
+      startValue: "12",
+      endValue: null,
+    }))).toBe("12");
+    expect(sectionRefPage(ref({
+      type: "page",
+      startValue: "12",
+      endValue: "20",
+    }))).toBe("12–20");
+    expect(sectionRefPage(ref({
+      type: "page",
+      startValue: "12",
+      endValue: "12",
+    }))).toBe("12");
+  });
+
+  it("returns null for non-page sections or a page section without a start", () => {
+    expect(sectionRefPage(null)).toBeNull();
+    expect(sectionRefPage(ref({
+      type: "timestamp",
+      startValue: "1:00",
+    }))).toBeNull();
+    expect(sectionRefPage(ref({
+      type: "page",
       startValue: null,
     }))).toBeNull();
   });

@@ -21,6 +21,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useCreateQuestionSheet, useUpdateQuestionSheet } from "@/hooks/useQuestionSheets";
+import { sectionRefPage } from "@/lib/sections";
 
 /**
  * Create/edit form for a Question Sheet — the reusable template of textbook/worksheet questions.
@@ -44,6 +45,9 @@ export function QuestionSheetForm({
   const [bookmarkUrl, setBookmarkUrl] = useState(questionSheet?.bookmarkUrl ?? null);
   const [section, setSection] = useState<BookmarkSectionRef | null>(questionSheet?.section ?? null);
   const [page, setPage] = useState(questionSheet?.page ?? "");
+  // Like the title: in edit mode the saved page is left alone; in create mode a picked page-section
+  // fills it until the user types their own page.
+  const [pageTouched, setPageTouched] = useState(editing);
   const [dueDate, setDueDate] = useState(questionSheet?.dueDate?.slice(0, 10) ?? "");
   const [title, setTitle] = useState(questionSheet?.title ?? "");
   // In edit mode the existing title is never auto-overwritten; in create mode it tracks the
@@ -68,6 +72,13 @@ export function QuestionSheetForm({
     const derived = [bookmarkTitle, page.trim() || null].filter(Boolean).join(" — ");
     if (derived) setTitle(derived);
   }, [bookmarkTitle, page, titleTouched]);
+
+  // Picking a page-type section pre-fills the page field (unless the user has typed their own page).
+  const handlePickSection = (ref: BookmarkSectionRef | null) => {
+    setSection(ref);
+    const derivedPage = sectionRefPage(ref);
+    if (derivedPage && !pageTouched) setPage(derivedPage);
+  };
 
   const pending = create.isPending || update.isPending;
   const canSubmit = title.trim().length > 0 && !pending;
@@ -130,14 +141,17 @@ export function QuestionSheetForm({
           }}
           enableSections
           selectedSection={section}
-          onPickSection={setSection}
+          onPickSection={handlePickSection}
         />
         <div className="space-y-1.5">
           <Label htmlFor="qs-page">Page</Label>
           <Input
             id="qs-page"
             value={page}
-            onChange={e => setPage(e.target.value)}
+            onChange={(e) => {
+              setPage(e.target.value);
+              setPageTouched(true);
+            }}
             placeholder="p. 12–13"
             className="sm:w-32"
           />
