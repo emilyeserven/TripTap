@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 
+import { MigakuReadingPreview } from "@/components/MigakuReadingPreview";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -29,30 +30,7 @@ interface RowState {
   tags: string;
 }
 
-/** Inline ruby preview of a candidate's Migaku-derived furigana. */
-function ReadingPreview({
-  reading,
-}: { reading: MigakuCandidate["reading"] }) {
-  if (!reading.length) return null;
-  return (
-    <p
-      className="text-lg/loose"
-      lang="ja"
-    >
-      {reading.map((tok, i) =>
-        tok.r
-          ? (
-            <ruby key={i}>
-              {tok.t}
-              <rt className="text-[0.6em]">{tok.r}</rt>
-            </ruby>
-          )
-          : <span key={i}>{tok.t}</span>)}
-    </p>
-  );
-}
-
-/** The review-and-commit workbench for a staged Migaku import. */
+/** The review-and-commit workbench for a staged (generic, non-Migaku-model) import. */
 export function MigakuCandidateTable({
   detail,
 }: { detail: MigakuImportDetail }) {
@@ -217,7 +195,7 @@ export function MigakuCandidateTable({
                       : null}
                   </div>
 
-                  <ReadingPreview reading={c.reading} />
+                  <MigakuReadingPreview reading={c.reading} />
 
                   <div
                     className="

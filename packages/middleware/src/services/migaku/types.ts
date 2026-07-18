@@ -10,6 +10,11 @@ export interface StoredMigakuCandidate extends Omit<MigakuCandidate, "alreadyExi
   audioFile: string | null;
   /** Original filename of the card's image in the package (e.g. "pic.jpg"), or null. */
   imageFile: string | null;
+  /**
+   * The Migaku note this candidate came from, shared by the note's vocab + sentence(s). Undefined for
+   * the generic single-row path; present (and shared within a note) on the Migaku paired path.
+   */
+  groupId?: string;
 }
 
 /**
@@ -26,6 +31,7 @@ export function toPublicCandidate(
     text: stored.text,
     reading: stored.reading,
     meaning: stored.meaning,
+    notes: stored.notes ?? null,
     tags: stored.tags,
     hasAudio: stored.hasAudio,
     hasImage: stored.hasImage,
