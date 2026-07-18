@@ -8,6 +8,23 @@ import { bookmarksApi } from "../lib/api";
 const BOOKMARKS_KEY = ["bookmarks"] as const;
 
 /**
+ * Shared options for every bookmarks query. Bookmark data lives in an external app that changes
+ * independently of TripTap, so — unlike TripTap's own data — these must always revalidate rather than
+ * sit on a cached snapshot:
+ * - `staleTime: 0` marks the data stale immediately, so it refetches on every mount (navigating to a
+ *   page shows current data).
+ * - `refetchOnWindowFocus: true` refetches when the user returns to the tab, e.g. right after editing
+ *   in the bookmarks app (this overrides the app-wide default of `false`).
+ * Refetches run in the background while the previous data stays on screen, so there's no flicker;
+ * `retry: false` keeps an unreachable (Tailnet-only) host from hanging the UI.
+ */
+const BOOKMARKS_QUERY_OPTIONS = {
+  staleTime: 0,
+  refetchOnWindowFocus: true,
+  retry: false as const,
+};
+
+/**
  * Read-only queries against the bookmarks proxy. These fail (502/503) when the endpoint is
  * unconfigured or the Tailnet host is unreachable; callers surface that as an inline error state.
  * Retries are disabled so an unreachable host fails fast instead of hanging the UI.
@@ -18,7 +35,7 @@ export function useBookmarksTags() {
   return useQuery({
     queryKey: [...BOOKMARKS_KEY, "tags"],
     queryFn: bookmarksApi.tags,
-    retry: false,
+    ...BOOKMARKS_QUERY_OPTIONS,
   });
 }
 
@@ -27,7 +44,7 @@ export function useBookmarksTaxonomies() {
   return useQuery({
     queryKey: [...BOOKMARKS_KEY, "taxonomies"],
     queryFn: bookmarksApi.taxonomies,
-    retry: false,
+    ...BOOKMARKS_QUERY_OPTIONS,
   });
 }
 
@@ -37,7 +54,7 @@ export function useBookmarksTerms(taxonomyId: string | null) {
     queryKey: [...BOOKMARKS_KEY, "terms", taxonomyId],
     queryFn: () => bookmarksApi.terms(taxonomyId as string),
     enabled: Boolean(taxonomyId),
-    retry: false,
+    ...BOOKMARKS_QUERY_OPTIONS,
   });
 }
 
@@ -49,7 +66,7 @@ export function useBookmarksVocabulary(category: SentenceTermCategory = "vocabul
   return useQuery({
     queryKey: [...BOOKMARKS_KEY, "vocabulary", category],
     queryFn: () => bookmarksApi.vocabulary(category),
-    retry: false,
+    ...BOOKMARKS_QUERY_OPTIONS,
   });
 }
 
@@ -121,7 +138,7 @@ export function useBookmarkRecords(category: SentenceTermCategory) {
   return useQuery({
     queryKey: [...BOOKMARKS_KEY, "records", category],
     queryFn: () => bookmarksApi.records(category),
-    retry: false,
+    ...BOOKMARKS_QUERY_OPTIONS,
   });
 }
 
@@ -130,7 +147,7 @@ export function useBookmarkResources() {
   return useQuery({
     queryKey: [...BOOKMARKS_KEY, "resources"],
     queryFn: () => bookmarksApi.resources(),
-    retry: false,
+    ...BOOKMARKS_QUERY_OPTIONS,
   });
 }
 
@@ -140,7 +157,7 @@ export function useBookmarksByTag(tagId: string | null) {
     queryKey: [...BOOKMARKS_KEY, "by-tag", tagId],
     queryFn: () => bookmarksApi.byTag(tagId as string),
     enabled: Boolean(tagId),
-    retry: false,
+    ...BOOKMARKS_QUERY_OPTIONS,
   });
 }
 
@@ -150,7 +167,7 @@ export function useBookmarkSectionsByTag(tagId: string | null) {
     queryKey: [...BOOKMARKS_KEY, "sections-by-tag", tagId],
     queryFn: () => bookmarksApi.sectionsByTag(tagId as string),
     enabled: Boolean(tagId),
-    retry: false,
+    ...BOOKMARKS_QUERY_OPTIONS,
   });
 }
 
@@ -160,7 +177,7 @@ export function useBookmarkRecord(id: string | null) {
     queryKey: [...BOOKMARKS_KEY, "record", id],
     queryFn: () => bookmarksApi.record(id as string),
     enabled: Boolean(id),
-    retry: false,
+    ...BOOKMARKS_QUERY_OPTIONS,
   });
 }
 
@@ -180,4 +197,18 @@ export function useCreateBookmarkTerm() {
       });
     },
   });
+}
+
+/**
+ * A manual "refresh from the bookmarks app" action: invalidates every bookmarks query so all mounted
+ * ones refetch immediately. The queries already revalidate on mount and window focus (see
+ * {@link BOOKMARKS_QUERY_OPTIONS}); this is the explicit escape hatch for when the bookmarks app was
+ * edited in a still-visible window (so TripTap never lost focus) and the user wants the latest now.
+ */
+export function useRefreshBookmarks() {
+  const queryClient = useQueryClient();
+  return () =>
+    queryClient.invalidateQueries({
+      queryKey: BOOKMARKS_KEY,
+    });
 }
