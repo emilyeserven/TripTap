@@ -170,7 +170,7 @@ Deploy via Coolify using only `DATABASE_URL` (see `README.md`).
 | `GOOGLE_VISION_API_KEY` | middleware | Google Cloud Vision backend API key. Overridden by the Settings-page value stored in the DB. Optional: `GOOGLE_VISION_URL`. |
 | `OCR_PROVIDERS` | middleware | Comma-separated OCR backend order/selection (`self-hosted`, `ocr-space`, `google-vision`). Unset → all configured backends, self-hosted first. |
 | `BOOKMARKS_API_URL` | middleware | Base URL of the external bookmarks tag/taxonomy API borrowed to tag sentences. Overridden by the Settings-page value stored in the DB; unset falls back to a built-in default. Must be reachable from the middleware (e.g. same Tailnet). |
-| `TATOEBA_API_URL` | middleware | Optional override for the Tatoeba example-sentence API base URL (default `https://api.tatoeba.org`). Backs "Find examples" when adding a My Sentence from a drill mistake. No auth. |
+| `TATOEBA_API_URL` | middleware | Optional override for the Tatoeba base URL (default `https://tatoeba.org`; the service calls its `/en/api_v0/search` endpoint, the only one that returns furigana transcriptions). Backs "Find examples" when adding a My Sentence from a drill mistake. No auth. |
 | `S3_ENDPOINT` | middleware | S3-compatible (Garage) endpoint storing audio/image from Migaku `.apkg` imports. Unset → the Migaku import feature returns 503. |
 | `S3_ACCESS_KEY_ID` / `S3_SECRET_ACCESS_KEY` | middleware | Credentials for the media bucket. Scope the key to TripTap's own bucket. |
 | `S3_BUCKET` | middleware | Dedicated media bucket (e.g. `triptap-media`); the reconciliation sweep deletes anything unreferenced in it, so it must be TripTap-only. |
