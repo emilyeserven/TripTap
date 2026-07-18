@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useBookmarkRecords, useBookmarksGrammarVocabulary } from "@/hooks/useBookmarks";
+import { useBookmarkRecords, useBookmarksGrammarVocabulary, useGrammarTagTree } from "@/hooks/useBookmarks";
 import { useCreateGrammarNote, useGrammarNotes, useUpdateGrammarNote } from "@/hooks/useGrammarNotes";
 import { useSentences } from "@/hooks/useSentences";
 import { usageLabel } from "@/lib/grammar-notes";
@@ -41,6 +41,7 @@ export function GrammarNoteForm({
   const editing = note !== undefined;
 
   const grammarTags = useBookmarksGrammarVocabulary();
+  const grammarTree = useGrammarTagTree();
   const resourceRecords = useBookmarkRecords("resource");
   const sentences = useSentences();
   const existingNotes = useGrammarNotes();
@@ -54,26 +55,14 @@ export function GrammarNoteForm({
   const [relations, setRelations] = useState<GrammarRelation[]>(note?.relations ?? []);
   const [resources, setResources] = useState<GrammarResourceRef[]>(note?.resources ?? []);
 
-  const notedTagIds = useMemo(
-    () => new Set((existingNotes.data ?? []).map(n => n.tagId)),
-    [existingNotes.data],
-  );
   const noteByTagId = useMemo(
     () => new Map((existingNotes.data ?? []).map(n => [n.tagId, n] as const)),
     [existingNotes.data],
   );
 
-  // New-note tag picker: grammar tags that don't already have a note.
-  const tagOptions = useMemo(
-    () =>
-      (grammarTags.data ?? [])
-        .filter(t => !notedTagIds.has(t.id))
-        .map(t => ({
-          value: t.id,
-          label: t.name,
-        })),
-    [grammarTags.data, notedTagIds],
-  );
+  // Block creating a second note for a tag that already has one (intermediates stay drillable, so the
+  // tree isn't filtered — the guard is on the final selection instead).
+  const selectedNote = editing ? null : (tagId ? noteByTagId.get(tagId) ?? null : null);
 
   // Relation picker: every grammar tag except this note's own; label with the target's nuance if noted.
   const relationTagOptions = useMemo(
@@ -111,7 +100,7 @@ export function GrammarNoteForm({
   const tagNameOf = (id: string) => (grammarTags.data ?? []).find(t => t.id === id)?.name ?? "";
 
   const pending = create.isPending || update.isPending;
-  const canSubmit = tagId.trim().length > 0 && title.trim().length > 0 && !pending;
+  const canSubmit = tagId.trim().length > 0 && title.trim().length > 0 && !pending && !selectedNote;
 
   const submit = async () => {
     if (!canSubmit) return;
@@ -148,12 +137,10 @@ export function GrammarNoteForm({
         editing={editing}
         tagName={tagName}
         tagId={tagId}
-        options={tagOptions}
-        isLoading={grammarTags.isLoading}
-        hasError={Boolean(grammarTags.error)}
-        onPick={(value) => {
-          const name = tagNameOf(value);
-          setTagId(value);
+        tree={grammarTree}
+        notedNote={selectedNote}
+        onPick={(id, name) => {
+          setTagId(id);
           setTagName(name);
           if (!title.trim()) setTitle(name);
         }}

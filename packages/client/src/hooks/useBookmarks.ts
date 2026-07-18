@@ -1,7 +1,8 @@
-import type { SentenceTermCategory } from "@sentence-bank/types";
+import type { SentenceTermCategory, TagTermOption } from "@sentence-bank/types";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { useBookmarksSettings } from "./useSettings";
 import { bookmarksApi } from "../lib/api";
 
 const BOOKMARKS_KEY = ["bookmarks"] as const;
@@ -55,6 +56,59 @@ export function useBookmarksVocabulary(category: SentenceTermCategory = "vocabul
 /** The Grammar channel's vocabulary. */
 export function useBookmarksGrammarVocabulary() {
   return useBookmarksVocabulary("grammar");
+}
+
+/** The full Grammar-source tag hierarchy, for drilling into subtags (not just the source's children). */
+export interface GrammarTagTree {
+  /** All candidate nodes with `parentId` edges (the whole tag tree, or the taxonomy's terms). */
+  nodes: TagTermOption[];
+  /** The node whose children start the chain: the source tag id, or a taxonomy drill-down term. */
+  rootId: string | null;
+  isLoading: boolean;
+  isError: boolean;
+  /** False when no Grammar source is configured in Settings. */
+  configured: boolean;
+}
+
+/**
+ * The Grammar source's full tag tree so a picker can chain through subtags. A tag source uses the
+ * flat tag tree (rooted at the source tag); a taxonomy source uses that taxonomy's terms (rooted at
+ * the optional drilled-down term). Both hooks are always called to keep hook order stable; the
+ * unused one is disabled.
+ */
+export function useGrammarTagTree(): GrammarTagTree {
+  const settings = useBookmarksSettings();
+  const source = settings.data?.grammarSource ?? null;
+  const isTaxonomy = source?.kind === "taxonomy";
+
+  const tags = useBookmarksTags();
+  const terms = useBookmarksTerms(isTaxonomy ? source.id : null);
+
+  if (!source) {
+    return {
+      nodes: [],
+      rootId: null,
+      isLoading: settings.isLoading,
+      isError: false,
+      configured: false,
+    };
+  }
+  if (isTaxonomy) {
+    return {
+      nodes: terms.data ?? [],
+      rootId: source.termId ?? null,
+      isLoading: terms.isLoading,
+      isError: terms.isError,
+      configured: true,
+    };
+  }
+  return {
+    nodes: tags.data ?? [],
+    rootId: source.id,
+    isLoading: tags.isLoading,
+    isError: tags.isError,
+    configured: true,
+  };
 }
 
 /** All bookmarks across one channel's configured source. */
