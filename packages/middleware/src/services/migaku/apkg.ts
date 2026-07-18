@@ -12,7 +12,8 @@ import initSqlJs from "sql.js";
 import type { FuriToken } from "@sentence-bank/types";
 import { newId } from "@/lib/id";
 import { MigakuParseError } from "@/services/migaku/errors";
-import { detectKind } from "@/services/migaku/detect";
+import { detectKind, isMigakuModel } from "@/services/migaku/detect";
+import { parseMigakuModelNote } from "@/services/migaku/migaku-model";
 import { parseMigakuSyntax } from "@/services/migaku/syntax";
 import type { StoredMigakuCandidate } from "@/services/migaku/types";
 
@@ -214,6 +215,17 @@ export async function parseApkg(buffer: Buffer): Promise<ParsedApkg> {
       if (!model) continue;
 
       const fields = fieldMap(flds, model);
+      const noteTags = (tags ?? "").trim().split(/\s+/).filter(Boolean);
+      const tagStr = [...new Set(["migaku", ...noteTags])].join(", ");
+
+      // Migaku's "Sentence" note type bundles a focus word + its example sentence → the paired path.
+      if (isMigakuModel(model.flds.map(f => f.name))) {
+        const parsed = parseMigakuModelNote(fields, tagStr);
+        if (parsed) candidates.push(...parsed.candidates);
+        continue;
+      }
+
+      // Generic path: one flat sentence-or-vocab row per note, guessing the text/meaning fields.
       const rawText = pick(fields, TEXT_FIELDS) ?? [...fields.values()].find(v => v.trim()) ?? "";
       const {
         text, reading,
@@ -226,16 +238,14 @@ export async function parseApkg(buffer: Buffer): Promise<ParsedApkg> {
       const audioFile = findMedia(fields, SOUND_RE);
       const imageFile = findMedia(fields, IMG_RE);
 
-      const noteTags = (tags ?? "").trim().split(/\s+/).filter(Boolean);
-      const tagList = [...new Set(["migaku", ...noteTags])];
-
       candidates.push({
         id: newId(),
         kind: detectKind(text, model.name ?? null),
         text,
         reading: reading as FuriToken[],
         meaning,
-        tags: tagList.join(", "),
+        notes: null,
+        tags: tagStr,
         hasAudio: audioFile !== null,
         hasImage: imageFile !== null,
         audioFile,
