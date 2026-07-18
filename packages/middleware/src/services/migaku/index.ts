@@ -13,6 +13,8 @@ import type {
   MigakuCandidate,
   MigakuImport,
   MigakuImportDetail,
+  MigakuImportFormat,
+  MigakuNoteGroup,
 } from "@sentence-bank/types";
 import { db } from "@/db";
 import { migakuImports, type MigakuImportRow } from "@/db/schema";
@@ -40,10 +42,40 @@ async function toPublicCandidates(stored: StoredMigakuCandidate[]): Promise<Miga
   return stored.map(c => toPublicCandidate(c, candidateExists(c.kind, c.text, existing)));
 }
 
+/** A grouped import (Migaku model) is signalled by candidates carrying a shared `groupId`. */
+function formatOf(stored: StoredMigakuCandidate[]): MigakuImportFormat {
+  return stored.some(c => c.groupId) ? "migaku" : "generic";
+}
+
+/** Reconstruct the vocab↔sentence note groups from the flat stored candidates (Migaku path only). */
+function buildNoteGroups(stored: StoredMigakuCandidate[]): MigakuNoteGroup[] {
+  const groups = new Map<string, MigakuNoteGroup>();
+  const order: string[] = [];
+  for (const c of stored) {
+    if (!c.groupId) continue;
+    let group = groups.get(c.groupId);
+    if (!group) {
+      group = {
+        id: c.groupId,
+        vocabId: null,
+        sentenceIds: [],
+        hasImage: false,
+      };
+      groups.set(c.groupId, group);
+      order.push(c.groupId);
+    }
+    if (c.kind === "vocab") group.vocabId = c.id;
+    else group.sentenceIds.push(c.id);
+    if (c.imageFile) group.hasImage = true;
+  }
+  return order.map(id => groups.get(id)!);
+}
+
 function toImport(row: MigakuImportRow): MigakuImport {
   return {
     id: row.id,
     filename: row.filename,
+    format: formatOf(storedCandidates(row)),
     deckName: row.deckName ?? deckNameFromFilename(row.filename),
     status: row.status as MigakuImport["status"],
     candidateCount: row.candidates.length,
@@ -76,6 +108,7 @@ export async function createImport(buffer: Buffer, filename: string): Promise<Mi
   return {
     ...toImport(row),
     candidates: await toPublicCandidates(candidates),
+    noteGroups: buildNoteGroups(candidates),
   };
 }
 
@@ -90,6 +123,7 @@ export async function getImport(id: string): Promise<MigakuImportDetail | null> 
   return {
     ...toImport(row),
     candidates: await toPublicCandidates(storedCandidates(row)),
+    noteGroups: buildNoteGroups(storedCandidates(row)),
   };
 }
 

@@ -78,8 +78,35 @@ const commitBody = {
           meaning: {
             type: ["string", "null"],
           },
+          notes: {
+            type: ["string", "null"],
+          },
           tags: {
             type: ["string", "null"],
+          },
+          dedupAction: {
+            type: "string",
+            enum: ["link", "skip", "new"],
+          },
+        },
+      },
+    },
+    groups: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["id", "link", "imageTarget"],
+        properties: {
+          id: {
+            type: "string",
+          },
+          link: {
+            type: "boolean",
+          },
+          imageTarget: {
+            type: "string",
+            enum: ["none", "sentence", "vocab", "both"],
           },
         },
       },

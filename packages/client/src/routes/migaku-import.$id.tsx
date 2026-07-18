@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 
 import { MigakuCandidateTable } from "@/components/MigakuCandidateTable";
+import { MigakuNoteReview } from "@/components/MigakuNoteReview";
 import { Button } from "@/components/ui/button";
 import { useMigakuImport } from "@/hooks/useMigakuImports";
 import { usePageTitle } from "@/hooks/usePageTitle";
@@ -39,7 +40,9 @@ function MigakuImportReviewPage() {
         ? <p className="text-muted-foreground">This import has already been committed.</p>
         : null}
       {detail && detail.status === "parsed"
-        ? <MigakuCandidateTable detail={detail} />
+        ? (detail.format === "migaku"
+          ? <MigakuNoteReview detail={detail} />
+          : <MigakuCandidateTable detail={detail} />)
         : null}
     </section>
   );

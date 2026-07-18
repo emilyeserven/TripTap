@@ -48,6 +48,38 @@ export async function getExistingKeysForLanguage(language: string): Promise<Exis
   };
 }
 
+export interface ExistingBankIds {
+  /** Existing sentence text → its row id (first row wins on collisions). */
+  sentenceIds: Map<string, string>;
+  /** Existing vocab term → its row id. */
+  vocabIds: Map<string, string>;
+}
+
+/**
+ * Existing sentence/vocab row ids keyed by trimmed text/term, scoped to one language. Used by the
+ * Migaku commit to resolve a "link to existing" duplicate to the row it should link to.
+ */
+export async function getExistingIdsForLanguage(language: string): Promise<ExistingBankIds> {
+  const [sentenceRows, vocabRows] = await Promise.all([
+    db.select({
+      id: sentences.id,
+      text: sentences.text,
+    }).from(sentences).where(eq(sentences.language, language)),
+    db.select({
+      id: vocab.id,
+      term: vocab.term,
+    }).from(vocab).where(eq(vocab.language, language)),
+  ]);
+  const sentenceIds = new Map<string, string>();
+  for (const r of sentenceRows) if (!sentenceIds.has(norm(r.text))) sentenceIds.set(norm(r.text), r.id);
+  const vocabIds = new Map<string, string>();
+  for (const r of vocabRows) if (!vocabIds.has(norm(r.term))) vocabIds.set(norm(r.term), r.id);
+  return {
+    sentenceIds,
+    vocabIds,
+  };
+}
+
 /** Whether a candidate's text matches an existing bank row, per its (current) kind. */
 export function candidateExists(
   kind: MigakuCandidateKind,

@@ -73,7 +73,7 @@ Multi-table or external-proxy features use a service **directory** instead of a 
 | Sources | `sources.*` | `sources.ts` | Source taxonomy (book/show/article) referenced by sentences, vocab, captures. |
 | Captures / OCR | `capture.tsx`, `captures.*` | `captures.ts`, `ocr.ts`, `parse-templates.ts` | Image → OCR → cleaned-blocks workbench → mine sentences/vocab. |
 | Anki / Renshuu | `anki.tsx`, `renshuu.tsx` | *(client-only; `lib/anki.ts`, `lib/renshuu.ts`)* | Export bank rows to Anki TSV / Renshuu bulk-import. |
-| Migaku Import | `migaku-import.*` | `migaku-import.ts` → `services/migaku/` | Upload a Migaku/Anki `.apkg`, review parsed cards, commit to sentences/vocab with media in S3/Garage (`services/media/`). |
+| Migaku Import | `migaku-import.*` | `migaku-import.ts` → `services/migaku/` | Upload a Migaku/Anki `.apkg`, review parsed cards, commit to sentences/vocab with media in S3/Garage (`services/media/`). The Migaku "Sentence" note type (`migaku-model.ts`, detected by `isMigakuModel`) maps each note to a **focus Vocab + its example Sentence(s), linked via `sentence_vocab`** — grouped review UI (`MigakuNoteReview`); any other `.apkg` uses the generic single-row path (`MigakuCandidateTable`). |
 | Settings | `settings.tsx` | `settings.ts` | OCR keys (masked) + bookmarks channel config; DB overrides env. |
 | Bookmarks | *(pickers/cards in forms + settings)* | `bookmarks.ts` → `services/bookmarks/` | Proxy to the external bookmarks app for tag/taxonomy terms (see below). |
 
