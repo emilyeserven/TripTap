@@ -17,15 +17,16 @@ interface SentenceCardProps {
   showTranslation?: boolean;
   /** Resolved taxonomy source name, when the sentence references one. */
   sourceName?: string | null;
-  /** A sentence has no edit page, so (per the delete-only-on-edit-page convention) this is the one
-   * listing that keeps a delete — callers guard it with a confirm to avoid accidental deletion. */
+  /** Editing happens in a dialog on the list page; when provided, an "Edit" button opens it. */
+  onEdit?: (sentence: Sentence) => void;
+  /** This listing keeps a delete (guarded by a confirm) — callers pass it to allow removal. */
   onDelete?: (id: string) => void;
   /** When provided, grammar-tag badges become filter buttons (surfaces the grammar↔sentence link). */
   onGrammarTagClick?: (termId: string) => void;
 }
 
 export function SentenceCard({
-  sentence, showTranslation = true, sourceName, onDelete, onGrammarTagClick,
+  sentence, showTranslation = true, sourceName, onEdit, onDelete, onGrammarTagClick,
 }: SentenceCardProps) {
   const hasMedia = sentence.hasAudio || sentence.hasImage;
   return (
@@ -51,18 +52,38 @@ export function SentenceCard({
                   />
                 </p>
               </div>
-              {onDelete && !hasMedia
+              {onEdit || (onDelete && !hasMedia)
                 ? (
-                  <button
-                    type="button"
-                    onClick={() => onDelete(sentence.id)}
-                    className="
-                      shrink-0 text-sm text-destructive
-                      hover:underline
-                    "
-                  >
-                    Delete
-                  </button>
+                  <div className="flex shrink-0 items-center gap-3">
+                    {onEdit
+                      ? (
+                        <button
+                          type="button"
+                          onClick={() => onEdit(sentence)}
+                          className="
+                            text-sm text-muted-foreground
+                            hover:underline
+                          "
+                        >
+                          Edit
+                        </button>
+                      )
+                      : null}
+                    {onDelete && !hasMedia
+                      ? (
+                        <button
+                          type="button"
+                          onClick={() => onDelete(sentence.id)}
+                          className="
+                            text-sm text-destructive
+                            hover:underline
+                          "
+                        >
+                          Delete
+                        </button>
+                      )
+                      : null}
+                  </div>
                 )
                 : null}
             </div>

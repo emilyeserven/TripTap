@@ -51,8 +51,21 @@ function toCreateInput(example: ExampleSentence): CreateSentenceInput {
  * this copies sentences into the learner's own bank, so each import keeps a Tatoeba attribution
  * (sentence id + author + licence) in its notes to satisfy CC-BY 2.0 FR.
  */
-export function TatoebaImportDialog() {
-  const [open, setOpen] = useState(false);
+export function TatoebaImportDialog({
+  open: controlledOpen,
+  onOpenChange,
+}: {
+  /** Control the dialog externally (e.g. from a menu item); omit for the built-in trigger button. */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+} = {}) {
+  const isControlled = controlledOpen !== undefined;
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
+  const open = isControlled ? controlledOpen : uncontrolledOpen;
+  const setOpen = (next: boolean) => {
+    if (!isControlled) setUncontrolledOpen(next);
+    onOpenChange?.(next);
+  };
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<Set<number>>(new Set());
 
@@ -85,12 +98,16 @@ export function TatoebaImportDialog() {
         if (!next) setSelected(new Set());
       }}
     >
-      <DialogTrigger asChild>
-        <Button variant="outline">
-          <Download className="size-4" />
-          Import from Tatoeba
-        </Button>
-      </DialogTrigger>
+      {isControlled
+        ? null
+        : (
+          <DialogTrigger asChild>
+            <Button variant="outline">
+              <Download className="size-4" />
+              Import from Tatoeba
+            </Button>
+          </DialogTrigger>
+        )}
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Import sentences from Tatoeba</DialogTitle>

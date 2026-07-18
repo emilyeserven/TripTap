@@ -1,4 +1,4 @@
-import type { SentenceTermRef } from "@sentence-bank/types";
+import type { Sentence, SentenceTermRef } from "@sentence-bank/types";
 
 import { useState } from "react";
 
@@ -8,7 +8,9 @@ import { z } from "zod";
 import { SourcePicker } from "./SourcePicker";
 import { TermPicker } from "./TermPicker";
 import { VocabLinkPicker } from "./VocabLinkPicker";
-import { useCreateSentence } from "../hooks/useSentences";
+import { useCreateSentence, useUpdateSentence } from "../hooks/useSentences";
+
+import { groupTermsByCategory } from "@/lib/terms";
 
 const sentenceSchema = z.object({
   text: z.string().min(1, "Sentence text is required"),
@@ -34,30 +36,46 @@ export interface SentenceFormInitialValues {
   sourceId?: string | null;
 }
 
-/** Create-sentence form. Owns its own mutation so the page stays focused on the list. */
+/**
+ * Sentence form. In create mode it owns a create mutation; pass an existing `sentence` to switch to
+ * edit mode (hydrates every field + the four term channels and saves via the update mutation). Owns
+ * its own mutation so the page stays focused on the list.
+ */
 export function SentenceForm({
   onSuccess,
   initialValues,
+  sentence,
 }: {
   onSuccess?: () => void;
   initialValues?: SentenceFormInitialValues;
+  /** When provided, the form edits this sentence instead of creating a new one. */
+  sentence?: Sentence;
 }) {
+  const isEdit = Boolean(sentence);
   const createSentence = useCreateSentence();
-  const [sourceId, setSourceId] = useState<string | null>(initialValues?.sourceId ?? null);
+  const updateSentence = useUpdateSentence();
+  const mutation = isEdit ? updateSentence : createSentence;
+
+  // In edit mode, seed the per-channel pickers from the sentence's stored terms.
+  const termGroups = sentence ? groupTermsByCategory(sentence.terms ?? []) : null;
+
+  const [sourceId, setSourceId] = useState<string | null>(
+    sentence?.sourceId ?? initialValues?.sourceId ?? null,
+  );
   const [vocabIds, setVocabIds] = useState<string[]>([]);
-  const [vocabTerms, setVocabTerms] = useState<SentenceTermRef[]>([]);
-  const [grammarTerms, setGrammarTerms] = useState<SentenceTermRef[]>([]);
-  const [generalTerms, setGeneralTerms] = useState<SentenceTermRef[]>([]);
-  const [resourceTerms, setResourceTerms] = useState<SentenceTermRef[]>([]);
+  const [vocabTerms, setVocabTerms] = useState<SentenceTermRef[]>(termGroups?.vocabulary ?? []);
+  const [grammarTerms, setGrammarTerms] = useState<SentenceTermRef[]>(termGroups?.grammar ?? []);
+  const [generalTerms, setGeneralTerms] = useState<SentenceTermRef[]>(termGroups?.general ?? []);
+  const [resourceTerms, setResourceTerms] = useState<SentenceTermRef[]>(termGroups?.resource ?? []);
 
   const form = useForm({
     defaultValues: {
-      text: initialValues?.text ?? "",
-      translation: initialValues?.translation ?? "",
-      language: initialValues?.language ?? "",
-      page: initialValues?.page ?? "",
-      tags: initialValues?.tags ?? "",
-      notes: initialValues?.notes ?? "",
+      text: sentence?.text ?? initialValues?.text ?? "",
+      translation: sentence?.translation ?? initialValues?.translation ?? "",
+      language: sentence?.language ?? initialValues?.language ?? "",
+      page: sentence?.page ?? initialValues?.page ?? "",
+      tags: sentence?.tags ?? initialValues?.tags ?? "",
+      notes: sentence?.notes ?? initialValues?.notes ?? "",
     },
     validators: {
       onChange: sentenceSchema,
@@ -66,7 +84,7 @@ export function SentenceForm({
       value,
     }) => {
       const terms = [...vocabTerms, ...grammarTerms, ...generalTerms, ...resourceTerms];
-      await createSentence.mutateAsync({
+      const input = {
         text: value.text,
         translation: value.translation || null,
         language: value.language,
@@ -75,15 +93,27 @@ export function SentenceForm({
         tags: value.tags || null,
         terms: terms.length > 0 ? terms : null,
         notes: value.notes || null,
-        vocabIds,
-      });
-      form.reset();
-      setSourceId(null);
-      setVocabIds([]);
-      setVocabTerms([]);
-      setGrammarTerms([]);
-      setGeneralTerms([]);
-      setResourceTerms([]);
+      };
+      if (sentence) {
+        // Vocab links are managed via "Break it down"; the update endpoint ignores vocabIds.
+        await updateSentence.mutateAsync({
+          id: sentence.id,
+          input,
+        });
+      }
+      else {
+        await createSentence.mutateAsync({
+          ...input,
+          vocabIds,
+        });
+        form.reset();
+        setSourceId(null);
+        setVocabIds([]);
+        setVocabTerms([]);
+        setGrammarTerms([]);
+        setGeneralTerms([]);
+        setResourceTerms([]);
+      }
       onSuccess?.();
     },
   });
@@ -197,12 +227,16 @@ export function SentenceForm({
         />
       </div>
 
-      <div className="sm:col-span-2">
-        <VocabLinkPicker
-          value={vocabIds}
-          onChange={setVocabIds}
-        />
-      </div>
+      {isEdit
+        ? null
+        : (
+          <div className="sm:col-span-2">
+            <VocabLinkPicker
+              value={vocabIds}
+              onChange={setVocabIds}
+            />
+          </div>
+        )}
 
       <form.Field name="notes">
         {field => (
@@ -236,11 +270,11 @@ export function SentenceForm({
                 disabled:opacity-50
               "
             >
-              {isSubmitting ? "Saving…" : "Add sentence"}
+              {isSubmitting ? "Saving…" : isEdit ? "Save changes" : "Add sentence"}
             </button>
           )}
         </form.Subscribe>
-        {createSentence.isError ? <p className="mt-2 text-sm text-red-600">{createSentence.error?.message}</p> : null}
+        {mutation.isError ? <p className="mt-2 text-sm text-red-600">{mutation.error?.message}</p> : null}
       </div>
     </form>
   );
