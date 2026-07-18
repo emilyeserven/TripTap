@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { BookOpen, ExternalLink, Headphones, ImageOff, PenLine, Repeat2 } from "lucide-react";
+import { BookOpen, ExternalLink, Headphones, ImageOff, PenLine, RefreshCw, Repeat2 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useBookmarkResources } from "@/hooks/useBookmarks";
+import { useBookmarkResources, useRefreshBookmarks } from "@/hooks/useBookmarks";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useCreateWriting } from "@/hooks/useWritings";
 import {
@@ -40,8 +40,9 @@ export const Route = createFileRoute("/collections/")({
 function CollectionsPage() {
   usePageTitle("Collections");
   const {
-    data, isLoading, error,
+    data, isLoading, isFetching, error,
   } = useBookmarkResources();
+  const refreshBookmarks = useRefreshBookmarks();
   const navigate = useNavigate();
   const createWriting = useCreateWriting();
 
@@ -95,12 +96,26 @@ function CollectionsPage() {
 
   return (
     <section className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Collections</h1>
-        <p className="text-sm text-muted-foreground">
-          Browse everything in your Collections source and start a session from any item — listening or
-          shadowing for audio/video, reading or writing for text.
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold">Collections</h1>
+          <p className="text-sm text-muted-foreground">
+            Browse everything in your Collections source and start a session from any item — listening or
+            shadowing for audio/video, reading or writing for text.
+          </p>
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="shrink-0"
+          onClick={() => void refreshBookmarks()}
+          disabled={isFetching}
+          aria-label="Refresh from the bookmarks app"
+        >
+          <RefreshCw className={isFetching ? "size-4 animate-spin" : "size-4"} />
+          Refresh
+        </Button>
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
