@@ -27,3 +27,14 @@ export function sectionRefStartMs(ref: BookmarkSectionRef | null): number | null
   if (!ref || ref.type !== "timestamp") return null;
   return parseSectionTime(ref.startValue ?? "");
 }
+
+/**
+ * The page (or "start–end" range) a `page`-type section points at, for prefilling a free-text page
+ * field. Null for non-page sections or a page section with no start value.
+ */
+export function sectionRefPage(ref: BookmarkSectionRef | null): string | null {
+  if (!ref || ref.type !== "page" || !ref.startValue) return null;
+  return ref.endValue && ref.endValue !== ref.startValue
+    ? `${ref.startValue}–${ref.endValue}`
+    : ref.startValue;
+}
