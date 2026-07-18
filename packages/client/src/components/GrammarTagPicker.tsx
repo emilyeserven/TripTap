@@ -1,16 +1,19 @@
 import type { GrammarTagTree } from "@/hooks/useBookmarks";
 import type { GrammarNote } from "@sentence-bank/types";
 
+import { useMemo } from "react";
+
 import { Link } from "@tanstack/react-router";
 
-import { TagTreeSelect } from "@/components/TagTreeSelect";
+import { Combobox } from "@/components/ui/combobox";
 import { Label } from "@/components/ui/label";
+import { tagSectionOptions } from "@/lib/tag-sections";
 
 /**
  * The grammar-tag block of the grammar-note form. In edit mode the tag is fixed and displayed
- * read-only; in create mode it is a chain of comboboxes drilling down the Grammar source's tag tree
- * (into subtags), with loading/error/empty states. When the picked tag already has a note, saving is
- * blocked and a link to the existing note is offered (one note per grammar point).
+ * read-only; in create mode it is a single searchable combobox whose options are the whole Grammar
+ * source tree — subtags included — grouped into sections by parent, so any tag is one click away.
+ * When the picked tag already has a note, saving is blocked and a link to it is offered.
  */
 export function GrammarTagPicker({
   editing,
@@ -28,6 +31,11 @@ export function GrammarTagPicker({
   notedNote: GrammarNote | null;
   onPick: (id: string, name: string) => void;
 }) {
+  const options = useMemo(
+    () => tagSectionOptions(tree.nodes, tree.rootId, tree.rootLabel),
+    [tree.nodes, tree.rootId, tree.rootLabel],
+  );
+
   if (editing) {
     return (
       <div className="space-y-1.5">
@@ -55,7 +63,7 @@ export function GrammarTagPicker({
                 Couldn’t reach the Grammar source. Configure it in Settings → Bookmarks.
               </p>
             )
-            : tree.nodes.length === 0
+            : options.length === 0
               ? (
                 <p className="text-sm text-muted-foreground">
                   No grammar tags found. Add tags to the Grammar source in Settings → Bookmarks.
@@ -63,13 +71,14 @@ export function GrammarTagPicker({
               )
               : (
                 <>
-                  <TagTreeSelect
-                    nodes={tree.nodes}
-                    rootId={tree.rootId}
+                  <Combobox
                     value={tagId}
-                    onChange={onPick}
+                    onChange={id => onPick(id, options.find(o => o.value === id)?.label ?? "")}
+                    options={options}
                     placeholder="Pick a grammar tag…"
+                    searchPlaceholder="Search grammar tags…"
                     ariaLabel="Grammar tag"
+                    className="w-full max-w-md"
                   />
                   {notedNote
                     ? (

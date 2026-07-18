@@ -10,6 +10,24 @@ import { cn } from "@/lib/utils";
 export interface ComboboxOption {
   value: string;
   label: string;
+  /** Optional group heading. A header renders above the first option of each new section. */
+  section?: string;
+}
+
+/** A non-selectable group heading shown above the first option of a section. */
+export function SectionHeader({
+  title,
+}: { title: string }) {
+  return (
+    <div
+      className="
+        px-2 pt-2 pb-1 text-xs font-medium tracking-wide text-muted-foreground
+        uppercase
+      "
+    >
+      {title}
+    </div>
+  );
 }
 
 /** Case-insensitive substring match used to filter options by the typed query. */
@@ -93,31 +111,35 @@ export function Combobox({
         <div className="max-h-64 overflow-y-auto p-1">
           {filtered.length === 0
             ? <p className="px-2 py-1.5 text-sm text-muted-foreground">No matches.</p>
-            : filtered.map(o => (
-              <button
-                key={o.value}
-                type="button"
-                onClick={() => {
-                  onChange(o.value);
-                  setOpen(false);
-                  setQuery("");
-                }}
-                className={cn(
-                  `
-                    flex w-full items-start gap-2 rounded-sm px-2 py-1.5
-                    text-left text-sm
-                    hover:bg-accent
-                  `,
-                  o.value === value && "font-medium",
-                )}
-              >
-                <Check
-                  className={cn("mt-0.5 size-4 shrink-0", o.value === value
-                    ? "opacity-100"
-                    : "opacity-0")}
-                />
-                <span className="min-w-0 wrap-break-word">{o.label}</span>
-              </button>
+            : filtered.map((o, i) => (
+              <React.Fragment key={o.value}>
+                {o.section && o.section !== filtered[i - 1]?.section
+                  ? <SectionHeader title={o.section} />
+                  : null}
+                <button
+                  type="button"
+                  onClick={() => {
+                    onChange(o.value);
+                    setOpen(false);
+                    setQuery("");
+                  }}
+                  className={cn(
+                    `
+                      flex w-full items-start gap-2 rounded-sm px-2 py-1.5
+                      text-left text-sm
+                      hover:bg-accent
+                    `,
+                    o.value === value && "font-medium",
+                  )}
+                >
+                  <Check
+                    className={cn("mt-0.5 size-4 shrink-0", o.value === value
+                      ? "opacity-100"
+                      : "opacity-0")}
+                  />
+                  <span className="min-w-0 wrap-break-word">{o.label}</span>
+                </button>
+              </React.Fragment>
             ))}
         </div>
       </PopoverContent>

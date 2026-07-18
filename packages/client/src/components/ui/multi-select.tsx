@@ -6,7 +6,7 @@ import { Check, ChevronsUpDown, Loader2, Plus, X } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { comboboxMatches } from "@/components/ui/combobox";
+import { comboboxMatches, SectionHeader } from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
@@ -144,29 +144,33 @@ export function MultiSelect({
           <div className="max-h-64 overflow-y-auto p-1">
             {filtered.length === 0 && !showCreate
               ? <p className="px-2 py-1.5 text-sm text-muted-foreground">{emptyText}</p>
-              : filtered.map((o) => {
+              : filtered.map((o, i) => {
                 const on = selectedSet.has(o.value);
                 return (
-                  <button
-                    key={o.value}
-                    type="button"
-                    onClick={() => toggle(o.value)}
-                    className={cn(
-                      `
-                        flex w-full items-center gap-2 rounded-sm px-2 py-1.5
-                        text-left text-sm
-                        hover:bg-accent
-                      `,
-                      on && "font-medium",
-                    )}
-                  >
-                    <Check
-                      className={cn("size-4 shrink-0", on
-                        ? "opacity-100"
-                        : "opacity-0")}
-                    />
-                    <span className="truncate">{o.label}</span>
-                  </button>
+                  <React.Fragment key={o.value}>
+                    {o.section && o.section !== filtered[i - 1]?.section
+                      ? <SectionHeader title={o.section} />
+                      : null}
+                    <button
+                      type="button"
+                      onClick={() => toggle(o.value)}
+                      className={cn(
+                        `
+                          flex w-full items-center gap-2 rounded-sm px-2 py-1.5
+                          text-left text-sm
+                          hover:bg-accent
+                        `,
+                        on && "font-medium",
+                      )}
+                    >
+                      <Check
+                        className={cn("size-4 shrink-0", on
+                          ? "opacity-100"
+                          : "opacity-0")}
+                      />
+                      <span className="truncate">{o.label}</span>
+                    </button>
+                  </React.Fragment>
                 );
               })}
             {showCreate && (
