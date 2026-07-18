@@ -52,6 +52,7 @@ export function SentenceCard({
                   <SentenceText
                     text={sentence.text}
                     reading={sentence.reading}
+                    blurFurigana={sentence.vocabCount > 0}
                   />
                 </p>
               </div>
