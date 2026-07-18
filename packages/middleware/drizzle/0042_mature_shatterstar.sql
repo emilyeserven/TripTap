@@ -1,0 +1,1 @@
+ALTER TABLE "question_sheets" ADD COLUMN "grammar_terms" jsonb;

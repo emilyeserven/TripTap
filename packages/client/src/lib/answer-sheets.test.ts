@@ -39,6 +39,7 @@ function listSheet(overrides: Partial<QuestionSheet> = {}): QuestionSheet {
     bookmarkUrl: null,
     dueDate: "2026-07-31T00:00:00.000Z",
     learningAreas: [],
+    grammarTerms: [],
     layout: "list",
     questions: [
       {

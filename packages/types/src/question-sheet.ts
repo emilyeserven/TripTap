@@ -1,3 +1,5 @@
+import type { SentenceTermRef } from "./index.js";
+
 /** How a question sheet's answerable slots are laid out. */
 export type QuestionSheetLayout = "list" | "grid";
 
@@ -59,6 +61,11 @@ export interface QuestionSheet {
   dueDate: string | null;
   /** Skill areas this sheet exercises; empty when untagged. Answer sheets inherit these from here. */
   learningAreas: LearningArea[];
+  /**
+   * Grammar-point tags (the bookmarks "grammar" channel) this sheet drills — the same tags sentences
+   * and grammar notes use. Lets the sheet surface on the Grammar page; empty when untagged.
+   */
+  grammarTerms: SentenceTermRef[];
   layout: QuestionSheetLayout;
   /** Used when `layout === "list"`. */
   questions: QuestionSheetQuestion[];
@@ -78,6 +85,7 @@ export interface CreateQuestionSheetInput {
   bookmarkUrl?: string | null;
   dueDate?: string | null;
   learningAreas?: LearningArea[];
+  grammarTerms?: SentenceTermRef[] | null;
   questions?: QuestionSheetQuestion[];
   grid?: QuestionSheetGrid | null;
 }

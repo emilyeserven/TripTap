@@ -15,9 +15,12 @@ vi.mock("@/hooks/useQuestionSheets", () => ({
     isPending: false,
   }),
 }));
-// BookmarkPicker pulls in bookmarks queries we don't care about here.
+// BookmarkPicker and TermPicker pull in bookmarks queries we don't care about here.
 vi.mock("@/components/BookmarkPicker", () => ({
   BookmarkPicker: () => null,
+}));
+vi.mock("@/components/TermPicker", () => ({
+  TermPicker: () => null,
 }));
 
 /** Read the current labels of every rendered part input, in order. */

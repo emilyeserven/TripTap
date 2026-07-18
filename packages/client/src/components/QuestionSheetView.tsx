@@ -2,6 +2,7 @@ import type { QuestionSheet } from "@sentence-bank/types";
 
 import { CalendarCheck } from "lucide-react";
 
+import { GrammarTermBadges } from "@/components/GrammarTermBadges";
 import { LearningAreaBadges } from "@/components/LearningAreaBadges";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
@@ -32,6 +33,7 @@ export function QuestionSheetView({
           <Badge variant="secondary">{qs.layout === "grid" ? "Grid" : "List"}</Badge>
           {qs.page ? <Badge variant="outline">Page {qs.page}</Badge> : null}
           <LearningAreaBadges areas={qs.learningAreas} />
+          <GrammarTermBadges terms={qs.grammarTerms} />
           {qs.bookmarkTitle
             ? (
               <span

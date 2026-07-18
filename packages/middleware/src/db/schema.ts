@@ -335,6 +335,9 @@ export const questionSheets = pgTable("question_sheets", {
     withTimezone: true,
   }),
   learningAreas: jsonb("learning_areas").$type<LearningArea[]>(),
+  // Grammar-channel bookmark tags this sheet drills (same SentenceTermRef shape as sentences.terms),
+  // so tagged sheets surface on the Grammar page. Null until any are attached.
+  grammarTerms: jsonb("grammar_terms").$type<SentenceTermRef[]>(),
   layout: text("layout").notNull().default("list"),
   questions: jsonb("questions").$type<QuestionSheetQuestion[]>(),
   grid: jsonb("grid").$type<QuestionSheetGrid>(),
