@@ -192,8 +192,8 @@ const actionItems = [
         icon: Repeat2Icon,
       },
       {
-        title: "Find a Resource",
-        to: "/find-resource",
+        title: "Collections",
+        to: "/collections",
         icon: TelescopeIcon,
       },
     ],

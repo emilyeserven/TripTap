@@ -6,12 +6,18 @@ import { Button } from "@/components/ui/button";
 import { usePageTitle } from "@/hooks/usePageTitle";
 
 export const Route = createFileRoute("/reading-sessions/new")({
+  validateSearch: (search: Record<string, unknown>): { title?: string } => ({
+    title: typeof search.title === "string" ? search.title : undefined,
+  }),
   component: NewReadingSessionPage,
 });
 
 function NewReadingSessionPage() {
   usePageTitle("New reading session");
   const navigate = useNavigate();
+  const {
+    title,
+  } = Route.useSearch();
 
   return (
     <section className="max-w-3xl space-y-6">
@@ -32,6 +38,7 @@ function NewReadingSessionPage() {
         </p>
       </div>
       <ReadingSessionForm
+        initialTitle={title}
         onSuccess={id =>
           navigate({
             to: "/reading-sessions/$id",

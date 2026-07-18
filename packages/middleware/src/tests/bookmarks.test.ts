@@ -188,8 +188,13 @@ test("GET /api/bookmarks/by-tag/:tagId returns 502 when the configured host is u
 });
 
 const RUNTIME_PROP = "9c231589-0bf9-45cc-8b38-f76bdafe6a7b";
+const COMPLEXITY_PROP = "fa612b61-a90b-453a-9fee-a124d7c5b78b";
+const PROPS = {
+  runtimePropId: RUNTIME_PROP,
+  complexityPropId: COMPLEXITY_PROP,
+};
 
-test("toBookmarkResource extracts website, runtime, and media type", () => {
+test("toBookmarkResource extracts website, runtime, media type, and complexity", () => {
   const raw = {
     id: "b1",
     title: "A video",
@@ -207,12 +212,19 @@ test("toBookmarkResource extracts website, runtime, and media type", () => {
       url: "/api/bookmarks/b1/images/img1?v=1",
       isMain: true,
     },
-    numberValues: [{
-      propertyId: RUNTIME_PROP,
-      value: 1652,
-    }],
+    numberValues: [
+      {
+        propertyId: RUNTIME_PROP,
+        value: 1652,
+      },
+      {
+        propertyId: COMPLEXITY_PROP,
+        value: 2,
+        valueEnd: null,
+      },
+    ],
   };
-  assert.deepEqual(toBookmarkResource(raw, RUNTIME_PROP), {
+  assert.deepEqual(toBookmarkResource(raw, PROPS), {
     id: "b1",
     title: "A video",
     url: "https://www.youtube.com/watch?v=x",
@@ -222,15 +234,74 @@ test("toBookmarkResource extracts website, runtime, and media type", () => {
     },
     runtimeSeconds: 1652,
     mediaType: "Video",
+    complexity: {
+      min: 2,
+      max: 2,
+    },
     imageUrl: "/api/bookmarks/b1/images/img1?v=1",
   });
 });
 
-test("toBookmarkResource degrades missing website/runtime/mediaType to null", () => {
+test("toBookmarkResource normalizes a complexity range into a band", () => {
+  const raw = {
+    id: "br",
+    title: "Ranged",
+    numberValues: [{
+      propertyId: COMPLEXITY_PROP,
+      value: 4,
+      valueEnd: 1,
+    }],
+  };
+  assert.deepEqual(toBookmarkResource(raw, PROPS)?.complexity, {
+    min: 1,
+    max: 4,
+  });
+});
+
+test("toBookmarkResource prefers the primary name over the stale title (reflects renames)", () => {
+  const raw = {
+    id: "b1",
+    title: "Manning Publications", // stale auto-grabbed value
+    names: [
+      {
+        value: "Learn SQL in a Month of Lunches",
+        isPrimary: true,
+      },
+      {
+        value: "secondary",
+        isPrimary: false,
+      },
+    ],
+  };
+  assert.equal(toBookmarkResource(raw, PROPS)?.title, "Learn SQL in a Month of Lunches");
+});
+
+test("toBookmarkResource falls back to the first name, then to title, when no primary name", () => {
+  assert.equal(
+    toBookmarkResource({
+      id: "b1",
+      title: "Stale",
+      names: [{
+        value: "Only name",
+      }],
+    }, PROPS)?.title,
+    "Only name",
+  );
+  assert.equal(
+    toBookmarkResource({
+      id: "b2",
+      title: "Only title",
+      names: [],
+    }, PROPS)?.title,
+    "Only title",
+  );
+});
+
+test("toBookmarkResource degrades missing website/runtime/mediaType/complexity to null", () => {
   const res = toBookmarkResource({
     id: "b2",
     title: "No metadata",
-  }, RUNTIME_PROP);
+  }, PROPS);
   assert.deepEqual(res, {
     id: "b2",
     title: "No metadata",
@@ -238,6 +309,7 @@ test("toBookmarkResource degrades missing website/runtime/mediaType to null", ()
     website: null,
     runtimeSeconds: null,
     mediaType: null,
+    complexity: null,
     imageUrl: null,
   });
 });
@@ -251,12 +323,14 @@ test("toBookmarkResource ignores number values from other properties", () => {
       value: 42,
     }],
   };
-  assert.equal(toBookmarkResource(raw, RUNTIME_PROP)?.runtimeSeconds, null);
+  const res = toBookmarkResource(raw, PROPS);
+  assert.equal(res?.runtimeSeconds, null);
+  assert.equal(res?.complexity, null);
 });
 
 test("toBookmarkResource rejects a record without id/title", () => {
   assert.equal(toBookmarkResource({
     title: "no id",
-  }, RUNTIME_PROP), null);
-  assert.equal(toBookmarkResource(null, RUNTIME_PROP), null);
+  }, PROPS), null);
+  assert.equal(toBookmarkResource(null, PROPS), null);
 });

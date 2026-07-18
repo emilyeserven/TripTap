@@ -13,6 +13,21 @@ import { BookmarksUnavailableError } from "@/services/bookmarks/errors";
  * Everything here is synchronous and side-effect free; the fetch orchestration lives in `index.ts`.
  */
 
+/**
+ * The bookmark's display title. Prefers the primary localized name (`names[]` with `isPrimary`, else the
+ * first name) — that's what renaming a bookmark in the host updates. The top-level `title` field is an
+ * auto-grabbed value that can lag behind a rename, so it's only the fallback when a bookmark has no names.
+ */
+function pickTitle(o: Record<string, unknown>): string | null {
+  if (Array.isArray(o.names)) {
+    const names = o.names.filter((n): n is Record<string, unknown> => Boolean(n) && typeof n === "object");
+    const named = names.find(n => n.isPrimary && typeof n.value === "string" && n.value !== "")
+      ?? names.find(n => typeof n.value === "string" && n.value !== "");
+    if (named && typeof named.value === "string") return named.value;
+  }
+  return typeof o.title === "string" ? o.title : null;
+}
+
 /** Pull the fields we depend on from an upstream tag/term object, ignoring the rest. */
 export function toOption(raw: unknown): TagTermOption | null {
   if (!raw || typeof raw !== "object") return null;
@@ -87,10 +102,11 @@ export function flattenTimestampSections(raw: unknown): BookmarkSection[] {
 export function toBookmarkRecord(raw: unknown, includeSections: boolean): BookmarkRecord | null {
   if (!raw || typeof raw !== "object") return null;
   const o = raw as Record<string, unknown>;
-  if (typeof o.id !== "string" || typeof o.title !== "string") return null;
+  const title = pickTitle(o);
+  if (typeof o.id !== "string" || title === null) return null;
   return {
     id: o.id,
-    title: o.title,
+    title,
     url: typeof o.url === "string" ? o.url : null,
     sections: includeSections ? flattenTimestampSections(o.sectionsValues) : [],
   };
@@ -110,15 +126,38 @@ export function dedupeBookmarksByTitle(records: BookmarkRecord[]): BookmarkRecor
   return [...byId.values()].sort((a, b) => a.title.localeCompare(b.title));
 }
 
+/** The resolved upstream custom-property ids the resource mapper reads out of `numberValues`. */
+export interface ResourcePropertyIds {
+  runtimePropId: string | null;
+  complexityPropId: string | null;
+}
+
+/** Find the `numberValues` entry for a given property id, or null. */
+function findNumberValue(
+  numberValues: unknown,
+  propertyId: string | null,
+): Record<string, unknown> | null {
+  if (!propertyId || !Array.isArray(numberValues)) return null;
+  for (const nv of numberValues) {
+    if (nv && typeof nv === "object") {
+      const n = nv as Record<string, unknown>;
+      if (n.propertyId === propertyId) return n;
+    }
+  }
+  return null;
+}
+
 /**
- * Widen one upstream bookmark into a {@link BookmarkResource} for the "Find a Resource" browser: pull its
- * `website`, its runtime (the `numberValues` entry for the resolved "Runtime" property, in seconds), and
- * its media-type name. Pure — the runtime property id is resolved once by the caller. Null when unreadable.
+ * Widen one upstream bookmark into a {@link BookmarkResource} for the Collections browser: pull its
+ * `website`, its runtime and complexity (each a `numberValues` entry for the resolved property, complexity
+ * normalized to a `{ min, max }` band), and its media-type name. Pure — the property ids are resolved once
+ * by the caller. Null when unreadable.
  */
-export function toBookmarkResource(raw: unknown, runtimePropId: string | null): BookmarkResource | null {
+export function toBookmarkResource(raw: unknown, propIds: ResourcePropertyIds): BookmarkResource | null {
   if (!raw || typeof raw !== "object") return null;
   const o = raw as Record<string, unknown>;
-  if (typeof o.id !== "string" || typeof o.title !== "string") return null;
+  const title = pickTitle(o);
+  if (typeof o.id !== "string" || title === null) return null;
 
   let website: BookmarkResource["website"] = null;
   if (o.website && typeof o.website === "object") {
@@ -133,17 +172,19 @@ export function toBookmarkResource(raw: unknown, runtimePropId: string | null): 
     }
   }
 
-  let runtimeSeconds: number | null = null;
-  if (runtimePropId && Array.isArray(o.numberValues)) {
-    for (const nv of o.numberValues) {
-      if (nv && typeof nv === "object") {
-        const n = nv as Record<string, unknown>;
-        if (n.propertyId === runtimePropId && typeof n.value === "number") {
-          runtimeSeconds = n.value;
-          break;
-        }
-      }
-    }
+  const runtimeVal = findNumberValue(o.numberValues, propIds.runtimePropId);
+  const runtimeSeconds = runtimeVal && typeof runtimeVal.value === "number" ? runtimeVal.value : null;
+
+  // Complexity is a rating property, optionally range-valued (`value`..`valueEnd`). Normalize to a band.
+  let complexity: BookmarkResource["complexity"] = null;
+  const complexityVal = findNumberValue(o.numberValues, propIds.complexityPropId);
+  if (complexityVal && typeof complexityVal.value === "number") {
+    const start = complexityVal.value;
+    const end = typeof complexityVal.valueEnd === "number" ? complexityVal.valueEnd : start;
+    complexity = {
+      min: Math.min(start, end),
+      max: Math.max(start, end),
+    };
   }
 
   let mediaType: string | null = null;
@@ -162,11 +203,12 @@ export function toBookmarkResource(raw: unknown, runtimePropId: string | null): 
 
   return {
     id: o.id,
-    title: o.title,
+    title,
     url: typeof o.url === "string" ? o.url : null,
     website,
     runtimeSeconds,
     mediaType,
+    complexity,
     imageUrl,
   };
 }

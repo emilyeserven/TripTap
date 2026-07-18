@@ -1,13 +1,16 @@
 import type {
   BookmarkRecord,
   BookmarkResource,
+  BookmarkResourceList,
   BookmarksSource,
   BookmarksTaxonomy,
+  ComplexityScale,
   SentenceTermCategory,
   TagTermOption,
 } from "@sentence-bank/types";
 
 import type { BookmarksImage } from "@/services/bookmarks/util";
+import type { ResourcePropertyIds } from "@/services/bookmarks/mappers";
 
 import { apiUrl, resolveBookmarksConfig } from "@/services/bookmarks/config";
 import { BookmarksNotConfiguredError } from "@/services/bookmarks/errors";
@@ -188,7 +191,10 @@ export async function listBookmarksByTag(tagId: string): Promise<BookmarkResourc
   const seen = new Set<string>();
   const out: BookmarkResource[] = [];
   for (const raw of raws) {
-    const resource = toBookmarkResource(raw, null);
+    const resource = toBookmarkResource(raw, {
+      runtimePropId: null,
+      complexityPropId: null,
+    });
     if (resource && !seen.has(resource.id)) {
       seen.add(resource.id);
       out.push(resource);
@@ -223,40 +229,90 @@ export async function getBookmarkImage(
   return fetchBookmarksImage(apiUrl(baseUrl, path) + query);
 }
 
-/** Resolve the upstream "Runtime" custom-property id (by name, then by a duration number format). */
-async function resolveRuntimePropertyId(baseUrl: string): Promise<string | null> {
-  const raw = await fetchBookmarksJson<unknown>(apiUrl(baseUrl, "/custom-properties"));
-  if (!Array.isArray(raw)) return null;
-  const props = raw.filter((p): p is Record<string, unknown> => Boolean(p) && typeof p === "object");
-  const match = props.find(p => typeof p.name === "string" && p.name.toLowerCase() === "runtime")
-    ?? props.find(p => p.type === "number" && p.numberFormat === "duration");
-  return match && typeof match.id === "string" ? match.id : null;
+/** The resolved resource custom properties: ids to read out of `numberValues`, plus the complexity scale. */
+interface ResolvedResourceProperties extends ResourcePropertyIds {
+  complexityScale: ComplexityScale | null;
+}
+
+/** Read the complexity-scale metadata (max level + per-level labels) off its custom-property definition. */
+function toComplexityScale(prop: Record<string, unknown>): ComplexityScale {
+  const labels: Record<string, string> = {};
+  if (prop.ratingLabels && typeof prop.ratingLabels === "object" && !Array.isArray(prop.ratingLabels)) {
+    for (const [level, label] of Object.entries(prop.ratingLabels as Record<string, unknown>)) {
+      if (typeof label === "string") labels[level] = label;
+    }
+  }
+  return {
+    max: typeof prop.ratingMax === "number" ? prop.ratingMax : 5,
+    labels,
+  };
 }
 
 /**
- * The bookmarks in the **resource** channel's configured source (Settings → Resources source),
- * filtered to those that have a runtime and widened for the "Find a Resource" browser (website +
- * runtime + media type), sorted by title (the client re-sorts by runtime). Empty when no resource
- * source is configured. A failure to read the custom-property list degrades runtime to null (which
- * then filters everything out) rather than failing the whole request.
+ * Resolve the upstream custom properties the Collections browser reads: the "Runtime" duration id (by
+ * name, then by a duration number format) and the "Complexity Scale" rating id + scale (by name/slug —
+ * matched specifically because the host has more than one `ratingScale` property).
  */
-export async function listBookmarkResources(): Promise<BookmarkResource[]> {
+async function resolveResourceProperties(baseUrl: string): Promise<ResolvedResourceProperties> {
+  const raw = await fetchBookmarksJson<unknown>(apiUrl(baseUrl, "/custom-properties"));
+  const empty: ResolvedResourceProperties = {
+    runtimePropId: null,
+    complexityPropId: null,
+    complexityScale: null,
+  };
+  if (!Array.isArray(raw)) return empty;
+  const props = raw.filter((p): p is Record<string, unknown> => Boolean(p) && typeof p === "object");
+
+  const runtime = props.find(p => typeof p.name === "string" && p.name.toLowerCase() === "runtime")
+    ?? props.find(p => p.type === "number" && p.numberFormat === "duration");
+
+  const complexity = props.find(p =>
+    p.type === "ratingScale"
+    && ((typeof p.name === "string" && p.name.toLowerCase().includes("complexity"))
+      || p.slug === "complexity-scale"));
+
+  return {
+    runtimePropId: runtime && typeof runtime.id === "string" ? runtime.id : null,
+    complexityPropId: complexity && typeof complexity.id === "string" ? complexity.id : null,
+    complexityScale: complexity ? toComplexityScale(complexity) : null,
+  };
+}
+
+/**
+ * The bookmarks in the **resource** channel's configured source (Settings → Resources source), widened
+ * for the Collections browser (website + runtime + media type + complexity) and sorted by title, plus
+ * the complexity-scale metadata for the level filter. Unlike the old video-only "Find a Resource" list,
+ * this surfaces **every** bookmark in the source regardless of media type; the client gates its
+ * per-medium actions (Listening/Shadowing vs Reading/Writing) on the runtime instead. Empty when no
+ * resource source is configured. A failure to read the custom-property list degrades runtime/complexity
+ * to null rather than failing the whole request.
+ */
+export async function listBookmarkResources(): Promise<BookmarkResourceList> {
   const {
     baseUrl, sources,
   } = await resolveBookmarksConfig();
   const source = sources.resource;
-  if (!source) return [];
-  const [children, runtimePropId] = await Promise.all([
+  if (!source) return {
+    resources: [],
+    complexityScale: null,
+  };
+  const [children, props] = await Promise.all([
     fetchVocabulary("resource"),
-    resolveRuntimePropertyId(baseUrl).catch(() => null),
+    resolveResourceProperties(baseUrl).catch(() => ({
+      runtimePropId: null,
+      complexityPropId: null,
+      complexityScale: null,
+    })),
   ]);
   const raws = await listRawBookmarksForSource(baseUrl, source, children);
-  return raws
-    .map(r => toBookmarkResource(r, runtimePropId))
+  const resources = raws
+    .map(r => toBookmarkResource(r, props))
     .filter((r): r is BookmarkResource => r !== null)
-    // Only surface resources that actually have a runtime (audio/video to listen to/shadow).
-    .filter(r => r.runtimeSeconds != null)
     .sort((a, b) => a.title.localeCompare(b.title));
+  return {
+    resources,
+    complexityScale: props.complexityScale,
+  };
 }
 
 /** Create a taxonomy term, optionally nested under a parent term. Returns the created term. */

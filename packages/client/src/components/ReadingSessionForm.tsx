@@ -29,16 +29,19 @@ import {
  */
 export function ReadingSessionForm({
   session,
+  initialTitle,
   onSuccess,
 }: {
   session?: ReadingSession;
+  /** Prefill the title on a new session (e.g. started from a Collections item); ignored when editing. */
+  initialTitle?: string;
   onSuccess?: (id: string) => void;
 }) {
   const create = useCreateReadingSession();
   const update = useUpdateReadingSession();
   const editing = session !== undefined;
 
-  const [title, setTitle] = useState(session?.title ?? "");
+  const [title, setTitle] = useState(session?.title ?? initialTitle ?? "");
   const [language, setLanguage] = useState(session?.language ?? "Japanese");
   const [sourceId, setSourceId] = useState<string | null>(session?.sourceId ?? null);
   const [page, setPage] = useState(session?.page ?? "");
