@@ -40,6 +40,7 @@ import {
   UserRoundIcon,
 } from "lucide-react";
 
+import { PwaUpdateItem } from "@/components/PwaUpdateItem";
 import {
   Collapsible,
   CollapsibleContent,
@@ -570,6 +571,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 
       <SidebarFooter>
         <SidebarMenu>
+          <PwaUpdateItem />
           <NavItem
             item={{
               title: "Settings",
