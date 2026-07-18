@@ -58,12 +58,14 @@ export function useBookmarksGrammarVocabulary() {
   return useBookmarksVocabulary("grammar");
 }
 
-/** The full Grammar-source tag hierarchy, for drilling into subtags (not just the source's children). */
+/** The full Grammar-source tag hierarchy, for picking a subtag from anywhere in the tree. */
 export interface GrammarTagTree {
   /** All candidate nodes with `parentId` edges (the whole tag tree, or the taxonomy's terms). */
   nodes: TagTermOption[];
-  /** The node whose children start the chain: the source tag id, or a taxonomy drill-down term. */
+  /** The node whose children are the top level: the source tag id, or a taxonomy drill-down term. */
   rootId: string | null;
+  /** Display name of the top-level section (the configured Grammar source's label). */
+  rootLabel: string;
   isLoading: boolean;
   isError: boolean;
   /** False when no Grammar source is configured in Settings. */
@@ -88,6 +90,7 @@ export function useGrammarTagTree(): GrammarTagTree {
     return {
       nodes: [],
       rootId: null,
+      rootLabel: "Grammar",
       isLoading: settings.isLoading,
       isError: false,
       configured: false,
@@ -97,6 +100,7 @@ export function useGrammarTagTree(): GrammarTagTree {
     return {
       nodes: terms.data ?? [],
       rootId: source.termId ?? null,
+      rootLabel: source.termLabel ?? source.label,
       isLoading: terms.isLoading,
       isError: terms.isError,
       configured: true,
@@ -105,6 +109,7 @@ export function useGrammarTagTree(): GrammarTagTree {
   return {
     nodes: tags.data ?? [],
     rootId: source.id,
+    rootLabel: source.label,
     isLoading: tags.isLoading,
     isError: tags.isError,
     configured: true,
