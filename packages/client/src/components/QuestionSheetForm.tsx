@@ -4,6 +4,7 @@ import type {
   QuestionSheetGridRow,
   QuestionSheetLayout,
   QuestionSheetQuestion,
+  SentenceTermRef,
 } from "@sentence-bank/types";
 
 import { useEffect, useState } from "react";
@@ -12,6 +13,7 @@ import { BookmarkPicker } from "@/components/BookmarkPicker";
 import { LearningAreaMultiSelect } from "@/components/LearningAreaMultiSelect";
 import { QuestionGridEditor } from "@/components/QuestionGridEditor";
 import { QuestionListEditor } from "@/components/QuestionListEditor";
+import { TermPicker } from "@/components/TermPicker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -49,6 +51,9 @@ export function QuestionSheetForm({
   const [learningAreas, setLearningAreas] = useState<LearningArea[]>(
     questionSheet?.learningAreas ?? [],
   );
+  const [grammarTerms, setGrammarTerms] = useState<SentenceTermRef[]>(
+    questionSheet?.grammarTerms ?? [],
+  );
   const [layout, setLayout] = useState<QuestionSheetLayout>(questionSheet?.layout ?? "list");
   const [questions, setQuestions] = useState<QuestionSheetQuestion[]>(
     questionSheet?.questions ?? [],
@@ -78,6 +83,7 @@ export function QuestionSheetForm({
       bookmarkUrl,
       dueDate: dueDate ? new Date(dueDate).toISOString() : null,
       learningAreas,
+      grammarTerms,
       questions: layout === "list" ? questions : [],
       grid: layout === "grid"
         ? {
@@ -176,6 +182,13 @@ export function QuestionSheetForm({
           Tag the skills this sheet practises (optional). Answer sheets inherit these.
         </p>
       </div>
+
+      <TermPicker
+        category="grammar"
+        label="Grammar tags"
+        value={grammarTerms}
+        onChange={setGrammarTerms}
+      />
 
       <div className="space-y-2">
         <Label>Layout</Label>

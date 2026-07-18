@@ -295,6 +295,13 @@
       "when": 1784311844429,
       "tag": "0041_steep_jubilee",
       "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "7",
+      "when": 1784395644478,
+      "tag": "0042_mature_shatterstar",
+      "breakpoints": true
     }
   ]
 }

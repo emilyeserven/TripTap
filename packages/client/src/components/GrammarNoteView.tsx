@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAiLessonContent } from "@/hooks/useAiLessons";
 import { useGrammarNotes, useUpdateGrammarNote } from "@/hooks/useGrammarNotes";
+import { useQuestionSheets } from "@/hooks/useQuestionSheets";
 import { useSentences } from "@/hooks/useSentences";
 import { sentencesByGrammarTagId } from "@/lib/grammar-links";
 import { otherUsages, resolvedRelations, usageLabel } from "@/lib/grammar-notes";
@@ -45,7 +46,15 @@ export function GrammarNoteView({
   const sentences = useSentences();
   const aiContent = useAiLessonContent();
   const allNotes = useGrammarNotes();
+  const questionSheets = useQuestionSheets();
   const update = useUpdateGrammarNote();
+
+  // Auto-gathered: every question sheet tagged with this grammar point.
+  const taggedQuestionSheets = useMemo(
+    () => (questionSheets.data ?? []).filter(qs =>
+      qs.grammarTerms.some(t => t.id === note.tagId)),
+    [questionSheets.data, note.tagId],
+  );
 
   const sentenceById = useMemo(
     () => new Map((sentences.data ?? []).map(s => [s.id, s] as const)),
@@ -175,6 +184,37 @@ export function GrammarNoteView({
                     : null}
                   {s.aiLessonTitle
                     ? <p className="text-xs text-muted-foreground">{s.aiLessonTitle}</p>
+                    : null}
+                </li>
+              ))}
+            </ul>
+          </Section>
+        )
+        : null}
+
+      {taggedQuestionSheets.length > 0
+        ? (
+          <Section title={`Question sheets using this grammar (${taggedQuestionSheets.length})`}>
+            <ul className="space-y-1.5">
+              {taggedQuestionSheets.map(qs => (
+                <li
+                  key={qs.id}
+                  className="text-sm"
+                >
+                  <Link
+                    to="/question-sheets/$id"
+                    params={{
+                      id: qs.id,
+                    }}
+                    className="
+                      font-medium
+                      hover:underline
+                    "
+                  >
+                    {qs.title}
+                  </Link>
+                  {qs.page
+                    ? <span className="text-muted-foreground">{" "}— p. {qs.page}</span>
                     : null}
                 </li>
               ))}

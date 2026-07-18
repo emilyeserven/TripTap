@@ -65,6 +65,50 @@ test("POST /api/question-sheets rejects a non-string bookmarkId", async () => {
   await app.close();
 });
 
+test("POST /api/question-sheets accepts grammar tags", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/question-sheets",
+    payload: {
+      title: "て-form drills",
+      layout: "list",
+      grammarTerms: [{
+        id: "t1",
+        name: "て-form",
+        kind: "tag",
+        sourceId: "g-src",
+        sourceLabel: "Grammar",
+        category: "grammar",
+      }],
+    },
+  });
+  // 200/201 when the DB is available, or a 5xx if it isn't — but never a 400 (the payload is valid).
+  assert.notEqual(res.statusCode, 400);
+  await app.close();
+});
+
+test("POST /api/question-sheets rejects a grammar tag with an unknown kind", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/question-sheets",
+    payload: {
+      title: "て-form drills",
+      layout: "list",
+      grammarTerms: [{
+        id: "t1",
+        name: "て-form",
+        kind: "folder",
+        sourceId: "g-src",
+        sourceLabel: "Grammar",
+      }],
+    },
+  });
+  assert.equal(res.statusCode, 400);
+  await app.close();
+});
+
 test("POST /api/question-sheets accepts a valid list sheet with parts, a bookmark, and a due date", async () => {
   const app = await buildApp();
   const res = await app.inject({

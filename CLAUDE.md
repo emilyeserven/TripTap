@@ -64,7 +64,7 @@ Multi-table or external-proxy features use a service **directory** instead of a 
 | Grammar / Culture | `grammar.tsx`, `culture.tsx` | *(read AI-lesson content; no own route)* | Cross-lesson views over AI-lesson data. |
 | Vocab | `vocabulary.tsx` (`vocab.tsx` redirects) | `vocab.ts` | Standalone vocab bank, unified with AI-lesson vocab. |
 | Answer Sheets | `answer-sheets.*` | `answer-sheets.ts` | Filled-in answers to a question sheet, with corrections. |
-| Question Sheets / Book Exercises | `question-sheets.*`, `book-exercises.index.tsx` | `question-sheets.ts` | Worksheet/exercise definitions; optional Textbooks bookmark + due date. |
+| Question Sheets / Book Exercises | `question-sheets.*`, `book-exercises.index.tsx` | `question-sheets.ts` | Worksheet/exercise definitions; optional Textbooks bookmark + due date. Can be tagged with Grammar-source tags (`grammarTerms`, same `SentenceTermRef` as sentences) — tagged sheets surface on the matching grammar note (`GrammarNoteView`), and the tags show on the sheet + its answer sheets. |
 | Drill Sessions | `drill-sessions.*` (`reasons`, `stats`) | `drill-sessions.ts`, `drill-reason-categories.ts` | Timed drills logging mistakes against a shared reason taxonomy. |
 | Listening Sessions | `listening-sessions.*` | `listening-sessions.ts` | Listen-along on a bookmark video + timestamped notes. |
 | Shadowing Sessions | `shadowing.*` | `shadowing-sessions.ts` | Listen-and-shadow with segment loops + timestamped notes. |
