@@ -11,6 +11,24 @@ const examples: ExampleSentence[] = [
   {
     id: 42,
     text: "犬が好きです。",
+    reading: [
+      {
+        t: "犬",
+        r: "いぬ",
+      },
+      {
+        t: "が",
+        r: null,
+      },
+      {
+        t: "好",
+        r: "す",
+      },
+      {
+        t: "きです。",
+        r: null,
+      },
+    ],
     translation: "I like dogs.",
     license: "CC BY 2.0 FR",
     owner: "hanako",
@@ -18,6 +36,7 @@ const examples: ExampleSentence[] = [
   {
     id: 43,
     text: "猫も好きです。",
+    reading: null,
     translation: null,
     license: "CC BY 2.0 FR",
     owner: null,
@@ -96,5 +115,23 @@ describe("TatoebaImportDialog", () => {
         notes: "From Tatoeba #43 (unknown author) · CC BY 2.0 FR",
       },
     ]);
+  });
+
+  it("renders furigana and keeps the English behind a reveal control", () => {
+    render(<TatoebaImportDialog />);
+
+    fireEvent.click(screen.getByRole("button", {
+      name: /Import from Tatoeba/,
+    }));
+
+    // Furigana reading from the parsed transcription is rendered as ruby.
+    expect(screen.getByText("いぬ")).toBeInTheDocument();
+
+    // The English translation is present but wrapped in a blur/reveal affordance.
+    const reveal = screen.getByRole("button", {
+      name: "Reveal translation",
+    });
+    expect(reveal).toHaveTextContent("I like dogs.");
+    expect(reveal.className).toContain("blur-[3px]");
   });
 });

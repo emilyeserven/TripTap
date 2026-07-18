@@ -3,12 +3,19 @@
  * a practice sentence from a word the learner got wrong. Sentences are CC-BY 2.0 FR — attribute Tatoeba.
  */
 
+import type { FuriToken } from "./index.js";
+
 /** One Japanese example sentence from Tatoeba, with an English translation when available. */
 export interface ExampleSentence {
   /** Tatoeba sentence id (for attribution / linking back). */
   id: number;
   /** The Japanese sentence text. */
   text: string;
+  /**
+   * Furigana segmentation parsed from Tatoeba's Japanese transcription, or null when Tatoeba has none.
+   * Rendered as ruby just like a bank sentence's reading.
+   */
+  reading: FuriToken[] | null;
   /** An English translation (a direct translation when one exists), or null. */
   translation: string | null;
   /** The sentence's license, e.g. "CC BY 2.0 FR". */
