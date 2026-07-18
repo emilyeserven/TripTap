@@ -1,4 +1,3 @@
-import type { PickedExample } from "@/components/TatoebaExamplePicker";
 import type { DrillMistake } from "@sentence-bank/types";
 
 import { useState } from "react";
@@ -6,7 +5,6 @@ import { useState } from "react";
 import { Plus } from "lucide-react";
 
 import { MySentenceForm } from "@/components/MySentenceForm";
-import { TatoebaExamplePicker } from "@/components/TatoebaExamplePicker";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -38,40 +36,22 @@ function prefillFromMistake(mistake: DrillMistake): Prefill {
 
 /**
  * "Add sentence" action for a drill mistake: opens a dialog that pre-fills a My Sentence (text +
- * reasons + why-it-was-wrong) and offers Tatoeba example lookup to seed the sentence from a real
- * example. Picking an example re-seeds the form (bumping `formKey`).
+ * reasons + why-it-was-wrong) for the learner to write in their own words. Tatoeba example lookup
+ * lives on the mistake card itself as a read-only reference — those sentences stay Tatoeba's.
  */
 export function AddSentenceFromMistakeDialog({
   mistake,
 }: { mistake: DrillMistake }) {
   const [open, setOpen] = useState(false);
-  const [prefill, setPrefill] = useState<Prefill>(() => prefillFromMistake(mistake));
   const [formKey, setFormKey] = useState(0);
-
-  const baseExplanation = mistake.reflection ?? "";
-  const defaultQuery = mistake.correctAnswer ?? mistake.prompt ?? mistake.question ?? "";
-
-  const handleUse = (example: PickedExample) => {
-    const attribution = `From Tatoeba #${example.id}`;
-    setPrefill(prev => ({
-      ...prev,
-      text: example.text,
-      translation: example.translation,
-      explanation: baseExplanation ? `${baseExplanation}\n\n${attribution}` : attribution,
-    }));
-    setFormKey(k => k + 1);
-  };
 
   return (
     <Dialog
       open={open}
       onOpenChange={(next) => {
         setOpen(next);
-        // Reset to the mistake's defaults each time the dialog opens.
-        if (next) {
-          setPrefill(prefillFromMistake(mistake));
-          setFormKey(k => k + 1);
-        }
+        // Reset the form to the mistake's defaults each time the dialog opens.
+        if (next) setFormKey(k => k + 1);
       }}
     >
       <DialogTrigger asChild>
@@ -88,22 +68,15 @@ export function AddSentenceFromMistakeDialog({
         <DialogHeader>
           <DialogTitle>Add a sentence from this mistake</DialogTitle>
           <DialogDescription>
-            Saves to My Sentences, carrying the reasons from this mistake. Find a real example on
-            Tatoeba, or write your own.
+            Saves to My Sentences, carrying the reasons from this mistake. Write it in your own words.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
-          <TatoebaExamplePicker
-            defaultQuery={defaultQuery}
-            onUse={handleUse}
-          />
-          <MySentenceForm
-            key={formKey}
-            prefill={prefill}
-            onSuccess={() => setOpen(false)}
-          />
-        </div>
+        <MySentenceForm
+          key={formKey}
+          prefill={prefillFromMistake(mistake)}
+          onSuccess={() => setOpen(false)}
+        />
       </DialogContent>
     </Dialog>
   );
