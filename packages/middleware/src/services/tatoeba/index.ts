@@ -1,7 +1,11 @@
 /**
- * Read-only proxy to the Tatoeba example-sentence API (`api.tatoeba.org/v1/sentences`). Looks up
+ * Read-only proxy to the Tatoeba example-sentence API (`tatoeba.org/en/api_v0/search`). Looks up
  * Japanese sentences containing a word, with an English translation when one exists, to seed a practice
  * sentence. No auth required; sentences are CC-BY 2.0 FR (attribute Tatoeba in the UI).
+ *
+ * We use the older `api_v0` search endpoint rather than the newer `api.tatoeba.org/v1` because only
+ * `api_v0` returns per-sentence `transcriptions` (furigana). The tradeoff is `api_v0`'s messier shape:
+ * translations arrive nested as `[direct[], indirect[]]` and furigana uses a `[漢字|かな]` bracket form.
  */
 
 import type { ExampleSentence, FuriToken } from "@sentence-bank/types";
@@ -10,50 +14,48 @@ import { TatoebaUnavailableError } from "@/services/tatoeba/errors";
 
 export { TatoebaUnavailableError } from "@/services/tatoeba/errors";
 
-const DEFAULT_BASE_URL = "https://api.tatoeba.org";
+const DEFAULT_BASE_URL = "https://tatoeba.org";
 const REQUEST_TIMEOUT_MS = 10_000;
 const DEFAULT_LIMIT = 5;
 const MAX_LIMIT = 20;
 
-/** Shape of the bits of the Tatoeba `/v1/sentences` response we consume. */
+/** Shape of the bits of the Tatoeba `api_v0/search` response we consume. */
 interface TatoebaTranslation {
   text?: string;
   lang?: string;
-  is_direct?: boolean;
 }
 interface TatoebaTranscription {
   /** ISO 15924 script tag; the furigana transcription is "Hrkt" (Hiragana/Katakana). */
   script?: string;
-  /** Furigana markup in Tatoeba's `漢字[かな]` bracket form, e.g. "犬[いぬ]が 好[す]きです。". */
+  /** Furigana markup in Tatoeba's `[漢字|かな]` bracket form, e.g. "[負|ま]け[犬|いぬ]！". */
   text?: string;
 }
 interface TatoebaSentence {
   id?: number;
   text?: string;
   license?: string;
-  owner?: string | null;
-  translations?: TatoebaTranslation[];
+  user?: { username?: string } | null;
+  /** Nested by directness: `[direct[], indirect[]]`. */
+  translations?: TatoebaTranslation[][];
   transcriptions?: TatoebaTranscription[];
 }
 interface TatoebaResponse {
-  data?: TatoebaSentence[];
+  results?: TatoebaSentence[];
 }
 
-/** Pick the best English translation: a direct one if present, else any English, else null. */
-function pickTranslation(translations: TatoebaTranslation[] | undefined): string | null {
-  if (!translations?.length) return null;
-  const english = translations.filter(t => t.lang === "eng" && typeof t.text === "string");
-  const direct = english.find(t => t.is_direct);
-  return (direct ?? english[0])?.text ?? null;
+/** Pick the best English translation. api_v0 nests as `[direct[], indirect[]]`; prefer the direct group. */
+function pickTranslation(groups: TatoebaTranslation[][] | undefined): string | null {
+  if (!groups?.length) return null;
+  const isEng = (t: TatoebaTranslation) => t.lang === "eng" && typeof t.text === "string";
+  const direct = (groups[0] ?? []).find(isEng);
+  return (direct ?? groups.flat().find(isEng))?.text ?? null;
 }
-
-/** A kanji run (annotated by furigana) vs. anything else. */
-const KANJI = /[㐀-鿿豈-﫿々〆ヶ]/u;
 
 /**
- * Parse Tatoeba's Japanese transcription (`漢字[かな]` bracket form, space-separated words) into the
- * app's {@link FuriToken} segments. Each `base[reading]` pair becomes a ruby token; kana/punctuation
- * runs carry a null reading. The word-separator spaces Tatoeba inserts are dropped (Japanese has none).
+ * Parse Tatoeba's Japanese transcription (`[漢字|かな]` bracket form) into the app's {@link FuriToken}
+ * segments. Each `[base|reading…]` group becomes one ruby token — a compound sits in a single bracket
+ * with its reading split per-kanji by `|` (e.g. `[勉強|べん|きょう]` → base 勉強, reading べんきょう).
+ * Kana/punctuation between brackets carries a null reading.
  */
 export function parseTranscription(text: string): FuriToken[] {
   const tokens: FuriToken[] = [];
@@ -70,32 +72,20 @@ export function parseTranscription(text: string): FuriToken[] {
 
   let i = 0;
   while (i < text.length) {
-    const ch = text[i];
-    if (ch === " ") {
-      i++;
-      continue;
-    }
-    if (KANJI.test(ch)) {
-      // A maximal run of consecutive kanji; a following "[reading]" annotates the whole run.
-      let j = i;
-      while (j < text.length && KANJI.test(text[j])) j++;
-      if (text[j] === "[") {
-        const close = text.indexOf("]", j);
-        if (close !== -1) {
-          flush();
-          tokens.push({
-            t: text.slice(i, j),
-            r: text.slice(j + 1, close),
-          });
-          i = close + 1;
-          continue;
-        }
+    if (text[i] === "[") {
+      const close = text.indexOf("]", i);
+      if (close !== -1) {
+        const [base, ...readings] = text.slice(i + 1, close).split("|");
+        flush();
+        tokens.push({
+          t: base,
+          r: readings.join("") || null,
+        });
+        i = close + 1;
+        continue;
       }
-      plain += text.slice(i, j);
-      i = j;
-      continue;
     }
-    plain += ch;
+    plain += text[i];
     i++;
   }
   flush();
@@ -124,7 +114,7 @@ export function toExampleSentence(raw: TatoebaSentence): ExampleSentence | null 
     reading: pickReading(raw.transcriptions),
     translation: pickTranslation(raw.translations),
     license: raw.license ?? "CC BY 2.0 FR",
-    owner: raw.owner ?? null,
+    owner: raw.user?.username ?? null,
   };
 }
 
@@ -142,13 +132,12 @@ export async function searchExampleSentences(
 
   const base = process.env.TATOEBA_API_URL?.trim() || DEFAULT_BASE_URL;
   const params = new URLSearchParams({
-    "lang": "jpn",
-    "q": trimmed,
-    "trans:lang": "eng",
-    "sort": "relevance",
-    "limit": String(Math.min(Math.max(1, limit), MAX_LIMIT)),
+    query: trimmed,
+    from: "jpn",
+    to: "eng",
+    sort: "relevance",
   });
-  const url = `${base.replace(/\/+$/, "")}/v1/sentences?${params.toString()}`;
+  const url = `${base.replace(/\/+$/, "")}/en/api_v0/search?${params.toString()}`;
 
   const body = await fetchJsonWithTimeout<TatoebaResponse>(
     url,
@@ -158,7 +147,9 @@ export async function searchExampleSentences(
     REQUEST_TIMEOUT_MS,
   );
 
-  return (body.data ?? [])
+  // api_v0 paginates rather than honoring a `limit` param, so cap client-side.
+  return (body.results ?? [])
+    .slice(0, Math.min(Math.max(1, limit), MAX_LIMIT))
     .map(toExampleSentence)
     .filter((s): s is ExampleSentence => s !== null);
 }

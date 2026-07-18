@@ -8,18 +8,19 @@ describe("toExampleSentence", () => {
       id: 1,
       text: "猫は魚を食べる。",
       license: "CC BY 2.0 FR",
-      owner: "someone",
+      user: {
+        username: "someone",
+      },
+      // api_v0 nests as [direct[], indirect[]]; the direct group wins.
       translations: [
-        {
-          text: "The cat eats fish (pivoted).",
-          lang: "eng",
-          is_direct: false,
-        },
-        {
+        [{
           text: "The cat eats fish.",
           lang: "eng",
-          is_direct: true,
-        },
+        }],
+        [{
+          text: "The cat eats fish (pivoted).",
+          lang: "eng",
+        }],
       ],
     });
     assert.deepEqual(result, {
@@ -32,17 +33,19 @@ describe("toExampleSentence", () => {
     });
   });
 
-  it("falls back to any English translation when none are direct", () => {
+  it("falls back to an indirect English translation when the direct group has none", () => {
     const result = toExampleSentence({
       id: 2,
       text: "毎朝パンを食べます。",
       license: "CC0 1.0",
-      owner: null,
-      translations: [{
-        text: "I eat bread every morning.",
-        lang: "eng",
-        is_direct: false,
-      }],
+      user: null,
+      translations: [
+        [],
+        [{
+          text: "I eat bread every morning.",
+          lang: "eng",
+        }],
+      ],
     });
     assert.equal(result?.translation, "I eat bread every morning.");
     assert.equal(result?.owner, null);
@@ -53,11 +56,12 @@ describe("toExampleSentence", () => {
       id: 3,
       text: "テスト。",
       license: "CC BY 2.0 FR",
-      translations: [{
-        text: "Test.",
-        lang: "fra",
-        is_direct: true,
-      }],
+      translations: [
+        [{
+          text: "Test.",
+          lang: "fra",
+        }],
+      ],
     });
     assert.equal(result?.translation, null);
   });
@@ -87,7 +91,7 @@ describe("toExampleSentence", () => {
       text: "犬が好きです。",
       transcriptions: [{
         script: "Hrkt",
-        text: "犬[いぬ]が 好[す]きです。",
+        text: "[犬|いぬ]が[好|す]きです。",
       }],
     });
     assert.deepEqual(result?.reading, [
@@ -113,7 +117,8 @@ describe("toExampleSentence", () => {
 
 describe("parseTranscription", () => {
   it("groups a multi-kanji compound under one reading", () => {
-    assert.deepEqual(parseTranscription("勉強[べんきょう]します"), [
+    // api_v0 splits a compound's reading per-kanji inside one bracket.
+    assert.deepEqual(parseTranscription("[勉強|べん|きょう]します"), [
       {
         t: "勉強",
         r: "べんきょう",
@@ -125,8 +130,8 @@ describe("parseTranscription", () => {
     ]);
   });
 
-  it("splits separately-annotated adjacent kanji", () => {
-    assert.deepEqual(parseTranscription("一[いっ]緒[しょ]"), [
+  it("splits separately-bracketed adjacent kanji", () => {
+    assert.deepEqual(parseTranscription("[一|いっ][緒|しょ]"), [
       {
         t: "一",
         r: "いっ",
@@ -138,8 +143,8 @@ describe("parseTranscription", () => {
     ]);
   });
 
-  it("keeps kanji without a following reading as plain text", () => {
-    assert.deepEqual(parseTranscription("本を 読[よ]む"), [
+  it("keeps unbracketed kanji as plain text", () => {
+    assert.deepEqual(parseTranscription("本を[読|よ]む"), [
       {
         t: "本を",
         r: null,
@@ -165,7 +170,7 @@ describe("pickReading", () => {
       },
       {
         script: "Hrkt",
-        text: "犬[いぬ]が",
+        text: "[犬|いぬ]が",
       },
     ]);
     assert.deepEqual(reading, [

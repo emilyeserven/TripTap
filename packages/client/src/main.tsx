@@ -32,3 +32,8 @@ createRoot(rootElement).render(
     </QueryClientProvider>
   </StrictMode>,
 );
+
+// Dynamic import keeps the `virtual:pwa-register` module out of the dev and test module graphs.
+if (import.meta.env.PROD) {
+  void import("./lib/registerPwa").then(m => m.registerPwa());
+}

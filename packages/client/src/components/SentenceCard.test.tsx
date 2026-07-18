@@ -115,6 +115,20 @@ describe("SentenceCard", () => {
     expect(screen.getByText("I drink coffee every morning.")).toBeInTheDocument();
   });
 
+  it("calls onEdit with the sentence when the Edit button is clicked", () => {
+    const onEdit = vi.fn();
+    renderCard(
+      <SentenceCard
+        sentence={sentence}
+        onEdit={onEdit}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", {
+      name: "Edit",
+    }));
+    expect(onEdit).toHaveBeenCalledWith(sentence);
+  });
+
   it("makes grammar badges clickable filters when onGrammarTagClick is provided", () => {
     const onGrammarTagClick = vi.fn();
     renderCard(
