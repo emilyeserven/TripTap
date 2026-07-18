@@ -144,6 +144,16 @@ export function useBookmarksByTag(tagId: string | null) {
   });
 }
 
+/** The bookmark sections carrying a specific tag id. Deferred until a tag id is provided. */
+export function useBookmarkSectionsByTag(tagId: string | null) {
+  return useQuery({
+    queryKey: [...BOOKMARKS_KEY, "sections-by-tag", tagId],
+    queryFn: () => bookmarksApi.sectionsByTag(tagId as string),
+    enabled: Boolean(tagId),
+    retry: false,
+  });
+}
+
 /** A single bookmark (with its timestamp sections). Deferred until an id is provided. */
 export function useBookmarkRecord(id: string | null) {
   return useQuery({

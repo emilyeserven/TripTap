@@ -1,5 +1,6 @@
 import type {
   AnswerSheetEntry,
+  BookmarkSectionRef,
   CleanedBlocks,
   DrillMistake,
   DrillMistakeReasonRef,
@@ -331,6 +332,8 @@ export const questionSheets = pgTable("question_sheets", {
   bookmarkId: text("bookmark_id"),
   bookmarkTitle: text("bookmark_title"),
   bookmarkUrl: text("bookmark_url"),
+  // A specific section of the linked bookmark (a narrower reference than the whole bookmark).
+  section: jsonb("section").$type<BookmarkSectionRef>(),
   dueDate: timestamp("due_date", {
     withTimezone: true,
   }),
@@ -392,6 +395,8 @@ export const listeningSessions = pgTable("listening_sessions", {
   bookmarkId: text("bookmark_id"),
   bookmarkTitle: text("bookmark_title"),
   bookmarkUrl: text("bookmark_url"),
+  // A specific section of the linked bookmark (carries the timestamp so the player can scope to it).
+  section: jsonb("section").$type<BookmarkSectionRef>(),
   entries: jsonb("entries").$type<ListeningEntry[]>(),
   terms: jsonb("terms").$type<SentenceTermRef[]>(),
   createdAt: timestamp("created_at", {
@@ -419,6 +424,8 @@ export const shadowingSessions = pgTable("shadowing_sessions", {
   bookmarkId: text("bookmark_id"),
   bookmarkTitle: text("bookmark_title"),
   bookmarkUrl: text("bookmark_url"),
+  // A specific section of the linked bookmark (its timestamp can seed a segment / scope the player).
+  section: jsonb("section").$type<BookmarkSectionRef>(),
   defaultMaxReplays: integer("default_max_replays").notNull().default(3),
   defaultGapMs: integer("default_gap_ms").notNull().default(0),
   segments: jsonb("segments").$type<ShadowingSegment[]>(),

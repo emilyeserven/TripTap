@@ -9,6 +9,8 @@
  * both the Fastify API and the React client.
  */
 
+import type { BookmarkSectionRef } from "./index.js";
+
 /** One "possible construction" of a grammar point: a pattern, an explanation, and example sentences. */
 export interface GrammarConstruction {
   /** Client-generated stable key (crypto.randomUUID()). */
@@ -48,6 +50,8 @@ export interface GrammarResourceRef {
   url: string | null;
   /** Freeform locator, e.g. "Genki I p.42" or "watch 3:10–4:00". */
   note: string | null;
+  /** A specific section of the bookmark (only for real bookmark records); null when none/freeform. */
+  section?: BookmarkSectionRef | null;
 }
 
 /** A user's rich note about a single grammar usage (keyed to one Grammar Source tag). */

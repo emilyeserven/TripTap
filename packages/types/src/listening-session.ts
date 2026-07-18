@@ -7,7 +7,7 @@
  * Consumed by both the Fastify API and the React client.
  */
 
-import type { SentenceTermRef } from "./index.js";
+import type { BookmarkSectionRef, SentenceTermRef } from "./index.js";
 
 /**
  * One timestamped note within a session. `timestampMs` is the playback (or stopwatch) position in
@@ -46,6 +46,8 @@ export interface ListeningSession {
   bookmarkTitle: string | null;
   /** The associated bookmark's URL captured at selection time, or null. */
   bookmarkUrl: string | null;
+  /** The specific section of {@link bookmarkId} this session focuses on; null when none. */
+  section: BookmarkSectionRef | null;
   /** The timestamped notes taken during the session; null if none. */
   entries: ListeningEntry[] | null;
   /** Borrowed bookmark terms tagging this session; null if none. */
@@ -64,6 +66,7 @@ export interface CreateListeningSessionInput {
   bookmarkId?: string | null;
   bookmarkTitle?: string | null;
   bookmarkUrl?: string | null;
+  section?: BookmarkSectionRef | null;
   entries?: ListeningEntry[] | null;
   terms?: SentenceTermRef[] | null;
 }

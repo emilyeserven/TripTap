@@ -1,4 +1,5 @@
 import type {
+  BookmarkSectionRef,
   LearningArea,
   QuestionSheet,
   QuestionSheetGridRow,
@@ -41,6 +42,7 @@ export function QuestionSheetForm({
   const [bookmarkId, setBookmarkId] = useState(questionSheet?.bookmarkId ?? null);
   const [bookmarkTitle, setBookmarkTitle] = useState(questionSheet?.bookmarkTitle ?? null);
   const [bookmarkUrl, setBookmarkUrl] = useState(questionSheet?.bookmarkUrl ?? null);
+  const [section, setSection] = useState<BookmarkSectionRef | null>(questionSheet?.section ?? null);
   const [page, setPage] = useState(questionSheet?.page ?? "");
   const [dueDate, setDueDate] = useState(questionSheet?.dueDate?.slice(0, 10) ?? "");
   const [title, setTitle] = useState(questionSheet?.title ?? "");
@@ -81,6 +83,7 @@ export function QuestionSheetForm({
       bookmarkId,
       bookmarkTitle,
       bookmarkUrl,
+      section,
       dueDate: dueDate ? new Date(dueDate).toISOString() : null,
       learningAreas,
       grammarTerms,
@@ -125,6 +128,9 @@ export function QuestionSheetForm({
             setBookmarkTitle(record?.title ?? null);
             setBookmarkUrl(record?.url ?? null);
           }}
+          enableSections
+          selectedSection={section}
+          onPickSection={setSection}
         />
         <div className="space-y-1.5">
           <Label htmlFor="qs-page">Page</Label>

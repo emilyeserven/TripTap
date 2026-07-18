@@ -35,6 +35,7 @@ export function ListeningSessionCard({
         <CardContent className="text-sm text-muted-foreground">
           <p>{session.language}</p>
           {session.bookmarkTitle && <p>Bookmark: {session.bookmarkTitle}</p>}
+          {session.section && <p>Section: {session.section.label}</p>}
           <p>{noteCount} {noteCount === 1 ? "note" : "notes"}</p>
         </CardContent>
       </Card>

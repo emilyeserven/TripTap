@@ -481,9 +481,59 @@ export interface BookmarkSection {
   endValue: string;
 }
 
+/** What a bookmark section entry represents upstream (mirrors the host's `SectionEntry.type`). */
+export type BookmarkSectionType = "name" | "url" | "page" | "timestamp";
+
+/**
+ * One node of a bookmark's Sections tree, flattened to an adjacency list (`parentId`) so a chained
+ * combobox can drill it directly. Unlike {@link BookmarkSection}, every entry type is kept (name/page/
+ * url/timestamp) and the hierarchy is preserved. `startValue`/`endValue` are the raw upstream strings
+ * (a page number, a `HH:MM:SS` timestamp, …); empty upstream values become null.
+ */
+export interface BookmarkSectionNode {
+  id: string;
+  name: string;
+  /** Parent section id; null for a top-level section. */
+  parentId: string | null;
+  type: BookmarkSectionType;
+  startValue: string | null;
+  endValue: string | null;
+  /** An entry's own link, independent of type; null when none. */
+  url: string | null;
+  /** Tag ids associated with this section upstream (may be empty). */
+  tagIds: string[];
+}
+
+/**
+ * A denormalized reference to one specific section of a bookmark, stored alongside a bookmark id on the
+ * content that points at it (question sheets, listening/shadowing sessions, grammar-note resources) so
+ * the section can be displayed without re-fetching. `label` is the breadcrumb path (e.g. "Ch. 3 › Lesson
+ * 2"); `startValue`/`endValue` carry the position so a `timestamp` section can seed a segment / player.
+ */
+export interface BookmarkSectionRef {
+  id: string;
+  label: string;
+  type: BookmarkSectionType;
+  startValue: string | null;
+  endValue: string | null;
+}
+
+/**
+ * One bookmark section whose upstream `tagIds` include a given tag, with enough of its owning bookmark
+ * to link to. Returned by `GET /api/bookmarks/sections-by-tag/:tagId` — how a grammar note auto-gathers
+ * the specific sections (not just whole bookmarks) tagged with its Grammar Source tag.
+ */
+export interface BookmarkSectionMatch {
+  bookmarkId: string;
+  bookmarkTitle: string;
+  bookmarkUrl: string | null;
+  section: BookmarkSectionRef;
+}
+
 /**
  * A bookmark record fetched from the external bookmarks app. Only the fields we consume are surfaced;
- * `sections` is populated only by the single-record fetch (`GET /api/bookmarks/records/:id`).
+ * `sections` and `sectionTree` are populated only by the single-record fetch
+ * (`GET /api/bookmarks/records/:id`).
  */
 export interface BookmarkRecord {
   id: string;
@@ -492,6 +542,8 @@ export interface BookmarkRecord {
   url: string | null;
   /** Flattened timestamp sections; empty on the list endpoint, populated on the single-record fetch. */
   sections: BookmarkSection[];
+  /** The full Sections tree (all entry types, hierarchical); empty on the list endpoint. */
+  sectionTree: BookmarkSectionNode[];
 }
 
 /**

@@ -118,6 +118,31 @@ const segmentsSchema = {
   },
 } as const;
 
+/** A reference to one section of a bookmark (denormalized), or null. */
+const bookmarkSectionRefSchema = {
+  type: ["object", "null"],
+  additionalProperties: false,
+  required: ["id", "label", "type"],
+  properties: {
+    id: {
+      type: "string",
+    },
+    label: {
+      type: "string",
+    },
+    type: {
+      type: "string",
+      enum: ["name", "url", "page", "timestamp"],
+    },
+    startValue: {
+      type: ["string", "null"],
+    },
+    endValue: {
+      type: ["string", "null"],
+    },
+  },
+} as const;
+
 const createShadowingSessionBody = {
   type: "object",
   required: ["title", "language"],
@@ -143,6 +168,7 @@ const createShadowingSessionBody = {
     bookmarkUrl: {
       type: ["string", "null"],
     },
+    section: bookmarkSectionRefSchema,
     defaultMaxReplays: {
       type: "integer",
       minimum: 1,

@@ -38,6 +38,7 @@ function listSheet(overrides: Partial<QuestionSheet> = {}): QuestionSheet {
     bookmarkId: null,
     bookmarkTitle: null,
     bookmarkUrl: null,
+    section: null,
     dueDate: "2026-07-31T00:00:00.000Z",
     learningAreas: [],
     grammarTerms: [],

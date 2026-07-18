@@ -2,6 +2,7 @@ import type {
   BookmarkRecord,
   BookmarkResource,
   BookmarkResourceList,
+  BookmarkSectionMatch,
   BookmarksSource,
   BookmarksTaxonomy,
   ComplexityScale,
@@ -18,6 +19,7 @@ import {
   createdOption,
   dedupeBookmarksByTitle,
   isRecord,
+  matchSectionsByTag,
   toBookmarkRecord,
   toBookmarkResource,
   toOptions,
@@ -201,6 +203,37 @@ export async function listBookmarksByTag(tagId: string): Promise<BookmarkResourc
     }
   }
   return out.sort((a, b) => a.title.localeCompare(b.title));
+}
+
+/**
+ * Every bookmark **section** whose upstream `tagIds` include a specific tag id, across all bookmarks,
+ * sorted by bookmark title then section label. The host can't filter sections by tag (`?tags=` only
+ * matches bookmark-level tags), so this fetches the whole collection once — each bookmark already carries
+ * its `sectionsValues` — and walks their sections. Backs the grammar note's "sections tagged with this
+ * grammar point" gather.
+ */
+export async function listSectionsByTag(tagId: string): Promise<BookmarkSectionMatch[]> {
+  const {
+    baseUrl,
+  } = await resolveBookmarksConfig();
+  const raw = await fetchBookmarksJson<unknown>(apiUrl(baseUrl, "/bookmarks"));
+  const bookmarks = Array.isArray(raw) ? raw.filter(isRecord) : [];
+  const out: BookmarkSectionMatch[] = [];
+  for (const b of bookmarks) {
+    if (typeof b.id !== "string") continue;
+    const record = toBookmarkRecord(b, false); // resolves the (renamed) title; sections not needed here
+    const sections = matchSectionsByTag(b.sectionsValues, tagId);
+    for (const section of sections) {
+      out.push({
+        bookmarkId: b.id,
+        bookmarkTitle: record?.title ?? (typeof b.title === "string" ? b.title : b.id),
+        bookmarkUrl: typeof b.url === "string" ? b.url : null,
+        section,
+      });
+    }
+  }
+  return out.sort((a, b) =>
+    a.bookmarkTitle.localeCompare(b.bookmarkTitle) || a.section.label.localeCompare(b.section.label));
 }
 
 /** A single bookmark by id, including its flattened timestamp sections. Null when not found/unreadable. */

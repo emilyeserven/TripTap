@@ -1,5 +1,5 @@
 import type { PlayerHandle } from "@/lib/player";
-import type { ShadowingSegment, ShadowingSession } from "@sentence-bank/types";
+import type { BookmarkSectionRef, ShadowingSegment, ShadowingSession } from "@sentence-bank/types";
 
 import { useRef, useState } from "react";
 
@@ -13,6 +13,7 @@ import {
   useCreateShadowingSession,
   useUpdateShadowingSession,
 } from "@/hooks/useShadowingSessions";
+import { sectionRefToSegment } from "@/lib/sections";
 import { parseYouTubeId } from "@/lib/time";
 
 /** A bookmark used to seed a brand-new session (e.g. from the Find a Resource page). */
@@ -31,6 +32,7 @@ function initialFormState(session: ShadowingSession | undefined, initialBookmark
     bookmarkId: session?.bookmarkId ?? initialBookmark?.id ?? null,
     bookmarkTitle: session?.bookmarkTitle ?? initialBookmark?.title ?? null,
     bookmarkUrl: session?.bookmarkUrl ?? initialBookmark?.url ?? null,
+    section: session?.section ?? null,
     defaultMaxReplays: session?.defaultMaxReplays ?? 3,
     defaultGapMs: session?.defaultGapMs ?? 0,
     segments: session?.segments ?? [],
@@ -63,6 +65,7 @@ export function ShadowingSessionForm({
   const [bookmarkId, setBookmarkId] = useState(init.bookmarkId);
   const [bookmarkTitle, setBookmarkTitle] = useState(init.bookmarkTitle);
   const [bookmarkUrl, setBookmarkUrl] = useState(init.bookmarkUrl);
+  const [section, setSection] = useState<BookmarkSectionRef | null>(init.section);
   const [defaultMaxReplays, setDefaultMaxReplays] = useState(init.defaultMaxReplays);
   const [defaultGapMs, setDefaultGapMs] = useState(init.defaultGapMs);
   const [segments, setSegments] = useState<ShadowingSegment[]>(init.segments);
@@ -73,6 +76,14 @@ export function ShadowingSessionForm({
   const pending = create.isPending || update.isPending;
   const canSubmit = title.trim().length > 0 && language.trim().length > 0 && !pending;
 
+  // A picked timestamp section can seed a practice segment (complements SegmentEditor's bulk import).
+  const addSectionAsSegment = () => {
+    if (!section) return;
+    const segment = sectionRefToSegment(section);
+    if (segment) setSegments(prev => [...prev, segment]);
+  };
+  const canAddSectionSegment = section?.type === "timestamp" && sectionRefToSegment(section) !== null;
+
   const submit = async () => {
     if (!canSubmit) return;
     const input = {
@@ -82,6 +93,7 @@ export function ShadowingSessionForm({
       bookmarkId,
       bookmarkTitle,
       bookmarkUrl,
+      section,
       defaultMaxReplays,
       defaultGapMs,
       segments: segments.length > 0 ? segments : null,
@@ -123,7 +135,22 @@ export function ShadowingSessionForm({
           setBookmarkUrl(record?.url ?? null);
           if (record?.url) setVideoUrl(record.url);
         }}
+        enableSections
+        selectedSection={section}
+        onPickSection={setSection}
       />
+      {canAddSectionSegment
+        ? (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={addSectionAsSegment}
+          >
+            Add “{section?.label}” as a segment
+          </Button>
+        )
+        : null}
 
       <div className="space-y-1.5">
         <Label htmlFor="ss-video">Video URL</Label>

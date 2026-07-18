@@ -13,6 +13,7 @@ import {
   listBookmarkResources,
   listBookmarksByTag,
   listBookmarksForCategory,
+  listSectionsByTag,
 } from "@/services/bookmarks";
 
 /** Map a bookmarks domain error to its HTTP status; rethrow anything else. */
@@ -219,6 +220,23 @@ export async function bookmarksRoutes(app: FastifyInstance): Promise<void> {
     } = req.params as { tagId: string };
     try {
       return await listBookmarksByTag(tagId);
+    }
+    catch (err) {
+      return handleError(err, reply);
+    }
+  });
+
+  app.get("/api/bookmarks/sections-by-tag/:tagId", {
+    schema: {
+      tags: ["bookmarks"],
+      params: byTagParams,
+    },
+  }, async (req, reply) => {
+    const {
+      tagId,
+    } = req.params as { tagId: string };
+    try {
+      return await listSectionsByTag(tagId);
     }
     catch (err) {
       return handleError(err, reply);

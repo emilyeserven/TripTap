@@ -36,6 +36,7 @@ export function ShadowingSessionCard({
         <CardContent className="text-sm text-muted-foreground">
           <p>{session.language}</p>
           {session.bookmarkTitle && <p>Bookmark: {session.bookmarkTitle}</p>}
+          {session.section && <p>Section: {session.section.label}</p>}
           <p>
             {segmentCount} {segmentCount === 1 ? "segment" : "segments"} · {noteCount}{" "}
             {noteCount === 1 ? "note" : "notes"}

@@ -102,6 +102,31 @@ const gridSchema = {
   },
 } as const;
 
+/** A reference to one section of a bookmark (denormalized), or null. Shared shape across surfaces. */
+const bookmarkSectionRefSchema = {
+  type: ["object", "null"],
+  additionalProperties: false,
+  required: ["id", "label", "type"],
+  properties: {
+    id: {
+      type: "string",
+    },
+    label: {
+      type: "string",
+    },
+    type: {
+      type: "string",
+      enum: ["name", "url", "page", "timestamp"],
+    },
+    startValue: {
+      type: ["string", "null"],
+    },
+    endValue: {
+      type: ["string", "null"],
+    },
+  },
+} as const;
+
 const createQuestionSheetBody = {
   type: "object",
   required: ["title", "layout"],
@@ -130,6 +155,7 @@ const createQuestionSheetBody = {
     bookmarkUrl: {
       type: ["string", "null"],
     },
+    section: bookmarkSectionRefSchema,
     dueDate: {
       type: ["string", "null"],
     },

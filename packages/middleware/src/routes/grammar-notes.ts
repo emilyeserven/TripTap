@@ -96,6 +96,29 @@ const resourceSchema = {
     note: {
       type: ["string", "null"],
     },
+    section: {
+      type: ["object", "null"],
+      additionalProperties: false,
+      required: ["id", "label", "type"],
+      properties: {
+        id: {
+          type: "string",
+        },
+        label: {
+          type: "string",
+        },
+        type: {
+          type: "string",
+          enum: ["name", "url", "page", "timestamp"],
+        },
+        startValue: {
+          type: ["string", "null"],
+        },
+        endValue: {
+          type: ["string", "null"],
+        },
+      },
+    },
   },
 } as const;
 

@@ -1,4 +1,4 @@
-import type { ListeningSession, SentenceTermRef } from "@sentence-bank/types";
+import type { BookmarkSectionRef, ListeningSession, SentenceTermRef } from "@sentence-bank/types";
 
 import { useState } from "react";
 
@@ -41,6 +41,7 @@ export function ListeningSessionForm({
   const [bookmarkId, setBookmarkId] = useState(session?.bookmarkId ?? initialBookmark?.id ?? null);
   const [bookmarkTitle, setBookmarkTitle] = useState(session?.bookmarkTitle ?? initialBookmark?.title ?? null);
   const [bookmarkUrl, setBookmarkUrl] = useState(session?.bookmarkUrl ?? initialBookmark?.url ?? null);
+  const [section, setSection] = useState<BookmarkSectionRef | null>(session?.section ?? null);
 
   const initialTerms = session?.terms ?? [];
   const [vocabTerms, setVocabTerms] = useState<SentenceTermRef[]>(
@@ -63,6 +64,7 @@ export function ListeningSessionForm({
       bookmarkId,
       bookmarkTitle,
       bookmarkUrl,
+      section,
       terms: terms.length > 0 ? terms : null,
       // Preserve any notes already captured when editing metadata.
       entries: session?.entries ?? null,
@@ -103,6 +105,9 @@ export function ListeningSessionForm({
           setBookmarkUrl(record?.url ?? null);
           if (record?.url) setVideoUrl(record.url);
         }}
+        enableSections
+        selectedSection={section}
+        onPickSection={setSection}
       />
 
       <div className="space-y-1.5">
