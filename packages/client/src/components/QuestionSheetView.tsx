@@ -1,4 +1,4 @@
-import type { QuestionSheet } from "@sentence-bank/types";
+import type { QuestionSheet, QuestionSheetPart } from "@sentence-bank/types";
 
 import { CalendarCheck } from "lucide-react";
 
@@ -105,17 +105,7 @@ export function QuestionSheetView({
                   <span className="font-medium text-muted-foreground">{index + 1}. </span>
                   {q.prompt}
                 </p>
-                {(q.parts ?? []).length > 0
-                  ? (
-                    <ul
-                      className="space-y-0.5 pl-6 text-sm text-muted-foreground"
-                    >
-                      {(q.parts ?? []).map(part => (
-                        <li key={part.id}>{part.label}</li>
-                      ))}
-                    </ul>
-                  )
-                  : null}
+                <PartList parts={q.parts ?? []} />
               </li>
             ))}
             {qs.questions.length === 0
@@ -125,6 +115,25 @@ export function QuestionSheetView({
         )
         : <GridPreview grid={qs.grid} />}
     </div>
+  );
+}
+
+/** Read-only render of a question's parts, nesting sub-parts under their parent (indented per level). */
+function PartList({
+  parts,
+}: {
+  parts: QuestionSheetPart[];
+}) {
+  if (parts.length === 0) return null;
+  return (
+    <ul className="space-y-0.5 pl-6 text-sm text-muted-foreground">
+      {parts.map(part => (
+        <li key={part.id}>
+          {part.label}
+          <PartList parts={part.parts ?? []} />
+        </li>
+      ))}
+    </ul>
   );
 }
 

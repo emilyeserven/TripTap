@@ -23,6 +23,32 @@ const questionSheetParams = {
   },
 } as const;
 
+/**
+ * A question-sheet part, defined as a shared schema so it can reference itself: parts nest recursively
+ * (a part may carry its own `parts`). Registered on the Fastify instance via {@link app.addSchema} so
+ * the `$ref` below resolves at route-registration time.
+ */
+const partSchema = {
+  $id: "questionSheetPart",
+  type: "object",
+  additionalProperties: false,
+  required: ["id", "label"],
+  properties: {
+    id: {
+      type: "string",
+    },
+    label: {
+      type: "string",
+    },
+    parts: {
+      type: "array",
+      items: {
+        $ref: "questionSheetPart",
+      },
+    },
+  },
+} as const;
+
 const questionsSchema = {
   type: "array",
   items: {
@@ -39,17 +65,7 @@ const questionsSchema = {
       parts: {
         type: "array",
         items: {
-          type: "object",
-          additionalProperties: false,
-          required: ["id", "label"],
-          properties: {
-            id: {
-              type: "string",
-            },
-            label: {
-              type: "string",
-            },
-          },
+          $ref: "questionSheetPart",
         },
       },
     },
@@ -169,6 +185,8 @@ const updateQuestionSheetBody = {
 
 /** CRUD routes for question sheets (reusable exercise templates), mounted under `/api/question-sheets`. */
 export async function questionSheetRoutes(app: FastifyInstance): Promise<void> {
+  app.addSchema(partSchema);
+
   app.get("/api/question-sheets", {
     schema: {
       tags: ["question-sheets"],

@@ -1,4 +1,10 @@
-import type { AnswerSheet, AnswerSheetEntry, LearningArea, QuestionSheet } from "@sentence-bank/types";
+import type {
+  AnswerSheet,
+  AnswerSheetEntry,
+  LearningArea,
+  QuestionSheet,
+  QuestionSheetPart,
+} from "@sentence-bank/types";
 
 /** One answerable cell of a question sheet: a stable `id` and a human label for the input. */
 export interface QuestionSheetSlot {
@@ -7,11 +13,32 @@ export interface QuestionSheetSlot {
 }
 
 /**
+ * Walk a part subtree, appending one slot per **leaf** part (a part with no sub-parts). A part that has
+ * sub-parts is a heading, not a slot — only its leaf descendants are answerable. `base` is the label
+ * built from the ancestors so far (question prompt + any parent part labels).
+ */
+function collectPartSlots(base: string, parts: QuestionSheetPart[], slots: QuestionSheetSlot[]): void {
+  for (const part of parts) {
+    const label = `${base} — ${part.label}`;
+    if (part.parts && part.parts.length > 0) {
+      collectPartSlots(label, part.parts, slots);
+    }
+    else {
+      slots.push({
+        id: part.id,
+        label,
+      });
+    }
+  }
+}
+
+/**
  * Flatten a question sheet into its answerable slots, in display order. This is the single source of
  * truth shared by the answer form (which renders one input per slot) and the read-only views.
  *
- * - `list` layout: a question with no parts is one slot (`id = q.id`); each part is its own slot
- *   (`id = part.id`), labelled with the question prompt plus the part label.
+ * - `list` layout: a question with no parts is one slot (`id = q.id`); otherwise each **leaf** part is
+ *   its own slot (`id = part.id`), labelled with the question prompt plus the chain of part labels. A
+ *   part that has sub-parts is a heading, not a slot.
  * - `grid` layout: each row × column is a slot (`id = ` + "`${row.id}:${colIndex}`"), labelled with
  *   the row label and column heading.
  */
@@ -36,12 +63,7 @@ export function questionSheetSlots(qs: QuestionSheet): QuestionSheetSlot[] {
     // Blank prompts (e.g. from the "quick fill" count shortcut) fall back to a positional label.
     const base = question.prompt.trim() || `Question ${index + 1}`;
     if (question.parts && question.parts.length > 0) {
-      for (const part of question.parts) {
-        slots.push({
-          id: part.id,
-          label: `${base} — ${part.label}`,
-        });
-      }
+      collectPartSlots(base, question.parts, slots);
     }
     else {
       slots.push({
