@@ -5,9 +5,11 @@ import type {
   DictionaryProvider,
   DictionarySettings,
   OcrSettings,
+  RenshuuSettings,
   UpdateBookmarksSettingsInput,
   UpdateDictionarySettingsInput,
   UpdateOcrSettingsInput,
+  UpdateRenshuuSettingsInput,
 } from "@sentence-bank/types";
 import { db } from "@/db";
 import { settings } from "@/db/schema";
@@ -219,4 +221,38 @@ export async function updateDictionarySettings(
     await setSetting(DICTIONARY_KEYS.provider, input.provider ?? null);
   }
   return getDictionarySettings();
+}
+
+/** Settings key for the Renshuu API key. Stored server-side; overrides the `RENSHUU_API_KEY` env var. */
+const RENSHUU_SECRET_KEY = "renshuu.apiKey";
+
+/** The Renshuu API key: the DB-stored value, or the `RENSHUU_API_KEY` env fallback, or null. */
+export async function getRenshuuApiKey(): Promise<string | null> {
+  const stored = await getSettings([RENSHUU_SECRET_KEY]);
+  return stored[RENSHUU_SECRET_KEY] ?? process.env.RENSHUU_API_KEY?.trim() ?? null;
+}
+
+/** Masked view of the stored Renshuu key for the Settings UI — never exposes the raw secret. */
+export async function getRenshuuSettings(): Promise<RenshuuSettings> {
+  const key = await getRenshuuApiKey();
+  return {
+    apiKey: {
+      configured: Boolean(key),
+      hint: hint(key),
+    },
+  };
+}
+
+/**
+ * Apply a partial update to the stored Renshuu key. `apiKey` is tri-state: `undefined` leaves it
+ * unchanged, `""`/`null` clears it (reverting to the env fallback), any other string replaces it.
+ * Returns the new masked view.
+ */
+export async function updateRenshuuSettings(
+  input: UpdateRenshuuSettingsInput,
+): Promise<RenshuuSettings> {
+  if (input.apiKey !== undefined) {
+    await setSetting(RENSHUU_SECRET_KEY, input.apiKey?.trim() ?? null);
+  }
+  return getRenshuuSettings();
 }

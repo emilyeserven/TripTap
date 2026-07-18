@@ -20,6 +20,7 @@ export * from "./question-sheet.js";
 export * from "./reading-session.js";
 export * from "./sentence-mark.js";
 export * from "./shadowing-session.js";
+export * from "./renshuu.js";
 export * from "./tatoeba.js";
 export * from "./writing.js";
 export * from "./writing-prompt.js";
@@ -341,6 +342,23 @@ export interface OcrSettings {
 export interface UpdateOcrSettingsInput {
   ocrSpaceApiKey?: string | null;
   googleVisionApiKey?: string | null;
+}
+
+/**
+ * Masked view of the Renshuu API key, as returned by `GET /api/settings/renshuu`. The key is stored
+ * server-side (DB, overriding the `RENSHUU_API_KEY` env var); only its presence and a short hint are
+ * exposed. Backs the Renshuu example-sentence lookup.
+ */
+export interface RenshuuSettings {
+  apiKey: SecretState;
+}
+
+/**
+ * Payload for `PATCH /api/settings/renshuu`. The `apiKey` field is tri-state: `undefined`/omitted
+ * leaves the stored value unchanged, an empty string or `null` clears it, any other string replaces it.
+ */
+export interface UpdateRenshuuSettingsInput {
+  apiKey?: string | null;
 }
 
 /* ── Bookmarks tag/taxonomy integration ────────────────────────────────────────────────────────
