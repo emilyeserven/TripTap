@@ -2,6 +2,9 @@ import type {
   BookmarkRecord,
   BookmarkResource,
   BookmarkSection,
+  BookmarkSectionNode,
+  BookmarkSectionRef,
+  BookmarkSectionType,
   BookmarksTaxonomy,
   TagTermOption,
 } from "@sentence-bank/types";
@@ -98,6 +101,89 @@ export function flattenTimestampSections(raw: unknown): BookmarkSection[] {
   return out;
 }
 
+const SECTION_TYPES = new Set<BookmarkSectionType>(["name", "url", "page", "timestamp"]);
+
+/** A non-empty upstream string value, else null. */
+function strOrNull(v: unknown): string | null {
+  return typeof v === "string" && v !== "" ? v : null;
+}
+
+/**
+ * Flatten a bookmark's `sectionsValues[].sections[]` tree into an adjacency list ({@link BookmarkSectionNode}[]),
+ * preserving the hierarchy via `parentId` and keeping **every** entry type (name/url/page/timestamp) — unlike
+ * {@link flattenTimestampSections}, which keeps only timestamps. Entries without a string `id` are skipped
+ * (their id is what a reference stores). Feeds the chained-combobox section picker on the client.
+ */
+export function toSectionNodes(raw: unknown): BookmarkSectionNode[] {
+  const out: BookmarkSectionNode[] = [];
+  const walk = (sections: unknown, parentId: string | null): void => {
+    if (!Array.isArray(sections)) return;
+    for (const s of sections) {
+      if (!s || typeof s !== "object") continue;
+      const o = s as Record<string, unknown>;
+      if (typeof o.id !== "string") continue;
+      const type: BookmarkSectionType = SECTION_TYPES.has(o.type as BookmarkSectionType)
+        ? (o.type as BookmarkSectionType)
+        : "name";
+      out.push({
+        id: o.id,
+        name: typeof o.name === "string" ? o.name : "",
+        parentId,
+        type,
+        startValue: strOrNull(o.startValue),
+        endValue: strOrNull(o.endValue),
+        url: strOrNull(o.url),
+        tagIds: Array.isArray(o.tagIds) ? o.tagIds.filter((t): t is string => typeof t === "string") : [],
+      });
+      if (Array.isArray(o.children)) walk(o.children, o.id);
+    }
+  };
+  if (Array.isArray(raw)) {
+    for (const group of raw) {
+      if (group && typeof group === "object") walk((group as Record<string, unknown>).sections, null);
+    }
+  }
+  return out;
+}
+
+/** Display label for a section node: its name, else a type-appropriate fallback (mirrors the client). */
+function sectionNodeLabel(n: BookmarkSectionNode): string {
+  if (n.name) return n.name;
+  if (n.type === "timestamp" && n.startValue) return n.startValue;
+  if (n.type === "page" && n.startValue) return `p. ${n.startValue}`;
+  return n.type;
+}
+
+/**
+ * The sections of one upstream bookmark whose `tagIds` include `tagId`, each as a {@link BookmarkSectionRef}
+ * with a breadcrumb `label` built from its ancestor path. Backs the grammar note's "sections tagged with
+ * this grammar point" gather.
+ */
+export function matchSectionsByTag(raw: unknown, tagId: string): BookmarkSectionRef[] {
+  const nodes = toSectionNodes(raw);
+  const byId = new Map(nodes.map(n => [n.id, n]));
+  const breadcrumb = (node: BookmarkSectionNode): string => {
+    const parts: string[] = [];
+    const seen = new Set<string>();
+    let cur: BookmarkSectionNode | undefined = node;
+    while (cur && !seen.has(cur.id)) {
+      seen.add(cur.id);
+      parts.unshift(sectionNodeLabel(cur));
+      cur = cur.parentId ? byId.get(cur.parentId) : undefined;
+    }
+    return parts.join(" › ");
+  };
+  return nodes
+    .filter(n => n.tagIds.includes(tagId))
+    .map(n => ({
+      id: n.id,
+      label: breadcrumb(n),
+      type: n.type,
+      startValue: n.startValue,
+      endValue: n.endValue,
+    }));
+}
+
 /** Pull the fields we depend on from an upstream bookmark record, optionally flattening its sections. */
 export function toBookmarkRecord(raw: unknown, includeSections: boolean): BookmarkRecord | null {
   if (!raw || typeof raw !== "object") return null;
@@ -109,6 +195,7 @@ export function toBookmarkRecord(raw: unknown, includeSections: boolean): Bookma
     title,
     url: typeof o.url === "string" ? o.url : null,
     sections: includeSections ? flattenTimestampSections(o.sectionsValues) : [],
+    sectionTree: includeSections ? toSectionNodes(o.sectionsValues) : [],
   };
 }
 

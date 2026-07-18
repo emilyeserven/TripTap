@@ -85,6 +85,31 @@ const entriesSchema = {
   },
 } as const;
 
+/** A reference to one section of a bookmark (denormalized), or null. */
+const bookmarkSectionRefSchema = {
+  type: ["object", "null"],
+  additionalProperties: false,
+  required: ["id", "label", "type"],
+  properties: {
+    id: {
+      type: "string",
+    },
+    label: {
+      type: "string",
+    },
+    type: {
+      type: "string",
+      enum: ["name", "url", "page", "timestamp"],
+    },
+    startValue: {
+      type: ["string", "null"],
+    },
+    endValue: {
+      type: ["string", "null"],
+    },
+  },
+} as const;
+
 const createListeningSessionBody = {
   type: "object",
   required: ["title", "language"],
@@ -110,6 +135,7 @@ const createListeningSessionBody = {
     bookmarkUrl: {
       type: ["string", "null"],
     },
+    section: bookmarkSectionRefSchema,
     entries: entriesSchema,
     terms: termsSchema,
   },

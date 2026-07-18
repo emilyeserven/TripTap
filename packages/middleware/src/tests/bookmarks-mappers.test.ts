@@ -4,9 +4,11 @@ import { describe, it } from "node:test";
 import {
   dedupeBookmarksByTitle,
   flattenTimestampSections,
+  matchSectionsByTag,
   toBookmarkRecord,
   toOption,
   toOptions,
+  toSectionNodes,
   toTaxonomy,
 } from "@/services/bookmarks/mappers";
 
@@ -120,6 +122,7 @@ describe("bookmarks mappers", () => {
         {
           sections: [{
             type: "timestamp",
+            id: "s1",
             startValue: "0:00",
             endValue: "1:00",
           }],
@@ -127,10 +130,126 @@ describe("bookmarks mappers", () => {
       ],
     };
     assert.equal(toBookmarkRecord(raw, false)?.sections.length, 0);
+    assert.equal(toBookmarkRecord(raw, false)?.sectionTree.length, 0);
     assert.equal(toBookmarkRecord(raw, true)?.sections.length, 1);
+    assert.equal(toBookmarkRecord(raw, true)?.sectionTree.length, 1);
     assert.equal(toBookmarkRecord({
       title: "no id",
     }, true), null);
+  });
+
+  it("toSectionNodes keeps every entry type, preserving hierarchy via parentId", () => {
+    const nodes = toSectionNodes([
+      {
+        sections: [
+          {
+            type: "name",
+            id: "ch1",
+            name: "Chapter 1",
+            startValue: "",
+            children: [
+              {
+                type: "page",
+                id: "l1",
+                name: "Lesson 1",
+                startValue: "12",
+                tagIds: ["g1", 42, "g2"],
+              },
+              {
+                type: "timestamp",
+                id: "l2",
+                name: "Clip",
+                startValue: "1:00",
+                endValue: "2:00",
+              },
+            ],
+          },
+          {
+            type: "url",
+            id: "ext",
+            name: "External",
+            startValue: "",
+            url: "https://example.com/ch",
+          },
+        ],
+      },
+    ]);
+    assert.deepEqual(nodes.map(n => [n.id, n.parentId, n.type]), [
+      ["ch1", null, "name"],
+      ["l1", "ch1", "page"],
+      ["l2", "ch1", "timestamp"],
+      ["ext", null, "url"],
+    ]);
+    // Positional values + tagIds (non-strings dropped) carried through; empty strings become null.
+    assert.equal(nodes[1].startValue, "12");
+    assert.deepEqual(nodes[1].tagIds, ["g1", "g2"]);
+    assert.equal(nodes[2].endValue, "2:00");
+    assert.equal(nodes[0].startValue, null);
+    assert.equal(nodes[3].url, "https://example.com/ch");
+  });
+
+  it("toSectionNodes skips entries without a string id and unknown types default to name", () => {
+    const nodes = toSectionNodes([
+      {
+        sections: [
+          {
+            id: "ok",
+            type: "mystery",
+            name: "X",
+          },
+          {
+            type: "name",
+            name: "no id",
+          },
+        ],
+      },
+    ]);
+    assert.deepEqual(nodes.map(n => n.id), ["ok"]);
+    assert.equal(nodes[0].type, "name");
+  });
+
+  it("matchSectionsByTag returns tagged sections with breadcrumb labels", () => {
+    const sectionsValues = [
+      {
+        sections: [
+          {
+            type: "name",
+            id: "ch1",
+            name: "Chapter 1",
+            children: [
+              {
+                type: "page",
+                id: "l1",
+                name: "Lesson 1",
+                startValue: "12",
+                tagIds: ["grammar-x"],
+              },
+              {
+                type: "page",
+                id: "l2",
+                name: "Lesson 2",
+                startValue: "20",
+                tagIds: ["other"],
+              },
+            ],
+          },
+          {
+            type: "name",
+            id: "ch2",
+            name: "Chapter 2",
+            tagIds: ["grammar-x"],
+          },
+        ],
+      },
+    ];
+    const matches = matchSectionsByTag(sectionsValues, "grammar-x");
+    assert.deepEqual(matches.map(m => [m.id, m.label]), [
+      ["l1", "Chapter 1 › Lesson 1"],
+      ["ch2", "Chapter 2"],
+    ]);
+    assert.equal(matches[0].type, "page");
+    assert.equal(matches[0].startValue, "12");
+    assert.deepEqual(matchSectionsByTag(sectionsValues, "missing"), []);
   });
 
   it("dedupeBookmarksByTitle dedupes by id (first wins) and sorts by title", () => {
@@ -140,18 +259,21 @@ describe("bookmarks mappers", () => {
         title: "Zeta",
         url: null,
         sections: [],
+        sectionTree: [],
       },
       {
         id: "a",
         title: "Alpha",
         url: null,
         sections: [],
+        sectionTree: [],
       },
       {
         id: "b",
         title: "Zeta (dupe)",
         url: null,
         sections: [],
+        sectionTree: [],
       },
     ]);
     assert.deepEqual(deduped.map(b => b.title), ["Alpha", "Zeta"]);

@@ -10,9 +10,11 @@ import { PinnablePlayer } from "@/components/PinnablePlayer";
 import { SessionNotes } from "@/components/SessionNotes";
 import { StopwatchPlayer } from "@/components/StopwatchPlayer";
 import { TimestampModeToggle } from "@/components/TimestampModeToggle";
+import { Button } from "@/components/ui/button";
 import { YouTubePlayer } from "@/components/YouTubePlayer";
 import { useUpdateListeningSession } from "@/hooks/useListeningSessions";
-import { parseYouTubeId } from "@/lib/time";
+import { sectionRefStartMs } from "@/lib/sections";
+import { formatTime, parseYouTubeId } from "@/lib/time";
 
 /**
  * The interactive listen-and-shadow surface: the YouTube player (or stopwatch fallback) plus the
@@ -71,6 +73,30 @@ export function ListeningSessionView({
               open
               <ExternalLink className="size-3" />
             </a>
+          )}
+        </p>
+      )}
+
+      {session.section && (
+        <p
+          className="
+            flex flex-wrap items-center gap-2 text-sm text-muted-foreground
+          "
+        >
+          <span>
+            Section:
+            {" "}
+            <span className="font-medium text-foreground">{session.section.label}</span>
+          </span>
+          {sectionRefStartMs(session.section) !== null && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => playerRef.current?.seekToMs(sectionRefStartMs(session.section) ?? 0)}
+            >
+              Jump to {formatTime(sectionRefStartMs(session.section) ?? 0)}
+            </Button>
           )}
         </p>
       )}

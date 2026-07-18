@@ -11,7 +11,7 @@ import { Markdown } from "@/components/Markdown";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAiLessonContent } from "@/hooks/useAiLessons";
-import { useBookmarksByTag } from "@/hooks/useBookmarks";
+import { useBookmarksByTag, useBookmarkSectionsByTag } from "@/hooks/useBookmarks";
 import { useGrammarNotes, useUpdateGrammarNote } from "@/hooks/useGrammarNotes";
 import { useQuestionSheets } from "@/hooks/useQuestionSheets";
 import { useSentences } from "@/hooks/useSentences";
@@ -59,6 +59,8 @@ export function GrammarNoteView({
 
   // Auto-gathered from the bookmarks app: every bookmark carrying this note's Grammar Source tag.
   const tagBookmarks = useBookmarksByTag(note.tagId);
+  // Also auto-gathered: every bookmark *section* whose tags include this note's Grammar Source tag.
+  const tagSections = useBookmarkSectionsByTag(note.tagId);
 
   const sentenceById = useMemo(
     () => new Map((sentences.data ?? []).map(s => [s.id, s] as const)),
@@ -332,6 +334,9 @@ export function GrammarNoteView({
                       </a>
                     )
                     : <span className="font-medium">{r.title}</span>}
+                  {r.section
+                    ? <span className="text-muted-foreground">{" "}› {r.section.label}</span>
+                    : null}
                   {r.note
                     ? <span className="text-muted-foreground">{" "}— {r.note}</span>
                     : null}
@@ -442,6 +447,38 @@ export function GrammarNoteView({
                       )
                       : null}
                   </div>
+                </li>
+              ))}
+            </ul>
+          </Section>
+        )
+        : null}
+
+      {tagSections.data && tagSections.data.length > 0
+        ? (
+          <Section title={`Sections tagged “${note.tagName}”`}>
+            <ul className="space-y-1.5">
+              {tagSections.data.map(m => (
+                <li
+                  key={`${m.bookmarkId}:${m.section.id}`}
+                  className="text-sm"
+                >
+                  {m.bookmarkUrl
+                    ? (
+                      <a
+                        href={m.bookmarkUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="
+                          font-medium
+                          hover:underline
+                        "
+                      >
+                        {m.bookmarkTitle}
+                      </a>
+                    )
+                    : <span className="font-medium">{m.bookmarkTitle}</span>}
+                  <span className="text-muted-foreground">{" "}› {m.section.label}</span>
                 </li>
               ))}
             </ul>

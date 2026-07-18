@@ -89,6 +89,14 @@ export function ShadowingSessionView({
         </p>
       )}
 
+      {session.section && (
+        <p className="text-sm text-muted-foreground">
+          Section:
+          {" "}
+          <span className="font-medium text-foreground">{session.section.label}</span>
+        </p>
+      )}
+
       <div className="space-y-3 rounded-md border p-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-lg font-semibold">Segments</h2>

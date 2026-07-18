@@ -8,7 +8,7 @@
  * notes as a listening session. Consumed by both the Fastify API and the React client.
  */
 
-import type { SentenceTermRef } from "./index.js";
+import type { BookmarkSectionRef, SentenceTermRef } from "./index.js";
 import type { ListeningEntry } from "./listening-session.js";
 
 /** One looped practice segment of the video. `startMs`/`endMs` are playback positions in ms. */
@@ -34,6 +34,8 @@ export interface ShadowingSession {
   bookmarkId: string | null;
   bookmarkTitle: string | null;
   bookmarkUrl: string | null;
+  /** The specific section of {@link bookmarkId} this session focuses on; null when none. */
+  section: BookmarkSectionRef | null;
   /** Default number of replays per segment when a segment doesn't override it. */
   defaultMaxReplays: number;
   /** Default silent gap between reps (ms) when a segment doesn't override it. */
@@ -56,6 +58,7 @@ export interface CreateShadowingSessionInput {
   bookmarkId?: string | null;
   bookmarkTitle?: string | null;
   bookmarkUrl?: string | null;
+  section?: BookmarkSectionRef | null;
   /** Defaults to 3 server-side when omitted. */
   defaultMaxReplays?: number;
   /** Defaults to 0 server-side when omitted. */

@@ -67,6 +67,7 @@ export function QuestionSheetView({
               </span>
             )
             : null}
+          {qs.section ? <Badge variant="outline">Section: {qs.section.label}</Badge> : null}
           {qs.dueDate
             ? met
               ? (

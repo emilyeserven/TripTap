@@ -17,6 +17,7 @@ function toListeningSession(row: ListeningSessionRow): ListeningSession {
     bookmarkId: row.bookmarkId,
     bookmarkTitle: row.bookmarkTitle,
     bookmarkUrl: row.bookmarkUrl,
+    section: row.section ?? null,
     entries: row.entries ?? null,
     terms: row.terms ?? null,
     createdAt:
@@ -35,6 +36,7 @@ function toInsert(input: CreateListeningSessionInput) {
     bookmarkId: input.bookmarkId ?? null,
     bookmarkTitle: input.bookmarkTitle ?? null,
     bookmarkUrl: input.bookmarkUrl ?? null,
+    section: input.section ?? null,
     entries: input.entries ?? null,
     terms: input.terms ?? null,
   };

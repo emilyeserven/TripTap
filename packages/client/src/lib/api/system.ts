@@ -3,6 +3,7 @@ import type {
   BookmarkRecord,
   BookmarkResource,
   BookmarkResourceList,
+  BookmarkSectionMatch,
   BookmarksSettings,
   BookmarksTaxonomy,
   DictionaryEntry,
@@ -75,6 +76,9 @@ export const bookmarksApi = {
   record: (id: string) => request<BookmarkRecord>(`/bookmarks/records/${encodeURIComponent(id)}`),
   /** All bookmarks (with thumbnail + website) carrying a specific tag id (e.g. a grammar note's tag). */
   byTag: (tagId: string) => request<BookmarkResource[]>(`/bookmarks/by-tag/${encodeURIComponent(tagId)}`),
+  /** Every bookmark section whose upstream tags include a specific tag id (e.g. a grammar note's tag). */
+  sectionsByTag: (tagId: string) =>
+    request<BookmarkSectionMatch[]>(`/bookmarks/sections-by-tag/${encodeURIComponent(tagId)}`),
   /** The whole bookmarks collection (+ complexity-scale metadata) for the Collections browser. */
   resources: () => request<BookmarkResourceList>("/bookmarks/resources"),
 };

@@ -1,4 +1,4 @@
-import type { SentenceTermRef } from "./index.js";
+import type { BookmarkSectionRef, SentenceTermRef } from "./index.js";
 
 /** How a question sheet's answerable slots are laid out. */
 export type QuestionSheetLayout = "list" | "grid";
@@ -62,6 +62,8 @@ export interface QuestionSheet {
   bookmarkId: string | null;
   bookmarkTitle: string | null;
   bookmarkUrl: string | null;
+  /** The specific section of {@link bookmarkId} this sheet is drawn from (a narrower reference); null when none. */
+  section: BookmarkSectionRef | null;
   /** When this sheet should be answered by, if any. */
   dueDate: string | null;
   /** Skill areas this sheet exercises; empty when untagged. Answer sheets inherit these from here. */
@@ -88,6 +90,7 @@ export interface CreateQuestionSheetInput {
   bookmarkId?: string | null;
   bookmarkTitle?: string | null;
   bookmarkUrl?: string | null;
+  section?: BookmarkSectionRef | null;
   dueDate?: string | null;
   learningAreas?: LearningArea[];
   grammarTerms?: SentenceTermRef[] | null;
