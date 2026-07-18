@@ -8,8 +8,10 @@ import { Input } from "@/components/ui/input";
 import { newId } from "@/lib/id";
 
 /**
- * The Resources section of the grammar-note form: bookmarks from the Resources source with an
- * optional locator note. The parent owns the array and resolves a picked bookmark's title/url.
+ * The extra-resources section of the grammar-note form: one-off/temporary references (a bookmark from
+ * the Resources source, or a freeform entry) with an optional locator note. Most resources come
+ * automatically from the note's grammar tag (shown on the view), so this is only for ad-hoc extras.
+ * The parent owns the array and resolves a picked bookmark's title/url.
  */
 export function GrammarResourcesEditor({
   resources,
@@ -40,9 +42,10 @@ export function GrammarResourcesEditor({
     <section className="space-y-3">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-sm font-semibold">Resources</h3>
+          <h3 className="text-sm font-semibold">Extra resources</h3>
           <p className="text-xs text-muted-foreground">
-            Videos, textbook pages, and worksheets from the Resources source.
+            For one-off or temporary references. Bookmarks tagged with this grammar point already
+            appear automatically on the note — only add here what isn’t under the tag.
           </p>
         </div>
         <Button
