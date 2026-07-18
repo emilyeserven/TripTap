@@ -12,12 +12,15 @@ import { useSentenceVocab } from "@/hooks/useSentences";
 
 /**
  * The tool strip under a sentence: the lazy linked-vocab breakdown toggle, the furigana editor
- * toggle (kanji sentences only), and the furigana-failure warning.
+ * toggle (kanji sentences only), and the furigana-failure warning. `allowFuriganaEdit` is off where an
+ * edit surface (the Sentences-page edit dialog) already hosts the furigana editor.
  */
 export function SentenceCardTools({
   sentence,
+  allowFuriganaEdit = true,
 }: {
   sentence: Sentence;
+  allowFuriganaEdit?: boolean;
 }) {
   const [showBreak, setShowBreak] = useState(false);
   const [editFuri, setEditFuri] = useState(false);
@@ -49,7 +52,7 @@ export function SentenceCardTools({
             </Button>
           )
           : null}
-        {hasKanji
+        {allowFuriganaEdit && hasKanji
           ? (
             <Button
               variant="ghost"

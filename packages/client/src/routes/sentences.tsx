@@ -31,10 +31,9 @@ import {
 } from "@/components/ui/popover";
 import { useAiLessonContent } from "@/hooks/useAiLessons";
 import { usePageTitle } from "@/hooks/usePageTitle";
-import { useBackfillFurigana, useDeleteSentence, useSentences } from "@/hooks/useSentences";
+import { useBackfillFurigana, useSentences } from "@/hooks/useSentences";
 import { useSources } from "@/hooks/useSources";
 import { dedupeGrammarTags, grammarTermsOf } from "@/lib/grammar-links";
-import { useUiStore } from "@/stores/uiStore";
 
 export const Route = createFileRoute("/sentences")({
   component: SentencesPage,
@@ -49,14 +48,11 @@ function SentencesPage() {
     data: sentences, isLoading, error,
   } = useSentences();
   const backfillFurigana = useBackfillFurigana();
-  const deleteSentence = useDeleteSentence();
   const {
     data: sources,
   } = useSources();
   const sourceName = (id: string | null) =>
     (id ? sources?.find(s => s.id === id)?.name ?? null : null);
-  const showTranslations = useUiStore(s => s.showTranslations);
-  const toggleShowTranslations = useUiStore(s => s.toggleShowTranslations);
 
   const {
     data: content,
@@ -174,16 +170,6 @@ function SentencesPage() {
           <p className="text-sm text-muted-foreground">Your own sentences and those mined from AI Lessons.</p>
         </div>
         <div className="flex items-center gap-4">
-          <label
-            className="flex items-center gap-2 text-sm text-muted-foreground"
-          >
-            <input
-              type="checkbox"
-              checked={showTranslations}
-              onChange={toggleShowTranslations}
-            />
-            Show translations
-          </label>
           <FuriganaToggle />
           <Button
             variant="outline"
@@ -208,7 +194,12 @@ function SentencesPage() {
                   New sentence
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-2xl">
+              <DialogContent
+                className="
+                  max-h-[85vh] overflow-y-auto
+                  sm:max-w-2xl
+                "
+              >
                 <DialogHeader>
                   <DialogTitle>New sentence</DialogTitle>
                 </DialogHeader>
@@ -258,7 +249,12 @@ function SentencesPage() {
           if (!open) setEditing(null);
         }}
       >
-        <DialogContent className="sm:max-w-2xl">
+        <DialogContent
+          className="
+            max-h-[85vh] overflow-y-auto
+            sm:max-w-2xl
+          "
+        >
           <DialogHeader>
             <DialogTitle>Edit sentence</DialogTitle>
           </DialogHeader>
@@ -323,12 +319,10 @@ function SentencesPage() {
             <SentenceCard
               key={s.id}
               sentence={s}
-              showTranslation={showTranslations}
+              showTranslation={false}
               sourceName={sourceName(s.sourceId)}
               onEdit={setEditing}
-              onDelete={(id) => {
-                if (globalThis.confirm("Delete this sentence?")) deleteSentence.mutate(id);
-              }}
+              allowFuriganaEdit={false}
               onGrammarTagClick={setGrammarTag}
             />
           ))}

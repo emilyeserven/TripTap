@@ -40,7 +40,7 @@ describe("SentenceCard", () => {
     expect(screen.getByText("I drink coffee every morning.")).toBeInTheDocument();
   });
 
-  it("hides the translation when showTranslation is false", () => {
+  it("blurs the translation behind a reveal control when showTranslation is false", () => {
     renderCard(
       <SentenceCard
         sentence={sentence}
@@ -48,7 +48,12 @@ describe("SentenceCard", () => {
       />,
     );
     expect(screen.getByText("毎朝コーヒーを飲みます。")).toBeInTheDocument();
-    expect(screen.queryByText("I drink coffee every morning.")).not.toBeInTheDocument();
+    // The translation stays in the DOM but blurred behind the standard reveal control (study mode).
+    const reveal = screen.getByRole("button", {
+      name: "Reveal translation",
+    });
+    expect(reveal).toHaveTextContent("I drink coffee every morning.");
+    expect(reveal.className).toContain("blur-[3px]");
   });
 
   it("groups term badges by channel and defaults uncategorized terms to Vocabulary", () => {
