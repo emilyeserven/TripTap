@@ -8,11 +8,14 @@ import type {
   DictionarySettings,
   ExampleSentence,
   OcrSettings,
+  RenshuuExampleSentence,
+  RenshuuSettings,
   SentenceTermCategory,
   TagTermOption,
   UpdateBookmarksSettingsInput,
   UpdateDictionarySettingsInput,
   UpdateOcrSettingsInput,
+  UpdateRenshuuSettingsInput,
   MediaStorageStatus,
   MediaConnectionTestResult,
 } from "@sentence-bank/types";
@@ -35,6 +38,12 @@ export const settingsApi = {
   getDictionary: () => request<DictionarySettings>("/settings/dictionary"),
   updateDictionary: (input: UpdateDictionarySettingsInput) =>
     request<DictionarySettings>("/settings/dictionary", {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    }),
+  getRenshuu: () => request<RenshuuSettings>("/settings/renshuu"),
+  updateRenshuu: (input: UpdateRenshuuSettingsInput) =>
+    request<RenshuuSettings>("/settings/renshuu", {
       method: "PATCH",
       body: JSON.stringify(input),
     }),
@@ -78,5 +87,13 @@ export const tatoebaApi = {
   search: (query: string, limit = 5) =>
     request<ExampleSentence[]>(
       `/tatoeba/search?query=${encodeURIComponent(query)}&limit=${limit}`,
+    ),
+};
+
+/** Proxy to Renshuu example-sentence search (server-side, using the learner's stored API key). */
+export const renshuuApi = {
+  search: (query: string, limit = 10) =>
+    request<RenshuuExampleSentence[]>(
+      `/renshuu/search?query=${encodeURIComponent(query)}&limit=${limit}`,
     ),
 };

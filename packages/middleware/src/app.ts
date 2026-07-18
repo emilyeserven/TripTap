@@ -22,6 +22,7 @@ import { parseTemplateRoutes } from "@/routes/parse-templates";
 import { practiceSentenceRoutes } from "@/routes/practice-sentences";
 import { questionSheetRoutes } from "@/routes/question-sheets";
 import { readingSessionsRoutes } from "@/routes/reading-sessions";
+import { renshuuRoutes } from "@/routes/renshuu";
 import { sentenceRoutes } from "@/routes/sentences";
 import { settingsRoutes } from "@/routes/settings";
 import { shadowingSessionsRoutes } from "@/routes/shadowing-sessions";
@@ -165,6 +166,10 @@ export async function buildApp(): Promise<FastifyInstance> {
           name: "tatoeba",
           description: "Tatoeba example-sentence lookup proxy",
         },
+        {
+          name: "renshuu",
+          description: "Renshuu example-sentence lookup proxy",
+        },
       ],
     },
   });
@@ -176,6 +181,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(bookmarksRoutes);
   await app.register(dictionaryRoutes);
   await app.register(tatoebaRoutes);
+  await app.register(renshuuRoutes);
   await app.register(sentenceRoutes);
   await app.register(practiceSentenceRoutes);
   await app.register(mySentenceRoutes);

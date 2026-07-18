@@ -9,6 +9,8 @@ export interface FetchJsonOptions {
   method?: string;
   /** JSON-serializable request body; when present, sets `Content-Type: application/json`. */
   body?: unknown;
+  /** Extra request headers, e.g. an `Authorization` bearer token. Merged over the defaults. */
+  headers?: Record<string, string>;
 }
 
 /**
@@ -40,6 +42,7 @@ export async function fetchJsonWithTimeout<T>(
             "Content-Type": "application/json",
           }
           : {}),
+        ...opts.headers,
       },
       ...(hasBody
         ? {

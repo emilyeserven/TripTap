@@ -2,6 +2,7 @@ import type {
   UpdateBookmarksSettingsInput,
   UpdateDictionarySettingsInput,
   UpdateOcrSettingsInput,
+  UpdateRenshuuSettingsInput,
 } from "@sentence-bank/types";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -9,6 +10,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { settingsApi } from "../lib/api";
 
 const OCR_SETTINGS_KEY = ["settings", "ocr"] as const;
+const RENSHUU_SETTINGS_KEY = ["settings", "renshuu"] as const;
 const BOOKMARKS_SETTINGS_KEY = ["settings", "bookmarks"] as const;
 const DICTIONARY_SETTINGS_KEY = ["settings", "dictionary"] as const;
 const MEDIA_SETTINGS_KEY = ["settings", "media"] as const;
@@ -41,6 +43,22 @@ export function useUpdateOcrSettings() {
   return useMutation({
     mutationFn: (input: UpdateOcrSettingsInput) => settingsApi.updateOcr(input),
     onSuccess: data => queryClient.setQueryData(OCR_SETTINGS_KEY, data),
+  });
+}
+
+/** Masked view of the stored Renshuu API key (presence + hint, never the raw secret). */
+export function useRenshuuSettings() {
+  return useQuery({
+    queryKey: RENSHUU_SETTINGS_KEY,
+    queryFn: settingsApi.getRenshuu,
+  });
+}
+
+export function useUpdateRenshuuSettings() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: UpdateRenshuuSettingsInput) => settingsApi.updateRenshuu(input),
+    onSuccess: data => queryClient.setQueryData(RENSHUU_SETTINGS_KEY, data),
   });
 }
 

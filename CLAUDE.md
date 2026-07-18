@@ -74,7 +74,8 @@ Multi-table or external-proxy features use a service **directory** instead of a 
 | Captures / OCR | `capture.tsx`, `captures.*` | `captures.ts`, `ocr.ts`, `parse-templates.ts` | Image → OCR → cleaned-blocks workbench → mine sentences/vocab. |
 | Anki / Renshuu | `anki.tsx`, `renshuu.tsx` | *(client-only; `lib/anki.ts`, `lib/renshuu.ts`)* | Export bank rows to Anki TSV / Renshuu bulk-import. |
 | Migaku Import | `migaku-import.*` | `migaku-import.ts` → `services/migaku/` | Upload a Migaku/Anki `.apkg`, review parsed cards, commit to sentences/vocab with media in S3/Garage (`services/media/`). |
-| Settings | `settings.tsx` | `settings.ts` | OCR keys (masked) + bookmarks channel config; DB overrides env. |
+| Settings | `settings.tsx` | `settings.ts` | OCR keys + Renshuu key (masked) + bookmarks channel config; DB overrides env. |
+| Renshuu examples | *(Renshuu tab in the drill-mistake "Find examples" picker)* | `renshuu.ts` → `services/renshuu/` | Read-only proxy to renshuu.org's example-sentence bank (`/v1/reibun/search`, Bearer key); import a result into the bank. |
 | Bookmarks | *(pickers/cards in forms + settings)* | `bookmarks.ts` → `services/bookmarks/` | Proxy to the external bookmarks app for tag/taxonomy terms (see below). |
 
 Root layout is `routes/__root.tsx`; the homepage/dashboard is `routes/index.tsx`. The Swagger UI at
@@ -171,6 +172,8 @@ Deploy via Coolify using only `DATABASE_URL` (see `README.md`).
 | `OCR_PROVIDERS` | middleware | Comma-separated OCR backend order/selection (`self-hosted`, `ocr-space`, `google-vision`). Unset → all configured backends, self-hosted first. |
 | `BOOKMARKS_API_URL` | middleware | Base URL of the external bookmarks tag/taxonomy API borrowed to tag sentences. Overridden by the Settings-page value stored in the DB; unset falls back to a built-in default. Must be reachable from the middleware (e.g. same Tailnet). |
 | `TATOEBA_API_URL` | middleware | Optional override for the Tatoeba example-sentence API base URL (default `https://api.tatoeba.org`). Backs "Find examples" when adding a My Sentence from a drill mistake. No auth. |
+| `RENSHUU_API_KEY` | middleware | The learner's renshuu.org API key, backing the "Renshuu" tab of "Find examples" on a drill mistake (`/api/renshuu/search`). The Settings-page value (masked, DB-stored) overrides this; both optional. Unset → 503. |
+| `RENSHUU_API_URL` | middleware | Optional override for the Renshuu API base URL (default `https://api.renshuu.org`; the service calls `/v1/reibun/search` with a Bearer token). |
 | `S3_ENDPOINT` | middleware | S3-compatible (Garage) endpoint storing audio/image from Migaku `.apkg` imports. Unset → the Migaku import feature returns 503. |
 | `S3_ACCESS_KEY_ID` / `S3_SECRET_ACCESS_KEY` | middleware | Credentials for the media bucket. Scope the key to TripTap's own bucket. |
 | `S3_BUCKET` | middleware | Dedicated media bucket (e.g. `triptap-media`); the reconciliation sweep deletes anything unreferenced in it, so it must be TripTap-only. |

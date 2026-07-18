@@ -3,14 +3,17 @@ import type {
   UpdateBookmarksSettingsInput,
   UpdateDictionarySettingsInput,
   UpdateOcrSettingsInput,
+  UpdateRenshuuSettingsInput,
 } from "@sentence-bank/types";
 import {
   getBookmarksSettings,
   getDictionarySettings,
   getOcrSettings,
+  getRenshuuSettings,
   updateBookmarksSettings,
   updateDictionarySettings,
   updateOcrSettings,
+  updateRenshuuSettings,
 } from "@/services/settings";
 import { mediaStatus, testMediaConnection } from "@/services/media";
 
@@ -65,6 +68,16 @@ const updateBookmarksSettingsBody = {
   },
 } as const;
 
+const updateRenshuuSettingsBody = {
+  type: "object",
+  additionalProperties: false,
+  properties: {
+    apiKey: {
+      type: ["string", "null"],
+    },
+  },
+} as const;
+
 const updateDictionarySettingsBody = {
   type: "object",
   additionalProperties: false,
@@ -112,6 +125,21 @@ export async function settingsRoutes(app: FastifyInstance): Promise<void> {
     },
   }, async (req) => {
     return updateBookmarksSettings(req.body as UpdateBookmarksSettingsInput);
+  });
+
+  app.get("/api/settings/renshuu", {
+    schema: {
+      tags: ["settings"],
+    },
+  }, async () => getRenshuuSettings());
+
+  app.patch("/api/settings/renshuu", {
+    schema: {
+      tags: ["settings"],
+      body: updateRenshuuSettingsBody,
+    },
+  }, async (req) => {
+    return updateRenshuuSettings(req.body as UpdateRenshuuSettingsInput);
   });
 
   app.get("/api/settings/media", {
