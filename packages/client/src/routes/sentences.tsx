@@ -1,8 +1,10 @@
+import type { Sentence } from "@sentence-bank/types";
+
 import { useMemo, useState } from "react";
 
 import { deckNamesFromTags, hasDeckTag } from "@sentence-bank/types";
 import { createFileRoute } from "@tanstack/react-router";
-import { Plus } from "lucide-react";
+import { ChevronDown, Download, Plus } from "lucide-react";
 
 import { uniqueAiLessons } from "@/components/ai-lesson/ai-lesson-filter-utils";
 import { FuriganaScope } from "@/components/ai-lesson/FuriganaScope";
@@ -22,6 +24,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { useAiLessonContent } from "@/hooks/useAiLessons";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useBackfillFurigana, useDeleteSentence, useSentences } from "@/hooks/useSentences";
@@ -62,6 +69,8 @@ function SentencesPage() {
   } = Route.useSearch();
 
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [tatoebaOpen, setTatoebaOpen] = useState(false);
+  const [editing, setEditing] = useState<Sentence | null>(null);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all"); // "all" | "mine" | AI Lesson slug
   const [sourceFilter, setSourceFilter] = useState(sourceParam ?? "all");
@@ -188,26 +197,81 @@ function SentencesPage() {
                 ? `Furigana +${backfillFurigana.data.updated}`
                 : "Generate furigana"}
           </Button>
-          <TatoebaImportDialog />
-          <Dialog
-            open={dialogOpen}
-            onOpenChange={setDialogOpen}
-          >
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="size-4" />
-                New sentence
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-2xl">
-              <DialogHeader>
-                <DialogTitle>New sentence</DialogTitle>
-              </DialogHeader>
-              <SentenceForm onSuccess={() => setDialogOpen(false)} />
-            </DialogContent>
-          </Dialog>
+          <div className="flex items-center gap-1">
+            <Dialog
+              open={dialogOpen}
+              onOpenChange={setDialogOpen}
+            >
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="size-4" />
+                  New sentence
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle>New sentence</DialogTitle>
+                </DialogHeader>
+                <SentenceForm onSuccess={() => setDialogOpen(false)} />
+              </DialogContent>
+            </Dialog>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  aria-label="More sentence options"
+                >
+                  <ChevronDown className="size-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent
+                align="end"
+                className="w-56 p-1"
+              >
+                <button
+                  type="button"
+                  onClick={() => setTatoebaOpen(true)}
+                  className="
+                    flex w-full items-center gap-2 rounded-sm px-2 py-1.5
+                    text-sm
+                    hover:bg-muted
+                  "
+                >
+                  <Download className="size-4" />
+                  Import from Tatoeba
+                </button>
+              </PopoverContent>
+            </Popover>
+          </div>
         </div>
       </div>
+
+      <TatoebaImportDialog
+        open={tatoebaOpen}
+        onOpenChange={setTatoebaOpen}
+      />
+
+      <Dialog
+        open={editing !== null}
+        onOpenChange={(open) => {
+          if (!open) setEditing(null);
+        }}
+      >
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Edit sentence</DialogTitle>
+          </DialogHeader>
+          {editing
+            ? (
+              <SentenceForm
+                sentence={editing}
+                onSuccess={() => setEditing(null)}
+              />
+            )
+            : null}
+        </DialogContent>
+      </Dialog>
 
       <Input
         value={search}
@@ -261,6 +325,7 @@ function SentencesPage() {
               sentence={s}
               showTranslation={showTranslations}
               sourceName={sourceName(s.sourceId)}
+              onEdit={setEditing}
               onDelete={(id) => {
                 if (globalThis.confirm("Delete this sentence?")) deleteSentence.mutate(id);
               }}
