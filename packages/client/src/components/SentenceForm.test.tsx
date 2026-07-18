@@ -7,6 +7,7 @@ import { SentenceForm } from "./SentenceForm";
 
 const updateMock = vi.fn();
 const createMock = vi.fn();
+const deleteMock = vi.fn();
 
 vi.mock("../hooks/useSentences", () => ({
   useCreateSentence: () => ({
@@ -18,6 +19,18 @@ vi.mock("../hooks/useSentences", () => ({
     mutateAsync: updateMock,
     isError: false,
     error: null,
+  }),
+  useDeleteSentence: () => ({
+    mutate: deleteMock,
+    isPending: false,
+  }),
+  useRegenerateFurigana: () => ({
+    mutate: vi.fn(),
+    isPending: false,
+  }),
+  // Backs the tag-combobox options; empty list is fine (selected tags still show).
+  useSentences: () => ({
+    data: [],
   }),
 }));
 
@@ -66,39 +79,54 @@ describe("SentenceForm (edit mode)", () => {
   beforeEach(() => {
     updateMock.mockReset();
     createMock.mockReset();
+    deleteMock.mockReset();
   });
 
-  it("hydrates the tags field and saves via the update mutation, preserving grammar terms", async () => {
+  it("hydrates tags as combobox badges, exposes Delete, and saves via update preserving grammar terms", async () => {
     render(
       <SentenceForm sentence={sentence} />,
     );
 
-    // The free-text tags are hydrated from the existing sentence.
-    const tags = screen.getByDisplayValue("verbs, routine");
-    expect(tags).toBeInTheDocument();
+    // The free-text tags are hydrated as selectable badges (a combobox, not a raw text field).
+    expect(screen.getByText("verbs")).toBeInTheDocument();
+    expect(screen.getByText("routine")).toBeInTheDocument();
 
-    // Edit mode uses a "Save changes" affordance rather than "Add sentence".
+    // Edit mode exposes Delete and uses a "Save changes" affordance.
+    expect(screen.getByRole("button", {
+      name: "Delete",
+    })).toBeInTheDocument();
     const save = screen.getByRole("button", {
       name: "Save changes",
     });
 
-    fireEvent.change(tags, {
-      target: {
-        value: "verbs, routine, daily",
-      },
-    });
     fireEvent.click(save);
 
     await waitFor(() => expect(updateMock).toHaveBeenCalledTimes(1));
     expect(createMock).not.toHaveBeenCalled();
     const [arg] = updateMock.mock.calls[0];
     expect(arg.id).toBe(sentence.id);
-    expect(arg.input.tags).toBe("verbs, routine, daily");
+    expect(arg.input.tags).toBe("verbs, routine");
     expect(arg.input.terms).toEqual([
       expect.objectContaining({
         id: "g1",
         category: "grammar",
       }),
     ]);
+  });
+
+  it("deletes the sentence (after confirm) via the delete mutation", () => {
+    const confirmSpy = vi.spyOn(globalThis, "confirm").mockReturnValue(true);
+    render(
+      <SentenceForm sentence={sentence} />,
+    );
+
+    fireEvent.click(screen.getByRole("button", {
+      name: "Delete",
+    }));
+
+    expect(confirmSpy).toHaveBeenCalledTimes(1);
+    expect(deleteMock).toHaveBeenCalledTimes(1);
+    expect(deleteMock.mock.calls[0][0]).toBe(sentence.id);
+    confirmSpy.mockRestore();
   });
 });

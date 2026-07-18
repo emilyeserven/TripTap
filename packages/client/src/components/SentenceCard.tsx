@@ -23,10 +23,13 @@ interface SentenceCardProps {
   onDelete?: (id: string) => void;
   /** When provided, grammar-tag badges become filter buttons (surfaces the grammar↔sentence link). */
   onGrammarTagClick?: (termId: string) => void;
+  /** Off where an edit surface already hosts the furigana editor (the Sentences-page edit dialog). */
+  allowFuriganaEdit?: boolean;
 }
 
 export function SentenceCard({
   sentence, showTranslation = true, sourceName, onEdit, onDelete, onGrammarTagClick,
+  allowFuriganaEdit = true,
 }: SentenceCardProps) {
   const hasMedia = sentence.hasAudio || sentence.hasImage;
   return (
@@ -101,7 +104,10 @@ export function SentenceCard({
 
             {sentence.notes ? <p className="text-sm">{sentence.notes}</p> : null}
 
-            <SentenceCardTools sentence={sentence} />
+            <SentenceCardTools
+              sentence={sentence}
+              allowFuriganaEdit={allowFuriganaEdit}
+            />
           </div>
           {onDelete && hasMedia
             ? (
