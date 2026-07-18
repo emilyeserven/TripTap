@@ -6,23 +6,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useExampleSentences } from "@/hooks/useTatoeba";
 
-/** What a picked example passes back to the form: the JP text, its EN gloss, and the Tatoeba id. */
-export interface PickedExample {
-  id: number;
-  text: string;
-  translation: string | null;
-}
-
 /**
- * Searches Tatoeba for example sentences containing a word and lets the user pick one to seed a
- * sentence. Sentences are CC-BY 2.0 FR — the footer credits Tatoeba.
+ * Searches Tatoeba for real Japanese example sentences containing a word — a read-only reference
+ * while reviewing a drill mistake. On purpose there's no "use this" action: the sentences stay
+ * Tatoeba's (CC-BY 2.0 FR, credited in the footer), so we don't copy them into the learner's own
+ * sentences. Seeds its search box from `defaultQuery` (the mistake's Japanese).
  */
 export function TatoebaExamplePicker({
   defaultQuery,
-  onUse,
 }: {
   defaultQuery: string;
-  onUse: (example: PickedExample) => void;
 }) {
   const [query, setQuery] = useState(defaultQuery);
   const search = useExampleSentences();
@@ -69,30 +62,12 @@ export function TatoebaExamplePicker({
             {results.map(r => (
               <li
                 key={r.id}
-                className="
-                  flex items-start justify-between gap-3 rounded-sm p-2
-                  hover:bg-muted/50
-                "
+                className="rounded-sm p-2"
               >
-                <div className="min-w-0">
-                  <p lang="ja">{r.text}</p>
-                  {r.translation
-                    ? <p className="text-sm text-muted-foreground">{r.translation}</p>
-                    : null}
-                </div>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="ghost"
-                  className="shrink-0"
-                  onClick={() => onUse({
-                    id: r.id,
-                    text: r.text,
-                    translation: r.translation,
-                  })}
-                >
-                  Use
-                </Button>
+                <p lang="ja">{r.text}</p>
+                {r.translation
+                  ? <p className="text-sm text-muted-foreground">{r.translation}</p>
+                  : null}
               </li>
             ))}
           </ul>
