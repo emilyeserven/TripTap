@@ -20,8 +20,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { useBookmarkRecord } from "@/hooks/useBookmarks";
 import { useCreateQuestionSheet, useUpdateQuestionSheet } from "@/hooks/useQuestionSheets";
-import { sectionRefPage } from "@/lib/sections";
+import { resolveSectionPage } from "@/lib/sections";
 
 /**
  * Create/edit form for a Question Sheet — the reusable template of textbook/worksheet questions.
@@ -73,10 +74,14 @@ export function QuestionSheetForm({
     if (derived) setTitle(derived);
   }, [bookmarkTitle, page, titleTouched]);
 
-  // Picking a page-type section pre-fills the page field (unless the user has typed their own page).
+  // The picked bookmark's full Sections tree (shared cache with the picker); used to resolve a section's
+  // page, walking up to a paged parent when the section itself has none.
+  const sectionTree = useBookmarkRecord(bookmarkId).data?.sectionTree ?? [];
+
+  // Picking a section pre-fills the page field (unless the user has typed their own page).
   const handlePickSection = (ref: BookmarkSectionRef | null) => {
     setSection(ref);
-    const derivedPage = sectionRefPage(ref);
+    const derivedPage = resolveSectionPage(sectionTree, ref?.id ?? null);
     if (derivedPage && !pageTouched) setPage(derivedPage);
   };
 

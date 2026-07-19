@@ -1,8 +1,8 @@
-import type { BookmarkSectionRef } from "@sentence-bank/types";
+import type { BookmarkSectionNode, BookmarkSectionRef } from "@sentence-bank/types";
 
 import { describe, expect, it } from "vitest";
 
-import { sectionRefPage, sectionRefStartMs, sectionRefToSegment } from "./sections";
+import { resolveSectionPage, sectionRefStartMs, sectionRefToSegment } from "./sections";
 
 function ref(over: Partial<BookmarkSectionRef>): BookmarkSectionRef {
   return {
@@ -11,6 +11,19 @@ function ref(over: Partial<BookmarkSectionRef>): BookmarkSectionRef {
     type: "timestamp",
     startValue: "1:00",
     endValue: "2:00",
+    ...over,
+  };
+}
+
+function node(over: Partial<BookmarkSectionNode> & { id: string }): BookmarkSectionNode {
+  return {
+    name: over.id,
+    parentId: null,
+    type: "name",
+    startValue: null,
+    endValue: null,
+    url: null,
+    tagIds: [],
     ...over,
   };
 }
@@ -64,34 +77,45 @@ describe("sectionRefStartMs", () => {
   });
 });
 
-describe("sectionRefPage", () => {
-  it("returns the page for a single-page section and a range when end differs", () => {
-    expect(sectionRefPage(ref({
+describe("resolveSectionPage", () => {
+  // Unit 3 (p.12–14) has two sub-items with no page of their own; a standalone timestamp clip has none.
+  const NODES: BookmarkSectionNode[] = [
+    node({
+      id: "unit3",
       type: "page",
       startValue: "12",
-      endValue: null,
-    }))).toBe("12");
-    expect(sectionRefPage(ref({
+      endValue: "14",
+    }),
+    node({
+      id: "hagaki",
+      parentId: "unit3",
+    }),
+    node({
+      id: "single",
+      parentId: "unit3",
       type: "page",
-      startValue: "12",
-      endValue: "20",
-    }))).toBe("12–20");
-    expect(sectionRefPage(ref({
-      type: "page",
-      startValue: "12",
-      endValue: "12",
-    }))).toBe("12");
-  });
-
-  it("returns null for non-page sections or a page section without a start", () => {
-    expect(sectionRefPage(null)).toBeNull();
-    expect(sectionRefPage(ref({
+      startValue: "13",
+    }),
+    node({
+      id: "clip",
       type: "timestamp",
       startValue: "1:00",
-    }))).toBeNull();
-    expect(sectionRefPage(ref({
-      type: "page",
-      startValue: null,
-    }))).toBeNull();
+      endValue: "2:00",
+    }),
+  ];
+
+  it("uses a page section's own page (single value or range)", () => {
+    expect(resolveSectionPage(NODES, "unit3")).toBe("12–14");
+    expect(resolveSectionPage(NODES, "single")).toBe("13");
+  });
+
+  it("inherits the nearest paged ancestor's page when the section has none", () => {
+    expect(resolveSectionPage(NODES, "hagaki")).toBe("12–14");
+  });
+
+  it("returns null when neither the section nor any ancestor is paged", () => {
+    expect(resolveSectionPage(NODES, "clip")).toBeNull();
+    expect(resolveSectionPage(NODES, null)).toBeNull();
+    expect(resolveSectionPage(NODES, "missing")).toBeNull();
   });
 });
