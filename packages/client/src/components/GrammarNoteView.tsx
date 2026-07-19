@@ -1,4 +1,4 @@
-import type { GrammarNote } from "@sentence-bank/types";
+import type { BookmarkSectionMatch, BookmarkSectionRef, GrammarNote } from "@sentence-bank/types";
 
 import { useMemo } from "react";
 
@@ -61,6 +61,28 @@ export function GrammarNoteView({
   const tagBookmarks = useBookmarksByTag(note.tagId);
   // Also auto-gathered: every bookmark *section* whose tags include this note's Grammar Source tag.
   const tagSections = useBookmarkSectionsByTag(note.tagId);
+  // Group the tagged sections by their bookmark so each bookmark is one card listing its sections,
+  // rather than repeating the bookmark title per section. Upstream order (bookmark title, then section
+  // label) is preserved by the insertion-ordered Map.
+  const sectionsByBookmark = useMemo(() => {
+    const groups = new Map<string, {
+      bookmarkId: string;
+      bookmarkTitle: string;
+      bookmarkUrl: string | null;
+      sections: BookmarkSectionRef[];
+    }>();
+    for (const m of (tagSections.data ?? []) as BookmarkSectionMatch[]) {
+      const group = groups.get(m.bookmarkId);
+      if (group) group.sections.push(m.section);
+      else groups.set(m.bookmarkId, {
+        bookmarkId: m.bookmarkId,
+        bookmarkTitle: m.bookmarkTitle,
+        bookmarkUrl: m.bookmarkUrl,
+        sections: [m.section],
+      });
+    }
+    return [...groups.values()];
+  }, [tagSections.data]);
 
   const sentenceById = useMemo(
     () => new Map((sentences.data ?? []).map(s => [s.id, s] as const)),
@@ -454,31 +476,38 @@ export function GrammarNoteView({
         )
         : null}
 
-      {tagSections.data && tagSections.data.length > 0
+      {sectionsByBookmark.length > 0
         ? (
           <Section title={`Sections tagged “${note.tagName}”`}>
-            <ul className="space-y-1.5">
-              {tagSections.data.map(m => (
+            <ul className="space-y-2">
+              {sectionsByBookmark.map(group => (
                 <li
-                  key={`${m.bookmarkId}:${m.section.id}`}
-                  className="text-sm"
+                  key={group.bookmarkId}
+                  className="space-y-1 rounded-md border p-3"
                 >
-                  {m.bookmarkUrl
+                  {group.bookmarkUrl
                     ? (
                       <a
-                        href={m.bookmarkUrl}
+                        href={group.bookmarkUrl}
                         target="_blank"
                         rel="noreferrer"
                         className="
-                          font-medium
+                          flex items-center gap-1 font-medium
                           hover:underline
                         "
                       >
-                        {m.bookmarkTitle}
+                        <span className="truncate">{group.bookmarkTitle}</span>
+                        <ExternalLink
+                          className="size-3.5 shrink-0 text-muted-foreground"
+                        />
                       </a>
                     )
-                    : <span className="font-medium">{m.bookmarkTitle}</span>}
-                  <span className="text-muted-foreground">{" "}› {m.section.label}</span>
+                    : <span className="block truncate font-medium">{group.bookmarkTitle}</span>}
+                  <ul className="space-y-0.5 text-sm text-muted-foreground">
+                    {group.sections.map(section => (
+                      <li key={section.id}>› {section.label}</li>
+                    ))}
+                  </ul>
                 </li>
               ))}
             </ul>
