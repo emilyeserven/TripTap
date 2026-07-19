@@ -233,6 +233,7 @@ export async function listSectionsByTag(tagId: string): Promise<BookmarkSectionM
         bookmarkTitle: resource?.title ?? (typeof b.title === "string" ? b.title : b.id),
         bookmarkUrl: typeof b.url === "string" ? b.url : null,
         imageUrl: resource?.imageUrl ?? null,
+        tagIds: resource?.tagIds ?? [],
         section,
       });
     }

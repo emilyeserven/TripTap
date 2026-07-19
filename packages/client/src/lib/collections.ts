@@ -1,4 +1,6 @@
-import type { BookmarkResource, ComplexityScale } from "@sentence-bank/types";
+import type { BookmarkResource, ComplexityScale, LearningArea, LearningAreaTagMap } from "@sentence-bank/types";
+
+import { LEARNING_AREAS } from "@sentence-bank/types";
 
 /** Sentinel for the "no website filter" option (mirrors `lib/answer-sheets.ts`'s `ALL_FILTER`). */
 export const ALL_FILTER = "all";
@@ -69,6 +71,58 @@ export function matchesMediaType(r: BookmarkResource, mediaType: string): boolea
 /** True when a resource has a runtime — i.e. it's audio/video to listen to or shadow. */
 export function hasRuntime(r: BookmarkResource): boolean {
   return r.runtimeSeconds != null;
+}
+
+/** The learning areas a resource carries: the mapped areas whose tag is on the resource. */
+export function resourceLearningAreas(tagIds: string[], map: LearningAreaTagMap): LearningArea[] {
+  return LEARNING_AREAS.filter((area) => {
+    const tag = map[area];
+    return tag ? tagIds.includes(tag.id) : false;
+  });
+}
+
+/** The learning areas that have a tag configured, as filter options (empty when nothing is mapped). */
+export function learningAreaFilterOptions(map: LearningAreaTagMap): FilterOption[] {
+  return LEARNING_AREAS.filter(area => map[area]).map(area => ({
+    value: area,
+    label: area,
+  }));
+}
+
+/** True when a resource matches the selected learning areas (empty selection passes; ANY match otherwise). */
+export function matchesLearningAreas(
+  r: BookmarkResource,
+  selected: string[],
+  map: LearningAreaTagMap,
+): boolean {
+  if (selected.length === 0) return true;
+  const areas = resourceLearningAreas(r.tagIds, map);
+  return selected.some(area => areas.includes(area as LearningArea));
+}
+
+/** The session action a learning area starts on a Collections card; areas without one (Grammar/Vocab) are absent. */
+export const LEARNING_AREA_ACTION: Partial<Record<LearningArea, "listening" | "shadowing" | "reading" | "writing">> = {
+  Listening: "listening",
+  Speaking: "shadowing",
+  Reading: "reading",
+  Writing: "writing",
+};
+
+/**
+ * The session-start buttons a resource card should offer, derived from its learning areas
+ * (Listening→listening, Speaking→shadowing, Reading→reading, Writing→writing). Falls back to the
+ * runtime heuristic (audio/video → listening+shadowing, else reading+writing) when the resource has no
+ * area that maps to an action, so untagged resources still get sensible buttons.
+ */
+export function resourceActions(
+  r: BookmarkResource,
+  map: LearningAreaTagMap,
+): ("listening" | "shadowing" | "reading" | "writing")[] {
+  const fromAreas = resourceLearningAreas(r.tagIds, map)
+    .map(area => LEARNING_AREA_ACTION[area])
+    .filter((a): a is "listening" | "shadowing" | "reading" | "writing" => Boolean(a));
+  if (fromAreas.length > 0) return [...new Set(fromAreas)];
+  return hasRuntime(r) ? ["listening", "shadowing"] : ["reading", "writing"];
 }
 
 /** The complexity scale's lowest level (0-based). */

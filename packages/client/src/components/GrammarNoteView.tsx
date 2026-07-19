@@ -15,6 +15,8 @@ import { useBookmarksByTag, useBookmarkSectionsByTag } from "@/hooks/useBookmark
 import { useGrammarNotes, useUpdateGrammarNote } from "@/hooks/useGrammarNotes";
 import { useQuestionSheets } from "@/hooks/useQuestionSheets";
 import { useSentences } from "@/hooks/useSentences";
+import { useBookmarksSettings } from "@/hooks/useSettings";
+import { resourceLearningAreas } from "@/lib/collections";
 import { sentencesByGrammarTagId } from "@/lib/grammar-links";
 import { otherUsages, resolvedRelations, usageLabel } from "@/lib/grammar-notes";
 import { buildTaggedSectionTree } from "@/lib/sections";
@@ -62,6 +64,9 @@ export function GrammarNoteView({
   const tagBookmarks = useBookmarksByTag(note.tagId);
   // Also auto-gathered: every bookmark *section* whose tags include this note's Grammar Source tag.
   const tagSections = useBookmarkSectionsByTag(note.tagId);
+  // Learning-area badges derive a resource's areas from its tags via the Settings mapping.
+  const bookmarksSettings = useBookmarksSettings();
+  const areaTags = bookmarksSettings.data?.learningAreaTags ?? {};
   // Group the tagged sections by their bookmark so each bookmark is one card listing its sections,
   // rather than repeating the bookmark title per section. Upstream order (bookmark title, then section
   // label) is preserved by the insertion-ordered Map.
@@ -71,6 +76,7 @@ export function GrammarNoteView({
       bookmarkTitle: string;
       bookmarkUrl: string | null;
       imageUrl: string | null;
+      tagIds: string[];
       sections: BookmarkSectionRef[];
     }>();
     for (const m of (tagSections.data ?? []) as BookmarkSectionMatch[]) {
@@ -81,6 +87,7 @@ export function GrammarNoteView({
         bookmarkTitle: m.bookmarkTitle,
         bookmarkUrl: m.bookmarkUrl,
         imageUrl: m.imageUrl,
+        tagIds: m.tagIds,
         sections: [m.section],
       });
     }
@@ -466,11 +473,21 @@ export function GrammarNoteView({
                         </a>
                       )
                       : <span className="block truncate font-medium">{b.title}</span>}
-                    {b.website
-                      ? (
-                        <Badge variant="secondary">{b.website.siteName}</Badge>
-                      )
-                      : null}
+                    <div className="flex flex-wrap items-center gap-1">
+                      {b.website
+                        ? (
+                          <Badge variant="secondary">{b.website.siteName}</Badge>
+                        )
+                        : null}
+                      {resourceLearningAreas(b.tagIds, areaTags).map(area => (
+                        <Badge
+                          key={area}
+                          variant="outline"
+                        >
+                          {area}
+                        </Badge>
+                      ))}
+                    </div>
                   </div>
                 </li>
               ))}
@@ -531,6 +548,20 @@ export function GrammarNoteView({
                         </a>
                       )
                       : <span className="block truncate font-medium">{group.bookmarkTitle}</span>}
+                    {resourceLearningAreas(group.tagIds, areaTags).length > 0
+                      ? (
+                        <div className="flex flex-wrap items-center gap-1">
+                          {resourceLearningAreas(group.tagIds, areaTags).map(area => (
+                            <Badge
+                              key={area}
+                              variant="outline"
+                            >
+                              {area}
+                            </Badge>
+                          ))}
+                        </div>
+                      )
+                      : null}
                     <ul className="space-y-0.5 text-sm text-muted-foreground">
                       {buildTaggedSectionTree(group.sections).map(node => (
                         <li key={node.section.id}>

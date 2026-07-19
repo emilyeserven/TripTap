@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Combobox } from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
+import { MultiSelect } from "@/components/ui/multi-select";
 import {
   Select,
   SelectContent,
@@ -17,6 +18,7 @@ import {
 } from "@/components/ui/select";
 import { useBookmarkResources, useRefreshBookmarks } from "@/hooks/useBookmarks";
 import { usePageTitle } from "@/hooks/usePageTitle";
+import { useBookmarksSettings } from "@/hooks/useSettings";
 import { useCreateWriting } from "@/hooks/useWritings";
 import {
   ALL_FILTER,
@@ -24,11 +26,14 @@ import {
   complexityLevelOptions,
   formatComplexity,
   formatRuntime,
-  hasRuntime,
+  learningAreaFilterOptions,
   matchesComplexity,
+  matchesLearningAreas,
   matchesMediaType,
   matchesWebsite,
   mediaTypeFilterOptions,
+  resourceActions,
+  resourceLearningAreas,
   sortByRuntime,
   websiteFilterOptions,
 } from "@/lib/collections";
@@ -38,10 +43,11 @@ export const Route = createFileRoute("/collections/")({
 });
 
 function CollectionsPage() {
-  usePageTitle("Collections");
+  usePageTitle("Resources");
   const {
     data, isLoading, isFetching, error,
   } = useBookmarkResources();
+  const settings = useBookmarksSettings();
   const refreshBookmarks = useRefreshBookmarks();
   const navigate = useNavigate();
   const createWriting = useCreateWriting();
@@ -49,14 +55,17 @@ function CollectionsPage() {
   const [search, setSearch] = useState("");
   const [website, setWebsite] = useState(ALL_FILTER);
   const [mediaType, setMediaType] = useState(ALL_FILTER);
+  const [areas, setAreas] = useState<string[]>([]);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [complexityMin, setComplexityMin] = useState(COMPLEXITY_MIN);
   const [complexityMax, setComplexityMax] = useState<number | null>(null);
 
   const all = useMemo(() => data?.resources ?? [], [data]);
   const scale = data?.complexityScale ?? null;
+  const areaTags = useMemo(() => settings.data?.learningAreaTags ?? {}, [settings.data]);
   const websiteOptions = useMemo(() => websiteFilterOptions(all), [all]);
   const mediaTypeOptions = useMemo(() => mediaTypeFilterOptions(all), [all]);
+  const areaOptions = useMemo(() => learningAreaFilterOptions(areaTags), [areaTags]);
   const levelOptions = useMemo(() => (scale ? complexityLevelOptions(scale) : []), [scale]);
   // Default the upper complexity bound to the top of the scale until the user narrows it.
   const selMax = complexityMax ?? scale?.max ?? COMPLEXITY_MIN;
@@ -67,9 +76,10 @@ function CollectionsPage() {
       (!q || r.title.toLowerCase().includes(q))
       && matchesWebsite(r, website)
       && matchesMediaType(r, mediaType)
+      && matchesLearningAreas(r, areas, areaTags)
       && matchesComplexity(r, complexityMin, selMax, scale));
     return sortByRuntime(filtered, sortDir);
-  }, [all, search, website, mediaType, complexityMin, selMax, scale, sortDir]);
+  }, [all, search, website, mediaType, areas, areaTags, complexityMin, selMax, scale, sortDir]);
 
   const nothing = !isLoading && !error && shown.length === 0;
 
@@ -98,10 +108,10 @@ function CollectionsPage() {
     <section className="space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold">Collections</h1>
+          <h1 className="text-2xl font-semibold">Resources</h1>
           <p className="text-sm text-muted-foreground">
-            Browse everything in your Collections source and start a session from any item — listening or
-            shadowing for audio/video, reading or writing for text.
+            Browse everything in your Resources source and start a session from any item — the buttons
+            follow each item’s learning areas (or its media type when none are mapped).
           </p>
         </div>
         <Button
@@ -147,6 +157,19 @@ function CollectionsPage() {
               ariaLabel="Filter by website"
               searchPlaceholder="Search websites…"
               className="w-52"
+            />
+          )
+          : null}
+        {areaOptions.length > 0
+          ? (
+            <MultiSelect
+              value={areas}
+              onChange={setAreas}
+              options={areaOptions}
+              ariaLabel="Filter by learning area"
+              placeholder="All learning areas"
+              searchPlaceholder="Search learning areas…"
+              className="w-56"
             />
           )
           : null}
@@ -238,6 +261,8 @@ function CollectionsPage() {
       >
         {shown.map((r) => {
           const complexityLabel = formatComplexity(r, scale);
+          const cardAreas = resourceLearningAreas(r.tagIds, areaTags);
+          const actions = resourceActions(r, areaTags);
           return (
             <Card
               key={r.id}
@@ -287,83 +312,97 @@ function CollectionsPage() {
                   {r.website ? <Badge variant="secondary">{r.website.siteName}</Badge> : null}
                   {r.mediaType ? <Badge variant="outline">{r.mediaType}</Badge> : null}
                   {complexityLabel ? <Badge variant="outline">{complexityLabel}</Badge> : null}
+                  {cardAreas.map(area => (
+                    <Badge
+                      key={area}
+                      variant="secondary"
+                    >{area}
+                    </Badge>
+                  ))}
                   {r.runtimeSeconds != null
                     ? <span className="font-mono">{formatRuntime(r.runtimeSeconds)}</span>
                     : null}
                 </div>
               </CardContent>
-              <CardFooter className="gap-2 p-4 pt-0">
-                {hasRuntime(r)
+              <CardFooter className="flex-wrap gap-2 p-4 pt-0">
+                {actions.includes("listening")
                   ? (
-                    <>
-                      <Button
-                        asChild
-                        variant="outline"
-                        size="sm"
-                        className="flex-1"
+                    <Button
+                      asChild
+                      variant="outline"
+                      size="sm"
+                      className="flex-1"
+                    >
+                      <Link
+                        to="/listening-sessions/new"
+                        search={{
+                          bookmarkId: r.id,
+                          bookmarkTitle: r.title,
+                          bookmarkUrl: r.url ?? undefined,
+                        }}
                       >
-                        <Link
-                          to="/listening-sessions/new"
-                          search={{
-                            bookmarkId: r.id,
-                            bookmarkTitle: r.title,
-                            bookmarkUrl: r.url ?? undefined,
-                          }}
-                        >
-                          <Headphones className="size-4" />
-                          Listening
-                        </Link>
-                      </Button>
-                      <Button
-                        asChild
-                        variant="outline"
-                        size="sm"
-                        className="flex-1"
-                      >
-                        <Link
-                          to="/shadowing/new"
-                          search={{
-                            bookmarkId: r.id,
-                            bookmarkTitle: r.title,
-                            bookmarkUrl: r.url ?? undefined,
-                          }}
-                        >
-                          <Repeat2 className="size-4" />
-                          Shadowing
-                        </Link>
-                      </Button>
-                    </>
+                        <Headphones className="size-4" />
+                        Listening
+                      </Link>
+                    </Button>
                   )
-                  : (
-                    <>
-                      <Button
-                        asChild
-                        variant="outline"
-                        size="sm"
-                        className="flex-1"
+                  : null}
+                {actions.includes("shadowing")
+                  ? (
+                    <Button
+                      asChild
+                      variant="outline"
+                      size="sm"
+                      className="flex-1"
+                    >
+                      <Link
+                        to="/shadowing/new"
+                        search={{
+                          bookmarkId: r.id,
+                          bookmarkTitle: r.title,
+                          bookmarkUrl: r.url ?? undefined,
+                        }}
                       >
-                        <Link
-                          to="/reading-sessions/new"
-                          search={{
-                            title: r.title,
-                          }}
-                        >
-                          <BookOpen className="size-4" />
-                          Reading
-                        </Link>
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex-1"
-                        disabled={createWriting.isPending}
-                        onClick={() => startWriting(r.title)}
+                        <Repeat2 className="size-4" />
+                        Shadowing
+                      </Link>
+                    </Button>
+                  )
+                  : null}
+                {actions.includes("reading")
+                  ? (
+                    <Button
+                      asChild
+                      variant="outline"
+                      size="sm"
+                      className="flex-1"
+                    >
+                      <Link
+                        to="/reading-sessions/new"
+                        search={{
+                          title: r.title,
+                        }}
                       >
-                        <PenLine className="size-4" />
-                        Writing
-                      </Button>
-                    </>
-                  )}
+                        <BookOpen className="size-4" />
+                        Reading
+                      </Link>
+                    </Button>
+                  )
+                  : null}
+                {actions.includes("writing")
+                  ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1"
+                      disabled={createWriting.isPending}
+                      onClick={() => startWriting(r.title)}
+                    >
+                      <PenLine className="size-4" />
+                      Writing
+                    </Button>
+                  )
+                  : null}
               </CardFooter>
             </Card>
           );

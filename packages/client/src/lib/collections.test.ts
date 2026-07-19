@@ -1,4 +1,4 @@
-import type { BookmarkResource, ComplexityScale } from "@sentence-bank/types";
+import type { BookmarkResource, ComplexityScale, LearningAreaTagMap } from "@sentence-bank/types";
 
 import { describe, expect, it } from "vitest";
 
@@ -8,10 +8,14 @@ import {
   formatComplexity,
   formatRuntime,
   hasRuntime,
+  learningAreaFilterOptions,
   matchesComplexity,
+  matchesLearningAreas,
   matchesMediaType,
   mediaTypeFilterOptions,
   matchesWebsite,
+  resourceActions,
+  resourceLearningAreas,
   sortByRuntime,
   websiteFilterOptions,
 } from "./collections";
@@ -25,6 +29,7 @@ function resource(over: Partial<BookmarkResource>): BookmarkResource {
     runtimeSeconds: null,
     mediaType: null,
     complexity: null,
+    tagIds: [],
     imageUrl: null,
     ...over,
   };
@@ -261,5 +266,90 @@ describe("formatComplexity", () => {
     expect(formatComplexity(resource({
       complexity: null,
     }), SCALE)).toBe("");
+  });
+});
+
+const AREA_MAP: LearningAreaTagMap = {
+  Listening: {
+    id: "tL",
+    name: "Listening",
+  },
+  Speaking: {
+    id: "tS",
+    name: "Speaking",
+  },
+  Reading: {
+    id: "tR",
+    name: "Reading",
+  },
+  Writing: {
+    id: "tW",
+    name: "Writing",
+  },
+};
+
+describe("resourceLearningAreas", () => {
+  it("returns the mapped areas whose tag is on the resource, in canonical order", () => {
+    expect(resourceLearningAreas(["tR", "tL"], AREA_MAP)).toEqual(["Listening", "Reading"]);
+    expect(resourceLearningAreas(["nope"], AREA_MAP)).toEqual([]);
+    expect(resourceLearningAreas(["tL"], {})).toEqual([]);
+  });
+});
+
+describe("learningAreaFilterOptions", () => {
+  it("lists only mapped areas as options", () => {
+    expect(learningAreaFilterOptions({
+      Listening: {
+        id: "tL",
+        name: "L",
+      },
+      Reading: {
+        id: "tR",
+        name: "R",
+      },
+    })).toEqual([
+      {
+        value: "Listening",
+        label: "Listening",
+      },
+      {
+        value: "Reading",
+        label: "Reading",
+      },
+    ]);
+  });
+});
+
+describe("matchesLearningAreas", () => {
+  it("passes everything when nothing is selected, else matches ANY selected area", () => {
+    const r = resource({
+      tagIds: ["tL"],
+    });
+    expect(matchesLearningAreas(r, [], AREA_MAP)).toBe(true);
+    expect(matchesLearningAreas(r, ["Listening"], AREA_MAP)).toBe(true);
+    expect(matchesLearningAreas(r, ["Reading", "Listening"], AREA_MAP)).toBe(true);
+    expect(matchesLearningAreas(r, ["Reading"], AREA_MAP)).toBe(false);
+  });
+});
+
+describe("resourceActions", () => {
+  it("derives session buttons from the resource's learning areas", () => {
+    expect(resourceActions(resource({
+      tagIds: ["tL", "tW"],
+    }), AREA_MAP)).toEqual(["listening", "writing"]);
+    expect(resourceActions(resource({
+      tagIds: ["tS"],
+    }), AREA_MAP)).toEqual(["shadowing"]);
+  });
+
+  it("falls back to the runtime heuristic when no area maps to an action", () => {
+    expect(resourceActions(resource({
+      tagIds: [],
+      runtimeSeconds: 120,
+    }), AREA_MAP)).toEqual(["listening", "shadowing"]);
+    expect(resourceActions(resource({
+      tagIds: [],
+      runtimeSeconds: null,
+    }), AREA_MAP)).toEqual(["reading", "writing"]);
   });
 });

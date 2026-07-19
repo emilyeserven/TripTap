@@ -3,6 +3,8 @@ import type {
   BookmarksSource,
   BookmarksSourceKind,
   BookmarksTaxonomy,
+  LearningArea,
+  LearningAreaTagMap,
   SentenceTermCategory,
   TagTermOption,
 } from "@sentence-bank/types";
@@ -10,6 +12,7 @@ import type { UseQueryResult } from "@tanstack/react-query";
 
 import { useEffect, useRef, useState } from "react";
 
+import { LEARNING_AREAS } from "@sentence-bank/types";
 import { Check, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -23,7 +26,12 @@ import {
 import { Combobox } from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useBookmarksTags, useBookmarksTaxonomies, useBookmarksTerms } from "@/hooks/useBookmarks";
+import {
+  useBookmarksTags,
+  useBookmarksTaxonomies,
+  useBookmarksTerms,
+  useBookmarksVocabulary,
+} from "@/hooks/useBookmarks";
 import { useBookmarksSettings, useUpdateBookmarksSettings } from "@/hooks/useSettings";
 
 /** The tagging channels, each backed by its own configured source. */
@@ -244,6 +252,79 @@ function SourceFields({
 }
 
 /**
+ * Maps each learning area (Speaking, Listening, …) to one Resources-source tag. A resource carrying that
+ * tag is then filterable by the area on the Collections page, and the area drives its session buttons.
+ */
+function LearningAreaTagFields({
+  value,
+  onChange,
+}: {
+  value: LearningAreaTagMap;
+  onChange: (next: LearningAreaTagMap) => void;
+}) {
+  const resourceTags = useBookmarksVocabulary("resource");
+  const options: ComboboxOption[] = [
+    {
+      value: "",
+      label: "— not mapped —",
+    },
+    ...(resourceTags.data ?? []).map(t => ({
+      value: t.id,
+      label: t.name,
+    })),
+  ];
+
+  function setArea(area: LearningArea, id: string) {
+    // Rebuild without the area (avoids a dynamic delete), then re-add it when a tag is chosen.
+    const next: LearningAreaTagMap = {};
+    for (const a of LEARNING_AREAS) {
+      if (a !== area && value[a]) next[a] = value[a];
+    }
+    if (id) {
+      next[area] = {
+        id,
+        name: options.find(o => o.value === id)?.label ?? id,
+      };
+    }
+    onChange(next);
+  }
+
+  return (
+    <div className="space-y-3 rounded-md border p-4">
+      <div>
+        <Label>Learning-area tags</Label>
+        <p className="text-xs text-muted-foreground">
+          Map a learning area to one Resources-source tag. Resources carrying it can be filtered by that
+          area on the Collections page, and it drives their session buttons.
+        </p>
+      </div>
+      {resourceTags.isError
+        ? (
+          <p className="text-sm text-destructive">
+            Couldn’t load the Resources source’s tags. Configure the Resources source above first.
+          </p>
+        )
+        : LEARNING_AREAS.map(area => (
+          <div
+            key={area}
+            className="flex items-center gap-2"
+          >
+            <Label className="w-24 shrink-0 text-sm font-normal">{area}</Label>
+            <Combobox
+              value={value[area]?.id ?? ""}
+              onChange={id => setArea(area, id)}
+              options={options}
+              ariaLabel={`${area} tag`}
+              placeholder={resourceTags.isLoading ? "Loading tags…" : "— not mapped —"}
+              className="w-full max-w-xs"
+            />
+          </div>
+        ))}
+    </div>
+  );
+}
+
+/**
  * Settings card for the external bookmarks tag/taxonomy integration. The user sets the API endpoint
  * and picks one source per channel (Vocabulary, Grammar, General) — a parent tag (its children become
  * the vocabulary) or a taxonomy (its terms become the vocabulary), optionally drilling into a single
@@ -271,6 +352,7 @@ export function BookmarksTagsCard() {
       ...EMPTY_DRAFT,
     },
   });
+  const [areaTags, setAreaTags] = useState<LearningAreaTagMap>({});
   const [saved, setSaved] = useState(false);
 
   // Seed local state from the loaded settings once (later refetches must not clobber edits).
@@ -285,6 +367,7 @@ export function BookmarksTagsCard() {
       general: draftFromSource(settings.data.generalSource),
       resource: draftFromSource(settings.data.resourceSource),
     });
+    setAreaTags(settings.data.learningAreaTags ?? {});
   }, [settings.data]);
 
   function flashSaved() {
@@ -299,6 +382,7 @@ export function BookmarksTagsCard() {
       grammarSource: draftToSource(drafts.grammar),
       generalSource: draftToSource(drafts.general),
       resourceSource: draftToSource(drafts.resource),
+      learningAreaTags: areaTags,
     });
     flashSaved();
   }
@@ -352,6 +436,11 @@ export function BookmarksTagsCard() {
             disabled={update.isPending}
           />
         ))}
+
+        <LearningAreaTagFields
+          value={areaTags}
+          onChange={setAreaTags}
+        />
 
         <div className="flex items-center gap-3">
           <Button
