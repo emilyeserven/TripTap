@@ -16,6 +16,7 @@ import { useGrammarNotes, useUpdateGrammarNote } from "@/hooks/useGrammarNotes";
 import { useQuestionSheets } from "@/hooks/useQuestionSheets";
 import { useSentences } from "@/hooks/useSentences";
 import { useBookmarksSettings } from "@/hooks/useSettings";
+import { bookmarkAppUrl } from "@/lib/bookmarks";
 import { resourceLearningAreas } from "@/lib/collections";
 import { sentencesByGrammarTagId } from "@/lib/grammar-links";
 import { otherUsages, resolvedRelations, usageLabel } from "@/lib/grammar-notes";
@@ -76,6 +77,7 @@ export function GrammarNoteView({
       bookmarkTitle: string;
       bookmarkUrl: string | null;
       imageUrl: string | null;
+      mediaType: string | null;
       tagIds: string[];
       sections: BookmarkSectionRef[];
     }>();
@@ -87,6 +89,7 @@ export function GrammarNoteView({
         bookmarkTitle: m.bookmarkTitle,
         bookmarkUrl: m.bookmarkUrl,
         imageUrl: m.imageUrl,
+        mediaType: m.mediaType,
         tagIds: m.tagIds,
         sections: [m.section],
       });
@@ -530,27 +533,24 @@ export function GrammarNoteView({
                       </div>
                     )}
                   <div className="min-w-0 flex-1 space-y-1">
-                    {group.bookmarkUrl
-                      ? (
-                        <a
-                          href={group.bookmarkUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="
-                            flex items-center gap-1 font-medium
-                            hover:underline
-                          "
-                        >
-                          <span className="truncate">{group.bookmarkTitle}</span>
-                          <ExternalLink
-                            className="size-3.5 shrink-0 text-muted-foreground"
-                          />
-                        </a>
-                      )
-                      : <span className="block truncate font-medium">{group.bookmarkTitle}</span>}
-                    {resourceLearningAreas(group.tagIds, areaTags).length > 0
+                    <a
+                      href={bookmarkAppUrl(bookmarksSettings.data?.endpointUrl, group.bookmarkId)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="
+                        flex items-center gap-1 font-medium
+                        hover:underline
+                      "
+                    >
+                      <span className="truncate">{group.bookmarkTitle}</span>
+                      <ExternalLink
+                        className="size-3.5 shrink-0 text-muted-foreground"
+                      />
+                    </a>
+                    {group.mediaType || resourceLearningAreas(group.tagIds, areaTags).length > 0
                       ? (
                         <div className="flex flex-wrap items-center gap-1">
+                          {group.mediaType ? <Badge variant="outline">{group.mediaType}</Badge> : null}
                           {resourceLearningAreas(group.tagIds, areaTags).map(area => (
                             <Badge
                               key={area}
