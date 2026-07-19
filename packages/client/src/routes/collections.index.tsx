@@ -68,7 +68,7 @@ function CollectionsPage() {
   const areaTags = useMemo(() => settings.data?.learningAreaTags ?? {}, [settings.data]);
   const websiteOptions = useMemo(() => websiteFilterOptions(all), [all]);
   const mediaTypeOptions = useMemo(() => mediaTypeFilterOptions(all), [all]);
-  const areaOptions = useMemo(() => learningAreaFilterOptions(areaTags), [areaTags]);
+  const areaOptions = useMemo(() => learningAreaFilterOptions(areaTags, all), [areaTags, all]);
   const levelOptions = useMemo(() => (scale ? complexityLevelOptions(scale) : []), [scale]);
   // Default the upper complexity bound to the top of the scale until the user narrows it.
   const selMax = complexityMax ?? scale?.max ?? COMPLEXITY_MIN;

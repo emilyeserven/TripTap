@@ -15,21 +15,27 @@ function websiteKey(r: BookmarkResource): string {
   return r.website?.siteName || r.website?.domain || "";
 }
 
-/** Build the website filter options from the resources, deduped and alphabetized, with an "All" first. */
-export function websiteFilterOptions(resources: BookmarkResource[]): FilterOption[] {
-  const names = new Set<string>();
+/** Tally a keyed count over resources, ignoring the empty key. */
+function countBy(resources: BookmarkResource[], key: (r: BookmarkResource) => string): Map<string, number> {
+  const counts = new Map<string, number>();
   for (const r of resources) {
-    const key = websiteKey(r);
-    if (key) names.add(key);
+    const k = key(r);
+    if (k) counts.set(k, (counts.get(k) ?? 0) + 1);
   }
+  return counts;
+}
+
+/** Build the website filter options (with per-option resource counts), alphabetized, "All" first. */
+export function websiteFilterOptions(resources: BookmarkResource[]): FilterOption[] {
+  const counts = countBy(resources, websiteKey);
   return [
     {
       value: ALL_FILTER,
-      label: "All websites",
+      label: `All websites (${resources.length})`,
     },
-    ...[...names].sort((a, b) => a.localeCompare(b)).map(name => ({
+    ...[...counts.keys()].sort((a, b) => a.localeCompare(b)).map(name => ({
       value: name,
-      label: name,
+      label: `${name} (${counts.get(name) ?? 0})`,
     })),
   ];
 }
@@ -44,21 +50,17 @@ function mediaTypeKey(r: BookmarkResource): string {
   return r.mediaType ?? "";
 }
 
-/** Build the media-type filter options from the resources present, deduped and alphabetized, "All" first. */
+/** Build the media-type filter options (with per-option resource counts), alphabetized, "All" first. */
 export function mediaTypeFilterOptions(resources: BookmarkResource[]): FilterOption[] {
-  const names = new Set<string>();
-  for (const r of resources) {
-    const key = mediaTypeKey(r);
-    if (key) names.add(key);
-  }
+  const counts = countBy(resources, mediaTypeKey);
   return [
     {
       value: ALL_FILTER,
-      label: "All media types",
+      label: `All media types (${resources.length})`,
     },
-    ...[...names].sort((a, b) => a.localeCompare(b)).map(name => ({
+    ...[...counts.keys()].sort((a, b) => a.localeCompare(b)).map(name => ({
       value: name,
-      label: name,
+      label: `${name} (${counts.get(name) ?? 0})`,
     })),
   ];
 }
@@ -81,12 +83,21 @@ export function resourceLearningAreas(tagIds: string[], map: LearningAreaTagMap)
   });
 }
 
-/** The learning areas that have a tag configured, as filter options (empty when nothing is mapped). */
-export function learningAreaFilterOptions(map: LearningAreaTagMap): FilterOption[] {
-  return LEARNING_AREAS.filter(area => map[area]).map(area => ({
-    value: area,
-    label: area,
-  }));
+/**
+ * The learning areas that have a tag configured, as filter options with per-area resource counts
+ * (empty when nothing is mapped).
+ */
+export function learningAreaFilterOptions(
+  map: LearningAreaTagMap,
+  resources: BookmarkResource[],
+): FilterOption[] {
+  return LEARNING_AREAS.filter(area => map[area]).map((area) => {
+    const count = resources.filter(r => resourceLearningAreas(r.tagIds, map).includes(area)).length;
+    return {
+      value: area,
+      label: `${area} (${count})`,
+    };
+  });
 }
 
 /** True when a resource matches the selected learning areas (empty selection passes; ANY match otherwise). */

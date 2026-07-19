@@ -76,19 +76,19 @@ const noRuntime = resource({
 });
 
 describe("websiteFilterOptions", () => {
-  it("dedupes and alphabetizes site names with an All option first", () => {
+  it("alphabetizes site names with counts and an All (total) option first", () => {
     expect(websiteFilterOptions([yt, nf, noRuntime])).toEqual([
       {
         value: ALL_FILTER,
-        label: "All websites",
+        label: "All websites (3)",
       },
       {
         value: "Netflix",
-        label: "Netflix",
+        label: "Netflix (1)",
       },
       {
         value: "YouTube",
-        label: "YouTube",
+        label: "YouTube (2)",
       },
     ]);
   });
@@ -132,19 +132,19 @@ describe("mediaTypeFilterOptions / matchesMediaType", () => {
     mediaType: null,
   });
 
-  it("dedupes and alphabetizes media types with an All option first", () => {
+  it("alphabetizes media types with counts and an All (total) option first", () => {
     expect(mediaTypeFilterOptions([video, book, none, video])).toEqual([
       {
         value: ALL_FILTER,
-        label: "All media types",
+        label: "All media types (4)",
       },
       {
         value: "Book",
-        label: "Book",
+        label: "Book (1)",
       },
       {
         value: "Video",
-        label: "Video",
+        label: "Video (2)",
       },
     ]);
   });
@@ -300,8 +300,8 @@ describe("resourceLearningAreas", () => {
 });
 
 describe("learningAreaFilterOptions", () => {
-  it("lists only mapped areas as options", () => {
-    expect(learningAreaFilterOptions({
+  it("lists only mapped areas as options, each with a resource count", () => {
+    const map = {
       Listening: {
         id: "tL",
         name: "L",
@@ -310,14 +310,23 @@ describe("learningAreaFilterOptions", () => {
         id: "tR",
         name: "R",
       },
-    })).toEqual([
+    };
+    const resources = [
+      resource({
+        tagIds: ["tL"],
+      }),
+      resource({
+        tagIds: ["tL", "tR"],
+      }),
+    ];
+    expect(learningAreaFilterOptions(map, resources)).toEqual([
       {
         value: "Listening",
-        label: "Listening",
+        label: "Listening (2)",
       },
       {
         value: "Reading",
-        label: "Reading",
+        label: "Reading (1)",
       },
     ]);
   });
