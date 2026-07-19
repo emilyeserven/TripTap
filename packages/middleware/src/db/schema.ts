@@ -428,6 +428,10 @@ export const shadowingSessions = pgTable("shadowing_sessions", {
   section: jsonb("section").$type<BookmarkSectionRef>(),
   defaultMaxReplays: integer("default_max_replays").notNull().default(3),
   defaultGapMs: integer("default_gap_ms").notNull().default(0),
+  // Optional uploaded audio for the session, stored as an object-storage key (not a blob). Null when
+  // the session plays a YouTube video instead. Enables waveform-based auto-segmentation.
+  audioKey: text("audio_key"),
+  audioMime: text("audio_mime"),
   segments: jsonb("segments").$type<ShadowingSegment[]>(),
   entries: jsonb("entries").$type<ListeningEntry[]>(),
   terms: jsonb("terms").$type<SentenceTermRef[]>(),
