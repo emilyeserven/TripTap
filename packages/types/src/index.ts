@@ -428,6 +428,22 @@ export type MaterialTypeTagMap = Partial<Record<MaterialType, { id: string;
   name: string; }>>;
 
 /**
+ * Resource classifications that behave as drill material. A single-key axis (like {@link MaterialType}
+ * but with one member) so it reuses the same mapping/filter/badge machinery and stays extensible.
+ */
+export const DRILL_TAGS = ["Drills"] as const;
+
+/** One drill tag from {@link DRILL_TAGS}. */
+export type DrillTag = (typeof DRILL_TAGS)[number];
+
+/**
+ * A drill tag ({@link DrillTag}) mapped to one tag from the Resources source (id + denormalized name).
+ * Lets a resource bookmark carrying that tag be badged and filtered as drill material.
+ */
+export type DrillTagMap = Partial<Record<DrillTag, { id: string;
+  name: string; }>>;
+
+/**
  * Bookmarks integration settings as returned by `GET /api/settings/bookmarks`. Unlike
  * {@link OcrSettings} these are not secrets, so raw values are returned.
  */
@@ -446,6 +462,8 @@ export interface BookmarksSettings {
   learningAreaTags: LearningAreaTagMap;
   /** Material-type → Resources-source-tag mappings, powering the Collections material-type filter. */
   materialTypeTags: MaterialTypeTagMap;
+  /** Drill-tag → Resources-source-tag mappings, powering the Collections drill filter. */
+  drillTags: DrillTagMap;
 }
 
 /**
@@ -460,6 +478,7 @@ export interface UpdateBookmarksSettingsInput {
   resourceSource?: BookmarksSource | null;
   learningAreaTags?: LearningAreaTagMap | null;
   materialTypeTags?: MaterialTypeTagMap | null;
+  drillTags?: DrillTagMap | null;
 }
 
 /**

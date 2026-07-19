@@ -1,6 +1,7 @@
 import type {
   BookmarkResource,
   ComplexityScale,
+  DrillTagMap,
   LearningAreaTagMap,
   MaterialTypeTagMap,
 } from "@sentence-bank/types";
@@ -10,11 +11,13 @@ import { describe, expect, it } from "vitest";
 import {
   ALL_FILTER,
   complexityLevelOptions,
+  drillTagFilterOptions,
   formatComplexity,
   formatRuntime,
   hasRuntime,
   learningAreaFilterOptions,
   matchesComplexity,
+  matchesDrillTags,
   matchesLearningAreas,
   matchesMaterialTypes,
   matchesMediaType,
@@ -22,6 +25,7 @@ import {
   mediaTypeFilterOptions,
   matchesWebsite,
   resourceActions,
+  resourceDrillTags,
   resourceLearningAreas,
   resourceMaterialTypes,
   sortByRuntime,
@@ -417,6 +421,54 @@ describe("matchesMaterialTypes", () => {
     expect(matchesMaterialTypes(r, ["Graded"], MATERIAL_MAP)).toBe(true);
     expect(matchesMaterialTypes(r, ["Native", "Graded"], MATERIAL_MAP)).toBe(true);
     expect(matchesMaterialTypes(r, ["Native"], MATERIAL_MAP)).toBe(false);
+  });
+});
+
+const DRILL_MAP: DrillTagMap = {
+  Drills: {
+    id: "tD",
+    name: "Drills",
+  },
+};
+
+describe("resourceDrillTags", () => {
+  it("returns Drills only when the mapped tag is on the resource", () => {
+    expect(resourceDrillTags(["tD"], DRILL_MAP)).toEqual(["Drills"]);
+    expect(resourceDrillTags(["nope"], DRILL_MAP)).toEqual([]);
+    expect(resourceDrillTags(["tD"], {})).toEqual([]);
+  });
+});
+
+describe("drillTagFilterOptions", () => {
+  it("lists the mapped Drills tag with a resource count, or nothing when unmapped", () => {
+    const resources = [
+      resource({
+        tagIds: ["tD"],
+      }),
+      resource({
+        tagIds: [],
+      }),
+    ];
+    expect(drillTagFilterOptions(DRILL_MAP, resources)).toEqual([
+      {
+        value: "Drills",
+        label: "Drills (1)",
+      },
+    ]);
+    expect(drillTagFilterOptions({}, resources)).toEqual([]);
+  });
+});
+
+describe("matchesDrillTags", () => {
+  it("passes everything when nothing is selected, else matches the Drills tag", () => {
+    const r = resource({
+      tagIds: ["tD"],
+    });
+    expect(matchesDrillTags(r, [], DRILL_MAP)).toBe(true);
+    expect(matchesDrillTags(r, ["Drills"], DRILL_MAP)).toBe(true);
+    expect(matchesDrillTags(resource({
+      tagIds: [],
+    }), ["Drills"], DRILL_MAP)).toBe(false);
   });
 });
 

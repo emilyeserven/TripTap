@@ -4,6 +4,7 @@ import type {
   BookmarksSource,
   DictionaryProvider,
   DictionarySettings,
+  DrillTag,
   LearningArea,
   MaterialType,
   OcrSettings,
@@ -13,7 +14,7 @@ import type {
   UpdateOcrSettingsInput,
   UpdateRenshuuSettingsInput,
 } from "@sentence-bank/types";
-import { LEARNING_AREAS, MATERIAL_TYPES } from "@sentence-bank/types";
+import { DRILL_TAGS, LEARNING_AREAS, MATERIAL_TYPES } from "@sentence-bank/types";
 import { db } from "@/db";
 import { settings } from "@/db/schema";
 
@@ -117,6 +118,7 @@ const BOOKMARKS_KEYS = {
   resourceSource: "bookmarks.resourceSource",
   learningAreaTags: "bookmarks.learningAreaTags",
   materialTypeTags: "bookmarks.materialTypeTags",
+  drillTags: "bookmarks.drillTags",
 } as const;
 
 /**
@@ -192,6 +194,7 @@ export async function getBookmarksSettings(): Promise<BookmarksSettings> {
     resourceSource: parseBookmarksSource(stored[BOOKMARKS_KEYS.resourceSource] ?? null),
     learningAreaTags: parseTagMap<LearningArea>(stored[BOOKMARKS_KEYS.learningAreaTags] ?? null, LEARNING_AREAS),
     materialTypeTags: parseTagMap<MaterialType>(stored[BOOKMARKS_KEYS.materialTypeTags] ?? null, MATERIAL_TYPES),
+    drillTags: parseTagMap<DrillTag>(stored[BOOKMARKS_KEYS.drillTags] ?? null, DRILL_TAGS),
   };
 }
 
@@ -226,6 +229,11 @@ export async function updateBookmarksSettings(
     const map = input.materialTypeTags;
     const hasAny = map && Object.keys(map).length > 0;
     await setSetting(BOOKMARKS_KEYS.materialTypeTags, hasAny ? JSON.stringify(map) : null);
+  }
+  if (input.drillTags !== undefined) {
+    const map = input.drillTags;
+    const hasAny = map && Object.keys(map).length > 0;
+    await setSetting(BOOKMARKS_KEYS.drillTags, hasAny ? JSON.stringify(map) : null);
   }
   return getBookmarksSettings();
 }
