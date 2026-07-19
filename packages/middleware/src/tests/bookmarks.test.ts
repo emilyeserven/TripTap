@@ -238,9 +238,55 @@ test("toBookmarkResource extracts website, runtime, media type, and complexity",
       min: 2,
       max: 2,
     },
+    progress: null,
+    favorite: false,
     tagIds: [],
     imageUrl: "/api/bookmarks/b1/images/img1?v=1",
   });
+});
+
+test("toBookmarkResource composes the progress label like the bookmarks app", () => {
+  const PROGRESS_PROP = "ab97c792-d1db-4303-a0a2-75e6d2ceef11";
+  const raw = {
+    id: "bp",
+    title: "Reader",
+    progressValues: [{
+      propertyId: PROGRESS_PROP,
+      current: 12,
+      total: 200,
+      textOverride: null,
+      autoSpace: null,
+    }],
+  };
+  const props = {
+    runtimePropId: null,
+    complexityPropId: null,
+    progress: {
+      id: PROGRESS_PROP,
+      before: "",
+      between: " of ",
+      after: " pages",
+    },
+  };
+  assert.deepEqual(toBookmarkResource(raw, props)?.progress, {
+    current: 12,
+    total: 200,
+    percent: 12 / 200,
+    label: "12 of 200 pages",
+  });
+  // No progress for a bookmark that carries only another itemInItems property's value.
+  assert.equal(
+    toBookmarkResource({
+      id: "bp2",
+      title: "Other",
+      progressValues: [{
+        propertyId: "some-other-prop",
+        current: 1,
+        total: 2,
+      }],
+    }, props)?.progress,
+    null,
+  );
 });
 
 test("toBookmarkResource extracts tag ids, ignoring malformed tag entries", () => {
@@ -392,9 +438,42 @@ test("toBookmarkResource degrades missing website/runtime/mediaType/complexity t
     runtimeSeconds: null,
     mediaType: null,
     complexity: null,
+    progress: null,
+    favorite: false,
     tagIds: [],
     imageUrl: null,
   });
+});
+
+test("toBookmarkResource reads the favorite boolean property", () => {
+  const FAV = "f95c5eac-f7ef-4005-8cb8-704d343ac579";
+  const props = {
+    runtimePropId: null,
+    complexityPropId: null,
+    favoritePropId: FAV,
+  };
+  assert.equal(
+    toBookmarkResource({
+      id: "f1",
+      title: "Fav",
+      booleanValues: [{
+        propertyId: FAV,
+        value: true,
+      }],
+    }, props)?.favorite,
+    true,
+  );
+  assert.equal(
+    toBookmarkResource({
+      id: "f2",
+      title: "Not fav",
+      booleanValues: [{
+        propertyId: FAV,
+        value: false,
+      }],
+    }, props)?.favorite,
+    false,
+  );
 });
 
 test("toBookmarkResource ignores number values from other properties", () => {

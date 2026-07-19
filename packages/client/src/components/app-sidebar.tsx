@@ -69,8 +69,13 @@ import {
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 
-/** { Lessons, AI Lessons, Captures, … } — source material to mine from. */
+/** { Resources, Lessons, AI Lessons, Captures, … } — source material to mine from. */
 const collectionsItems = [
+  {
+    title: "Resources",
+    to: "/collections",
+    icon: TelescopeIcon,
+  },
   {
     title: "Lessons",
     to: "/lessons",
@@ -190,17 +195,6 @@ const actionItems = [
         title: "Shadowing Practice",
         to: "/shadowing",
         icon: Repeat2Icon,
-      },
-    ],
-  },
-  {
-    title: "Collections",
-    icon: LibraryIcon,
-    children: [
-      {
-        title: "Resources",
-        to: "/collections",
-        icon: TelescopeIcon,
       },
     ],
   },

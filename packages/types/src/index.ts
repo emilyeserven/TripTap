@@ -571,6 +571,18 @@ export interface BookmarkRecord {
 }
 
 /**
+ * A bookmark's progress, read from the upstream "Progress" (itemInItems) property. `label` is the
+ * display string composed the same way the bookmarks app does (e.g. "12 of 200 pages"); `percent` is
+ * `current / total` in `[0, 1]` (0 when total is 0), for the Collections progress bar and sort.
+ */
+export interface BookmarkProgress {
+  current: number;
+  total: number;
+  percent: number;
+  label: string;
+}
+
+/**
  * A bookmark's complexity level, read from the upstream "Complexity Scale" rating property and
  * normalized to a band. A single-value bookmark has `min === max`; a range-valued one spans them.
  */
@@ -612,6 +624,10 @@ export interface BookmarkResource {
   mediaType: string | null;
   /** The bookmark's complexity band (from the "Complexity Scale" property); null when unset. */
   complexity: BookmarkComplexity | null;
+  /** The bookmark's progress (from the "Progress" itemInItems property); null when unset. */
+  progress: BookmarkProgress | null;
+  /** Whether the bookmark is favorited (from the "Favorite" boolean property) — sorts to the top. */
+  favorite: boolean;
   /** The ids of the bookmark's tags, for the Collections learning-area filter. */
   tagIds: string[];
   /**

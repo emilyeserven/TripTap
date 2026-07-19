@@ -100,27 +100,28 @@ export function matchesLearningAreas(
   return selected.some(area => areas.includes(area as LearningArea));
 }
 
-/** The session action a learning area starts on a Collections card; areas without one (Grammar/Vocab) are absent. */
-export const LEARNING_AREA_ACTION: Partial<Record<LearningArea, "listening" | "shadowing" | "reading" | "writing">> = {
-  Listening: "listening",
-  Speaking: "shadowing",
-  Reading: "reading",
-  Writing: "writing",
+/** One session-start action a Collections card can offer. */
+export type ResourceAction = "listening" | "shadowing" | "reading" | "writing";
+
+/**
+ * The session actions each learning area offers on a Collections card; areas without one (Grammar/Vocab)
+ * are absent. Listening material can also be shadowed (listen-and-repeat is speaking practice), so a
+ * Listening resource offers both listening and shadowing.
+ */
+export const LEARNING_AREA_ACTIONS: Partial<Record<LearningArea, ResourceAction[]>> = {
+  Listening: ["listening", "shadowing"],
+  Speaking: ["shadowing"],
+  Reading: ["reading"],
+  Writing: ["writing"],
 };
 
 /**
- * The session-start buttons a resource card should offer, derived from its learning areas
- * (Listening→listening, Speaking→shadowing, Reading→reading, Writing→writing). Falls back to the
- * runtime heuristic (audio/video → listening+shadowing, else reading+writing) when the resource has no
- * area that maps to an action, so untagged resources still get sensible buttons.
+ * The session-start buttons a resource card should offer, derived from its learning areas. Falls back to
+ * the runtime heuristic (audio/video → listening+shadowing, else reading+writing) when the resource has
+ * no area that maps to an action, so untagged resources still get sensible buttons.
  */
-export function resourceActions(
-  r: BookmarkResource,
-  map: LearningAreaTagMap,
-): ("listening" | "shadowing" | "reading" | "writing")[] {
-  const fromAreas = resourceLearningAreas(r.tagIds, map)
-    .map(area => LEARNING_AREA_ACTION[area])
-    .filter((a): a is "listening" | "shadowing" | "reading" | "writing" => Boolean(a));
+export function resourceActions(r: BookmarkResource, map: LearningAreaTagMap): ResourceAction[] {
+  const fromAreas = resourceLearningAreas(r.tagIds, map).flatMap(area => LEARNING_AREA_ACTIONS[area] ?? []);
   if (fromAreas.length > 0) return [...new Set(fromAreas)];
   return hasRuntime(r) ? ["listening", "shadowing"] : ["reading", "writing"];
 }
@@ -175,6 +176,28 @@ export function sortByRuntime(resources: BookmarkResource[], dir: "asc" | "desc"
     if (a.runtimeSeconds == null) return 1;
     if (b.runtimeSeconds == null) return -1;
     return dir === "asc" ? a.runtimeSeconds - b.runtimeSeconds : b.runtimeSeconds - a.runtimeSeconds;
+  });
+}
+
+/** How the Collections list is sorted (favorited items always come first, then this key). */
+export type ResourceSort = "runtime-desc" | "runtime-asc" | "progress-desc" | "progress-asc";
+
+/**
+ * Sort resources: favorited first, then by the chosen key (runtime seconds, or progress percent).
+ * Resources missing the sorted value sort last within their favorite/non-favorite group.
+ */
+export function sortResources(resources: BookmarkResource[], sort: ResourceSort): BookmarkResource[] {
+  const [key, dir] = sort.split("-") as ["runtime" | "progress", "asc" | "desc"];
+  const value = (r: BookmarkResource): number | null =>
+    key === "runtime" ? r.runtimeSeconds : (r.progress ? r.progress.percent : null);
+  return [...resources].sort((a, b) => {
+    if (a.favorite !== b.favorite) return a.favorite ? -1 : 1;
+    const av = value(a);
+    const bv = value(b);
+    if (av == null && bv == null) return 0;
+    if (av == null) return 1;
+    if (bv == null) return -1;
+    return dir === "asc" ? av - bv : bv - av;
   });
 }
 
