@@ -549,6 +549,8 @@ export interface BookmarkSectionMatch {
   bookmarkUrl: string | null;
   /** The bookmark's thumbnail (same-origin proxy URL), resolved like its cover image; null when none. */
   imageUrl: string | null;
+  /** The owning bookmark's media type name (e.g. "Book", "Video"); null when unknown. */
+  mediaType: string | null;
   /** The owning bookmark's tag ids, for the learning-area badges. */
   tagIds: string[];
   section: BookmarkSectionRef;
