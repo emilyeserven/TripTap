@@ -141,6 +141,7 @@ const actionItems = [
   },
   {
     title: "Reading & Writing",
+    to: "/reading-writing",
     icon: BookOpenTextIcon,
     children: [
       {
@@ -184,6 +185,7 @@ const actionItems = [
   },
   {
     title: "Speaking & Listening",
+    to: "/speaking-listening",
     icon: MicIcon,
     children: [
       {
