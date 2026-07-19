@@ -2,6 +2,7 @@ import type * as React from "react";
 
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
+  ArrowDownUpIcon,
   BookAIcon,
   BookMarkedIcon,
   BookOpenIcon,
@@ -13,7 +14,6 @@ import {
   ClipboardCheckIcon,
   ClipboardListIcon,
   DatabaseIcon,
-  DownloadIcon,
   DrillIcon,
   FolderTreeIcon,
   GraduationCapIcon,
@@ -36,7 +36,6 @@ import {
   SpellCheckIcon,
   TargetIcon,
   TelescopeIcon,
-  UploadIcon,
   UserRoundIcon,
 } from "lucide-react";
 
@@ -218,20 +217,14 @@ const actionItems = [
     ],
   },
   {
-    title: "Import",
-    icon: DownloadIcon,
+    title: "Import & Export",
+    icon: ArrowDownUpIcon,
     children: [
       {
         title: "Migaku import",
         to: "/migaku-import",
         icon: LayersIcon,
       },
-    ],
-  },
-  {
-    title: "Export",
-    icon: UploadIcon,
-    children: [
       {
         title: "Renshuu export",
         to: "/renshuu",
