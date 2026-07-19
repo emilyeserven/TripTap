@@ -1,4 +1,9 @@
-import type { BookmarkResource, ComplexityScale, LearningAreaTagMap } from "@sentence-bank/types";
+import type {
+  BookmarkResource,
+  ComplexityScale,
+  LearningAreaTagMap,
+  MaterialTypeTagMap,
+} from "@sentence-bank/types";
 
 import { describe, expect, it } from "vitest";
 
@@ -11,11 +16,14 @@ import {
   learningAreaFilterOptions,
   matchesComplexity,
   matchesLearningAreas,
+  matchesMaterialTypes,
   matchesMediaType,
+  materialTypeFilterOptions,
   mediaTypeFilterOptions,
   matchesWebsite,
   resourceActions,
   resourceLearningAreas,
+  resourceMaterialTypes,
   sortByRuntime,
   sortResources,
   websiteFilterOptions,
@@ -341,6 +349,74 @@ describe("matchesLearningAreas", () => {
     expect(matchesLearningAreas(r, ["Listening"], AREA_MAP)).toBe(true);
     expect(matchesLearningAreas(r, ["Reading", "Listening"], AREA_MAP)).toBe(true);
     expect(matchesLearningAreas(r, ["Reading"], AREA_MAP)).toBe(false);
+  });
+});
+
+const MATERIAL_MAP: MaterialTypeTagMap = {
+  Graded: {
+    id: "tG",
+    name: "Graded",
+  },
+  Native: {
+    id: "tN",
+    name: "Native",
+  },
+};
+
+describe("resourceMaterialTypes", () => {
+  it("returns the mapped types whose tag is on the resource, in canonical order", () => {
+    expect(resourceMaterialTypes(["tN", "tG"], MATERIAL_MAP)).toEqual(["Graded", "Native"]);
+    expect(resourceMaterialTypes(["nope"], MATERIAL_MAP)).toEqual([]);
+    expect(resourceMaterialTypes(["tG"], {})).toEqual([]);
+  });
+});
+
+describe("materialTypeFilterOptions", () => {
+  it("lists only mapped types as options, each with a resource count", () => {
+    const resources = [
+      resource({
+        tagIds: ["tG"],
+      }),
+      resource({
+        tagIds: ["tG", "tN"],
+      }),
+    ];
+    expect(materialTypeFilterOptions(MATERIAL_MAP, resources)).toEqual([
+      {
+        value: "Graded",
+        label: "Graded (2)",
+      },
+      {
+        value: "Native",
+        label: "Native (1)",
+      },
+    ]);
+  });
+
+  it("omits types that are not mapped", () => {
+    expect(materialTypeFilterOptions({
+      Native: {
+        id: "tN",
+        name: "Native",
+      },
+    }, [])).toEqual([
+      {
+        value: "Native",
+        label: "Native (0)",
+      },
+    ]);
+  });
+});
+
+describe("matchesMaterialTypes", () => {
+  it("passes everything when nothing is selected, else matches ANY selected type", () => {
+    const r = resource({
+      tagIds: ["tG"],
+    });
+    expect(matchesMaterialTypes(r, [], MATERIAL_MAP)).toBe(true);
+    expect(matchesMaterialTypes(r, ["Graded"], MATERIAL_MAP)).toBe(true);
+    expect(matchesMaterialTypes(r, ["Native", "Graded"], MATERIAL_MAP)).toBe(true);
+    expect(matchesMaterialTypes(r, ["Native"], MATERIAL_MAP)).toBe(false);
   });
 });
 

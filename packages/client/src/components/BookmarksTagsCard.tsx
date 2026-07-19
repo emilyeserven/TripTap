@@ -3,8 +3,8 @@ import type {
   BookmarksSource,
   BookmarksSourceKind,
   BookmarksTaxonomy,
-  LearningArea,
   LearningAreaTagMap,
+  MaterialTypeTagMap,
   SentenceTermCategory,
   TagTermOption,
 } from "@sentence-bank/types";
@@ -12,7 +12,7 @@ import type { UseQueryResult } from "@tanstack/react-query";
 
 import { useEffect, useRef, useState } from "react";
 
-import { LEARNING_AREAS } from "@sentence-bank/types";
+import { LEARNING_AREAS, MATERIAL_TYPES } from "@sentence-bank/types";
 import { Check, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -251,16 +251,27 @@ function SourceFields({
   );
 }
 
+/** A `{ key: { id, name } }` map keyed by a fixed set of strings (learning areas or material types). */
+type TagMap<K extends string> = Partial<Record<K, { id: string;
+  name: string; }>>;
+
 /**
- * Maps each learning area (Speaking, Listening, …) to one Resources-source tag. A resource carrying that
- * tag is then filterable by the area on the Collections page, and the area drives its session buttons.
+ * Maps each key in a fixed set (learning areas, or material types) to one Resources-source tag. A
+ * resource carrying that tag is then badged and filterable by that key on the Collections page. Backs
+ * both {@link LearningAreaTagFields} and {@link MaterialTypeTagFields}.
  */
-function LearningAreaTagFields({
+function TagMapFields<K extends string>({
+  keys,
   value,
   onChange,
+  title,
+  hint,
 }: {
-  value: LearningAreaTagMap;
-  onChange: (next: LearningAreaTagMap) => void;
+  keys: readonly K[];
+  value: TagMap<K>;
+  onChange: (next: TagMap<K>) => void;
+  title: string;
+  hint: string;
 }) {
   const resourceTags = useBookmarksVocabulary("resource");
   const options: ComboboxOption[] = [
@@ -274,14 +285,14 @@ function LearningAreaTagFields({
     })),
   ];
 
-  function setArea(area: LearningArea, id: string) {
-    // Rebuild without the area (avoids a dynamic delete), then re-add it when a tag is chosen.
-    const next: LearningAreaTagMap = {};
-    for (const a of LEARNING_AREAS) {
-      if (a !== area && value[a]) next[a] = value[a];
+  function setKey(key: K, id: string) {
+    // Rebuild without the key (avoids a dynamic delete), then re-add it when a tag is chosen.
+    const next: TagMap<K> = {};
+    for (const k of keys) {
+      if (k !== key && value[k]) next[k] = value[k];
     }
     if (id) {
-      next[area] = {
+      next[key] = {
         id,
         name: options.find(o => o.value === id)?.label ?? id,
       };
@@ -292,11 +303,8 @@ function LearningAreaTagFields({
   return (
     <div className="space-y-3 rounded-md border p-4">
       <div>
-        <Label>Learning-area tags</Label>
-        <p className="text-xs text-muted-foreground">
-          Map a learning area to one Resources-source tag. Resources carrying it can be filtered by that
-          area on the Collections page, and it drives their session buttons.
-        </p>
+        <Label>{title}</Label>
+        <p className="text-xs text-muted-foreground">{hint}</p>
       </div>
       {resourceTags.isError
         ? (
@@ -304,23 +312,61 @@ function LearningAreaTagFields({
             Couldn’t load the Resources source’s tags. Configure the Resources source above first.
           </p>
         )
-        : LEARNING_AREAS.map(area => (
+        : keys.map(key => (
           <div
-            key={area}
+            key={key}
             className="flex items-center gap-2"
           >
-            <Label className="w-24 shrink-0 text-sm font-normal">{area}</Label>
+            <Label className="w-24 shrink-0 text-sm font-normal">{key}</Label>
             <Combobox
-              value={value[area]?.id ?? ""}
-              onChange={id => setArea(area, id)}
+              value={value[key]?.id ?? ""}
+              onChange={id => setKey(key, id)}
               options={options}
-              ariaLabel={`${area} tag`}
+              ariaLabel={`${key} tag`}
               placeholder={resourceTags.isLoading ? "Loading tags…" : "— not mapped —"}
               className="w-full max-w-xs"
             />
           </div>
         ))}
     </div>
+  );
+}
+
+/** Maps each learning area (Speaking, Listening, …) to one Resources-source tag. */
+function LearningAreaTagFields({
+  value,
+  onChange,
+}: {
+  value: LearningAreaTagMap;
+  onChange: (next: LearningAreaTagMap) => void;
+}) {
+  return (
+    <TagMapFields
+      keys={LEARNING_AREAS}
+      value={value}
+      onChange={onChange}
+      title="Learning-area tags"
+      hint="Map a learning area to one Resources-source tag. Resources carrying it can be filtered by that area on the Collections page, and it drives their session buttons."
+    />
+  );
+}
+
+/** Maps each material type (Graded, Native) to one Resources-source tag. */
+function MaterialTypeTagFields({
+  value,
+  onChange,
+}: {
+  value: MaterialTypeTagMap;
+  onChange: (next: MaterialTypeTagMap) => void;
+}) {
+  return (
+    <TagMapFields
+      keys={MATERIAL_TYPES}
+      value={value}
+      onChange={onChange}
+      title="Material-type tags"
+      hint="Map a material type to one Resources-source tag. Graded material is written for learners; native material is authentic. Tagged resources are badged and filterable on the Collections page and grammar notes."
+    />
   );
 }
 
@@ -353,6 +399,7 @@ export function BookmarksTagsCard() {
     },
   });
   const [areaTags, setAreaTags] = useState<LearningAreaTagMap>({});
+  const [materialTags, setMaterialTags] = useState<MaterialTypeTagMap>({});
   const [saved, setSaved] = useState(false);
 
   // Seed local state from the loaded settings once (later refetches must not clobber edits).
@@ -368,6 +415,7 @@ export function BookmarksTagsCard() {
       resource: draftFromSource(settings.data.resourceSource),
     });
     setAreaTags(settings.data.learningAreaTags ?? {});
+    setMaterialTags(settings.data.materialTypeTags ?? {});
   }, [settings.data]);
 
   function flashSaved() {
@@ -383,6 +431,7 @@ export function BookmarksTagsCard() {
       generalSource: draftToSource(drafts.general),
       resourceSource: draftToSource(drafts.resource),
       learningAreaTags: areaTags,
+      materialTypeTags: materialTags,
     });
     flashSaved();
   }
@@ -440,6 +489,11 @@ export function BookmarksTagsCard() {
         <LearningAreaTagFields
           value={areaTags}
           onChange={setAreaTags}
+        />
+
+        <MaterialTypeTagFields
+          value={materialTags}
+          onChange={setMaterialTags}
         />
 
         <div className="flex items-center gap-3">

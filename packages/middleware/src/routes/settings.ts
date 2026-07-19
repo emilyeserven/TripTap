@@ -54,8 +54,8 @@ const bookmarksSourceSchema = {
   },
 } as const;
 
-/** One learning area's mapped tag: `{ id, name }`. */
-const learningAreaTagSchema = {
+/** One mapped tag: `{ id, name }`. Shared by the learning-area and material-type maps. */
+const mappedTagSchema = {
   type: "object",
   additionalProperties: false,
   required: ["id", "name"],
@@ -74,12 +74,22 @@ const learningAreaTagsSchema = {
   type: ["object", "null"],
   additionalProperties: false,
   properties: {
-    Speaking: learningAreaTagSchema,
-    Listening: learningAreaTagSchema,
-    Reading: learningAreaTagSchema,
-    Writing: learningAreaTagSchema,
-    Grammar: learningAreaTagSchema,
-    Vocabulary: learningAreaTagSchema,
+    Speaking: mappedTagSchema,
+    Listening: mappedTagSchema,
+    Reading: mappedTagSchema,
+    Writing: mappedTagSchema,
+    Grammar: mappedTagSchema,
+    Vocabulary: mappedTagSchema,
+  },
+} as const;
+
+/** The material-type → tag map: keys are material types, values are `{ id, name }`. */
+const materialTypeTagsSchema = {
+  type: ["object", "null"],
+  additionalProperties: false,
+  properties: {
+    Graded: mappedTagSchema,
+    Native: mappedTagSchema,
   },
 } as const;
 
@@ -95,6 +105,7 @@ const updateBookmarksSettingsBody = {
     generalSource: bookmarksSourceSchema,
     resourceSource: bookmarksSourceSchema,
     learningAreaTags: learningAreaTagsSchema,
+    materialTypeTags: materialTypeTagsSchema,
   },
 } as const;
 

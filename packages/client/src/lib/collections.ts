@@ -1,6 +1,13 @@
-import type { BookmarkResource, ComplexityScale, LearningArea, LearningAreaTagMap } from "@sentence-bank/types";
+import type {
+  BookmarkResource,
+  ComplexityScale,
+  LearningArea,
+  LearningAreaTagMap,
+  MaterialType,
+  MaterialTypeTagMap,
+} from "@sentence-bank/types";
 
-import { LEARNING_AREAS } from "@sentence-bank/types";
+import { LEARNING_AREAS, MATERIAL_TYPES } from "@sentence-bank/types";
 
 /** Sentinel for the "no website filter" option (mirrors `lib/answer-sheets.ts`'s `ALL_FILTER`). */
 export const ALL_FILTER = "all";
@@ -109,6 +116,42 @@ export function matchesLearningAreas(
   if (selected.length === 0) return true;
   const areas = resourceLearningAreas(r.tagIds, map);
   return selected.some(area => areas.includes(area as LearningArea));
+}
+
+/** The material types a resource carries: the mapped types whose tag is on the resource. */
+export function resourceMaterialTypes(tagIds: string[], map: MaterialTypeTagMap): MaterialType[] {
+  return MATERIAL_TYPES.filter((type) => {
+    const tag = map[type];
+    return tag ? tagIds.includes(tag.id) : false;
+  });
+}
+
+/**
+ * The material types that have a tag configured, as filter options with per-type resource counts
+ * (empty when nothing is mapped).
+ */
+export function materialTypeFilterOptions(
+  map: MaterialTypeTagMap,
+  resources: BookmarkResource[],
+): FilterOption[] {
+  return MATERIAL_TYPES.filter(type => map[type]).map((type) => {
+    const count = resources.filter(r => resourceMaterialTypes(r.tagIds, map).includes(type)).length;
+    return {
+      value: type,
+      label: `${type} (${count})`,
+    };
+  });
+}
+
+/** True when a resource matches the selected material types (empty selection passes; ANY match otherwise). */
+export function matchesMaterialTypes(
+  r: BookmarkResource,
+  selected: string[],
+  map: MaterialTypeTagMap,
+): boolean {
+  if (selected.length === 0) return true;
+  const types = resourceMaterialTypes(r.tagIds, map);
+  return selected.some(type => types.includes(type as MaterialType));
 }
 
 /** One session-start action a Collections card can offer. */

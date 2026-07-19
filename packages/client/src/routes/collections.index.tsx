@@ -32,11 +32,14 @@ import {
   learningAreaFilterOptions,
   matchesComplexity,
   matchesLearningAreas,
+  matchesMaterialTypes,
   matchesMediaType,
   matchesWebsite,
+  materialTypeFilterOptions,
   mediaTypeFilterOptions,
   resourceActions,
   resourceLearningAreas,
+  resourceMaterialTypes,
   sortResources,
   websiteFilterOptions,
 } from "@/lib/collections";
@@ -59,6 +62,7 @@ function CollectionsPage() {
   const [website, setWebsite] = useState(ALL_FILTER);
   const [mediaType, setMediaType] = useState(ALL_FILTER);
   const [areas, setAreas] = useState<string[]>([]);
+  const [materials, setMaterials] = useState<string[]>([]);
   const [sort, setSort] = useState<ResourceSort>("runtime-desc");
   const [complexityMin, setComplexityMin] = useState(COMPLEXITY_MIN);
   const [complexityMax, setComplexityMax] = useState<number | null>(null);
@@ -66,9 +70,11 @@ function CollectionsPage() {
   const all = useMemo(() => data?.resources ?? [], [data]);
   const scale = data?.complexityScale ?? null;
   const areaTags = useMemo(() => settings.data?.learningAreaTags ?? {}, [settings.data]);
+  const materialTags = useMemo(() => settings.data?.materialTypeTags ?? {}, [settings.data]);
   const websiteOptions = useMemo(() => websiteFilterOptions(all), [all]);
   const mediaTypeOptions = useMemo(() => mediaTypeFilterOptions(all), [all]);
   const areaOptions = useMemo(() => learningAreaFilterOptions(areaTags, all), [areaTags, all]);
+  const materialOptions = useMemo(() => materialTypeFilterOptions(materialTags, all), [materialTags, all]);
   const levelOptions = useMemo(() => (scale ? complexityLevelOptions(scale) : []), [scale]);
   // Default the upper complexity bound to the top of the scale until the user narrows it.
   const selMax = complexityMax ?? scale?.max ?? COMPLEXITY_MIN;
@@ -80,9 +86,10 @@ function CollectionsPage() {
       && matchesWebsite(r, website)
       && matchesMediaType(r, mediaType)
       && matchesLearningAreas(r, areas, areaTags)
+      && matchesMaterialTypes(r, materials, materialTags)
       && matchesComplexity(r, complexityMin, selMax, scale));
     return sortResources(filtered, sort);
-  }, [all, search, website, mediaType, areas, areaTags, complexityMin, selMax, scale, sort]);
+  }, [all, search, website, mediaType, areas, areaTags, materials, materialTags, complexityMin, selMax, scale, sort]);
 
   const nothing = !isLoading && !error && shown.length === 0;
 
@@ -173,6 +180,19 @@ function CollectionsPage() {
               placeholder="All learning areas"
               searchPlaceholder="Search learning areas…"
               className="w-56"
+            />
+          )
+          : null}
+        {materialOptions.length > 0
+          ? (
+            <MultiSelect
+              value={materials}
+              onChange={setMaterials}
+              options={materialOptions}
+              ariaLabel="Filter by material type"
+              placeholder="All material types"
+              searchPlaceholder="Search material types…"
+              className="w-52"
             />
           )
           : null}
@@ -267,6 +287,7 @@ function CollectionsPage() {
         {shown.map((r) => {
           const complexityLabel = formatComplexity(r, scale);
           const cardAreas = resourceLearningAreas(r.tagIds, areaTags);
+          const cardMaterials = resourceMaterialTypes(r.tagIds, materialTags);
           const actions = resourceActions(r, areaTags);
           return (
             <Card
@@ -334,6 +355,13 @@ function CollectionsPage() {
                       key={area}
                       variant="secondary"
                     >{area}
+                    </Badge>
+                  ))}
+                  {cardMaterials.map(type => (
+                    <Badge
+                      key={type}
+                      variant="default"
+                    >{type}
                     </Badge>
                   ))}
                   {r.runtimeSeconds != null
