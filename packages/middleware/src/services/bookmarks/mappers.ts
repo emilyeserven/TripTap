@@ -280,13 +280,12 @@ export function toBookmarkResource(raw: unknown, propIds: ResourcePropertyIds): 
     if (typeof m.name === "string") mediaType = m.name;
   }
 
-  // The upstream `image.url` is a relative `/api/bookmarks/{id}/images/{imageId}` path; passed through
-  // verbatim it hits our own bookmarks-image proxy (same namespace), which forwards it to the host.
-  let imageUrl: string | null = null;
-  if (o.image && typeof o.image === "object") {
-    const img = o.image as Record<string, unknown>;
-    if (typeof img.url === "string" && img.url !== "") imageUrl = img.url;
-  }
+  // Resolve the display image the way the bookmarks app does (`resolveBookmarkDisplayImage`): honor the
+  // `imageDisplayPreference`, falling back to the other source when the preferred one is missing. So a
+  // bookmark with only a screenshot (no uploaded/grabbed image) still shows a thumbnail. Both the image
+  // and screenshot `url` are relative host paths (`/api/bookmarks/{id}/images/{imageId}` and
+  // `/api/bookmarks/{id}/screenshot`), passed through verbatim to hit our matching same-origin proxies.
+  const imageUrl = resolveDisplayImageUrl(o);
 
   return {
     id: o.id,
@@ -298,6 +297,26 @@ export function toBookmarkResource(raw: unknown, propIds: ResourcePropertyIds): 
     complexity,
     imageUrl,
   };
+}
+
+/** The non-empty `url` of an upstream image-like object (`{ url }`), or null. */
+function imageObjectUrl(raw: unknown): string | null {
+  if (!raw || typeof raw !== "object") return null;
+  const url = (raw as Record<string, unknown>).url;
+  return typeof url === "string" && url !== "" ? url : null;
+}
+
+/**
+ * Which image URL a bookmark's cover shows, mirroring the bookmarks app's `resolveBookmarkDisplayImage`:
+ * `imageDisplayPreference === "screenshot"` prefers the screenshot then the image; every other value
+ * (`"image"`, `"auto"`, unset) prefers the image then the screenshot. Null when it has neither.
+ */
+export function resolveDisplayImageUrl(o: Record<string, unknown>): string | null {
+  const image = imageObjectUrl(o.image);
+  const screenshot = imageObjectUrl(o.screenshot);
+  return o.imageDisplayPreference === "screenshot"
+    ? (screenshot ?? image)
+    : (image ?? screenshot);
 }
 
 /** Normalize an upstream create response into a {@link TagTermOption}, or fail if it can't be read. */

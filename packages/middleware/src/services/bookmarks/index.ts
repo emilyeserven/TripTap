@@ -262,6 +262,22 @@ export async function getBookmarkImage(
   return fetchBookmarksImage(apiUrl(baseUrl, path) + query);
 }
 
+/**
+ * Proxy one bookmark's screenshot bytes from the host. A screenshot-only bookmark surfaces its
+ * `screenshot.url` (`/api/bookmarks/{bookmarkId}/screenshot`) as its image, which the browser loads
+ * same-origin through this proxy. The optional `query` re-attaches the upstream `?v=…` cache-buster.
+ */
+export async function getBookmarkScreenshot(
+  bookmarkId: string,
+  query = "",
+): Promise<BookmarksImage> {
+  const {
+    baseUrl,
+  } = await resolveBookmarksConfig();
+  const path = `/bookmarks/${encodeURIComponent(bookmarkId)}/screenshot`;
+  return fetchBookmarksImage(apiUrl(baseUrl, path) + query);
+}
+
 /** The resolved resource custom properties: ids to read out of `numberValues`, plus the complexity scale. */
 interface ResolvedResourceProperties extends ResourcePropertyIds {
   complexityScale: ComplexityScale | null;
