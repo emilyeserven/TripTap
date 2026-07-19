@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAnswerSheets } from "@/hooks/useAnswerSheets";
+import { useResolvedBookmarkTitle } from "@/hooks/useBookmarks";
 import { useBookmarksSettings } from "@/hooks/useSettings";
 import { dueDateMet, questionSheetSlots } from "@/lib/answer-sheets";
 import { bookmarkAppUrl } from "@/lib/bookmarks";
@@ -25,6 +26,8 @@ export function QuestionSheetCard({
   const {
     data: bookmarksSettings,
   } = useBookmarksSettings();
+  // Show the bookmark's current name (live), not the title snapshotted when it was linked.
+  const bookmarkTitle = useResolvedBookmarkTitle(qs.bookmarkId, qs.bookmarkTitle);
   const met = dueDateMet(qs, (answerSheets.data ?? []).filter(as => as.questionSheetId === qs.id));
 
   return (
@@ -53,7 +56,7 @@ export function QuestionSheetCard({
           {qs.page ? <Badge variant="outline">Page {qs.page}</Badge> : null}
           <LearningAreaBadges areas={qs.learningAreas} />
           <span>{slotCount} {slotCount === 1 ? "slot" : "slots"}</span>
-          {qs.bookmarkTitle
+          {bookmarkTitle
             ? (
               <Badge
                 variant="outline"
@@ -69,10 +72,10 @@ export function QuestionSheetCard({
                       rel="noreferrer"
                       className="hover:underline"
                     >
-                      {qs.bookmarkTitle}
+                      {bookmarkTitle}
                     </a>
                   )
-                  : qs.bookmarkTitle}
+                  : bookmarkTitle}
               </Badge>
             )
             : null}

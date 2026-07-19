@@ -142,6 +142,21 @@ export function useBookmarkRecords(category: SentenceTermCategory) {
   });
 }
 
+/**
+ * The current title of a bookmark linked from one channel, resolved live from the bookmarks app so a
+ * rename there is reflected even though the title was denormalized when the link was made. Falls back
+ * to the stored `fallback` while the list loads, on error, or when the bookmark isn't in the source.
+ */
+export function useResolvedBookmarkTitle(
+  bookmarkId: string | null,
+  fallback: string | null,
+  category: SentenceTermCategory = "resource",
+): string | null {
+  const records = useBookmarkRecords(category);
+  if (!bookmarkId) return fallback;
+  return records.data?.find(r => r.id === bookmarkId)?.title ?? fallback;
+}
+
 /** The whole bookmarks collection (+ complexity-scale metadata) for the Collections browser. */
 export function useBookmarkResources() {
   return useQuery({

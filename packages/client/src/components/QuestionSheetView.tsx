@@ -7,6 +7,7 @@ import { LearningAreaBadges } from "@/components/LearningAreaBadges";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { useAnswerSheetsForQuestionSheet } from "@/hooks/useAnswerSheets";
+import { useResolvedBookmarkTitle } from "@/hooks/useBookmarks";
 import { useBookmarksSettings } from "@/hooks/useSettings";
 import { dueDateMet } from "@/lib/answer-sheets";
 import { bookmarkAppUrl } from "@/lib/bookmarks";
@@ -24,6 +25,8 @@ export function QuestionSheetView({
   const {
     data: bookmarksSettings,
   } = useBookmarksSettings();
+  // Show the bookmark's current name (live), not the title snapshotted when it was linked.
+  const bookmarkTitle = useResolvedBookmarkTitle(qs.bookmarkId, qs.bookmarkTitle);
   const met = dueDateMet(qs, answerSheets ?? []);
 
   return (
@@ -39,7 +42,7 @@ export function QuestionSheetView({
           {qs.page ? <Badge variant="outline">Page {qs.page}</Badge> : null}
           <LearningAreaBadges areas={qs.learningAreas} />
           <GrammarTermBadges terms={qs.grammarTerms} />
-          {qs.bookmarkTitle
+          {bookmarkTitle
             ? (
               <span
                 className="inline-flex max-w-full min-w-0 items-center gap-1"
@@ -59,10 +62,10 @@ export function QuestionSheetView({
                         rel="noreferrer"
                         className="hover:underline"
                       >
-                        {qs.bookmarkTitle}
+                        {bookmarkTitle}
                       </a>
                     )
-                    : qs.bookmarkTitle}
+                    : bookmarkTitle}
                 </Badge>
               </span>
             )
