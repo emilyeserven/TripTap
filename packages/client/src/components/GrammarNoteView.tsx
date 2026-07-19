@@ -17,7 +17,7 @@ import { useQuestionSheets } from "@/hooks/useQuestionSheets";
 import { useSentences } from "@/hooks/useSentences";
 import { useBookmarksSettings } from "@/hooks/useSettings";
 import { bookmarkAppUrl } from "@/lib/bookmarks";
-import { resourceLearningAreas } from "@/lib/collections";
+import { resourceLearningAreas, resourceMaterialTypes } from "@/lib/collections";
 import { sentencesByGrammarTagId } from "@/lib/grammar-links";
 import { otherUsages, resolvedRelations, usageLabel } from "@/lib/grammar-notes";
 import { buildTaggedSectionTree } from "@/lib/sections";
@@ -68,6 +68,7 @@ export function GrammarNoteView({
   // Learning-area badges derive a resource's areas from its tags via the Settings mapping.
   const bookmarksSettings = useBookmarksSettings();
   const areaTags = bookmarksSettings.data?.learningAreaTags ?? {};
+  const materialTags = bookmarksSettings.data?.materialTypeTags ?? {};
   // Group the tagged sections by their bookmark so each bookmark is one card listing its sections,
   // rather than repeating the bookmark title per section. Upstream order (bookmark title, then section
   // label) is preserved by the insertion-ordered Map.
@@ -490,6 +491,14 @@ export function GrammarNoteView({
                           {area}
                         </Badge>
                       ))}
+                      {resourceMaterialTypes(b.tagIds, materialTags).map(type => (
+                        <Badge
+                          key={type}
+                          variant="default"
+                        >
+                          {type}
+                        </Badge>
+                      ))}
                     </div>
                   </div>
                 </li>
@@ -547,7 +556,9 @@ export function GrammarNoteView({
                         className="size-3.5 shrink-0 text-muted-foreground"
                       />
                     </a>
-                    {group.mediaType || resourceLearningAreas(group.tagIds, areaTags).length > 0
+                    {group.mediaType
+                      || resourceLearningAreas(group.tagIds, areaTags).length > 0
+                      || resourceMaterialTypes(group.tagIds, materialTags).length > 0
                       ? (
                         <div className="flex flex-wrap items-center gap-1">
                           {group.mediaType ? <Badge variant="outline">{group.mediaType}</Badge> : null}
@@ -557,6 +568,14 @@ export function GrammarNoteView({
                               variant="outline"
                             >
                               {area}
+                            </Badge>
+                          ))}
+                          {resourceMaterialTypes(group.tagIds, materialTags).map(type => (
+                            <Badge
+                              key={type}
+                              variant="default"
+                            >
+                              {type}
                             </Badge>
                           ))}
                         </div>

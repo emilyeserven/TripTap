@@ -4,7 +4,8 @@ import type {
   BookmarksSource,
   DictionaryProvider,
   DictionarySettings,
-  LearningAreaTagMap,
+  LearningArea,
+  MaterialType,
   OcrSettings,
   RenshuuSettings,
   UpdateBookmarksSettingsInput,
@@ -12,7 +13,7 @@ import type {
   UpdateOcrSettingsInput,
   UpdateRenshuuSettingsInput,
 } from "@sentence-bank/types";
-import { LEARNING_AREAS } from "@sentence-bank/types";
+import { LEARNING_AREAS, MATERIAL_TYPES } from "@sentence-bank/types";
 import { db } from "@/db";
 import { settings } from "@/db/schema";
 
@@ -115,20 +116,26 @@ const BOOKMARKS_KEYS = {
   generalSource: "bookmarks.generalSource",
   resourceSource: "bookmarks.resourceSource",
   learningAreaTags: "bookmarks.learningAreaTags",
+  materialTypeTags: "bookmarks.materialTypeTags",
 } as const;
 
-/** Parse the stored learning-area → tag map, keeping only known areas with a valid `{id, name}` tag. */
-function parseLearningAreaTags(raw: string | null): LearningAreaTagMap {
-  const out: LearningAreaTagMap = {};
+/**
+ * Parse a stored `{ key: { id, name } }` tag map, keeping only the given known keys whose entry is a
+ * valid `{id, name}` tag. Backs both the learning-area and material-type maps. Corrupt JSON → empty.
+ */
+function parseTagMap<K extends string>(raw: string | null, keys: readonly K[]): Partial<Record<K, { id: string;
+  name: string; }>> {
+  const out: Partial<Record<K, { id: string;
+    name: string; }>> = {};
   if (!raw) return out;
   try {
     const parsed = JSON.parse(raw) as Record<string, unknown>;
-    for (const area of LEARNING_AREAS) {
-      const entry = parsed[area];
+    for (const key of keys) {
+      const entry = parsed[key];
       if (entry && typeof entry === "object") {
         const e = entry as Record<string, unknown>;
         if (typeof e.id === "string" && typeof e.name === "string") {
-          out[area] = {
+          out[key] = {
             id: e.id,
             name: e.name,
           };
@@ -183,7 +190,8 @@ export async function getBookmarksSettings(): Promise<BookmarksSettings> {
     grammarSource: parseBookmarksSource(stored[BOOKMARKS_KEYS.grammarSource] ?? null),
     generalSource: parseBookmarksSource(stored[BOOKMARKS_KEYS.generalSource] ?? null),
     resourceSource: parseBookmarksSource(stored[BOOKMARKS_KEYS.resourceSource] ?? null),
-    learningAreaTags: parseLearningAreaTags(stored[BOOKMARKS_KEYS.learningAreaTags] ?? null),
+    learningAreaTags: parseTagMap<LearningArea>(stored[BOOKMARKS_KEYS.learningAreaTags] ?? null, LEARNING_AREAS),
+    materialTypeTags: parseTagMap<MaterialType>(stored[BOOKMARKS_KEYS.materialTypeTags] ?? null, MATERIAL_TYPES),
   };
 }
 
@@ -213,6 +221,11 @@ export async function updateBookmarksSettings(
     const map = input.learningAreaTags;
     const hasAny = map && Object.keys(map).length > 0;
     await setSetting(BOOKMARKS_KEYS.learningAreaTags, hasAny ? JSON.stringify(map) : null);
+  }
+  if (input.materialTypeTags !== undefined) {
+    const map = input.materialTypeTags;
+    const hasAny = map && Object.keys(map).length > 0;
+    await setSetting(BOOKMARKS_KEYS.materialTypeTags, hasAny ? JSON.stringify(map) : null);
   }
   return getBookmarksSettings();
 }

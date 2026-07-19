@@ -410,6 +410,24 @@ export type LearningAreaTagMap = Partial<Record<LearningArea, { id: string;
   name: string; }>>;
 
 /**
+ * The material types a resource can be tagged as. A **graded** resource is written for learners at a
+ * controlled level; a **native** resource is authentic material made for native speakers. This is a
+ * separate axis from {@link LearningArea} (skills) — a resource can be both a skill and a material type.
+ */
+export const MATERIAL_TYPES = ["Graded", "Native"] as const;
+
+/** One material type from {@link MATERIAL_TYPES}. */
+export type MaterialType = (typeof MATERIAL_TYPES)[number];
+
+/**
+ * A material type ({@link MaterialType}) mapped to one tag from the Resources source (id + denormalized
+ * name). Lets a resource bookmark carrying that tag be badged and filtered by its material type. Only
+ * types the user has mapped appear; the rest are absent.
+ */
+export type MaterialTypeTagMap = Partial<Record<MaterialType, { id: string;
+  name: string; }>>;
+
+/**
  * Bookmarks integration settings as returned by `GET /api/settings/bookmarks`. Unlike
  * {@link OcrSettings} these are not secrets, so raw values are returned.
  */
@@ -426,6 +444,8 @@ export interface BookmarksSettings {
   resourceSource: BookmarksSource | null;
   /** Learning-area → Resources-source-tag mappings, powering the Collections learning-area filter. */
   learningAreaTags: LearningAreaTagMap;
+  /** Material-type → Resources-source-tag mappings, powering the Collections material-type filter. */
+  materialTypeTags: MaterialTypeTagMap;
 }
 
 /**
@@ -439,6 +459,7 @@ export interface UpdateBookmarksSettingsInput {
   generalSource?: BookmarksSource | null;
   resourceSource?: BookmarksSource | null;
   learningAreaTags?: LearningAreaTagMap | null;
+  materialTypeTags?: MaterialTypeTagMap | null;
 }
 
 /**
