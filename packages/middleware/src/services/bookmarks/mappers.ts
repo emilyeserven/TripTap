@@ -181,6 +181,8 @@ export function matchSectionsByTag(raw: unknown, tagId: string): BookmarkSection
       type: n.type,
       startValue: n.startValue,
       endValue: n.endValue,
+      name: n.name,
+      parentId: n.parentId,
     }));
 }
 

@@ -516,6 +516,13 @@ export interface BookmarkSectionRef {
   type: BookmarkSectionType;
   startValue: string | null;
   endValue: string | null;
+  /**
+   * The section's own name (not the breadcrumb) and its parent id in the bookmark's Sections tree.
+   * Populated only on tag-match results ({@link BookmarkSectionMatch}) so a grammar note can nest
+   * sub-items under their parent; absent (undefined) on stored references made by the section picker.
+   */
+  name?: string;
+  parentId?: string | null;
 }
 
 /**

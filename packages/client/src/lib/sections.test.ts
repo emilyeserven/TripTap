@@ -2,7 +2,12 @@ import type { BookmarkSectionNode, BookmarkSectionRef } from "@sentence-bank/typ
 
 import { describe, expect, it } from "vitest";
 
-import { resolveSectionPage, sectionRefStartMs, sectionRefToSegment } from "./sections";
+import {
+  buildTaggedSectionTree,
+  resolveSectionPage,
+  sectionRefStartMs,
+  sectionRefToSegment,
+} from "./sections";
 
 function ref(over: Partial<BookmarkSectionRef>): BookmarkSectionRef {
   return {
@@ -117,5 +122,66 @@ describe("resolveSectionPage", () => {
     expect(resolveSectionPage(NODES, "clip")).toBeNull();
     expect(resolveSectionPage(NODES, null)).toBeNull();
     expect(resolveSectionPage(NODES, "missing")).toBeNull();
+  });
+});
+
+describe("buildTaggedSectionTree", () => {
+  it("nests matched sub-items under their matched parent, showing own names + pages", () => {
+    // 第27課 (parent, tagged) with three tagged sub-items — mirrors the reported case.
+    const sections: BookmarkSectionRef[] = [
+      ref({
+        id: "u27",
+        name: "第27課",
+        parentId: null,
+        label: "第27課",
+        type: "name",
+        startValue: null,
+        endValue: null,
+      }),
+      ref({
+        id: "c1",
+        name: "1．可能動詞",
+        parentId: "u27",
+        label: "第27課 › 1．可能動詞",
+        type: "page",
+        startValue: "12",
+        endValue: null,
+      }),
+      ref({
+        id: "c2",
+        name: "2．(場所)で／に[可能動詞]",
+        parentId: "u27",
+        label: "第27課 › 2．(場所)で／に[可能動詞]",
+        type: "name",
+        startValue: null,
+        endValue: null,
+      }),
+    ];
+    const tree = buildTaggedSectionTree(sections);
+    expect(tree).toHaveLength(1);
+    expect(tree[0].section.id).toBe("u27");
+    expect(tree[0].label).toBe("第27課");
+    expect(tree[0].children.map(c => c.label)).toEqual([
+      "1．可能動詞 (p. 12)",
+      "2．(場所)で／に[可能動詞]",
+    ]);
+  });
+
+  it("shows the breadcrumb for a matched sub-item whose parent isn't itself matched", () => {
+    const sections: BookmarkSectionRef[] = [
+      ref({
+        id: "c1",
+        name: "1．可能動詞",
+        parentId: "u27", // parent not in the matched set
+        label: "第27課 › 1．可能動詞",
+        type: "name",
+        startValue: null,
+        endValue: null,
+      }),
+    ];
+    const tree = buildTaggedSectionTree(sections);
+    expect(tree).toHaveLength(1);
+    expect(tree[0].label).toBe("第27課 › 1．可能動詞");
+    expect(tree[0].children).toHaveLength(0);
   });
 });
