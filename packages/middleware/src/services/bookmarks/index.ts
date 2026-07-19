@@ -221,13 +221,18 @@ export async function listSectionsByTag(tagId: string): Promise<BookmarkSectionM
   const out: BookmarkSectionMatch[] = [];
   for (const b of bookmarks) {
     if (typeof b.id !== "string") continue;
-    const record = toBookmarkRecord(b, false); // resolves the (renamed) title; sections not needed here
+    // Resolves the (renamed) title and the cover image URL; runtime/complexity aren't needed here.
+    const resource = toBookmarkResource(b, {
+      runtimePropId: null,
+      complexityPropId: null,
+    });
     const sections = matchSectionsByTag(b.sectionsValues, tagId);
     for (const section of sections) {
       out.push({
         bookmarkId: b.id,
-        bookmarkTitle: record?.title ?? (typeof b.title === "string" ? b.title : b.id),
+        bookmarkTitle: resource?.title ?? (typeof b.title === "string" ? b.title : b.id),
         bookmarkUrl: typeof b.url === "string" ? b.url : null,
+        imageUrl: resource?.imageUrl ?? null,
         section,
       });
     }

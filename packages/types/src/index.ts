@@ -527,6 +527,8 @@ export interface BookmarkSectionMatch {
   bookmarkId: string;
   bookmarkTitle: string;
   bookmarkUrl: string | null;
+  /** The bookmark's thumbnail (same-origin proxy URL), resolved like its cover image; null when none. */
+  imageUrl: string | null;
   section: BookmarkSectionRef;
 }
 

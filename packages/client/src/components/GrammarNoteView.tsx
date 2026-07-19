@@ -69,6 +69,7 @@ export function GrammarNoteView({
       bookmarkId: string;
       bookmarkTitle: string;
       bookmarkUrl: string | null;
+      imageUrl: string | null;
       sections: BookmarkSectionRef[];
     }>();
     for (const m of (tagSections.data ?? []) as BookmarkSectionMatch[]) {
@@ -78,6 +79,7 @@ export function GrammarNoteView({
         bookmarkId: m.bookmarkId,
         bookmarkTitle: m.bookmarkTitle,
         bookmarkUrl: m.bookmarkUrl,
+        imageUrl: m.imageUrl,
         sections: [m.section],
       });
     }
@@ -483,31 +485,56 @@ export function GrammarNoteView({
               {sectionsByBookmark.map(group => (
                 <li
                   key={group.bookmarkId}
-                  className="space-y-1 rounded-md border p-3"
+                  className="flex items-start gap-3 rounded-md border p-3"
                 >
-                  {group.bookmarkUrl
-                    ? (
-                      <a
-                        href={group.bookmarkUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="
-                          flex items-center gap-1 font-medium
-                          hover:underline
-                        "
-                      >
-                        <span className="truncate">{group.bookmarkTitle}</span>
-                        <ExternalLink
-                          className="size-3.5 shrink-0 text-muted-foreground"
+                  <div
+                    className="
+                      aspect-video h-12 shrink-0 overflow-hidden rounded-sm
+                      border bg-muted
+                    "
+                  >
+                    {group.imageUrl
+                      ? (
+                        <img
+                          src={group.imageUrl}
+                          alt=""
+                          loading="lazy"
+                          className="size-full object-cover"
                         />
-                      </a>
-                    )
-                    : <span className="block truncate font-medium">{group.bookmarkTitle}</span>}
-                  <ul className="space-y-0.5 text-sm text-muted-foreground">
-                    {group.sections.map(section => (
-                      <li key={section.id}>› {section.label}</li>
-                    ))}
-                  </ul>
+                      )
+                      : (
+                        <div
+                          className="flex size-full items-center justify-center"
+                        >
+                          <ImageOff className="size-4 text-muted-foreground" />
+                        </div>
+                      )}
+                  </div>
+                  <div className="min-w-0 flex-1 space-y-1">
+                    {group.bookmarkUrl
+                      ? (
+                        <a
+                          href={group.bookmarkUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="
+                            flex items-center gap-1 font-medium
+                            hover:underline
+                          "
+                        >
+                          <span className="truncate">{group.bookmarkTitle}</span>
+                          <ExternalLink
+                            className="size-3.5 shrink-0 text-muted-foreground"
+                          />
+                        </a>
+                      )
+                      : <span className="block truncate font-medium">{group.bookmarkTitle}</span>}
+                    <ul className="space-y-0.5 text-sm text-muted-foreground">
+                      {group.sections.map(section => (
+                        <li key={section.id}>› {section.label}</li>
+                      ))}
+                    </ul>
+                  </div>
                 </li>
               ))}
             </ul>
