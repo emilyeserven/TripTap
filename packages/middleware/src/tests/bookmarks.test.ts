@@ -242,6 +242,63 @@ test("toBookmarkResource extracts website, runtime, media type, and complexity",
   });
 });
 
+test("toBookmarkResource falls back to the screenshot when the bookmark has no image", () => {
+  const raw = {
+    id: "s1",
+    title: "Screenshot only",
+    image: null,
+    images: [],
+    screenshot: {
+      id: "scr1",
+      url: "/api/bookmarks/s1/screenshot?v=9",
+    },
+    imageDisplayPreference: "auto",
+  };
+  assert.equal(toBookmarkResource(raw, PROPS)?.imageUrl, "/api/bookmarks/s1/screenshot?v=9");
+});
+
+test("toBookmarkResource prefers the image over the screenshot by default", () => {
+  const raw = {
+    id: "b2",
+    title: "Both",
+    image: {
+      url: "/api/bookmarks/b2/images/i2?v=1",
+    },
+    screenshot: {
+      url: "/api/bookmarks/b2/screenshot?v=2",
+    },
+    imageDisplayPreference: "auto",
+  };
+  assert.equal(toBookmarkResource(raw, PROPS)?.imageUrl, "/api/bookmarks/b2/images/i2?v=1");
+});
+
+test("toBookmarkResource honors imageDisplayPreference 'screenshot'", () => {
+  const raw = {
+    id: "b3",
+    title: "Prefers screenshot",
+    image: {
+      url: "/api/bookmarks/b3/images/i3?v=1",
+    },
+    screenshot: {
+      url: "/api/bookmarks/b3/screenshot?v=2",
+    },
+    imageDisplayPreference: "screenshot",
+  };
+  assert.equal(toBookmarkResource(raw, PROPS)?.imageUrl, "/api/bookmarks/b3/screenshot?v=2");
+  // …but still falls back to the image when there's no screenshot.
+  assert.equal(
+    toBookmarkResource({
+      id: "b3b",
+      title: "No screenshot",
+      image: {
+        url: "/api/bookmarks/b3b/images/i/?v=1",
+      },
+      imageDisplayPreference: "screenshot",
+    }, PROPS)?.imageUrl,
+    "/api/bookmarks/b3b/images/i/?v=1",
+  );
+});
+
 test("toBookmarkResource normalizes a complexity range into a band", () => {
   const raw = {
     id: "br",

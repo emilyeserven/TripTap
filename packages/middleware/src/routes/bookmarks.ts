@@ -10,6 +10,7 @@ import {
   fetchVocabulary,
   getBookmark,
   getBookmarkImage,
+  getBookmarkScreenshot,
   listBookmarkResources,
   listBookmarksByTag,
   listBookmarksForCategory,
@@ -108,6 +109,16 @@ const imageParams = {
       type: "string",
     },
     imageId: {
+      type: "string",
+    },
+  },
+} as const;
+
+const screenshotParams = {
+  type: "object",
+  required: ["bookmarkId"],
+  properties: {
+    bookmarkId: {
       type: "string",
     },
   },
@@ -257,6 +268,28 @@ export async function bookmarksRoutes(app: FastifyInstance): Promise<void> {
     const query = qIndex >= 0 ? req.url.slice(qIndex) : "";
     try {
       const image = await getBookmarkImage(bookmarkId, imageId, query);
+      reply.header("Content-Type", image.contentType);
+      reply.header("Cache-Control", "private, max-age=86400");
+      return reply.send(image.body);
+    }
+    catch (err) {
+      return handleError(err, reply);
+    }
+  });
+
+  app.get("/api/bookmarks/:bookmarkId/screenshot", {
+    schema: {
+      tags: ["bookmarks"],
+      params: screenshotParams,
+    },
+  }, async (req, reply) => {
+    const {
+      bookmarkId,
+    } = req.params as { bookmarkId: string };
+    const qIndex = req.url.indexOf("?");
+    const query = qIndex >= 0 ? req.url.slice(qIndex) : "";
+    try {
+      const image = await getBookmarkScreenshot(bookmarkId, query);
       reply.header("Content-Type", image.contentType);
       reply.header("Cache-Control", "private, max-age=86400");
       return reply.send(image.body);
