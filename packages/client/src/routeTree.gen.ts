@@ -21,8 +21,10 @@ import { Route as AnkiRouteImport } from './routes/anki'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as WritingPromptsIndexRouteImport } from './routes/writing-prompts.index'
 import { Route as TutorsIndexRouteImport } from './routes/tutors.index'
+import { Route as SpeakingListeningIndexRouteImport } from './routes/speaking-listening.index'
 import { Route as SourcesIndexRouteImport } from './routes/sources.index'
 import { Route as ShadowingIndexRouteImport } from './routes/shadowing.index'
+import { Route as ReadingWritingIndexRouteImport } from './routes/reading-writing.index'
 import { Route as ReadingSessionsIndexRouteImport } from './routes/reading-sessions.index'
 import { Route as QuestionSheetsIndexRouteImport } from './routes/question-sheets.index'
 import { Route as PracticeIndexRouteImport } from './routes/practice.index'
@@ -153,6 +155,11 @@ const TutorsIndexRoute = TutorsIndexRouteImport.update({
   path: '/tutors/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SpeakingListeningIndexRoute = SpeakingListeningIndexRouteImport.update({
+  id: '/speaking-listening/',
+  path: '/speaking-listening/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SourcesIndexRoute = SourcesIndexRouteImport.update({
   id: '/sources/',
   path: '/sources/',
@@ -161,6 +168,11 @@ const SourcesIndexRoute = SourcesIndexRouteImport.update({
 const ShadowingIndexRoute = ShadowingIndexRouteImport.update({
   id: '/shadowing/',
   path: '/shadowing/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReadingWritingIndexRoute = ReadingWritingIndexRouteImport.update({
+  id: '/reading-writing/',
+  path: '/reading-writing/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ReadingSessionsIndexRoute = ReadingSessionsIndexRouteImport.update({
@@ -568,8 +580,10 @@ export interface FileRoutesByFullPath {
   '/practice/': typeof PracticeIndexRoute
   '/question-sheets/': typeof QuestionSheetsIndexRoute
   '/reading-sessions/': typeof ReadingSessionsIndexRoute
+  '/reading-writing/': typeof ReadingWritingIndexRoute
   '/shadowing/': typeof ShadowingIndexRoute
   '/sources/': typeof SourcesIndexRoute
+  '/speaking-listening/': typeof SpeakingListeningIndexRoute
   '/tutors/': typeof TutorsIndexRoute
   '/writing-prompts/': typeof WritingPromptsIndexRoute
   '/answer-sheets/$id/edit': typeof AnswerSheetsIdEditRoute
@@ -642,8 +656,10 @@ export interface FileRoutesByTo {
   '/practice': typeof PracticeIndexRoute
   '/question-sheets': typeof QuestionSheetsIndexRoute
   '/reading-sessions': typeof ReadingSessionsIndexRoute
+  '/reading-writing': typeof ReadingWritingIndexRoute
   '/shadowing': typeof ShadowingIndexRoute
   '/sources': typeof SourcesIndexRoute
+  '/speaking-listening': typeof SpeakingListeningIndexRoute
   '/tutors': typeof TutorsIndexRoute
   '/writing-prompts': typeof WritingPromptsIndexRoute
   '/answer-sheets/$id/edit': typeof AnswerSheetsIdEditRoute
@@ -728,8 +744,10 @@ export interface FileRoutesById {
   '/practice/': typeof PracticeIndexRoute
   '/question-sheets/': typeof QuestionSheetsIndexRoute
   '/reading-sessions/': typeof ReadingSessionsIndexRoute
+  '/reading-writing/': typeof ReadingWritingIndexRoute
   '/shadowing/': typeof ShadowingIndexRoute
   '/sources/': typeof SourcesIndexRoute
+  '/speaking-listening/': typeof SpeakingListeningIndexRoute
   '/tutors/': typeof TutorsIndexRoute
   '/writing-prompts/': typeof WritingPromptsIndexRoute
   '/answer-sheets/$id/edit': typeof AnswerSheetsIdEditRoute
@@ -815,8 +833,10 @@ export interface FileRouteTypes {
     | '/practice/'
     | '/question-sheets/'
     | '/reading-sessions/'
+    | '/reading-writing/'
     | '/shadowing/'
     | '/sources/'
+    | '/speaking-listening/'
     | '/tutors/'
     | '/writing-prompts/'
     | '/answer-sheets/$id/edit'
@@ -889,8 +909,10 @@ export interface FileRouteTypes {
     | '/practice'
     | '/question-sheets'
     | '/reading-sessions'
+    | '/reading-writing'
     | '/shadowing'
     | '/sources'
+    | '/speaking-listening'
     | '/tutors'
     | '/writing-prompts'
     | '/answer-sheets/$id/edit'
@@ -974,8 +996,10 @@ export interface FileRouteTypes {
     | '/practice/'
     | '/question-sheets/'
     | '/reading-sessions/'
+    | '/reading-writing/'
     | '/shadowing/'
     | '/sources/'
+    | '/speaking-listening/'
     | '/tutors/'
     | '/writing-prompts/'
     | '/answer-sheets/$id/edit'
@@ -1060,8 +1084,10 @@ export interface RootRouteChildren {
   PracticeIndexRoute: typeof PracticeIndexRoute
   QuestionSheetsIndexRoute: typeof QuestionSheetsIndexRoute
   ReadingSessionsIndexRoute: typeof ReadingSessionsIndexRoute
+  ReadingWritingIndexRoute: typeof ReadingWritingIndexRoute
   ShadowingIndexRoute: typeof ShadowingIndexRoute
   SourcesIndexRoute: typeof SourcesIndexRoute
+  SpeakingListeningIndexRoute: typeof SpeakingListeningIndexRoute
   TutorsIndexRoute: typeof TutorsIndexRoute
   WritingPromptsIndexRoute: typeof WritingPromptsIndexRoute
 }
@@ -1152,6 +1178,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TutorsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/speaking-listening/': {
+      id: '/speaking-listening/'
+      path: '/speaking-listening'
+      fullPath: '/speaking-listening/'
+      preLoaderRoute: typeof SpeakingListeningIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sources/': {
       id: '/sources/'
       path: '/sources'
@@ -1164,6 +1197,13 @@ declare module '@tanstack/react-router' {
       path: '/shadowing'
       fullPath: '/shadowing/'
       preLoaderRoute: typeof ShadowingIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reading-writing/': {
+      id: '/reading-writing/'
+      path: '/reading-writing'
+      fullPath: '/reading-writing/'
+      preLoaderRoute: typeof ReadingWritingIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reading-sessions/': {
@@ -1861,8 +1901,10 @@ const rootRouteChildren: RootRouteChildren = {
   PracticeIndexRoute: PracticeIndexRoute,
   QuestionSheetsIndexRoute: QuestionSheetsIndexRoute,
   ReadingSessionsIndexRoute: ReadingSessionsIndexRoute,
+  ReadingWritingIndexRoute: ReadingWritingIndexRoute,
   ShadowingIndexRoute: ShadowingIndexRoute,
   SourcesIndexRoute: SourcesIndexRoute,
+  SpeakingListeningIndexRoute: SpeakingListeningIndexRoute,
   TutorsIndexRoute: TutorsIndexRoute,
   WritingPromptsIndexRoute: WritingPromptsIndexRoute,
 }

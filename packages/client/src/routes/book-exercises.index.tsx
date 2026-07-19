@@ -4,12 +4,16 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
 
 import { AnswerSheetCard } from "@/components/AnswerSheetCard";
+import { HubSection } from "@/components/HubSection";
 import { QuestionSheetCard } from "@/components/QuestionSheetCard";
+import { ResourceRow } from "@/components/ResourceRow";
 import { SheetFilters } from "@/components/SheetFilters";
 import { Button } from "@/components/ui/button";
 import { useAnswerSheets } from "@/hooks/useAnswerSheets";
+import { useBookmarkResources } from "@/hooks/useBookmarks";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useQuestionSheets } from "@/hooks/useQuestionSheets";
+import { useBookmarksSettings } from "@/hooks/useSettings";
 import {
   ALL_FILTER,
   matchesLearningArea,
@@ -30,9 +34,17 @@ function BookExercisesPage() {
   const {
     data: answerSheets, isLoading: answerSheetsLoading, error: answerSheetsError,
   } = useAnswerSheets();
+  const bookmarkResources = useBookmarkResources();
+  const bookmarksSettings = useBookmarksSettings();
 
   const [resource, setResource] = useState(ALL_FILTER);
   const [area, setArea] = useState(ALL_FILTER);
+
+  const areaTags = useMemo(() => bookmarksSettings.data?.learningAreaTags ?? {}, [bookmarksSettings.data]);
+  const bookResources = useMemo(
+    () => (bookmarkResources.data?.resources ?? []).filter(r => r.mediaType === "Book"),
+    [bookmarkResources.data],
+  );
 
   const parentById = useMemo(
     () => new Map((questionSheets ?? []).map(q => [q.id, q])),
@@ -72,6 +84,14 @@ function BookExercisesPage() {
           onAreaChange={setArea}
         />
       </div>
+
+      <HubSection title="Books">
+        <ResourceRow
+          resources={bookResources}
+          areaTags={areaTags}
+          emptyText="No Book resources yet."
+        />
+      </HubSection>
 
       <div className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
