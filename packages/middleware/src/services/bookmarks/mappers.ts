@@ -289,6 +289,13 @@ export function toBookmarkResource(raw: unknown, propIds: ResourcePropertyIds): 
   // `/api/bookmarks/{id}/screenshot`), passed through verbatim to hit our matching same-origin proxies.
   const imageUrl = resolveDisplayImageUrl(o);
 
+  const tagIds = Array.isArray(o.tags)
+    ? o.tags
+      .filter((t): t is Record<string, unknown> => Boolean(t) && typeof t === "object")
+      .map(t => t.id)
+      .filter((id): id is string => typeof id === "string")
+    : [];
+
   return {
     id: o.id,
     title,
@@ -297,6 +304,7 @@ export function toBookmarkResource(raw: unknown, propIds: ResourcePropertyIds): 
     runtimeSeconds,
     mediaType,
     complexity,
+    tagIds,
     imageUrl,
   };
 }

@@ -4,6 +4,7 @@ import type {
   BookmarksSource,
   DictionaryProvider,
   DictionarySettings,
+  LearningAreaTagMap,
   OcrSettings,
   RenshuuSettings,
   UpdateBookmarksSettingsInput,
@@ -11,6 +12,7 @@ import type {
   UpdateOcrSettingsInput,
   UpdateRenshuuSettingsInput,
 } from "@sentence-bank/types";
+import { LEARNING_AREAS } from "@sentence-bank/types";
 import { db } from "@/db";
 import { settings } from "@/db/schema";
 
@@ -112,7 +114,33 @@ const BOOKMARKS_KEYS = {
   grammarSource: "bookmarks.grammarSource",
   generalSource: "bookmarks.generalSource",
   resourceSource: "bookmarks.resourceSource",
+  learningAreaTags: "bookmarks.learningAreaTags",
 } as const;
+
+/** Parse the stored learning-area → tag map, keeping only known areas with a valid `{id, name}` tag. */
+function parseLearningAreaTags(raw: string | null): LearningAreaTagMap {
+  const out: LearningAreaTagMap = {};
+  if (!raw) return out;
+  try {
+    const parsed = JSON.parse(raw) as Record<string, unknown>;
+    for (const area of LEARNING_AREAS) {
+      const entry = parsed[area];
+      if (entry && typeof entry === "object") {
+        const e = entry as Record<string, unknown>;
+        if (typeof e.id === "string" && typeof e.name === "string") {
+          out[area] = {
+            id: e.id,
+            name: e.name,
+          };
+        }
+      }
+    }
+  }
+  catch {
+    // Corrupt value — treat as unset.
+  }
+  return out;
+}
 
 /** Optional `termId`/`termLabel` off a stored source: keep only when a string or explicit null. */
 function parseTermField(value: unknown): string | null | undefined {
@@ -155,6 +183,7 @@ export async function getBookmarksSettings(): Promise<BookmarksSettings> {
     grammarSource: parseBookmarksSource(stored[BOOKMARKS_KEYS.grammarSource] ?? null),
     generalSource: parseBookmarksSource(stored[BOOKMARKS_KEYS.generalSource] ?? null),
     resourceSource: parseBookmarksSource(stored[BOOKMARKS_KEYS.resourceSource] ?? null),
+    learningAreaTags: parseLearningAreaTags(stored[BOOKMARKS_KEYS.learningAreaTags] ?? null),
   };
 }
 
@@ -179,6 +208,11 @@ export async function updateBookmarksSettings(
   }
   if (input.resourceSource !== undefined) {
     await setSetting(BOOKMARKS_KEYS.resourceSource, input.resourceSource ? JSON.stringify(input.resourceSource) : null);
+  }
+  if (input.learningAreaTags !== undefined) {
+    const map = input.learningAreaTags;
+    const hasAny = map && Object.keys(map).length > 0;
+    await setSetting(BOOKMARKS_KEYS.learningAreaTags, hasAny ? JSON.stringify(map) : null);
   }
   return getBookmarksSettings();
 }

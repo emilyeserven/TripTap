@@ -191,8 +191,14 @@ const actionItems = [
         to: "/shadowing",
         icon: Repeat2Icon,
       },
+    ],
+  },
+  {
+    title: "Collections",
+    icon: LibraryIcon,
+    children: [
       {
-        title: "Collections",
+        title: "Resources",
         to: "/collections",
         icon: TelescopeIcon,
       },

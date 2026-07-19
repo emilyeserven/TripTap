@@ -238,8 +238,33 @@ test("toBookmarkResource extracts website, runtime, media type, and complexity",
       min: 2,
       max: 2,
     },
+    tagIds: [],
     imageUrl: "/api/bookmarks/b1/images/img1?v=1",
   });
+});
+
+test("toBookmarkResource extracts tag ids, ignoring malformed tag entries", () => {
+  const raw = {
+    id: "bt",
+    title: "Tagged",
+    tags: [
+      {
+        id: "t1",
+        name: "Listening",
+      },
+      {
+        name: "no id",
+      },
+      null,
+      {
+        id: 42,
+      },
+      {
+        id: "t2",
+      },
+    ],
+  };
+  assert.deepEqual(toBookmarkResource(raw, PROPS)?.tagIds, ["t1", "t2"]);
 });
 
 test("toBookmarkResource falls back to the screenshot when the bookmark has no image", () => {
@@ -367,6 +392,7 @@ test("toBookmarkResource degrades missing website/runtime/mediaType/complexity t
     runtimeSeconds: null,
     mediaType: null,
     complexity: null,
+    tagIds: [],
     imageUrl: null,
   });
 });

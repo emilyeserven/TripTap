@@ -25,6 +25,8 @@ export * from "./tatoeba.js";
 export * from "./writing.js";
 export * from "./writing-prompt.js";
 
+import type { LearningArea } from "./question-sheet.js";
+
 /** A reusable origin for sentences (a book, show, article, …) — the "source taxonomy". */
 export interface Source {
   id: string;
@@ -400,6 +402,14 @@ export interface BookmarksSource {
 }
 
 /**
+ * A learning area ({@link LearningArea}) mapped to one tag from the Resources source (id + denormalized
+ * name). Lets a resource bookmark carrying that tag be filtered on the Collections page by its area.
+ * Only areas the user has mapped appear; the rest are absent.
+ */
+export type LearningAreaTagMap = Partial<Record<LearningArea, { id: string;
+  name: string; }>>;
+
+/**
  * Bookmarks integration settings as returned by `GET /api/settings/bookmarks`. Unlike
  * {@link OcrSettings} these are not secrets, so raw values are returned.
  */
@@ -414,6 +424,8 @@ export interface BookmarksSettings {
   generalSource: BookmarksSource | null;
   /** The selected Textbooks & Worksheets / Resources source, or null when unconfigured. */
   resourceSource: BookmarksSource | null;
+  /** Learning-area → Resources-source-tag mappings, powering the Collections learning-area filter. */
+  learningAreaTags: LearningAreaTagMap;
 }
 
 /**
@@ -426,6 +438,7 @@ export interface UpdateBookmarksSettingsInput {
   grammarSource?: BookmarksSource | null;
   generalSource?: BookmarksSource | null;
   resourceSource?: BookmarksSource | null;
+  learningAreaTags?: LearningAreaTagMap | null;
 }
 
 /**
@@ -536,6 +549,8 @@ export interface BookmarkSectionMatch {
   bookmarkUrl: string | null;
   /** The bookmark's thumbnail (same-origin proxy URL), resolved like its cover image; null when none. */
   imageUrl: string | null;
+  /** The owning bookmark's tag ids, for the learning-area badges. */
+  tagIds: string[];
   section: BookmarkSectionRef;
 }
 
@@ -597,6 +612,8 @@ export interface BookmarkResource {
   mediaType: string | null;
   /** The bookmark's complexity band (from the "Complexity Scale" property); null when unset. */
   complexity: BookmarkComplexity | null;
+  /** The ids of the bookmark's tags, for the Collections learning-area filter. */
+  tagIds: string[];
   /**
    * The bookmark's thumbnail image URL — a same-origin `/api/bookmarks/{id}/images/{imageId}` path
    * (from the upstream `image.url`) that the middleware proxies to the bookmarks host; null when none.
