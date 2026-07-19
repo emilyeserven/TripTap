@@ -17,6 +17,7 @@ import { useQuestionSheets } from "@/hooks/useQuestionSheets";
 import { useSentences } from "@/hooks/useSentences";
 import { sentencesByGrammarTagId } from "@/lib/grammar-links";
 import { otherUsages, resolvedRelations, usageLabel } from "@/lib/grammar-notes";
+import { buildTaggedSectionTree } from "@/lib/sections";
 
 /** A titled section wrapper — omitted when it has nothing to show. */
 function Section({
@@ -481,35 +482,36 @@ export function GrammarNoteView({
       {sectionsByBookmark.length > 0
         ? (
           <Section title={`Sections tagged “${note.tagName}”`}>
-            <ul className="space-y-2">
+            <ul
+              className="
+                grid gap-2
+                sm:grid-cols-2
+              "
+            >
               {sectionsByBookmark.map(group => (
                 <li
                   key={group.bookmarkId}
                   className="flex items-start gap-3 rounded-md border p-3"
                 >
-                  <div
-                    className="
-                      aspect-video h-12 shrink-0 overflow-hidden rounded-sm
-                      border bg-muted
-                    "
-                  >
-                    {group.imageUrl
-                      ? (
-                        <img
-                          src={group.imageUrl}
-                          alt=""
-                          loading="lazy"
-                          className="size-full object-cover"
-                        />
-                      )
-                      : (
-                        <div
-                          className="flex size-full items-center justify-center"
-                        >
-                          <ImageOff className="size-4 text-muted-foreground" />
-                        </div>
-                      )}
-                  </div>
+                  {group.imageUrl
+                    ? (
+                      <img
+                        src={group.imageUrl}
+                        alt=""
+                        loading="lazy"
+                        className="w-16 shrink-0 self-start rounded-sm border"
+                      />
+                    )
+                    : (
+                      <div
+                        className="
+                          flex aspect-video w-16 shrink-0 items-center
+                          justify-center rounded-sm border bg-muted
+                        "
+                      >
+                        <ImageOff className="size-4 text-muted-foreground" />
+                      </div>
+                    )}
                   <div className="min-w-0 flex-1 space-y-1">
                     {group.bookmarkUrl
                       ? (
@@ -530,8 +532,19 @@ export function GrammarNoteView({
                       )
                       : <span className="block truncate font-medium">{group.bookmarkTitle}</span>}
                     <ul className="space-y-0.5 text-sm text-muted-foreground">
-                      {group.sections.map(section => (
-                        <li key={section.id}>› {section.label}</li>
+                      {buildTaggedSectionTree(group.sections).map(node => (
+                        <li key={node.section.id}>
+                          › {node.label}
+                          {node.children.length > 0
+                            ? (
+                              <ul className="space-y-0.5 pl-4">
+                                {node.children.map(child => (
+                                  <li key={child.section.id}>{child.label}</li>
+                                ))}
+                              </ul>
+                            )
+                            : null}
+                        </li>
                       ))}
                     </ul>
                   </div>
