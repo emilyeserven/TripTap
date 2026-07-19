@@ -1,8 +1,9 @@
 import type { PlayerHandle } from "@/lib/player";
 import type { BookmarkSectionRef, ShadowingSegment, ShadowingSession } from "@sentence-bank/types";
 
-import { useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
+import { AudioFilePlayer } from "@/components/AudioFilePlayer";
 import { BookmarkPicker } from "@/components/BookmarkPicker";
 import { SegmentEditor } from "@/components/SegmentEditor";
 import { Button } from "@/components/ui/button";
@@ -12,7 +13,9 @@ import { YouTubePlayer } from "@/components/YouTubePlayer";
 import {
   useCreateShadowingSession,
   useUpdateShadowingSession,
+  useUploadShadowingSessionAudio,
 } from "@/hooks/useShadowingSessions";
+import { shadowingSessionsApi } from "@/lib/api";
 import { sectionRefToSegment } from "@/lib/sections";
 import { parseYouTubeId } from "@/lib/time";
 
@@ -56,6 +59,7 @@ export function ShadowingSessionForm({
 }) {
   const create = useCreateShadowingSession();
   const update = useUpdateShadowingSession();
+  const uploadAudio = useUploadShadowingSessionAudio();
   const editing = session !== undefined;
 
   const init = initialFormState(session, initialBookmark);
@@ -69,11 +73,23 @@ export function ShadowingSessionForm({
   const [defaultMaxReplays, setDefaultMaxReplays] = useState(init.defaultMaxReplays);
   const [defaultGapMs, setDefaultGapMs] = useState(init.defaultGapMs);
   const [segments, setSegments] = useState<ShadowingSegment[]>(init.segments);
+  const [audioFile, setAudioFile] = useState<File | null>(null);
 
   const playerRef = useRef<PlayerHandle>(null);
   const videoId = parseYouTubeId(videoUrl);
 
-  const pending = create.isPending || update.isPending;
+  // Preview a freshly-picked file locally; fall back to the stored audio when editing.
+  const audioObjectUrl = useMemo(() => (audioFile ? URL.createObjectURL(audioFile) : null), [audioFile]);
+  useEffect(() => () => {
+    if (audioObjectUrl) URL.revokeObjectURL(audioObjectUrl);
+  }, [audioObjectUrl]);
+  const storedAudioUrl = editing && session?.hasAudio ? shadowingSessionsApi.audioUrl(session.id) : null;
+  const audioPlayerSrc = audioObjectUrl ?? storedAudioUrl;
+  // What "Auto-detect segments" analyzes: the staged File, else the stored audio URL.
+  const audioSource: File | string | null = audioFile ?? storedAudioUrl;
+  const hasMediaPlayer = audioPlayerSrc !== null || videoId !== null;
+
+  const pending = create.isPending || update.isPending || uploadAudio.isPending;
   const canSubmit = title.trim().length > 0 && language.trim().length > 0 && !pending;
 
   // A picked timestamp section can seed a practice segment (complements SegmentEditor's bulk import).
@@ -105,6 +121,13 @@ export function ShadowingSessionForm({
         input,
       })
       : await create.mutateAsync(input);
+    // Upload needs the session id, so it runs after the create/update returns.
+    if (audioFile) {
+      await uploadAudio.mutateAsync({
+        id: saved.id,
+        file: audioFile,
+      });
+    }
     onSuccess?.(saved.id);
   };
 
@@ -162,17 +185,48 @@ export function ShadowingSessionForm({
         />
       </div>
 
-      {videoId && (
-        <div className="space-y-1.5">
-          <p className="text-xs text-muted-foreground">
-            Preview — play/scrub, then capture segment times with the clock button.
-          </p>
-          <YouTubePlayer
-            ref={playerRef}
-            videoId={videoId}
-          />
-        </div>
-      )}
+      <div className="space-y-1.5">
+        <Label htmlFor="ss-audio">Audio file (optional)</Label>
+        <Input
+          id="ss-audio"
+          type="file"
+          accept="audio/*"
+          onChange={e => setAudioFile(e.target.files?.[0] ?? null)}
+        />
+        <p className="text-xs text-muted-foreground">
+          {audioFile
+            ? `Selected “${audioFile.name}” — uploads when you save.`
+            : storedAudioUrl
+              ? "An audio file is attached. Choosing a new file replaces it."
+              : "Upload spoken audio to auto-detect practice segments from its waveform."}
+        </p>
+      </div>
+
+      {audioPlayerSrc
+        ? (
+          <div className="space-y-1.5">
+            <p className="text-xs text-muted-foreground">
+              Preview — play/scrub, then capture segment times with the clock button.
+            </p>
+            <AudioFilePlayer
+              ref={playerRef}
+              src={audioPlayerSrc}
+            />
+          </div>
+        )
+        : videoId
+          ? (
+            <div className="space-y-1.5">
+              <p className="text-xs text-muted-foreground">
+                Preview — play/scrub, then capture segment times with the clock button.
+              </p>
+              <YouTubePlayer
+                ref={playerRef}
+                videoId={videoId}
+              />
+            </div>
+          )
+          : null}
 
       <div
         className="
@@ -214,10 +268,13 @@ export function ShadowingSessionForm({
       <SegmentEditor
         segments={segments}
         onChange={setSegments}
-        getCurrentTimeMs={videoId ? () => playerRef.current?.getCurrentTimeMs() ?? 0 : undefined}
+        getCurrentTimeMs={hasMediaPlayer ? () => playerRef.current?.getCurrentTimeMs() ?? 0 : undefined}
         defaultMaxReplays={defaultMaxReplays}
         defaultGapMs={defaultGapMs}
         bookmarkId={bookmarkId}
+        audioSource={audioSource}
+        videoUrl={videoUrl}
+        language={language}
       />
 
       <div className="flex items-center gap-2">
