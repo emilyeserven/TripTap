@@ -22,6 +22,12 @@ vi.mock("@/components/BookmarkPicker", () => ({
 vi.mock("@/components/TermPicker", () => ({
   TermPicker: () => null,
 }));
+// The form reads the picked bookmark's section tree to resolve a section's page; not exercised here.
+vi.mock("@/hooks/useBookmarks", () => ({
+  useBookmarkRecord: () => ({
+    data: undefined,
+  }),
+}));
 
 /** Read the current labels of every rendered part input, in order. */
 function partLabels(): string[] {
