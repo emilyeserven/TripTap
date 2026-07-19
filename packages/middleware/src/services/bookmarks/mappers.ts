@@ -215,10 +215,32 @@ export function dedupeBookmarksByTitle(records: BookmarkRecord[]): BookmarkRecor
   return [...byId.values()].sort((a, b) => a.title.localeCompare(b.title));
 }
 
+/** The resolved "Progress" (itemInItems) property: its id and default text segments (unit words). */
+export interface ProgressPropertyFormat {
+  id: string;
+  before: string;
+  between: string;
+  after: string;
+}
+
 /** The resolved upstream custom-property ids the resource mapper reads out of `numberValues`. */
 export interface ResourcePropertyIds {
   runtimePropId: string | null;
   complexityPropId: string | null;
+  progress?: ProgressPropertyFormat | null;
+  favoritePropId?: string | null;
+}
+
+/** True when a `booleanValues` entry for `propertyId` is set to true. */
+function readBoolean(booleanValues: unknown, propertyId: string | null | undefined): boolean {
+  if (!propertyId || !Array.isArray(booleanValues)) return false;
+  for (const bv of booleanValues) {
+    if (bv && typeof bv === "object") {
+      const b = bv as Record<string, unknown>;
+      if (b.propertyId === propertyId) return b.value === true;
+    }
+  }
+  return false;
 }
 
 /** Find the `numberValues` entry for a given property id, or null. */
@@ -232,6 +254,61 @@ function findNumberValue(
       const n = nv as Record<string, unknown>;
       if (n.propertyId === propertyId) return n;
     }
+  }
+  return null;
+}
+
+/**
+ * Compose an itemInItems display string ("current between total after"), borrowed from the bookmarks
+ * app's `joinProgressDisplay`. Auto-spacing (default) trims each label and single-spaces the parts, so
+ * a raw ` of `/` pages` renders "12 of 200 pages"; `autoSpace === false` concatenates verbatim (so a
+ * tight `between: "/"` renders "12/200").
+ */
+function joinProgressDisplay(
+  before: string,
+  current: number,
+  between: string,
+  total: number,
+  after: string,
+  autoSpace: boolean | null,
+): string {
+  if (autoSpace === false) return `${before}${current}${between}${total}${after}`;
+  const b = before.trim();
+  const bt = between.trim();
+  const a = after.trim();
+  let out = b ? `${b} ${current}` : `${current}`;
+  out += bt ? ` ${bt} ${total}` : `${total}`;
+  if (a) out += ` ${a}`;
+  return out;
+}
+
+/** Extract a bookmark's progress for the resolved Progress property, composing its label like the app. */
+function readProgress(o: Record<string, unknown>, format: ProgressPropertyFormat): BookmarkResource["progress"] {
+  if (!Array.isArray(o.progressValues)) return null;
+  for (const v of o.progressValues) {
+    if (!v || typeof v !== "object") continue;
+    const pv = v as Record<string, unknown>;
+    if (pv.propertyId !== format.id || typeof pv.current !== "number" || typeof pv.total !== "number") continue;
+    // A per-bookmark text override wins over the property defaults (mirrors resolveItemInItemsTexts).
+    const ov = pv.textOverride && typeof pv.textOverride === "object"
+      ? pv.textOverride as Record<string, unknown>
+      : null;
+    const before = typeof ov?.beforeText === "string" ? ov.beforeText : format.before;
+    const between = typeof ov?.betweenText === "string" ? ov.betweenText : format.between;
+    const after = typeof ov?.afterText === "string" ? ov.afterText : format.after;
+    return {
+      current: pv.current,
+      total: pv.total,
+      percent: pv.total > 0 ? pv.current / pv.total : 0,
+      label: joinProgressDisplay(
+        before,
+        pv.current,
+        between,
+        pv.total,
+        after,
+        typeof pv.autoSpace === "boolean" ? pv.autoSpace : null,
+      ),
+    };
   }
   return null;
 }
@@ -276,6 +353,9 @@ export function toBookmarkResource(raw: unknown, propIds: ResourcePropertyIds): 
     };
   }
 
+  const progress = propIds.progress ? readProgress(o, propIds.progress) : null;
+  const favorite = readBoolean(o.booleanValues, propIds.favoritePropId);
+
   let mediaType: string | null = null;
   if (o.mediaType && typeof o.mediaType === "object") {
     const m = o.mediaType as Record<string, unknown>;
@@ -304,6 +384,8 @@ export function toBookmarkResource(raw: unknown, propIds: ResourcePropertyIds): 
     runtimeSeconds,
     mediaType,
     complexity,
+    progress,
+    favorite,
     tagIds,
     imageUrl,
   };

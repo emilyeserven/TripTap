@@ -326,10 +326,29 @@ async function resolveResourceProperties(baseUrl: string): Promise<ResolvedResou
     && ((typeof p.name === "string" && p.name.toLowerCase().includes("complexity"))
       || p.slug === "complexity-scale"));
 
+  // The "Progress" itemInItems property (matched by name/slug — the host also has a "Page Range"
+  // itemInItems). Capture its default text segments so the mapper can compose the display label.
+  const progress = props.find(p =>
+    p.type === "itemInItems"
+    && ((typeof p.name === "string" && p.name.toLowerCase() === "progress") || p.slug === "progress"));
+
+  const favorite = props.find(p =>
+    p.type === "boolean"
+    && ((typeof p.name === "string" && p.name.toLowerCase() === "favorite") || p.slug === "favorite"));
+
   return {
     runtimePropId: runtime && typeof runtime.id === "string" ? runtime.id : null,
     complexityPropId: complexity && typeof complexity.id === "string" ? complexity.id : null,
     complexityScale: complexity ? toComplexityScale(complexity) : null,
+    progress: progress && typeof progress.id === "string"
+      ? {
+        id: progress.id,
+        before: typeof progress.itemInItemsBeforeText === "string" ? progress.itemInItemsBeforeText : "",
+        between: typeof progress.itemInItemsBetweenText === "string" ? progress.itemInItemsBetweenText : " of ",
+        after: typeof progress.itemInItemsAfterText === "string" ? progress.itemInItemsAfterText : "",
+      }
+      : null,
+    favoritePropId: favorite && typeof favorite.id === "string" ? favorite.id : null,
   };
 }
 

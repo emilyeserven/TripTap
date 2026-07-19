@@ -17,6 +17,7 @@ import {
   resourceActions,
   resourceLearningAreas,
   sortByRuntime,
+  sortResources,
   websiteFilterOptions,
 } from "./collections";
 
@@ -29,6 +30,8 @@ function resource(over: Partial<BookmarkResource>): BookmarkResource {
     runtimeSeconds: null,
     mediaType: null,
     complexity: null,
+    progress: null,
+    favorite: false,
     tagIds: [],
     imageUrl: null,
     ...over,
@@ -333,10 +336,10 @@ describe("matchesLearningAreas", () => {
 });
 
 describe("resourceActions", () => {
-  it("derives session buttons from the resource's learning areas", () => {
+  it("derives session buttons from the resource's learning areas (Listening also offers shadowing)", () => {
     expect(resourceActions(resource({
       tagIds: ["tL", "tW"],
-    }), AREA_MAP)).toEqual(["listening", "writing"]);
+    }), AREA_MAP)).toEqual(["listening", "shadowing", "writing"]);
     expect(resourceActions(resource({
       tagIds: ["tS"],
     }), AREA_MAP)).toEqual(["shadowing"]);
@@ -351,5 +354,59 @@ describe("resourceActions", () => {
       tagIds: [],
       runtimeSeconds: null,
     }), AREA_MAP)).toEqual(["reading", "writing"]);
+  });
+});
+
+describe("sortResources", () => {
+  const fav = resource({
+    id: "fav",
+    favorite: true,
+    runtimeSeconds: 10,
+  });
+  const long = resource({
+    id: "long",
+    runtimeSeconds: 300,
+  });
+  const short = resource({
+    id: "short",
+    runtimeSeconds: 60,
+  });
+  const noRt = resource({
+    id: "noRt",
+    runtimeSeconds: null,
+  });
+
+  it("always lists favorites first, then applies the key", () => {
+    expect(sortResources([long, fav, short], "runtime-desc").map(r => r.id)).toEqual(["fav", "long", "short"]);
+  });
+
+  it("sorts by runtime with nulls last within each favorite group", () => {
+    expect(sortResources([noRt, long, short], "runtime-asc").map(r => r.id)).toEqual(["short", "long", "noRt"]);
+  });
+
+  it("sorts by progress percent", () => {
+    const p20 = resource({
+      id: "p20",
+      progress: {
+        current: 1,
+        total: 5,
+        percent: 0.2,
+        label: "1 of 5",
+      },
+    });
+    const p80 = resource({
+      id: "p80",
+      progress: {
+        current: 4,
+        total: 5,
+        percent: 0.8,
+        label: "4 of 5",
+      },
+    });
+    const pNone = resource({
+      id: "pNone",
+      progress: null,
+    });
+    expect(sortResources([p20, pNone, p80], "progress-desc").map(r => r.id)).toEqual(["p80", "p20", "pNone"]);
   });
 });

@@ -1,7 +1,9 @@
+import type { ResourceSort } from "@/lib/collections";
+
 import { useMemo, useState } from "react";
 
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { BookOpen, ExternalLink, Headphones, ImageOff, PenLine, RefreshCw, Repeat2 } from "lucide-react";
+import { BookOpen, ExternalLink, Headphones, ImageOff, PenLine, RefreshCw, Repeat2, Star } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,6 +11,7 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Combobox } from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
 import { MultiSelect } from "@/components/ui/multi-select";
+import { Progress } from "@/components/ui/progress";
 import {
   Select,
   SelectContent,
@@ -34,7 +37,7 @@ import {
   mediaTypeFilterOptions,
   resourceActions,
   resourceLearningAreas,
-  sortByRuntime,
+  sortResources,
   websiteFilterOptions,
 } from "@/lib/collections";
 
@@ -56,7 +59,7 @@ function CollectionsPage() {
   const [website, setWebsite] = useState(ALL_FILTER);
   const [mediaType, setMediaType] = useState(ALL_FILTER);
   const [areas, setAreas] = useState<string[]>([]);
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [sort, setSort] = useState<ResourceSort>("runtime-desc");
   const [complexityMin, setComplexityMin] = useState(COMPLEXITY_MIN);
   const [complexityMax, setComplexityMax] = useState<number | null>(null);
 
@@ -78,8 +81,8 @@ function CollectionsPage() {
       && matchesMediaType(r, mediaType)
       && matchesLearningAreas(r, areas, areaTags)
       && matchesComplexity(r, complexityMin, selMax, scale));
-    return sortByRuntime(filtered, sortDir);
-  }, [all, search, website, mediaType, areas, areaTags, complexityMin, selMax, scale, sortDir]);
+    return sortResources(filtered, sort);
+  }, [all, search, website, mediaType, areas, areaTags, complexityMin, selMax, scale, sort]);
 
   const nothing = !isLoading && !error && shown.length === 0;
 
@@ -174,18 +177,20 @@ function CollectionsPage() {
           )
           : null}
         <Select
-          value={sortDir}
-          onValueChange={v => setSortDir(v as "asc" | "desc")}
+          value={sort}
+          onValueChange={v => setSort(v as ResourceSort)}
         >
           <SelectTrigger
-            className="w-44"
-            aria-label="Sort by runtime"
+            className="w-48"
+            aria-label="Sort"
           >
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="desc">Longest first</SelectItem>
-            <SelectItem value="asc">Shortest first</SelectItem>
+            <SelectItem value="runtime-desc">Longest first</SelectItem>
+            <SelectItem value="runtime-asc">Shortest first</SelectItem>
+            <SelectItem value="progress-desc">Most progress</SelectItem>
+            <SelectItem value="progress-asc">Least progress</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -285,24 +290,36 @@ function CollectionsPage() {
                   )}
               </div>
               <CardContent className="flex-1 space-y-2 p-4">
-                {r.url
-                  ? (
-                    <a
-                      href={r.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="
-                        flex items-center gap-1 font-medium
-                        hover:underline
-                      "
-                    >
-                      <span className="truncate">{r.title}</span>
-                      <ExternalLink
-                        className="size-3.5 shrink-0 text-muted-foreground"
+                <div className="flex items-center gap-1">
+                  {r.favorite
+                    ? (
+                      <Star
+                        className="
+                          size-3.5 shrink-0 fill-yellow-400 text-yellow-400
+                        "
+                        aria-label="Favorited"
                       />
-                    </a>
-                  )
-                  : <span className="block truncate font-medium">{r.title}</span>}
+                    )
+                    : null}
+                  {r.url
+                    ? (
+                      <a
+                        href={r.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="
+                          flex min-w-0 items-center gap-1 font-medium
+                          hover:underline
+                        "
+                      >
+                        <span className="truncate">{r.title}</span>
+                        <ExternalLink
+                          className="size-3.5 shrink-0 text-muted-foreground"
+                        />
+                      </a>
+                    )
+                    : <span className="min-w-0 truncate font-medium">{r.title}</span>}
+                </div>
                 <div
                   className="
                     flex flex-wrap items-center gap-2 text-xs
@@ -323,6 +340,17 @@ function CollectionsPage() {
                     ? <span className="font-mono">{formatRuntime(r.runtimeSeconds)}</span>
                     : null}
                 </div>
+                {r.progress
+                  ? (
+                    <div className="space-y-1">
+                      <Progress
+                        value={Math.round(r.progress.percent * 100)}
+                        className="h-1.5"
+                      />
+                      <p className="text-xs text-muted-foreground">{r.progress.label}</p>
+                    </div>
+                  )
+                  : null}
               </CardContent>
               <CardFooter className="flex-wrap gap-2 p-4 pt-0">
                 {actions.includes("listening")
