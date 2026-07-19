@@ -3,6 +3,7 @@ import type {
   BookmarksSource,
   BookmarksSourceKind,
   BookmarksTaxonomy,
+  DrillTagMap,
   LearningAreaTagMap,
   MaterialTypeTagMap,
   SentenceTermCategory,
@@ -12,7 +13,7 @@ import type { UseQueryResult } from "@tanstack/react-query";
 
 import { useEffect, useRef, useState } from "react";
 
-import { LEARNING_AREAS, MATERIAL_TYPES } from "@sentence-bank/types";
+import { DRILL_TAGS, LEARNING_AREAS, MATERIAL_TYPES } from "@sentence-bank/types";
 import { Check, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -370,6 +371,25 @@ function MaterialTypeTagFields({
   );
 }
 
+/** Maps the Drills classification to one Resources-source tag. */
+function DrillTagFields({
+  value,
+  onChange,
+}: {
+  value: DrillTagMap;
+  onChange: (next: DrillTagMap) => void;
+}) {
+  return (
+    <TagMapFields
+      keys={DRILL_TAGS}
+      value={value}
+      onChange={onChange}
+      title="Drill tags"
+      hint="Map the Drills classification to one Resources-source tag. Tagged resources are badged and filterable as drill material on the Collections page and grammar notes."
+    />
+  );
+}
+
 /**
  * Settings card for the external bookmarks tag/taxonomy integration. The user sets the API endpoint
  * and picks one source per channel (Vocabulary, Grammar, General) — a parent tag (its children become
@@ -400,6 +420,7 @@ export function BookmarksTagsCard() {
   });
   const [areaTags, setAreaTags] = useState<LearningAreaTagMap>({});
   const [materialTags, setMaterialTags] = useState<MaterialTypeTagMap>({});
+  const [drillTags, setDrillTags] = useState<DrillTagMap>({});
   const [saved, setSaved] = useState(false);
 
   // Seed local state from the loaded settings once (later refetches must not clobber edits).
@@ -416,6 +437,7 @@ export function BookmarksTagsCard() {
     });
     setAreaTags(settings.data.learningAreaTags ?? {});
     setMaterialTags(settings.data.materialTypeTags ?? {});
+    setDrillTags(settings.data.drillTags ?? {});
   }, [settings.data]);
 
   function flashSaved() {
@@ -432,6 +454,7 @@ export function BookmarksTagsCard() {
       resourceSource: draftToSource(drafts.resource),
       learningAreaTags: areaTags,
       materialTypeTags: materialTags,
+      drillTags,
     });
     flashSaved();
   }
@@ -494,6 +517,11 @@ export function BookmarksTagsCard() {
         <MaterialTypeTagFields
           value={materialTags}
           onChange={setMaterialTags}
+        />
+
+        <DrillTagFields
+          value={drillTags}
+          onChange={setDrillTags}
         />
 
         <div className="flex items-center gap-3">

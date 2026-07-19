@@ -93,6 +93,15 @@ const materialTypeTagsSchema = {
   },
 } as const;
 
+/** The drill-tag → tag map: keys are drill tags, values are `{ id, name }`. */
+const drillTagsSchema = {
+  type: ["object", "null"],
+  additionalProperties: false,
+  properties: {
+    Drills: mappedTagSchema,
+  },
+} as const;
+
 const updateBookmarksSettingsBody = {
   type: "object",
   additionalProperties: false,
@@ -106,6 +115,7 @@ const updateBookmarksSettingsBody = {
     resourceSource: bookmarksSourceSchema,
     learningAreaTags: learningAreaTagsSchema,
     materialTypeTags: materialTypeTagsSchema,
+    drillTags: drillTagsSchema,
   },
 } as const;
 

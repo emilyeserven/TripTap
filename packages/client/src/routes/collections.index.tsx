@@ -29,8 +29,10 @@ import {
   complexityLevelOptions,
   formatComplexity,
   formatRuntime,
+  drillTagFilterOptions,
   learningAreaFilterOptions,
   matchesComplexity,
+  matchesDrillTags,
   matchesLearningAreas,
   matchesMaterialTypes,
   matchesMediaType,
@@ -38,6 +40,7 @@ import {
   materialTypeFilterOptions,
   mediaTypeFilterOptions,
   resourceActions,
+  resourceDrillTags,
   resourceLearningAreas,
   resourceMaterialTypes,
   sortResources,
@@ -63,6 +66,7 @@ function CollectionsPage() {
   const [mediaType, setMediaType] = useState(ALL_FILTER);
   const [areas, setAreas] = useState<string[]>([]);
   const [materials, setMaterials] = useState<string[]>([]);
+  const [drills, setDrills] = useState<string[]>([]);
   const [sort, setSort] = useState<ResourceSort>("runtime-desc");
   const [complexityMin, setComplexityMin] = useState(COMPLEXITY_MIN);
   const [complexityMax, setComplexityMax] = useState<number | null>(null);
@@ -71,10 +75,12 @@ function CollectionsPage() {
   const scale = data?.complexityScale ?? null;
   const areaTags = useMemo(() => settings.data?.learningAreaTags ?? {}, [settings.data]);
   const materialTags = useMemo(() => settings.data?.materialTypeTags ?? {}, [settings.data]);
+  const drillTags = useMemo(() => settings.data?.drillTags ?? {}, [settings.data]);
   const websiteOptions = useMemo(() => websiteFilterOptions(all), [all]);
   const mediaTypeOptions = useMemo(() => mediaTypeFilterOptions(all), [all]);
   const areaOptions = useMemo(() => learningAreaFilterOptions(areaTags, all), [areaTags, all]);
   const materialOptions = useMemo(() => materialTypeFilterOptions(materialTags, all), [materialTags, all]);
+  const drillOptions = useMemo(() => drillTagFilterOptions(drillTags, all), [drillTags, all]);
   const levelOptions = useMemo(() => (scale ? complexityLevelOptions(scale) : []), [scale]);
   // Default the upper complexity bound to the top of the scale until the user narrows it.
   const selMax = complexityMax ?? scale?.max ?? COMPLEXITY_MIN;
@@ -87,9 +93,25 @@ function CollectionsPage() {
       && matchesMediaType(r, mediaType)
       && matchesLearningAreas(r, areas, areaTags)
       && matchesMaterialTypes(r, materials, materialTags)
+      && matchesDrillTags(r, drills, drillTags)
       && matchesComplexity(r, complexityMin, selMax, scale));
     return sortResources(filtered, sort);
-  }, [all, search, website, mediaType, areas, areaTags, materials, materialTags, complexityMin, selMax, scale, sort]);
+  }, [
+    all,
+    search,
+    website,
+    mediaType,
+    areas,
+    areaTags,
+    materials,
+    materialTags,
+    drills,
+    drillTags,
+    complexityMin,
+    selMax,
+    scale,
+    sort,
+  ]);
 
   const nothing = !isLoading && !error && shown.length === 0;
 
@@ -196,6 +218,19 @@ function CollectionsPage() {
             />
           )
           : null}
+        {drillOptions.length > 0
+          ? (
+            <MultiSelect
+              value={drills}
+              onChange={setDrills}
+              options={drillOptions}
+              ariaLabel="Filter by drill tag"
+              placeholder="All drill tags"
+              searchPlaceholder="Search drill tags…"
+              className="w-48"
+            />
+          )
+          : null}
         <Select
           value={sort}
           onValueChange={v => setSort(v as ResourceSort)}
@@ -288,6 +323,7 @@ function CollectionsPage() {
           const complexityLabel = formatComplexity(r, scale);
           const cardAreas = resourceLearningAreas(r.tagIds, areaTags);
           const cardMaterials = resourceMaterialTypes(r.tagIds, materialTags);
+          const cardDrills = resourceDrillTags(r.tagIds, drillTags);
           const actions = resourceActions(r, areaTags);
           return (
             <Card
@@ -362,6 +398,13 @@ function CollectionsPage() {
                       key={type}
                       variant="default"
                     >{type}
+                    </Badge>
+                  ))}
+                  {cardDrills.map(tag => (
+                    <Badge
+                      key={tag}
+                      variant="outline"
+                    >{tag}
                     </Badge>
                   ))}
                   {r.runtimeSeconds != null

@@ -1,13 +1,15 @@
 import type {
   BookmarkResource,
   ComplexityScale,
+  DrillTag,
+  DrillTagMap,
   LearningArea,
   LearningAreaTagMap,
   MaterialType,
   MaterialTypeTagMap,
 } from "@sentence-bank/types";
 
-import { LEARNING_AREAS, MATERIAL_TYPES } from "@sentence-bank/types";
+import { DRILL_TAGS, LEARNING_AREAS, MATERIAL_TYPES } from "@sentence-bank/types";
 
 /** Sentinel for the "no website filter" option (mirrors `lib/answer-sheets.ts`'s `ALL_FILTER`). */
 export const ALL_FILTER = "all";
@@ -152,6 +154,42 @@ export function matchesMaterialTypes(
   if (selected.length === 0) return true;
   const types = resourceMaterialTypes(r.tagIds, map);
   return selected.some(type => types.includes(type as MaterialType));
+}
+
+/** The drill tags a resource carries: the mapped drill tags whose tag is on the resource. */
+export function resourceDrillTags(tagIds: string[], map: DrillTagMap): DrillTag[] {
+  return DRILL_TAGS.filter((tag) => {
+    const mapped = map[tag];
+    return mapped ? tagIds.includes(mapped.id) : false;
+  });
+}
+
+/**
+ * The drill tags that have a tag configured, as filter options with per-tag resource counts
+ * (empty when nothing is mapped).
+ */
+export function drillTagFilterOptions(
+  map: DrillTagMap,
+  resources: BookmarkResource[],
+): FilterOption[] {
+  return DRILL_TAGS.filter(tag => map[tag]).map((tag) => {
+    const count = resources.filter(r => resourceDrillTags(r.tagIds, map).includes(tag)).length;
+    return {
+      value: tag,
+      label: `${tag} (${count})`,
+    };
+  });
+}
+
+/** True when a resource matches the selected drill tags (empty selection passes; ANY match otherwise). */
+export function matchesDrillTags(
+  r: BookmarkResource,
+  selected: string[],
+  map: DrillTagMap,
+): boolean {
+  if (selected.length === 0) return true;
+  const tags = resourceDrillTags(r.tagIds, map);
+  return selected.some(tag => tags.includes(tag as DrillTag));
 }
 
 /** One session-start action a Collections card can offer. */

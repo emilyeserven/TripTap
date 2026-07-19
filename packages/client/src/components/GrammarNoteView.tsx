@@ -17,7 +17,7 @@ import { useQuestionSheets } from "@/hooks/useQuestionSheets";
 import { useSentences } from "@/hooks/useSentences";
 import { useBookmarksSettings } from "@/hooks/useSettings";
 import { bookmarkAppUrl } from "@/lib/bookmarks";
-import { resourceLearningAreas, resourceMaterialTypes } from "@/lib/collections";
+import { resourceDrillTags, resourceLearningAreas, resourceMaterialTypes } from "@/lib/collections";
 import { sentencesByGrammarTagId } from "@/lib/grammar-links";
 import { otherUsages, resolvedRelations, usageLabel } from "@/lib/grammar-notes";
 import { buildTaggedSectionTree } from "@/lib/sections";
@@ -69,6 +69,7 @@ export function GrammarNoteView({
   const bookmarksSettings = useBookmarksSettings();
   const areaTags = bookmarksSettings.data?.learningAreaTags ?? {};
   const materialTags = bookmarksSettings.data?.materialTypeTags ?? {};
+  const drillTags = bookmarksSettings.data?.drillTags ?? {};
   // Group the tagged sections by their bookmark so each bookmark is one card listing its sections,
   // rather than repeating the bookmark title per section. Upstream order (bookmark title, then section
   // label) is preserved by the insertion-ordered Map.
@@ -499,6 +500,14 @@ export function GrammarNoteView({
                           {type}
                         </Badge>
                       ))}
+                      {resourceDrillTags(b.tagIds, drillTags).map(tag => (
+                        <Badge
+                          key={tag}
+                          variant="outline"
+                        >
+                          {tag}
+                        </Badge>
+                      ))}
                     </div>
                   </div>
                 </li>
@@ -559,6 +568,7 @@ export function GrammarNoteView({
                     {group.mediaType
                       || resourceLearningAreas(group.tagIds, areaTags).length > 0
                       || resourceMaterialTypes(group.tagIds, materialTags).length > 0
+                      || resourceDrillTags(group.tagIds, drillTags).length > 0
                       ? (
                         <div className="flex flex-wrap items-center gap-1">
                           {group.mediaType ? <Badge variant="outline">{group.mediaType}</Badge> : null}
@@ -576,6 +586,14 @@ export function GrammarNoteView({
                               variant="default"
                             >
                               {type}
+                            </Badge>
+                          ))}
+                          {resourceDrillTags(group.tagIds, drillTags).map(tag => (
+                            <Badge
+                              key={tag}
+                              variant="outline"
+                            >
+                              {tag}
                             </Badge>
                           ))}
                         </div>
