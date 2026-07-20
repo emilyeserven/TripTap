@@ -1,3 +1,5 @@
+import type { LearningArea } from "@sentence-bank/types";
+
 import { useMemo, useState } from "react";
 
 import { createFileRoute, Link } from "@tanstack/react-router";
@@ -86,6 +88,23 @@ function ReadingWritingPage() {
     </div>
   );
 
+  // "View more" jumps to the full Collections view, carrying the current strip filter.
+  const viewMoreAreas: LearningArea[] = areaFilter === "all" ? ["Reading", "Writing"] : [areaFilter];
+  const resourcesAction = (
+    <div className="flex items-center gap-3">
+      {areaResources.length > 0 ? areaFilterGroup : null}
+      <Link
+        to="/collections"
+        search={{
+          areas: viewMoreAreas,
+        }}
+        className={VIEW_ALL_CLASS}
+      >
+        View more →
+      </Link>
+    </div>
+  );
+
   const writingViewAll = (
     <Link
       to="/my-writing"
@@ -122,7 +141,7 @@ function ReadingWritingPage() {
 
       <HubSection
         title="Resources"
-        action={areaResources.length > 0 ? areaFilterGroup : undefined}
+        action={resourcesAction}
       >
         <ResourceRow
           resources={rowResources}

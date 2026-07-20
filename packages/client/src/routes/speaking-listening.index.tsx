@@ -82,6 +82,22 @@ function SpeakingListeningPage() {
     </div>
   );
 
+  // "View more" jumps to the full Collections view, pre-filtered to this hub's learning areas.
+  const resourcesAction = (
+    <div className="flex items-center gap-3">
+      {areaResources.length > 0 ? mediaFilter : null}
+      <Link
+        to="/collections"
+        search={{
+          areas: ["Listening", "Speaking"],
+        }}
+        className={VIEW_ALL_CLASS}
+      >
+        View more →
+      </Link>
+    </div>
+  );
+
   const listeningViewAll = (
     <Link
       to="/listening-sessions"
@@ -110,7 +126,7 @@ function SpeakingListeningPage() {
 
       <HubSection
         title="Resources"
-        action={areaResources.length > 0 ? mediaFilter : undefined}
+        action={resourcesAction}
       >
         <ResourceRow
           resources={rowResources}

@@ -306,6 +306,68 @@ export function sortResources(resources: BookmarkResource[], sort: ResourceSort)
   });
 }
 
+/** The four valid `ResourceSort` values, for validating a value from the URL. */
+const RESOURCE_SORTS: ResourceSort[] = ["runtime-desc", "runtime-asc", "progress-desc", "progress-asc"];
+
+/**
+ * The URL-search shape backing the Collections page filters. Every field is optional; a missing field
+ * means "default" (all/none), so default values are omitted from the URL to keep links clean. Keys are
+ * kept short (`q`, `cmin`, `cmax`) for tidy URLs.
+ */
+export interface CollectionsSearch {
+  q?: string;
+  website?: string;
+  mediaType?: string;
+  areas?: LearningArea[];
+  materials?: MaterialType[];
+  drills?: DrillTag[];
+  sort?: ResourceSort;
+  cmin?: number;
+  cmax?: number;
+}
+
+/** A non-empty trimmed string from an unknown value, or undefined. */
+function optionalString(value: unknown): string | undefined {
+  return typeof value === "string" && value.trim() !== "" ? value : undefined;
+}
+
+/** A finite number from an unknown value (accepting numeric strings from the URL), or undefined. */
+function optionalNumber(value: unknown): number | undefined {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string" && value.trim() !== "") {
+    const n = Number(value);
+    if (Number.isFinite(n)) return n;
+  }
+  return undefined;
+}
+
+/** The members of `value` (a value or array) that are in `allowed`, or undefined when none. */
+function allowedMembers<T extends string>(value: unknown, allowed: readonly T[]): T[] | undefined {
+  const raw = Array.isArray(value) ? value : [value];
+  const kept = raw.filter((v): v is T => typeof v === "string" && (allowed as readonly string[]).includes(v));
+  return kept.length > 0 ? [...new Set(kept)] : undefined;
+}
+
+/**
+ * Parse and validate the Collections page's URL search params, dropping anything malformed and keeping
+ * only recognized enum members. Used by the route's `validateSearch` so bookmarked/shared filter URLs
+ * are safe and typed.
+ */
+export function parseCollectionsSearch(raw: Record<string, unknown>): CollectionsSearch {
+  const sort = optionalString(raw.sort);
+  return {
+    q: optionalString(raw.q),
+    website: optionalString(raw.website),
+    mediaType: optionalString(raw.mediaType),
+    areas: allowedMembers(raw.areas, LEARNING_AREAS),
+    materials: allowedMembers(raw.materials, MATERIAL_TYPES),
+    drills: allowedMembers(raw.drills, DRILL_TAGS),
+    sort: sort && (RESOURCE_SORTS as string[]).includes(sort) ? (sort as ResourceSort) : undefined,
+    cmin: optionalNumber(raw.cmin),
+    cmax: optionalNumber(raw.cmax),
+  };
+}
+
 /** Format a runtime in seconds as `H:MM:SS` (or `M:SS` under an hour); "—" when null. */
 export function formatRuntime(seconds: number | null): string {
   if (seconds == null || !Number.isFinite(seconds) || seconds < 0) return "—";
