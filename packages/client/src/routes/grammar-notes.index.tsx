@@ -66,7 +66,12 @@ function GrammarNotesPage() {
         )
         : null}
 
-      <div className="space-y-4">
+      <div
+        className="
+          grid gap-4
+          sm:grid-cols-2
+        "
+      >
         {shown.map(note => (
           <GrammarNoteCard
             key={note.id}
