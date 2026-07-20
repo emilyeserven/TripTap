@@ -1,7 +1,7 @@
 import type { PlayerHandle } from "@/lib/player";
 import type { ListeningEntry, ShadowingSession } from "@sentence-bank/types";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { ExternalLink, Play, RotateCcw, SkipForward, Square } from "lucide-react";
 
@@ -37,11 +37,48 @@ export function ShadowingSessionView({
   const hasMedia = audioSrc !== null || videoId !== null;
   const segments = session.segments ?? [];
 
+  // Loops completed this visit, persisted on top of the total the session arrived with. The baseline
+  // is captured once so cache refreshes mid-practice can't double-count; the PATCH always sends the
+  // absolute total, debounced so a burst of reps is one write.
+  const [loopsDone, setLoopsDone] = useState(0);
+  const loopsDoneRef = useRef(0);
+  const loopsBaselineRef = useRef(session.completedLoops);
+  const flushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const updateRef = useRef(update);
+  updateRef.current = update;
+
+  const persistLoops = () => {
+    flushTimerRef.current = null;
+    updateRef.current.mutate({
+      id: session.id,
+      input: {
+        completedLoops: loopsBaselineRef.current + loopsDoneRef.current,
+      },
+    });
+  };
+
+  const onRepComplete = () => {
+    loopsDoneRef.current += 1;
+    setLoopsDone(loopsDoneRef.current);
+    if (flushTimerRef.current) clearTimeout(flushTimerRef.current);
+    flushTimerRef.current = setTimeout(persistLoops, 2000);
+  };
+
+  useEffect(() => () => {
+    // Flush a pending count when leaving the page so the last reps aren't lost.
+    if (flushTimerRef.current) {
+      clearTimeout(flushTimerRef.current);
+      persistLoops();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const loop = useSegmentLoop({
     playerRef,
     segments,
     defaultMaxReplays: session.defaultMaxReplays,
     defaultGapMs: session.defaultGapMs,
+    onRepComplete,
   });
 
   const persist = (next: ListeningEntry[]) => {
@@ -114,6 +151,9 @@ export function ShadowingSessionView({
           <h2 className="text-lg font-semibold">Segments</h2>
           {segments.length > 0 && (
             <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">
+                Loops: {loopsDone} this run · {loopsBaselineRef.current + loopsDone} total
+              </span>
               {loop.isRunning
                 ? (
                   <Button

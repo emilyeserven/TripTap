@@ -1,0 +1,62 @@
+import assert from "node:assert/strict";
+import { test } from "node:test";
+import { buildApp } from "@/app";
+
+// These tests use Fastify's `inject` and JSON-schema validation, so they run without a live database.
+
+test("POST /api/drill-sessions rejects a payload missing date", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/drill-sessions",
+    payload: {
+      title: "Conjugation drills",
+    },
+  });
+  assert.equal(res.statusCode, 400);
+  await app.close();
+});
+
+test("POST /api/drill-sessions rejects negative rounds", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/drill-sessions",
+    payload: {
+      date: "2026-07-20",
+      rounds: -1,
+    },
+  });
+  assert.equal(res.statusCode, 400);
+  await app.close();
+});
+
+test("POST /api/drill-sessions rejects an unknown learning area", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/drill-sessions",
+    payload: {
+      date: "2026-07-20",
+      learningArea: "Juggling",
+    },
+  });
+  assert.equal(res.statusCode, 400);
+  await app.close();
+});
+
+test("POST /api/drill-sessions accepts rounds and a valid learning area", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/drill-sessions",
+    payload: {
+      date: "2026-07-20",
+      rounds: 12,
+      learningArea: "Vocabulary",
+    },
+  });
+  // Without a live DB the handler fails downstream; schema validation must still pass.
+  assert.notEqual(res.statusCode, 400);
+  await app.close();
+});

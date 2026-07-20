@@ -42,6 +42,8 @@ export interface ShadowingSession {
   defaultGapMs: number;
   /** True when the session has an uploaded audio file (served at `/api/shadowing-sessions/:id/audio`). */
   hasAudio: boolean;
+  /** Total segment loops (playback passes) completed across all practice runs (XP: 0.25 each). */
+  completedLoops: number;
   /** The practice segments; null if none defined yet. */
   segments: ShadowingSegment[] | null;
   /** Timestamped notes taken during practice; null if none. */
@@ -65,6 +67,8 @@ export interface CreateShadowingSessionInput {
   defaultMaxReplays?: number;
   /** Defaults to 0 server-side when omitted. */
   defaultGapMs?: number;
+  /** Defaults to 0 server-side when omitted. */
+  completedLoops?: number;
   segments?: ShadowingSegment[] | null;
   entries?: ListeningEntry[] | null;
   terms?: SentenceTermRef[] | null;
