@@ -11,6 +11,8 @@ import { describe, expect, it } from "vitest";
 import {
   ALL_FILTER,
   complexityLevelOptions,
+  complexitySchemeLabels,
+  defaultComplexitySchemeId,
   drillTagFilterOptions,
   formatComplexity,
   formatRuntime,
@@ -52,16 +54,26 @@ function resource(over: Partial<BookmarkResource>): BookmarkResource {
   };
 }
 
+const SCALE_LABELS = {
+  0: "Absolute Beginner",
+  1: "Beginner",
+  2: "Intermediate-Beginner",
+  3: "Intermediate",
+  4: "Advanced-Intermediate",
+  5: "Advanced",
+};
+
 const SCALE: ComplexityScale = {
+  min: 0,
   max: 5,
-  labels: {
-    0: "Absolute Beginner",
-    1: "Beginner",
-    2: "Intermediate-Beginner",
-    3: "Intermediate",
-    4: "Advanced-Intermediate",
-    5: "Advanced",
-  },
+  labels: SCALE_LABELS,
+  schemes: [
+    {
+      id: "default",
+      name: "Default",
+      labels: SCALE_LABELS,
+    },
+  ],
 };
 
 const yt = resource({
@@ -242,8 +254,10 @@ describe("complexityLevelOptions", () => {
 
   it("falls back to a generic label when one is missing", () => {
     expect(complexityLevelOptions({
+      min: 0,
       max: 1,
       labels: {},
+      schemes: [],
     })).toEqual([
       {
         value: 0,
@@ -312,6 +326,101 @@ describe("formatComplexity", () => {
     expect(formatComplexity(resource({
       complexity: null,
     }), SCALE)).toBe("");
+  });
+
+  it("renders a chosen scheme's labels when passed", () => {
+    const labels = complexitySchemeLabels(JLPT_SCALE, "lang");
+    expect(formatComplexity(resource({
+      complexity: {
+        min: 1,
+        max: 1,
+      },
+    }), JLPT_SCALE, labels)).toBe("JLPT N5");
+    expect(formatComplexity(resource({
+      complexity: {
+        min: 1,
+        max: 3,
+      },
+    }), JLPT_SCALE, labels)).toBe("JLPT N5–JLPT N3");
+  });
+});
+
+const JLPT_SCALE: ComplexityScale = {
+  min: 0,
+  max: 6,
+  labels: {
+    0: "Absolute Beginner",
+    1: "Beginner",
+    6: "Expert",
+  },
+  schemes: [
+    {
+      id: "default",
+      name: "Default",
+      labels: {
+        0: "Absolute Beginner",
+        1: "Beginner",
+        6: "Expert",
+      },
+    },
+    {
+      id: "lang",
+      name: "Language",
+      labels: {
+        1: "JLPT N5",
+        3: "JLPT N3",
+      },
+    },
+  ],
+};
+
+describe("defaultComplexitySchemeId", () => {
+  it("prefers the first non-default (category) scheme, else falls back to default", () => {
+    expect(defaultComplexitySchemeId(JLPT_SCALE)).toBe("lang");
+    expect(defaultComplexitySchemeId(SCALE)).toBe("default");
+    expect(defaultComplexitySchemeId(null)).toBe("default");
+  });
+});
+
+describe("complexitySchemeLabels", () => {
+  it("merges a scheme's labels over the default so omitted levels still resolve", () => {
+    expect(complexitySchemeLabels(JLPT_SCALE, "lang")).toEqual({
+      0: "Absolute Beginner",
+      1: "JLPT N5",
+      3: "JLPT N3",
+      6: "Expert",
+    });
+  });
+
+  it("falls back to the default labels for an unknown scheme id", () => {
+    expect(complexitySchemeLabels(JLPT_SCALE, "nope")).toEqual(JLPT_SCALE.labels);
+  });
+});
+
+describe("complexityLevelOptions with min/scheme", () => {
+  it("starts at the scale's min and uses the passed scheme labels", () => {
+    const scale: ComplexityScale = {
+      min: 1,
+      max: 2,
+      labels: {
+        1: "One",
+        2: "Two",
+      },
+      schemes: [],
+    };
+    expect(complexityLevelOptions(scale, {
+      1: "N5",
+      2: "N4",
+    })).toEqual([
+      {
+        value: 1,
+        label: "N5",
+      },
+      {
+        value: 2,
+        label: "N4",
+      },
+    ]);
   });
 });
 
@@ -605,6 +714,7 @@ describe("parseCollectionsSearch", () => {
       sort: "progress-asc",
       cmin: 1,
       cmax: 4,
+      scheme: "lang",
     })).toEqual({
       q: "cats",
       website: "YouTube",
@@ -615,6 +725,7 @@ describe("parseCollectionsSearch", () => {
       sort: "progress-asc",
       cmin: 1,
       cmax: 4,
+      scheme: "lang",
     });
   });
 

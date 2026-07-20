@@ -638,14 +638,36 @@ export interface BookmarkComplexity {
 }
 
 /**
+ * One labeling scheme for the complexity scale. A resource's complexity level is a number; the scheme
+ * chooses which words render it. The property's own `ratingLabels` are the `"default"` scheme; each
+ * per-category override (the bookmarks app's `ratingCategoryLabels`, e.g. the "Language" category's
+ * JLPT labels) is an additional scheme the user can switch to.
+ */
+export interface ComplexityLabelScheme {
+  /** Stable id: `"default"` for the property's own labels, otherwise the backing category id. */
+  id: string;
+  /** Human name shown in the scheme picker (e.g. "Default", "Language"). */
+  name: string;
+  /** Per-level labels keyed by the numeric level as a string. Missing levels fall back to the default. */
+  labels: Record<string, string>;
+}
+
+/**
  * The "Complexity Scale" rating property's shape, so the client can render the level filter and label
  * a resource's complexity. Resolved once per request from the bookmarks host's custom-property list.
  */
 export interface ComplexityScale {
-  /** Highest level on the scale (e.g. 5). The scale is assumed to start at 0. */
+  /** Lowest selectable level — 0 when the property allows zero, otherwise 1. */
+  min: number;
+  /** Highest level on the scale (e.g. 6). */
   max: number;
-  /** Per-level labels keyed by the numeric level as a string, e.g. `{ "0": "Absolute Beginner" }`. */
+  /** The default per-level labels keyed by the numeric level as a string, e.g. `{ "0": "Absolute Beginner" }`. */
   labels: Record<string, string>;
+  /**
+   * All available labeling schemes: the `"default"` scheme first, then any per-category overrides
+   * (e.g. "Language" → JLPT). Always has at least the default; the client offers a picker when >1.
+   */
+  schemes: ComplexityLabelScheme[];
 }
 
 /**
