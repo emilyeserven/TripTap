@@ -4,6 +4,7 @@ import type {
   UpdateLearnerProfileInput,
   UpdateOcrSettingsInput,
   UpdateRenshuuSettingsInput,
+  UpdateXpSettingsInput,
 } from "@sentence-bank/types";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -22,6 +23,30 @@ export function useLearnerProfile() {
   return useQuery({
     queryKey: LEARNER_PROFILE_KEY,
     queryFn: settingsApi.getProfile,
+  });
+}
+
+const XP_SETTINGS_KEY = ["settings", "xp"] as const;
+
+/** The effective XP rates (defaults merged with any overrides). */
+export function useXpSettings() {
+  return useQuery({
+    queryKey: XP_SETTINGS_KEY,
+    queryFn: settingsApi.getXp,
+  });
+}
+
+export function useUpdateXpSettings() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: UpdateXpSettingsInput) => settingsApi.updateXp(input),
+    onSuccess: (data) => {
+      queryClient.setQueryData(XP_SETTINGS_KEY, data);
+      // XP is derived, so new rates re-score everything — drop every cached summary.
+      queryClient.invalidateQueries({
+        queryKey: ["xp-summary"],
+      });
+    },
   });
 }
 

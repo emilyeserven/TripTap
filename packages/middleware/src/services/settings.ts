@@ -17,12 +17,18 @@ import type {
   UpdateLearnerProfileInput,
   UpdateOcrSettingsInput,
   UpdateRenshuuSettingsInput,
+  UpdateXpSettingsInput,
+  XpRateKey,
+  XpRates,
+  XpSettings,
 } from "@sentence-bank/types";
 import {
+  DEFAULT_XP_RATES,
   DRILL_TAGS,
   LEARNING_AREAS,
   MATERIAL_TYPES,
   MAX_LEARNER_GOALS,
+  XP_RATE_KEYS,
 } from "@sentence-bank/types";
 import { db } from "@/db";
 import { settings } from "@/db/schema";
@@ -351,6 +357,69 @@ export async function updateLearnerProfile(
     await setSetting(PROFILE_GOALS_KEY, goals.length > 0 ? JSON.stringify(goals) : null);
   }
   return getLearnerProfile();
+}
+
+/** Settings key holding the learner's XP-rate overrides as one JSON object. Not a secret. */
+const XP_RATES_KEY = "xp.rates";
+
+/** Parse stored overrides, keeping only known rate keys with finite non-negative numbers. */
+export function parseXpRateOverrides(raw: string | null): Partial<XpRates> {
+  const out: Partial<XpRates> = {};
+  if (!raw) return out;
+  try {
+    const parsed = JSON.parse(raw) as Record<string, unknown>;
+    for (const key of XP_RATE_KEYS) {
+      const value = parsed[key];
+      if (typeof value === "number" && Number.isFinite(value) && value >= 0) out[key] = value;
+    }
+  }
+  catch {
+    // Corrupt value — treat as unset.
+  }
+  return out;
+}
+
+/** The effective XP rates: the defaults with any stored overrides on top. */
+export async function getXpRates(): Promise<XpRates> {
+  const stored = await getSettings([XP_RATES_KEY]);
+  return {
+    ...DEFAULT_XP_RATES,
+    ...parseXpRateOverrides(stored[XP_RATES_KEY] ?? null),
+  };
+}
+
+/** The XP settings view (the effective rates). */
+export async function getXpSettings(): Promise<XpSettings> {
+  return {
+    rates: await getXpRates(),
+  };
+}
+
+/**
+ * Apply a partial update to the XP-rate overrides. Tri-state per key: omitted keys keep their current
+ * override, `null` resets a key to its default, a number overrides it; `rates: null` resets all. Only
+ * values differing from the default are stored. Because XP is derived, the next summary fetch
+ * recalculates everything with the new rates — there is no ledger to migrate.
+ */
+export async function updateXpSettings(input: UpdateXpSettingsInput): Promise<XpSettings> {
+  if (input.rates !== undefined) {
+    if (input.rates === null) {
+      await setSetting(XP_RATES_KEY, null);
+    }
+    else {
+      const stored = await getSettings([XP_RATES_KEY]);
+      const overrides = parseXpRateOverrides(stored[XP_RATES_KEY] ?? null);
+      for (const key of XP_RATE_KEYS) {
+        const value = input.rates[key as XpRateKey];
+        if (value === undefined) continue;
+        if (value === null || value === DEFAULT_XP_RATES[key]) delete overrides[key];
+        else overrides[key] = value;
+      }
+      const hasAny = Object.keys(overrides).length > 0;
+      await setSetting(XP_RATES_KEY, hasAny ? JSON.stringify(overrides) : null);
+    }
+  }
+  return getXpSettings();
 }
 
 /** Settings key for the Renshuu API key. Stored server-side; overrides the `RENSHUU_API_KEY` env var. */
