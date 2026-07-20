@@ -318,6 +318,12 @@ const updateStartSettingsBody = {
                 enum: learningAreaEnum,
               },
             },
+            complexityMin: {
+              type: ["number", "null"],
+            },
+            complexityMax: {
+              type: ["number", "null"],
+            },
           },
         },
       },

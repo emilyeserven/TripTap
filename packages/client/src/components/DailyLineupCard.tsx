@@ -1,4 +1,4 @@
-import type { DailyLineup, LineupItem } from "@sentence-bank/types";
+import type { ComplexityScale, DailyLineup, LineupItem } from "@sentence-bank/types";
 import type * as React from "react";
 
 import { Link } from "@tanstack/react-router";
@@ -33,10 +33,12 @@ function itemLinkProps(item: LineupItem): React.ComponentProps<typeof Link> {
 export function DailyLineupCard({
   lineup,
   mediaTypeOptions,
+  complexityScale,
   onChange,
 }: {
   lineup: DailyLineup;
   mediaTypeOptions: string[];
+  complexityScale: ComplexityScale | null;
   onChange: (next: DailyLineup) => void;
 }) {
   const doneCount = lineup.items.filter(item => item.done).length;
@@ -151,6 +153,7 @@ export function DailyLineupCard({
             <LineupExclusionsEditor
               exclusions={lineup.exclusions}
               mediaTypeOptions={mediaTypeOptions}
+              complexityScale={complexityScale}
               onChange={exclusions => onChange({
                 ...lineup,
                 exclusions,

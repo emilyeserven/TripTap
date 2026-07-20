@@ -460,6 +460,8 @@ export function parseDailyLineup(raw: string | null): DailyLineup | null {
           ? exclusions.learningAreas.filter((a): a is LearningArea =>
             (LEARNING_AREAS as readonly string[]).includes(a as string))
           : [],
+        complexityMin: typeof exclusions.complexityMin === "number" ? exclusions.complexityMin : null,
+        complexityMax: typeof exclusions.complexityMax === "number" ? exclusions.complexityMax : null,
       },
     };
   }

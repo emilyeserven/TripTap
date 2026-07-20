@@ -1,7 +1,7 @@
 import type { StartSuggestion } from "@/lib/start-recommendations";
 import type * as React from "react";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 import { Link, createFileRoute } from "@tanstack/react-router";
 import {
@@ -12,6 +12,7 @@ import {
   HeadphonesIcon,
   ListPlusIcon,
   PenLineIcon,
+  RefreshCwIcon,
   Repeat2Icon,
   SparklesIcon,
   TargetIcon,
@@ -26,7 +27,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { XpBreakdown } from "@/components/XpBreakdown";
 import { XpRadarChart } from "@/components/XpRadarChart";
 import { useAnswerSheets } from "@/hooks/useAnswerSheets";
-import { useBookmarksByTag, useBookmarkSectionsByTag } from "@/hooks/useBookmarks";
+import { useBookmarkResources, useBookmarkSectionsByTag } from "@/hooks/useBookmarks";
 import { useGrammarNotes } from "@/hooks/useGrammarNotes";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useQuestionSheets } from "@/hooks/useQuestionSheets";
@@ -168,13 +169,25 @@ function StartPage() {
   };
 
   const areaTags = bookmarksSettings.data?.learningAreaTags ?? {};
+  const materialTypeTags = bookmarksSettings.data?.materialTypeTags ?? {};
   // Excluded areas are skipped before resolving the tag so the fetched pool matches the pick.
   const lowest = summary.data ? lowestXpArea(summary.data, lineup.exclusions.learningAreas) : null;
-  // The lowest area's mapped tag drives the "quick and contained" section/resource pool. The hooks
-  // no-op on a null tag id (e.g. the tag map isn't configured), degrading to bare session links.
+  // The lowest area's mapped tag drives the "quick and contained" section pool. The hook no-ops on a
+  // null tag id (e.g. the tag map isn't configured), degrading to bare session links.
   const lowestTagId = lowest ? areaTags[lowest]?.id ?? null : null;
   const areaSections = useBookmarkSectionsByTag(lowestTagId);
-  const areaResources = useBookmarksByTag(lowestTagId);
+  // The full Collections resource list carries the custom properties (complexity, favorite, content
+  // status) the ranker needs — the by-tag endpoint doesn't resolve them. Filter to the area's tag.
+  const allResources = useBookmarkResources();
+  const resources = useMemo(() => allResources.data?.resources ?? [], [allResources.data]);
+  const resourcesById = useMemo(
+    () => Object.fromEntries(resources.map(r => [r.id, r])),
+    [resources],
+  );
+  const lowestAreaResources = useMemo(
+    () => (lowestTagId ? resources.filter(r => r.tagIds.includes(lowestTagId)) : []),
+    [resources, lowestTagId],
+  );
 
   const suggestions = useMemo(() => {
     if (!summary.data) return [];
@@ -187,7 +200,10 @@ function StartPage() {
       writingPrompts: writingPrompts.data,
       areaTags,
       lowestAreaSections: areaSections.data,
-      lowestAreaResources: areaResources.data,
+      lowestAreaResources,
+      resourcesById,
+      materialTypeTags,
+      complexityScale: allResources.data?.complexityScale ?? null,
       exclusions: lineup.exclusions,
       favoriteResourceIds,
       now: new Date(),
@@ -201,15 +217,19 @@ function StartPage() {
     writingPrompts.data,
     areaTags,
     areaSections.data,
-    areaResources.data,
+    lowestAreaResources,
+    resourcesById,
+    materialTypeTags,
+    allResources.data,
     lineup.exclusions,
     favoriteResourceIds,
   ]);
 
-  const mediaTypeOptions = useMemo(() => [...new Set([
-    ...(areaSections.data ?? []).map(s => s.mediaType),
-    ...(areaResources.data ?? []).map(r => r.mediaType),
-  ].filter((m): m is string => Boolean(m)))], [areaSections.data, areaResources.data]);
+  // Media-type chips draw from every resource in Collections, not just the current area's pool.
+  const mediaTypeOptions = useMemo(
+    () => [...new Set(resources.map(r => r.mediaType).filter((m): m is string => Boolean(m)))],
+    [resources],
+  );
 
   const lineupIds = new Set(lineup.items.map(item => item.id));
   const addToLineup = (suggestion: StartSuggestion) => {
@@ -220,7 +240,17 @@ function StartPage() {
     });
   };
 
-  const [hero, ...rest] = suggestions;
+  // Up Next shows a window of the pool, excluding anything already locked into the lineup; Reroll
+  // advances the window (wrapping) so the learner can cycle through the alternatives.
+  const available = suggestions.filter(s => !lineupIds.has(s.id));
+  const [rerollOffset, setRerollOffset] = useState(0);
+  const UP_NEXT_COUNT = 3;
+  const start = available.length > 0 ? rerollOffset % available.length : 0;
+  const upNext = available.length <= UP_NEXT_COUNT
+    ? available
+    : Array.from({
+      length: UP_NEXT_COUNT,
+    }, (_, i) => available[(start + i) % available.length]);
   const goals = profile.data?.goals ?? [];
 
   return (
@@ -240,43 +270,47 @@ function StartPage() {
       <DailyLineupCard
         lineup={lineup}
         mediaTypeOptions={mediaTypeOptions}
+        complexityScale={allResources.data?.complexityScale ?? null}
         onChange={persistLineup}
       />
 
-      {hero
+      {upNext.length > 0
         ? (
           <Card className="border-primary/50">
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-base">
                 <SparklesIcon className="size-4" />
                 Up next
               </CardTitle>
+              {available.length > UP_NEXT_COUNT && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setRerollOffset(o => o + UP_NEXT_COUNT)}
+                >
+                  <RefreshCwIcon className="size-4" />
+                  Reroll
+                </Button>
+              )}
             </CardHeader>
             <CardContent className="space-y-2">
-              <SuggestionRow
-                suggestion={hero}
-                inLineup={lineupIds.has(hero.id)}
-                onAddToLineup={addToLineup}
-              />
-              {rest.length > 0 && (
-                <div className="space-y-2">
-                  <p className="text-xs text-muted-foreground">Or pick another:</p>
-                  {rest.map(s => (
-                    <SuggestionRow
-                      key={s.id}
-                      suggestion={s}
-                      inLineup={lineupIds.has(s.id)}
-                      onAddToLineup={addToLineup}
-                    />
-                  ))}
-                </div>
-              )}
+              {upNext.map(s => (
+                <SuggestionRow
+                  key={s.id}
+                  suggestion={s}
+                  inLineup={false}
+                  onAddToLineup={addToLineup}
+                />
+              ))}
             </CardContent>
           </Card>
         )
         : (
           <p className="text-sm text-muted-foreground">
-            {summary.isLoading ? "Working out what to suggest…" : "Nothing to suggest yet — log some practice first."}
+            {summary.isLoading
+              ? "Working out what to suggest…"
+              : "Nothing to suggest right now — everything's in your lineup, or log some practice first."}
           </p>
         )}
 
