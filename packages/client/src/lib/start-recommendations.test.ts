@@ -24,6 +24,7 @@ function summary(xpByArea: Partial<Record<string, number>>): XpSummary {
     },
     today: {
       totalXp: 0,
+      areas: [],
     },
   };
 }

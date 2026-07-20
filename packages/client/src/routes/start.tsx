@@ -308,7 +308,12 @@ function StartPage() {
           </CardHeader>
           <CardContent>
             {summary.data
-              ? <XpRadarChart areas={summary.data.areas} />
+              ? (
+                <XpRadarChart
+                  areas={summary.data.areas}
+                  todayAreas={summary.data.today.areas}
+                />
+              )
               : <p className="text-sm text-muted-foreground">Loading XP…</p>}
           </CardContent>
         </Card>

@@ -16,7 +16,7 @@ const areas: XpAreaSummary[] = (
 }));
 
 describe("XpRadarChart", () => {
-  it("labels all six areas with their XP", () => {
+  it("labels all six areas with their all-time XP", () => {
     render(<XpRadarChart areas={areas} />);
     for (const area of areas) {
       expect(screen.getByText(area.area)).toBeInTheDocument();
@@ -24,10 +24,41 @@ describe("XpRadarChart", () => {
     }
   });
 
-  it("describes the data for assistive tech", () => {
-    render(<XpRadarChart areas={areas} />);
+  it("shows a legend with both series totals", () => {
+    render(
+      <XpRadarChart
+        areas={areas}
+        todayAreas={[{
+          area: "Reading",
+          xp: 3,
+        }]}
+      />,
+    );
+    // All-time total across the six areas is 0+2+4+6+8+10 = 30; today total is 3.
+    expect(screen.getByText("All-time")).toBeInTheDocument();
+    expect(screen.getByText("30")).toBeInTheDocument();
+    expect(screen.getByText("Today")).toBeInTheDocument();
+    expect(screen.getByText("3")).toBeInTheDocument();
+  });
+
+  it("describes both series for assistive tech", () => {
+    render(
+      <XpRadarChart
+        areas={areas}
+        todayAreas={[{
+          area: "Reading",
+          xp: 3,
+        }]}
+      />,
+    );
     const svg = screen.getByRole("img");
-    expect(svg).toHaveAccessibleName(/Speaking 0.*Vocabulary 10/);
+    expect(svg).toHaveAccessibleName(/All-time: Speaking 0.*Vocabulary 10/);
+    expect(svg).toHaveAccessibleName(/Today: Reading 3/);
+  });
+
+  it("reports no today series when nothing was earned today", () => {
+    render(<XpRadarChart areas={areas} />);
+    expect(screen.getByRole("img")).toHaveAccessibleName(/Today: none/);
   });
 });
 
