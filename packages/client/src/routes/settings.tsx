@@ -7,12 +7,15 @@ import { OcrKeysCard } from "@/components/OcrKeysCard";
 import { RenshuuKeyCard } from "@/components/RenshuuKeyCard";
 import { SkillInstallCard } from "@/components/SkillInstallCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { XpRatesCard } from "@/components/XpRatesCard";
 import { usePageTitle } from "@/hooks/usePageTitle";
 
 export const Route = createFileRoute("/settings")({
   component: SettingsPage,
   validateSearch: (search: Record<string, unknown>): { tab?: string } => ({
-    tab: search.tab === "tagging" || search.tab === "tools" ? search.tab : "integrations",
+    tab: search.tab === "tagging" || search.tab === "tools" || search.tab === "xp"
+      ? search.tab
+      : "integrations",
   }),
 });
 
@@ -26,7 +29,8 @@ function SettingsPage() {
     <section className="space-y-6">
       <div>
         <p className="text-sm text-muted-foreground">
-          Cloud OCR credentials, bookmarks tagging, dictionary lookup, and AI-Lesson-authoring tools.
+          Cloud OCR credentials, bookmarks tagging, dictionary lookup, XP rates, and
+          AI-Lesson-authoring tools.
         </p>
       </div>
       <Tabs
@@ -41,6 +45,7 @@ function SettingsPage() {
         <TabsList>
           <TabsTrigger value="integrations">Integrations</TabsTrigger>
           <TabsTrigger value="tagging">Tagging</TabsTrigger>
+          <TabsTrigger value="xp">XP</TabsTrigger>
           <TabsTrigger value="tools">Tools</TabsTrigger>
         </TabsList>
         <TabsContent
@@ -57,6 +62,12 @@ function SettingsPage() {
           className="space-y-6"
         >
           <BookmarksTagsCard />
+        </TabsContent>
+        <TabsContent
+          value="xp"
+          className="space-y-6"
+        >
+          <XpRatesCard />
         </TabsContent>
         <TabsContent
           value="tools"

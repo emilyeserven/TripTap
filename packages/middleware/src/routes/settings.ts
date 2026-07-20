@@ -5,6 +5,7 @@ import type {
   UpdateLearnerProfileInput,
   UpdateOcrSettingsInput,
   UpdateRenshuuSettingsInput,
+  UpdateXpSettingsInput,
 } from "@sentence-bank/types";
 import {
   getBookmarksSettings,
@@ -12,11 +13,13 @@ import {
   getLearnerProfile,
   getOcrSettings,
   getRenshuuSettings,
+  getXpSettings,
   updateBookmarksSettings,
   updateDictionarySettings,
   updateLearnerProfile,
   updateOcrSettings,
   updateRenshuuSettings,
+  updateXpSettings,
 } from "@/services/settings";
 import { mediaStatus, testMediaConnection } from "@/services/media";
 
@@ -206,6 +209,37 @@ const updateLearnerProfileBody = {
   },
 } as const;
 
+/** Per-rate override: a non-negative number, or null to reset to the default. */
+const xpRateValueSchema = {
+  type: ["number", "null"],
+  minimum: 0,
+} as const;
+
+const updateXpSettingsBody = {
+  type: "object",
+  additionalProperties: false,
+  properties: {
+    rates: {
+      type: ["object", "null"],
+      additionalProperties: false,
+      properties: {
+        readingTranslatedSentence: xpRateValueSchema,
+        readingWordNote: xpRateValueSchema,
+        writingSentence: xpRateValueSchema,
+        writingCorrection: xpRateValueSchema,
+        questionSheetAuthored: xpRateValueSchema,
+        answerEntryList: xpRateValueSchema,
+        answerEntryGrid: xpRateValueSchema,
+        listeningEntry: xpRateValueSchema,
+        shadowingLoop: xpRateValueSchema,
+        drillRound: xpRateValueSchema,
+        lessonLine: xpRateValueSchema,
+        lessonWordNote: xpRateValueSchema,
+      },
+    },
+  },
+} as const;
+
 const updateDictionarySettingsBody = {
   type: "object",
   additionalProperties: false,
@@ -283,6 +317,21 @@ export async function settingsRoutes(app: FastifyInstance): Promise<void> {
     },
   }, async (req) => {
     return updateLearnerProfile(req.body as UpdateLearnerProfileInput);
+  });
+
+  app.get("/api/settings/xp", {
+    schema: {
+      tags: ["settings"],
+    },
+  }, async () => getXpSettings());
+
+  app.patch("/api/settings/xp", {
+    schema: {
+      tags: ["settings"],
+      body: updateXpSettingsBody,
+    },
+  }, async (req) => {
+    return updateXpSettings(req.body as UpdateXpSettingsInput);
   });
 
   app.get("/api/settings/media", {

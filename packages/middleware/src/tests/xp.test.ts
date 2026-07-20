@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { DEFAULT_XP_RATES } from "@sentence-bank/types";
 import { buildApp } from "@/app";
+import { parseXpRateOverrides } from "@/services/settings";
 import {
   bookExercisesXp,
   countSentences,
@@ -382,6 +384,48 @@ test("summarizeGrants zero-fills all six areas and windows recent XP", () => {
     area: "Reading",
     xp: 3,
   }]);
+});
+
+test("grant functions honor overridden rates", () => {
+  const rates = {
+    ...DEFAULT_XP_RATES,
+    shadowingLoop: 1,
+    readingWordNote: 3,
+  };
+  const shadowing = shadowingXp([{
+    completedLoops: 4,
+    createdAt: RECENT,
+  }], rates);
+  assert.equal(shadowing[0].xp, 4);
+  const reading = readingXp([{
+    mode: "line-by-line",
+    freeformTranslation: null,
+    lines: null,
+    wordNotes: [{
+      id: "w1",
+      word: "暑い",
+      reading: "あつい",
+      meaning: "hot",
+      status: "shaky",
+      flashcard: false,
+    }],
+    createdAt: RECENT,
+  }], rates);
+  assert.equal(reading[0].xp, 3);
+});
+
+test("parseXpRateOverrides keeps only known keys with valid values", () => {
+  const parsed = parseXpRateOverrides(JSON.stringify({
+    shadowingLoop: 0.5,
+    drillRound: -1,
+    lessonLine: "2",
+    nonsense: 9,
+  }));
+  assert.deepEqual(parsed, {
+    shadowingLoop: 0.5,
+  });
+  assert.deepEqual(parseXpRateOverrides("not json"), {});
+  assert.deepEqual(parseXpRateOverrides(null), {});
 });
 
 test("GET /api/xp/summary rejects an out-of-range days value", async () => {
