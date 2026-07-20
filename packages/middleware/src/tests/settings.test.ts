@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { OcrSettings } from "@sentence-bank/types";
 import { buildApp } from "@/app";
+import { parseDailyLineup, parseFavoriteResourceIds } from "@/services/settings";
 
 // The schema-validation test runs without a database. The persist → masked-read → clear round-trip
 // needs a live Postgres, so it is gated behind RUN_DB_TESTS.
@@ -173,6 +174,174 @@ test("PATCH /api/settings/xp accepts overrides and a full reset", async () => {
   });
   assert.notEqual(reset.statusCode, 400);
   await app.close();
+});
+
+test("PATCH /api/settings/start rejects a lineup without a date", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "PATCH",
+    url: "/api/settings/start",
+    payload: {
+      lineup: {
+        items: [],
+        exclusions: {
+          mediaTypes: [],
+          sessionTypes: [],
+          learningAreas: [],
+        },
+      },
+    },
+  });
+  assert.equal(res.statusCode, 400);
+  await app.close();
+});
+
+test("PATCH /api/settings/start rejects a malformed lineup date", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "PATCH",
+    url: "/api/settings/start",
+    payload: {
+      lineup: {
+        date: "July 20th",
+        items: [],
+        exclusions: {
+          mediaTypes: [],
+          sessionTypes: [],
+          learningAreas: [],
+        },
+      },
+    },
+  });
+  assert.equal(res.statusCode, 400);
+  await app.close();
+});
+
+test("PATCH /api/settings/start rejects an unknown suggestion kind or session type", async () => {
+  const app = await buildApp();
+  const badKind = await app.inject({
+    method: "PATCH",
+    url: "/api/settings/start",
+    payload: {
+      lineup: {
+        date: "2026-07-20",
+        items: [
+          {
+            id: "i1",
+            kind: "mystery",
+            area: null,
+            title: "??",
+            description: null,
+            to: "/start",
+            done: false,
+          },
+        ],
+        exclusions: {
+          mediaTypes: [],
+          sessionTypes: [],
+          learningAreas: [],
+        },
+      },
+    },
+  });
+  assert.equal(badKind.statusCode, 400);
+  const badSessionType = await app.inject({
+    method: "PATCH",
+    url: "/api/settings/start",
+    payload: {
+      lineup: {
+        date: "2026-07-20",
+        items: [],
+        exclusions: {
+          mediaTypes: [],
+          sessionTypes: ["juggling"],
+          learningAreas: [],
+        },
+      },
+    },
+  });
+  assert.equal(badSessionType.statusCode, 400);
+  await app.close();
+});
+
+test("PATCH /api/settings/start accepts favorites and a full valid lineup", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "PATCH",
+    url: "/api/settings/start",
+    payload: {
+      favoriteResourceIds: ["bk-1", "bk-2"],
+      lineup: {
+        date: "2026-07-20",
+        items: [
+          {
+            id: "i1",
+            kind: "area",
+            area: "Speaking",
+            title: "Shadow section 3",
+            description: "Speaking is your lowest area.",
+            to: "/shadowing/new",
+            search: {
+              bookmarkId: "bk-1",
+            },
+            done: false,
+          },
+        ],
+        exclusions: {
+          mediaTypes: ["Book"],
+          sessionTypes: ["drills"],
+          learningAreas: ["Vocabulary"],
+        },
+      },
+    },
+  });
+  // Without a live DB the handler fails downstream; schema validation must still pass.
+  assert.notEqual(res.statusCode, 400);
+  await app.close();
+});
+
+test("parseDailyLineup drops malformed items and unknown exclusion values", () => {
+  const parsed = parseDailyLineup(JSON.stringify({
+    date: "2026-07-20",
+    items: [
+      {
+        id: "ok",
+        kind: "area",
+        area: "Nonsense",
+        title: "Fine",
+        to: "/practice",
+        done: "yes",
+      },
+      {
+        kind: "area",
+        title: "No id",
+        to: "/practice",
+      },
+    ],
+    exclusions: {
+      mediaTypes: ["Book", 3],
+      sessionTypes: ["drills", "juggling"],
+      learningAreas: ["Reading", "Cooking"],
+    },
+  }));
+  assert.equal(parsed?.items.length, 1);
+  assert.equal(parsed?.items[0].id, "ok");
+  // Unknown area coerces to null; a non-boolean done coerces to false.
+  assert.equal(parsed?.items[0].area, null);
+  assert.equal(parsed?.items[0].done, false);
+  assert.deepEqual(parsed?.exclusions.mediaTypes, ["Book"]);
+  assert.deepEqual(parsed?.exclusions.sessionTypes, ["drills"]);
+  assert.deepEqual(parsed?.exclusions.learningAreas, ["Reading"]);
+});
+
+test("parseDailyLineup and parseFavoriteResourceIds tolerate corrupt values", () => {
+  assert.equal(parseDailyLineup("not json"), null);
+  assert.equal(parseDailyLineup(JSON.stringify({
+    date: "yesterday",
+    items: [],
+  })), null);
+  assert.deepEqual(parseFavoriteResourceIds("not json"), []);
+  assert.deepEqual(parseFavoriteResourceIds(JSON.stringify(["a", 2, "b"])), ["a", "b"]);
 });
 
 test(

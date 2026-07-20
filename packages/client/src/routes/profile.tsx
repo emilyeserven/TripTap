@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+import { DailyXpGoalCard } from "@/components/DailyXpGoalCard";
 import { LearnerGoalsEditor } from "@/components/LearnerGoalsEditor";
 import { usePageTitle } from "@/hooks/usePageTitle";
 
@@ -15,6 +16,7 @@ function ProfilePage() {
         What you&apos;re working toward. Goals steer the Start Something page: their learning areas,
         grammar points, and resources get picked first when it suggests a quick task.
       </p>
+      <DailyXpGoalCard />
       <LearnerGoalsEditor />
     </section>
   );

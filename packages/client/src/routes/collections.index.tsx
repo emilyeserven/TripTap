@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/select";
 import { useBookmarkResources, useRefreshBookmarks } from "@/hooks/useBookmarks";
 import { usePageTitle } from "@/hooks/usePageTitle";
-import { useBookmarksSettings } from "@/hooks/useSettings";
+import { useBookmarksSettings, useStartSettings, useUpdateStartSettings } from "@/hooks/useSettings";
 import { useCreateWriting } from "@/hooks/useWritings";
 import {
   ALL_FILTER,
@@ -65,6 +65,19 @@ function CollectionsPage() {
   const refreshBookmarks = useRefreshBookmarks();
   const navigate = useNavigate();
   const createWriting = useCreateWriting();
+
+  // Local favorites (TripTap-side; the bookmarks host's own Favorite flag is read-only to us).
+  // Starred resources are prioritized by the Start Something suggestions.
+  const startSettings = useStartSettings();
+  const updateStartSettings = useUpdateStartSettings();
+  const localFavorites = startSettings.data?.favoriteResourceIds ?? [];
+  const toggleLocalFavorite = (id: string) => {
+    updateStartSettings.mutate({
+      favoriteResourceIds: localFavorites.includes(id)
+        ? localFavorites.filter(f => f !== id)
+        : [...localFavorites, id],
+    });
+  };
 
   // Filters live in the URL so a filtered view is shareable/bookmarkable and survives reloads.
   const sp = Route.useSearch();
@@ -435,6 +448,29 @@ function CollectionsPage() {
                       />
                     )
                     : null}
+                  <button
+                    type="button"
+                    aria-pressed={localFavorites.includes(r.id)}
+                    aria-label={localFavorites.includes(r.id)
+                      ? `Unstar ${r.title}`
+                      : `Star ${r.title} to prioritize it in Start Something`}
+                    title="Starred resources are suggested first on the Start page"
+                    className="shrink-0"
+                    disabled={updateStartSettings.isPending}
+                    onClick={() => toggleLocalFavorite(r.id)}
+                  >
+                    <Star
+                      className={`
+                        size-3.5
+                        ${localFavorites.includes(r.id)
+              ? "fill-amber-500 text-amber-500"
+              : `
+                text-muted-foreground/50
+                hover:text-amber-500
+              `}
+                      `}
+                    />
+                  </button>
                   {r.url
                     ? (
                       <a

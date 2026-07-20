@@ -1,5 +1,6 @@
 import type { GrammarNote, QuestionSheet, XpSummary } from "@sentence-bank/types";
 
+import { LEARNING_AREAS } from "@sentence-bank/types";
 import { describe, expect, it } from "vitest";
 
 import { buildStartSuggestions, lowestXpArea } from "./start-recommendations";
@@ -20,6 +21,9 @@ function summary(xpByArea: Partial<Record<string, number>>): XpSummary {
       days: 7,
       totalXp: 0,
       areas: [],
+    },
+    today: {
+      totalXp: 0,
     },
   };
 }
@@ -197,10 +201,143 @@ describe("buildStartSuggestions", () => {
     expect(starredSlot).toBeUndefined();
   });
 
+  it("skips excluded areas and picks the next-lowest instead", () => {
+    const suggestions = buildStartSuggestions({
+      summary: summary({
+        Speaking: 0,
+        Listening: 1,
+        Reading: 9,
+        Writing: 9,
+        Grammar: 9,
+        Vocabulary: 9,
+      }),
+      exclusions: {
+        mediaTypes: [],
+        sessionTypes: [],
+        learningAreas: ["Speaking"],
+      },
+      now: NOW,
+    });
+    const area = suggestions.find(s => s.kind === "area");
+    expect(area?.area).toBe("Listening");
+  });
+
+  it("produces no area pick when every area is excluded", () => {
+    const suggestions = buildStartSuggestions({
+      summary: summary({}),
+      exclusions: {
+        mediaTypes: [],
+        sessionTypes: [],
+        learningAreas: [...LEARNING_AREAS],
+      },
+      now: NOW,
+    });
+    expect(suggestions.find(s => s.kind === "area")).toBeUndefined();
+  });
+
+  it("filters excluded media types out of the section pool", () => {
+    const section = (id: string, mediaType: string) => ({
+      bookmarkId: id,
+      bookmarkTitle: `Resource ${id}`,
+      bookmarkUrl: null,
+      imageUrl: null,
+      mediaType,
+      tagIds: [],
+      section: {
+        id: `${id}-s`,
+        label: `Section of ${id}`,
+        type: "page" as const,
+        startValue: null,
+        endValue: null,
+      },
+    });
+    const suggestions = buildStartSuggestions({
+      summary: summary({
+        Listening: 0,
+        Speaking: 9,
+        Reading: 9,
+        Writing: 9,
+        Grammar: 9,
+        Vocabulary: 9,
+      }),
+      lowestAreaSections: [section("book", "Book"), section("video", "Video")],
+      exclusions: {
+        mediaTypes: ["Book"],
+        sessionTypes: [],
+        learningAreas: [],
+      },
+      now: NOW,
+    });
+    const area = suggestions.find(s => s.kind === "area");
+    expect(area?.search?.bookmarkId).toBe("video");
+  });
+
+  it("drops suggestions for excluded session types", () => {
+    const suggestions = buildStartSuggestions({
+      summary: summary({
+        Speaking: 0,
+        Listening: 9,
+        Reading: 9,
+        Writing: 9,
+        Grammar: 9,
+        Vocabulary: 9,
+      }),
+      exclusions: {
+        mediaTypes: [],
+        sessionTypes: ["shadowing"],
+        learningAreas: [],
+      },
+      now: NOW,
+    });
+    // Speaking is lowest, but its pick targets /shadowing/new, which is ruled out for the day.
+    expect(suggestions.find(s => s.to === "/shadowing/new")).toBeUndefined();
+  });
+
+  it("floats favorited resources to the front of the pick pool", () => {
+    const resource = (id: string, favorite = false) => ({
+      id,
+      title: `Resource ${id}`,
+      url: null,
+      website: null,
+      runtimeSeconds: 60,
+      mediaType: "Video",
+      complexity: null,
+      progress: null,
+      favorite,
+      tagIds: [],
+      imageUrl: null,
+    });
+    const base = {
+      summary: summary({
+        Listening: 0,
+        Speaking: 9,
+        Reading: 9,
+        Writing: 9,
+        Grammar: 9,
+        Vocabulary: 9,
+      }),
+      now: NOW,
+    };
+    // A locally-starred resource beats list order…
+    const local = buildStartSuggestions({
+      ...base,
+      lowestAreaResources: [resource("first"), resource("starred")],
+      favoriteResourceIds: ["starred"],
+    });
+    expect(local.find(s => s.kind === "area")?.search?.bookmarkId).toBe("starred");
+    // …and an upstream favorite beats a plain resource when nothing is starred locally.
+    const upstream = buildStartSuggestions({
+      ...base,
+      lowestAreaResources: [resource("plain"), resource("host-fav", true)],
+    });
+    expect(upstream.find(s => s.kind === "area")?.search?.bookmarkId).toBe("host-fav");
+  });
+
   it("nudges toward a goal's grammar term when a matching note exists", () => {
     const suggestions = buildStartSuggestions({
       summary: summary({}),
       profile: {
+        dailyXpGoal: null,
         goals: [
           {
             id: "g1",

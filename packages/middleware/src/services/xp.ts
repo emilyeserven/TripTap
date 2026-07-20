@@ -40,6 +40,12 @@ export interface XpGrant {
   xp: number;
   /** When the work happened, for the recent-window rollup. */
   at: Date;
+  /**
+   * The learner-entered calendar date (YYYY-MM-DD) for date-only sources (drills, lessons). Their
+   * `at` is midnight UTC, which lands on the wrong local day for non-UTC users — the today rollup
+   * compares this string directly instead.
+   */
+  dateOnly?: string;
 }
 
 /** Count the sentences in a free-text block: split on Japanese/latin terminators and newlines. */
@@ -237,6 +243,7 @@ export function drillXp(rows: DrillXpRow[], rates: XpRates = DEFAULT_XP_RATES): 
       feature: "drills" as const,
       xp: row.rounds * rates.drillRound,
       at: new Date(row.date),
+      dateOnly: row.date,
     }]
     : []));
 }
@@ -259,6 +266,7 @@ export function lessonXp(rows: LessonXpRow[], rates: XpRates = DEFAULT_XP_RATES)
         feature: "lessons",
         xp: lines * rates.lessonLine,
         at,
+        dateOnly: row.date,
       });
     }
     const filled = (row.wordNotes ?? []).filter(isFilledWordNote).length;
@@ -268,6 +276,7 @@ export function lessonXp(rows: LessonXpRow[], rates: XpRates = DEFAULT_XP_RATES)
         feature: "lessons",
         xp: filled * rates.lessonWordNote,
         at,
+        dateOnly: row.date,
       });
     }
     return grants;
@@ -279,8 +288,23 @@ function roundXp(xp: number): number {
   return Math.round(xp * 100) / 100;
 }
 
-/** Fold a flat grant list into the wire summary: zero-filled areas + a recent-window rollup. */
-export function summarizeGrants(grants: XpGrant[], days: number, now: Date): XpSummary {
+/** A timestamp's calendar date (YYYY-MM-DD) in the timezone `offsetMinutes` west of UTC. */
+function localDateString(at: Date, offsetMinutes: number): string {
+  // JS getTimezoneOffset() is UTC − local, so subtracting shifts UTC into the caller's local clock.
+  return new Date(at.getTime() - offsetMinutes * 60_000).toISOString().slice(0, 10);
+}
+
+/**
+ * Fold a flat grant list into the wire summary: zero-filled areas, a recent-window rollup, and a
+ * today total computed against the caller's local calendar day (`tzOffsetMinutes`, as reported by
+ * the browser's `getTimezoneOffset()`).
+ */
+export function summarizeGrants(
+  grants: XpGrant[],
+  days: number,
+  now: Date,
+  tzOffsetMinutes = 0,
+): XpSummary {
   const areas = new Map<LearningArea, XpAreaSummary>(
     LEARNING_AREAS.map(area => [area, {
       area,
@@ -290,6 +314,8 @@ export function summarizeGrants(grants: XpGrant[], days: number, now: Date): XpS
   );
   const recentAreas = new Map<LearningArea, number>();
   const cutoff = now.getTime() - days * 24 * 60 * 60 * 1000;
+  const today = localDateString(now, tzOffsetMinutes);
+  let todayXp = 0;
 
   for (const grant of grants) {
     const area = areas.get(grant.area);
@@ -299,6 +325,10 @@ export function summarizeGrants(grants: XpGrant[], days: number, now: Date): XpS
     if (grant.at.getTime() >= cutoff) {
       recentAreas.set(grant.area, (recentAreas.get(grant.area) ?? 0) + grant.xp);
     }
+    // Date-only sources (drills, lessons) carry the learner-entered date; compare it directly so a
+    // midnight-UTC `at` can't land the grant on the wrong local day.
+    const grantDay = grant.dateOnly ?? localDateString(grant.at, tzOffsetMinutes);
+    if (grantDay === today) todayXp += grant.xp;
   }
 
   const summaries = [...areas.values()].map(area => ({
@@ -323,6 +353,9 @@ export function summarizeGrants(grants: XpGrant[], days: number, now: Date): XpS
       totalXp: roundXp(recent.reduce((sum, area) => sum + area.xp, 0)),
       areas: recent,
     },
+    today: {
+      totalXp: roundXp(todayXp),
+    },
   };
 }
 
@@ -331,7 +364,7 @@ export function summarizeGrants(grants: XpGrant[], days: number, now: Date): XpS
  * effective rates (defaults merged with any Settings-page overrides) so a rate change retroactively
  * re-scores everything on the next fetch.
  */
-export async function getXpSummary(days: number): Promise<XpSummary> {
+export async function getXpSummary(days: number, tzOffsetMinutes = 0): Promise<XpSummary> {
   const [
     rates,
     readingRows,
@@ -402,5 +435,5 @@ export async function getXpSummary(days: number): Promise<XpSummary> {
     ...drillXp(drillRows, rates),
     ...lessonXp(lessonRows, rates),
   ];
-  return summarizeGrants(grants, days, new Date());
+  return summarizeGrants(grants, days, new Date(), tzOffsetMinutes);
 }
