@@ -41,7 +41,7 @@ export function ResourceRow({
                     src={r.imageUrl}
                     alt=""
                     loading="lazy"
-                    className="h-auto w-full"
+                    className="h-auto bg-muted w-full"
                   />
                 </div>
               )
