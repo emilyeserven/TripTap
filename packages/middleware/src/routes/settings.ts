@@ -97,8 +97,10 @@ const materialTypeTagsSchema = {
   type: ["object", "null"],
   additionalProperties: false,
   properties: {
-    Graded: mappedTagSchema,
-    Native: mappedTagSchema,
+    "Graded": mappedTagSchema,
+    "Native": mappedTagSchema,
+    "Sequential Material": mappedTagSchema,
+    "Out-of-Order OK": mappedTagSchema,
   },
 } as const;
 

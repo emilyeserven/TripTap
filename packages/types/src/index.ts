@@ -417,7 +417,12 @@ export type LearningAreaTagMap = Partial<Record<LearningArea, { id: string;
  * controlled level; a **native** resource is authentic material made for native speakers. This is a
  * separate axis from {@link LearningArea} (skills) — a resource can be both a skill and a material type.
  */
-export const MATERIAL_TYPES = ["Graded", "Native"] as const;
+export const MATERIAL_TYPES = [
+  "Graded",
+  "Native",
+  "Sequential Material",
+  "Out-of-Order OK",
+] as const;
 
 /** One material type from {@link MATERIAL_TYPES}. */
 export type MaterialType = (typeof MATERIAL_TYPES)[number];
@@ -558,6 +563,8 @@ export interface BookmarkSectionNode {
   url: string | null;
   /** Tag ids associated with this section upstream (may be empty). */
   tagIds: string[];
+  /** Whether the learner has marked this section completed in the bookmarks app. */
+  completed: boolean;
 }
 
 /**
@@ -579,6 +586,11 @@ export interface BookmarkSectionRef {
    */
   name?: string;
   parentId?: string | null;
+  /**
+   * Whether the section is marked completed in the bookmarks app. Populated on tag-match results
+   * ({@link BookmarkSectionMatch}); absent (undefined) on stored references made by the section picker.
+   */
+  completed?: boolean;
 }
 
 /**
@@ -697,6 +709,11 @@ export interface BookmarkResource {
   progress: BookmarkProgress | null;
   /** Whether the bookmark is favorited (from the "Favorite" boolean property) — sorts to the top. */
   favorite: boolean;
+  /**
+   * The bookmark's "Content Status" choice value (e.g. "reading", "shortlist", "finished"); null when
+   * unset. Informs which resources the Start Something page prefers.
+   */
+  contentStatus: string | null;
   /** The ids of the bookmark's tags, for the Collections learning-area filter. */
   tagIds: string[];
   /**

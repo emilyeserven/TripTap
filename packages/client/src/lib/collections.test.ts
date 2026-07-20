@@ -48,6 +48,7 @@ function resource(over: Partial<BookmarkResource>): BookmarkResource {
     complexity: null,
     progress: null,
     favorite: false,
+    contentStatus: null,
     tagIds: [],
     imageUrl: null,
     ...over,

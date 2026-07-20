@@ -240,6 +240,7 @@ test("toBookmarkResource extracts website, runtime, media type, and complexity",
     },
     progress: null,
     favorite: false,
+    contentStatus: null,
     tagIds: [],
     imageUrl: "/api/bookmarks/b1/images/img1?v=1",
   });
@@ -440,6 +441,7 @@ test("toBookmarkResource degrades missing website/runtime/mediaType/complexity t
     complexity: null,
     progress: null,
     favorite: false,
+    contentStatus: null,
     tagIds: [],
     imageUrl: null,
   });

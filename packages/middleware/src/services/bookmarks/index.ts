@@ -408,6 +408,13 @@ async function resolveResourceProperties(baseUrl: string): Promise<ResolvedResou
     p.type === "boolean"
     && ((typeof p.name === "string" && p.name.toLowerCase() === "favorite") || p.slug === "favorite"));
 
+  // The "Content Status" choices property (e.g. reading / shortlist / finished) — informs which
+  // resources the Start Something page prefers.
+  const contentStatus = props.find(p =>
+    p.type === "choices"
+    && ((typeof p.name === "string" && p.name.toLowerCase() === "content status")
+      || p.slug === "content-status"));
+
   // Resolve category names only when the complexity property carries per-category label schemes.
   const hasCategoryLabels = Boolean(complexity?.ratingCategoryLabels
     && typeof complexity.ratingCategoryLabels === "object"
@@ -428,6 +435,7 @@ async function resolveResourceProperties(baseUrl: string): Promise<ResolvedResou
       }
       : null,
     favoritePropId: favorite && typeof favorite.id === "string" ? favorite.id : null,
+    contentStatusPropId: contentStatus && typeof contentStatus.id === "string" ? contentStatus.id : null,
   };
 }
 

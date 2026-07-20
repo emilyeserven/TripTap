@@ -305,6 +305,7 @@ describe("buildStartSuggestions", () => {
       complexity: null,
       progress: null,
       favorite,
+      contentStatus: null,
       tagIds: [],
       imageUrl: null,
     });

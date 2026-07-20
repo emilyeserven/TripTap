@@ -16,6 +16,7 @@ function node(over: Partial<BookmarkSectionNode> & { id: string;
     endValue: null,
     url: null,
     tagIds: [],
+    completed: false,
     ...over,
   };
 }

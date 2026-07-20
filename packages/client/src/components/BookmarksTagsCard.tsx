@@ -366,7 +366,7 @@ function MaterialTypeTagFields({
       value={value}
       onChange={onChange}
       title="Material-type tags"
-      hint="Map a material type to one Resources-source tag. Graded material is written for learners; native material is authentic. Tagged resources are badged and filterable on the Collections page and grammar notes."
+      hint="Map a material type to one Resources-source tag. Graded material is written for learners; native material is authentic. Sequential Material is worked through in order (Start Something only suggests the next uncompleted section); Out-of-Order OK can be dipped into anywhere. Tagged resources are badged and filterable on the Collections page and grammar notes."
     />
   );
 }
