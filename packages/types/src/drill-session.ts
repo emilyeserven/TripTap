@@ -8,6 +8,8 @@
  * aggregated into statistics over time. Consumed by both the Fastify API and the React client.
  */
 
+import type { LearningArea } from "./question-sheet.js";
+
 /* ── Reason taxonomy ──────────────────────────────────────────────────────────────────────────── */
 
 /** One user-defined reason (the leaf of the taxonomy), e.g. "Wrong tense". */
@@ -85,6 +87,10 @@ export interface DrillSession {
   title: string | null;
   notes: string | null;
   mistakes: DrillMistake[] | null;
+  /** Number of drill rounds completed this session (XP: 0.25 each). */
+  rounds: number;
+  /** The learning area this session's XP counts toward; null falls back to Grammar. */
+  learningArea: LearningArea | null;
   /** ISO-8601 timestamp of when the session was added. */
   createdAt: string;
   /** ISO-8601 timestamp of the last update. */
@@ -97,6 +103,8 @@ export interface CreateDrillSessionInput {
   title?: string | null;
   notes?: string | null;
   mistakes?: DrillMistake[] | null;
+  rounds?: number;
+  learningArea?: LearningArea | null;
 }
 
 /** Payload for partially updating a drill session. */

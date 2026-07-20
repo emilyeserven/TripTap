@@ -316,6 +316,13 @@
       "when": 1784478611028,
       "tag": "0044_curved_synch",
       "breakpoints": true
+    },
+    {
+      "idx": 45,
+      "version": "7",
+      "when": 1784579142309,
+      "tag": "0045_clumsy_slapstick",
+      "breakpoints": true
     }
   ]
 }

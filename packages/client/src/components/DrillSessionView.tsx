@@ -1,6 +1,7 @@
 import type { DrillSession } from "@sentence-bank/types";
 
 import { DrillMistakeCard } from "@/components/DrillMistakeCard";
+import { DrillRoundsCounter } from "@/components/DrillRoundsCounter";
 import { Badge } from "@/components/ui/badge";
 import { useDrillReasonCategories } from "@/hooks/useDrillReasonCategories";
 
@@ -27,10 +28,12 @@ export function DrillSessionView({
           <Badge variant="secondary">
             {mistakes.length} {mistakes.length === 1 ? "mistake" : "mistakes"}
           </Badge>
+          {session.learningArea && <Badge variant="outline">{session.learningArea}</Badge>}
         </div>
         {session.notes
           ? <p className="text-sm whitespace-pre-wrap">{session.notes}</p>
           : null}
+        <DrillRoundsCounter session={session} />
       </div>
 
       {mistakes.length === 0

@@ -26,11 +26,14 @@ export function useSegmentLoop({
   segments,
   defaultMaxReplays,
   defaultGapMs,
+  onRepComplete,
 }: {
   playerRef: RefObject<PlayerHandle | null>;
   segments: ShadowingSegment[];
   defaultMaxReplays: number;
   defaultGapMs: number;
+  /** Fires once per completed playback pass (including the final one before auto-advancing). */
+  onRepComplete?: () => void;
 }) {
   const [isRunning, setIsRunning] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -51,6 +54,8 @@ export function useSegmentLoop({
   maxRef.current = defaultMaxReplays;
   const gapMsRef = useRef(defaultGapMs);
   gapMsRef.current = defaultGapMs;
+  const onRepCompleteRef = useRef(onRepComplete);
+  onRepCompleteRef.current = onRepComplete;
 
   const clearGap = () => {
     if (gapRef.current) {
@@ -98,6 +103,7 @@ export function useSegmentLoop({
     const seg = segmentsRef.current[indexRef.current];
     if (!seg) return;
     playerRef.current?.pause();
+    onRepCompleteRef.current?.();
     const nextRep = repRef.current + 1;
     if (nextRep < effectiveMaxReplays(seg, maxRef.current)) {
       setRep(nextRep);

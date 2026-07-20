@@ -31,6 +31,7 @@ import { tutorRoutes } from "@/routes/tutors";
 import { vocabRoutes } from "@/routes/vocab";
 import { writingRoutes } from "@/routes/writings";
 import { writingPromptRoutes } from "@/routes/writing-prompts";
+import { xpRoutes } from "@/routes/xp";
 
 /** Build and configure the Fastify application (without starting it). */
 export async function buildApp(): Promise<FastifyInstance> {
@@ -170,6 +171,10 @@ export async function buildApp(): Promise<FastifyInstance> {
           name: "renshuu",
           description: "Renshuu example-sentence lookup proxy",
         },
+        {
+          name: "xp",
+          description: "Experience points derived from learner activity, per learning area",
+        },
       ],
     },
   });
@@ -205,6 +210,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(ocrRoutes);
   await app.register(migakuImportRoutes);
   await app.register(settingsRoutes);
+  await app.register(xpRoutes);
 
   return app;
 }

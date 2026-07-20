@@ -15,6 +15,8 @@ function toDrillSession(row: DrillSessionRow): DrillSession {
     title: row.title,
     notes: row.notes,
     mistakes: row.mistakes ?? null,
+    rounds: row.rounds,
+    learningArea: row.learningArea ?? null,
     createdAt:
       row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
     updatedAt:
@@ -29,6 +31,8 @@ function toInsert(input: CreateDrillSessionInput) {
     title: input.title ?? null,
     notes: input.notes ?? null,
     mistakes: input.mistakes ?? null,
+    rounds: input.rounds ?? 0,
+    learningArea: input.learningArea ?? null,
   };
 }
 

@@ -17,6 +17,21 @@ test("POST /api/shadowing-sessions rejects a payload missing language", async ()
   await app.close();
 });
 
+test("POST /api/shadowing-sessions rejects negative completedLoops", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/shadowing-sessions",
+    payload: {
+      title: "Shadowing drill",
+      language: "Japanese",
+      completedLoops: -1,
+    },
+  });
+  assert.equal(res.statusCode, 400);
+  await app.close();
+});
+
 test("POST /api/shadowing-sessions rejects a segment missing endMs", async () => {
   const app = await buildApp();
   const res = await app.inject({

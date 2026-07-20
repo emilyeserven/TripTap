@@ -15,6 +15,7 @@ import type {
   DrillReasonCategory,
   CreateDrillReasonCategoryInput,
   UpdateDrillReasonCategoryInput,
+  XpSummary,
 } from "@sentence-bank/types";
 
 import { BASE, request } from "./request";
@@ -138,4 +139,9 @@ export const drillReasonCategoriesApi = {
   remove: (id: string) => request<undefined>(`/drill-reason-categories/${id}`, {
     method: "DELETE",
   }),
+};
+
+export const xpApi = {
+  summary: (days?: number) =>
+    request<XpSummary>(`/xp/summary${days != null ? `?days=${days}` : ""}`),
 };

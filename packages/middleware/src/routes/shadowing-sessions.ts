@@ -195,6 +195,10 @@ const createShadowingSessionBody = {
       type: "integer",
       minimum: 1,
     },
+    completedLoops: {
+      type: "integer",
+      minimum: 0,
+    },
     defaultGapMs: {
       type: "integer",
       minimum: 0,

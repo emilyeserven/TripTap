@@ -1,8 +1,9 @@
-import type { DrillMistake, DrillSession } from "@sentence-bank/types";
+import type { DrillMistake, DrillSession, LearningArea } from "@sentence-bank/types";
 
 import { useState } from "react";
 
 import { DrillMistakes } from "@/components/DrillMistakes";
+import { LearningAreaSelect } from "@/components/LearningAreaSelect";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -33,6 +34,9 @@ export function DrillSessionForm({
   const [title, setTitle] = useState(session?.title ?? "");
   const [notes, setNotes] = useState(session?.notes ?? "");
   const [mistakes, setMistakes] = useState<DrillMistake[]>(session?.mistakes ?? []);
+  const [learningArea, setLearningArea] = useState<LearningArea | null>(
+    session?.learningArea ?? null,
+  );
 
   const pending = create.isPending || update.isPending;
   const canSubmit = date.trim().length > 0 && !pending;
@@ -52,6 +56,7 @@ export function DrillSessionForm({
       title: title.trim() || null,
       notes: notes.trim() || null,
       mistakes: cleaned.length > 0 ? cleaned : null,
+      learningArea,
     };
     const saved = editing
       ? await update.mutateAsync({
@@ -94,6 +99,17 @@ export function DrillSessionForm({
             placeholder="e.g. Verb conjugation review"
           />
         </div>
+      </div>
+
+      <div className="space-y-1.5">
+        <Label>Learning area (optional)</Label>
+        <p className="text-xs text-muted-foreground">
+          Where this session&apos;s XP counts. Unset counts toward Grammar.
+        </p>
+        <LearningAreaSelect
+          value={learningArea}
+          onChange={setLearningArea}
+        />
       </div>
 
       <div className="space-y-1.5">

@@ -41,6 +41,14 @@ export function DrillSessionCard({
               </Badge>
             )
             : null}
+          {session.rounds > 0
+            ? (
+              <Badge variant="secondary">
+                {session.rounds} {session.rounds === 1 ? "round" : "rounds"}
+              </Badge>
+            )
+            : null}
+          {session.learningArea && <Badge variant="outline">{session.learningArea}</Badge>}
         </div>
       </CardContent>
     </Card>

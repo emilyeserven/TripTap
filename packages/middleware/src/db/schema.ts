@@ -428,6 +428,8 @@ export const shadowingSessions = pgTable("shadowing_sessions", {
   section: jsonb("section").$type<BookmarkSectionRef>(),
   defaultMaxReplays: integer("default_max_replays").notNull().default(3),
   defaultGapMs: integer("default_gap_ms").notNull().default(0),
+  // Total segment loops (playback passes) completed across all practice runs (XP: 0.25 each).
+  completedLoops: integer("completed_loops").notNull().default(0),
   // Optional uploaded audio for the session, stored as an object-storage key (not a blob). Null when
   // the session plays a YouTube video instead. Enables waveform-based auto-segmentation.
   audioKey: text("audio_key"),
@@ -593,6 +595,10 @@ export const drillSessions = pgTable("drill_sessions", {
   title: text("title"),
   notes: text("notes"),
   mistakes: jsonb("mistakes").$type<DrillMistake[]>(),
+  // Rounds completed this session (XP: 0.25 each); tracked manually via the session-view counter.
+  rounds: integer("rounds").notNull().default(0),
+  // The LearningArea this session's XP counts toward; null falls back to Grammar.
+  learningArea: text("learning_area").$type<LearningArea>(),
   createdAt: timestamp("created_at", {
     withTimezone: true,
   }).notNull().defaultNow(),

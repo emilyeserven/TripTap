@@ -24,6 +24,7 @@ export * from "./renshuu.js";
 export * from "./tatoeba.js";
 export * from "./writing.js";
 export * from "./writing-prompt.js";
+export * from "./xp.js";
 
 import type { LearningArea } from "./question-sheet.js";
 
