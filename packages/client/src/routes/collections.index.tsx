@@ -1,6 +1,7 @@
-import type { ResourceSort } from "@/lib/collections";
+import type { CollectionsSearch, ResourceSort } from "@/lib/collections";
+import type { DrillTag, LearningArea, MaterialType } from "@sentence-bank/types";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { BookOpen, ExternalLink, Headphones, ImageOff, PenLine, RefreshCw, Repeat2, Star } from "lucide-react";
@@ -39,6 +40,7 @@ import {
   matchesWebsite,
   materialTypeFilterOptions,
   mediaTypeFilterOptions,
+  parseCollectionsSearch,
   resourceActions,
   resourceDrillTags,
   resourceLearningAreas,
@@ -49,6 +51,7 @@ import {
 
 export const Route = createFileRoute("/collections/")({
   component: CollectionsPage,
+  validateSearch: parseCollectionsSearch,
 });
 
 function CollectionsPage() {
@@ -61,15 +64,28 @@ function CollectionsPage() {
   const navigate = useNavigate();
   const createWriting = useCreateWriting();
 
-  const [search, setSearch] = useState("");
-  const [website, setWebsite] = useState(ALL_FILTER);
-  const [mediaType, setMediaType] = useState(ALL_FILTER);
-  const [areas, setAreas] = useState<string[]>([]);
-  const [materials, setMaterials] = useState<string[]>([]);
-  const [drills, setDrills] = useState<string[]>([]);
-  const [sort, setSort] = useState<ResourceSort>("runtime-desc");
-  const [complexityMin, setComplexityMin] = useState(COMPLEXITY_MIN);
-  const [complexityMax, setComplexityMax] = useState<number | null>(null);
+  // Filters live in the URL so a filtered view is shareable/bookmarkable and survives reloads.
+  const sp = Route.useSearch();
+  const search = sp.q ?? "";
+  const website = sp.website ?? ALL_FILTER;
+  const mediaType = sp.mediaType ?? ALL_FILTER;
+  const areas = sp.areas ?? [];
+  const materials = sp.materials ?? [];
+  const drills = sp.drills ?? [];
+  const sort = sp.sort ?? "runtime-desc";
+  const complexityMin = sp.cmin ?? COMPLEXITY_MIN;
+  const complexityMax = sp.cmax ?? null;
+
+  // Merge a patch into the URL search; `replace` keeps per-keystroke/toggle edits out of history.
+  const setFilters = (patch: Partial<CollectionsSearch>) =>
+    void navigate({
+      to: "/collections",
+      search: prev => ({
+        ...prev,
+        ...patch,
+      }),
+      replace: true,
+    });
 
   const all = useMemo(() => data?.resources ?? [], [data]);
   const scale = data?.complexityScale ?? null;
@@ -163,7 +179,9 @@ function CollectionsPage() {
       <div className="flex flex-wrap items-center gap-2">
         <Input
           value={search}
-          onChange={e => setSearch(e.target.value)}
+          onChange={e => setFilters({
+            q: e.target.value || undefined,
+          })}
           placeholder="Search by title…"
           className="w-64"
           aria-label="Search collections"
@@ -172,7 +190,9 @@ function CollectionsPage() {
           ? (
             <Combobox
               value={mediaType}
-              onChange={setMediaType}
+              onChange={v => setFilters({
+                mediaType: v === ALL_FILTER ? undefined : v,
+              })}
               options={mediaTypeOptions}
               ariaLabel="Filter by media type"
               searchPlaceholder="Search media types…"
@@ -184,7 +204,9 @@ function CollectionsPage() {
           ? (
             <Combobox
               value={website}
-              onChange={setWebsite}
+              onChange={v => setFilters({
+                website: v === ALL_FILTER ? undefined : v,
+              })}
               options={websiteOptions}
               ariaLabel="Filter by website"
               searchPlaceholder="Search websites…"
@@ -196,7 +218,9 @@ function CollectionsPage() {
           ? (
             <MultiSelect
               value={areas}
-              onChange={setAreas}
+              onChange={v => setFilters({
+                areas: v.length ? (v as LearningArea[]) : undefined,
+              })}
               options={areaOptions}
               ariaLabel="Filter by learning area"
               placeholder="All learning areas"
@@ -209,7 +233,9 @@ function CollectionsPage() {
           ? (
             <MultiSelect
               value={materials}
-              onChange={setMaterials}
+              onChange={v => setFilters({
+                materials: v.length ? (v as MaterialType[]) : undefined,
+              })}
               options={materialOptions}
               ariaLabel="Filter by material type"
               placeholder="All material types"
@@ -222,7 +248,9 @@ function CollectionsPage() {
           ? (
             <MultiSelect
               value={drills}
-              onChange={setDrills}
+              onChange={v => setFilters({
+                drills: v.length ? (v as DrillTag[]) : undefined,
+              })}
               options={drillOptions}
               ariaLabel="Filter by drill tag"
               placeholder="All drill tags"
@@ -233,7 +261,9 @@ function CollectionsPage() {
           : null}
         <Select
           value={sort}
-          onValueChange={v => setSort(v as ResourceSort)}
+          onValueChange={v => setFilters({
+            sort: v === "runtime-desc" ? undefined : (v as ResourceSort),
+          })}
         >
           <SelectTrigger
             className="w-48"
@@ -256,7 +286,9 @@ function CollectionsPage() {
             <span className="text-muted-foreground">Complexity</span>
             <Select
               value={String(complexityMin)}
-              onValueChange={v => setComplexityMin(Number(v))}
+              onValueChange={v => setFilters({
+                cmin: Number(v) === COMPLEXITY_MIN ? undefined : Number(v),
+              })}
             >
               <SelectTrigger
                 className="w-52"
@@ -278,7 +310,9 @@ function CollectionsPage() {
             <span className="text-muted-foreground">to</span>
             <Select
               value={String(selMax)}
-              onValueChange={v => setComplexityMax(Number(v))}
+              onValueChange={v => setFilters({
+                cmax: Number(v) === scale?.max ? undefined : Number(v),
+              })}
             >
               <SelectTrigger
                 className="w-52"

@@ -25,6 +25,8 @@ export const Route = createFileRoute("/book-exercises/")({
   component: BookExercisesPage,
 });
 
+const VIEW_ALL_CLASS = "text-sm font-medium text-primary hover:underline";
+
 function BookExercisesPage() {
   usePageTitle("Book Exercises");
   const {
@@ -85,7 +87,20 @@ function BookExercisesPage() {
         />
       </div>
 
-      <HubSection title="Books">
+      <HubSection
+        title="Books"
+        action={(
+          <Link
+            to="/collections"
+            search={{
+              mediaType: "Book",
+            }}
+            className={VIEW_ALL_CLASS}
+          >
+            View more →
+          </Link>
+        )}
+      >
         <ResourceRow
           resources={bookResources}
           areaTags={areaTags}

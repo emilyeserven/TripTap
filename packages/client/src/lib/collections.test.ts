@@ -25,6 +25,7 @@ import {
   materialTypeFilterOptions,
   mediaTypeFilterOptions,
   matchesWebsite,
+  parseCollectionsSearch,
   resourceActions,
   resourceDrillTags,
   resourceLearningAreas,
@@ -575,5 +576,85 @@ describe("sortResources", () => {
       progress: null,
     });
     expect(sortResources([p20, pNone, p80], "progress-desc").map(r => r.id)).toEqual(["p80", "p20", "pNone"]);
+  });
+});
+
+describe("parseCollectionsSearch", () => {
+  it("returns all-undefined for an empty search", () => {
+    expect(parseCollectionsSearch({})).toEqual({
+      q: undefined,
+      website: undefined,
+      mediaType: undefined,
+      areas: undefined,
+      materials: undefined,
+      drills: undefined,
+      sort: undefined,
+      cmin: undefined,
+      cmax: undefined,
+    });
+  });
+
+  it("keeps recognized string, enum, and numeric fields", () => {
+    expect(parseCollectionsSearch({
+      q: "cats",
+      website: "YouTube",
+      mediaType: "Book",
+      areas: ["Reading", "Writing"],
+      materials: ["Graded"],
+      drills: ["Drills"],
+      sort: "progress-asc",
+      cmin: 1,
+      cmax: 4,
+    })).toEqual({
+      q: "cats",
+      website: "YouTube",
+      mediaType: "Book",
+      areas: ["Reading", "Writing"],
+      materials: ["Graded"],
+      drills: ["Drills"],
+      sort: "progress-asc",
+      cmin: 1,
+      cmax: 4,
+    });
+  });
+
+  it("drops unrecognized enum members and invalid sort values", () => {
+    const parsed = parseCollectionsSearch({
+      areas: ["Reading", "Bogus"],
+      materials: ["Nope"],
+      sort: "sideways",
+    });
+    expect(parsed.areas).toEqual(["Reading"]);
+    expect(parsed.materials).toBeUndefined();
+    expect(parsed.sort).toBeUndefined();
+  });
+
+  it("coerces numeric strings and rejects non-numeric ones for the complexity bounds", () => {
+    expect(parseCollectionsSearch({
+      cmin: "2",
+      cmax: "x",
+    })).toMatchObject({
+      cmin: 2,
+      cmax: undefined,
+    });
+  });
+
+  it("accepts a single enum value as well as an array, and de-dupes", () => {
+    expect(parseCollectionsSearch({
+      areas: "Reading",
+    }).areas).toEqual(["Reading"]);
+    expect(parseCollectionsSearch({
+      areas: ["Reading", "Reading"],
+    }).areas).toEqual(["Reading"]);
+  });
+
+  it("treats blank/whitespace strings as absent", () => {
+    expect(parseCollectionsSearch({
+      q: "   ",
+      website: "",
+    })).toMatchObject({
+      q: undefined,
+      website: undefined,
+    });
   });
 });
