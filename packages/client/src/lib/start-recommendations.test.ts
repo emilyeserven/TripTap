@@ -1,4 +1,11 @@
-import type { GrammarNote, QuestionSheet, XpSummary } from "@sentence-bank/types";
+import type {
+  BookmarkResource,
+  BookmarkSectionMatch,
+  GrammarNote,
+  LearningAreaTagMap,
+  QuestionSheet,
+  XpSummary,
+} from "@sentence-bank/types";
 
 import { LEARNING_AREAS } from "@sentence-bank/types";
 import { describe, expect, it } from "vitest";
@@ -6,6 +13,63 @@ import { describe, expect, it } from "vitest";
 import { buildStartSuggestions, lowestXpArea } from "./start-recommendations";
 
 const NOW = new Date("2026-07-20T12:00:00Z");
+
+/** Learning-area → tag map so a resource's tagIds resolve to an area (and its session link). */
+const AREA_TAGS: LearningAreaTagMap = {
+  Speaking: {
+    id: "t-speaking",
+    name: "Speaking",
+  },
+  Listening: {
+    id: "t-listening",
+    name: "Listening",
+  },
+  Reading: {
+    id: "t-reading",
+    name: "Reading",
+  },
+};
+
+function res(over: Partial<BookmarkResource> & { id: string }): BookmarkResource {
+  return {
+    title: `Resource ${over.id}`,
+    url: null,
+    website: null,
+    runtimeSeconds: null,
+    mediaType: null,
+    complexity: null,
+    progress: null,
+    favorite: false,
+    contentStatus: null,
+    tagIds: [],
+    imageUrl: null,
+    ...over,
+  };
+}
+
+function sec(
+  bookmarkId: string,
+  sectionId: string,
+  over: Partial<BookmarkSectionMatch["section"]> = {},
+): BookmarkSectionMatch {
+  return {
+    bookmarkId,
+    bookmarkTitle: `Book ${bookmarkId}`,
+    bookmarkUrl: null,
+    imageUrl: null,
+    mediaType: null,
+    tagIds: [],
+    section: {
+      id: sectionId,
+      label: sectionId,
+      type: "page",
+      startValue: null,
+      endValue: null,
+      completed: false,
+      ...over,
+    },
+  };
+}
 
 function summary(xpByArea: Partial<Record<string, number>>): XpSummary {
   const areas = (["Speaking", "Listening", "Reading", "Writing", "Grammar", "Vocabulary"] as const)
@@ -100,7 +164,7 @@ describe("buildStartSuggestions", () => {
     expect(suggestions[1].kind).toBe("area");
   });
 
-  it("suggests the lowest area with a concrete section when one is tagged", () => {
+  it("suggests a concrete section from a tagged resource", () => {
     const suggestions = buildStartSuggestions({
       summary: summary({
         Listening: 3,
@@ -109,35 +173,32 @@ describe("buildStartSuggestions", () => {
         Grammar: 3,
         Vocabulary: 3,
       }),
-      lowestAreaSections: [
-        {
-          bookmarkId: "b1",
-          bookmarkTitle: "Terrace House",
-          bookmarkUrl: "https://example.com/th",
-          imageUrl: null,
-          mediaType: "Video",
-          tagIds: [],
-          section: {
-            id: "s1",
-            label: "Ep. 3 › 12:00–14:30",
-            type: "timestamp",
-            startValue: "12:00",
-            endValue: "14:30",
-          },
-        },
-      ],
+      areaTags: AREA_TAGS,
+      resources: [res({
+        id: "b1",
+        title: "Terrace House",
+        url: "https://example.com/th",
+        mediaType: "Video",
+        tagIds: ["t-speaking"],
+      })],
+      sections: [sec("b1", "s1", {
+        label: "Ep. 3 › 12:00–14:30",
+        type: "timestamp",
+        startValue: "12:00",
+        endValue: "14:30",
+      })],
       now: NOW,
     });
-    const area = suggestions.find(s => s.kind === "area");
-    expect(area?.area).toBe("Speaking");
-    expect(area?.title).toContain("Ep. 3");
-    expect(area?.to).toBe("/shadowing/new");
-    expect(area?.search).toMatchObject({
+    const pick = suggestions.find(s => s.id === "section-s1");
+    expect(pick?.area).toBe("Speaking");
+    expect(pick?.title).toContain("Ep. 3");
+    expect(pick?.to).toBe("/shadowing/new");
+    expect(pick?.search).toMatchObject({
       bookmarkId: "b1",
     });
   });
 
-  it("falls back to the bare session link when no sections or resources match", () => {
+  it("falls back to the bare per-area session link when there are no resources", () => {
     const suggestions = buildStartSuggestions({
       summary: summary({
         Speaking: 1,
@@ -149,8 +210,7 @@ describe("buildStartSuggestions", () => {
       }),
       now: NOW,
     });
-    const area = suggestions.find(s => s.kind === "area");
-    expect(area?.area).toBe("Listening");
+    const area = suggestions.find(s => s.id === "area-Listening");
     expect(area?.to).toBe("/listening-sessions/new");
     expect(area?.search).toBeUndefined();
   });
@@ -236,22 +296,7 @@ describe("buildStartSuggestions", () => {
     expect(suggestions.find(s => s.kind === "area")).toBeUndefined();
   });
 
-  it("filters excluded media types out of the section pool", () => {
-    const section = (id: string, mediaType: string) => ({
-      bookmarkId: id,
-      bookmarkTitle: `Resource ${id}`,
-      bookmarkUrl: null,
-      imageUrl: null,
-      mediaType,
-      tagIds: [],
-      section: {
-        id: `${id}-s`,
-        label: `Section of ${id}`,
-        type: "page" as const,
-        startValue: null,
-        endValue: null,
-      },
-    });
+  it("filters excluded media types out of the pool", () => {
     const suggestions = buildStartSuggestions({
       summary: summary({
         Listening: 0,
@@ -261,7 +306,19 @@ describe("buildStartSuggestions", () => {
         Grammar: 9,
         Vocabulary: 9,
       }),
-      lowestAreaSections: [section("book", "Book"), section("video", "Video")],
+      areaTags: AREA_TAGS,
+      resources: [
+        res({
+          id: "book",
+          mediaType: "Book",
+          tagIds: ["t-listening"],
+        }),
+        res({
+          id: "video",
+          mediaType: "Video",
+          tagIds: ["t-listening"],
+        }),
+      ],
       exclusions: {
         mediaTypes: ["Book"],
         sessionTypes: [],
@@ -269,8 +326,8 @@ describe("buildStartSuggestions", () => {
       },
       now: NOW,
     });
-    const area = suggestions.find(s => s.kind === "area");
-    expect(area?.search?.bookmarkId).toBe("video");
+    expect(suggestions.find(s => s.id === "resource-video")).toBeDefined();
+    expect(suggestions.find(s => s.id === "resource-book")).toBeUndefined();
   });
 
   it("drops suggestions for excluded session types", () => {
@@ -294,21 +351,7 @@ describe("buildStartSuggestions", () => {
     expect(suggestions.find(s => s.to === "/shadowing/new")).toBeUndefined();
   });
 
-  it("floats favorited resources to the front of the pick pool", () => {
-    const resource = (id: string, favorite = false) => ({
-      id,
-      title: `Resource ${id}`,
-      url: null,
-      website: null,
-      runtimeSeconds: 60,
-      mediaType: "Video",
-      complexity: null,
-      progress: null,
-      favorite,
-      contentStatus: null,
-      tagIds: [],
-      imageUrl: null,
-    });
+  it("floats favorited resources to the front of the pool", () => {
     const base = {
       summary: summary({
         Listening: 0,
@@ -318,21 +361,43 @@ describe("buildStartSuggestions", () => {
         Grammar: 9,
         Vocabulary: 9,
       }),
+      areaTags: AREA_TAGS,
       now: NOW,
     };
+    const contentIds = (s: ReturnType<typeof buildStartSuggestions>) =>
+      s.filter(x => x.id.startsWith("resource-")).map(x => x.id);
     // A locally-starred resource beats list order…
     const local = buildStartSuggestions({
       ...base,
-      lowestAreaResources: [resource("first"), resource("starred")],
+      resources: [
+        res({
+          id: "first",
+          tagIds: ["t-listening"],
+        }),
+        res({
+          id: "starred",
+          tagIds: ["t-listening"],
+        }),
+      ],
       favoriteResourceIds: ["starred"],
     });
-    expect(local.find(s => s.kind === "area")?.search?.bookmarkId).toBe("starred");
+    expect(contentIds(local)[0]).toBe("resource-starred");
     // …and an upstream favorite beats a plain resource when nothing is starred locally.
     const upstream = buildStartSuggestions({
       ...base,
-      lowestAreaResources: [resource("plain"), resource("host-fav", true)],
+      resources: [
+        res({
+          id: "plain",
+          tagIds: ["t-listening"],
+        }),
+        res({
+          id: "host-fav",
+          favorite: true,
+          tagIds: ["t-listening"],
+        }),
+      ],
     });
-    expect(upstream.find(s => s.kind === "area")?.search?.bookmarkId).toBe("host-fav");
+    expect(contentIds(upstream)[0]).toBe("resource-host-fav");
   });
 
   it("nudges toward a goal's grammar term when a matching note exists", () => {
@@ -373,39 +438,11 @@ describe("buildStartSuggestions", () => {
   });
 
   it("gates a sequential resource to its first uncompleted section", () => {
-    const seqTag = {
-      id: "seq-tag",
-      name: "Sequential",
-    };
-    const bookmark = {
+    const bookmark = res({
       id: "bk",
       title: "Genki I",
-      url: null,
-      website: null,
-      runtimeSeconds: null,
       mediaType: "Book",
-      complexity: null,
-      progress: null,
-      favorite: false,
-      contentStatus: null,
-      tagIds: ["seq-tag"],
-      imageUrl: null,
-    };
-    const section = (id: string, page: string, completed: boolean) => ({
-      bookmarkId: "bk",
-      bookmarkTitle: "Genki I",
-      bookmarkUrl: null,
-      imageUrl: null,
-      mediaType: "Book",
-      tagIds: ["seq-tag"],
-      section: {
-        id,
-        label: `p. ${page}`,
-        type: "page" as const,
-        startValue: page,
-        endValue: null,
-        completed,
-      },
+      tagIds: ["t-reading", "seq-tag"],
     });
     const suggestions = buildStartSuggestions({
       summary: summary({
@@ -416,49 +453,42 @@ describe("buildStartSuggestions", () => {
         Grammar: 9,
         Vocabulary: 9,
       }),
-      lowestAreaSections: [
-        // Out of order and mixed completion: 1 done, 2 not, 3 not.
-        section("s3", "30", false),
-        section("s1", "10", true),
-        section("s2", "20", false),
-      ],
+      areaTags: AREA_TAGS,
+      resources: [bookmark],
       resourcesById: {
         bk: bookmark,
       },
+      // Out of order and mixed completion: p.10 done, p.20 & p.30 not.
+      sections: [
+        sec("bk", "s3", {
+          label: "p. 30",
+          startValue: "30",
+        }),
+        sec("bk", "s1", {
+          label: "p. 10",
+          startValue: "10",
+          completed: true,
+        }),
+        sec("bk", "s2", {
+          label: "p. 20",
+          startValue: "20",
+        }),
+      ],
       materialTypeTags: {
-        "Sequential Material": seqTag,
+        "Sequential Material": {
+          id: "seq-tag",
+          name: "Sequential",
+        },
       },
       now: NOW,
     });
-    const area = suggestions.find(s => s.kind === "area");
     // The first uncompleted section by page order is p.20 (s2); p.10 is done, p.30 is further ahead.
-    expect(area?.title).toContain("p. 20");
+    expect(suggestions.find(s => s.id === "section-s2")).toBeDefined();
+    expect(suggestions.find(s => s.id === "section-s1")).toBeUndefined();
+    expect(suggestions.find(s => s.id === "section-s3")).toBeUndefined();
   });
 
   it("drops resources outside the complexity band", () => {
-    const scale = {
-      min: 0,
-      max: 5,
-      labels: {},
-      schemes: [],
-    };
-    const res = (id: string, level: number) => ({
-      id,
-      title: `Book ${id}`,
-      url: null,
-      website: null,
-      runtimeSeconds: null,
-      mediaType: "Book",
-      complexity: {
-        min: level,
-        max: level,
-      },
-      progress: null,
-      favorite: false,
-      contentStatus: null,
-      tagIds: [],
-      imageUrl: null,
-    });
     const suggestions = buildStartSuggestions({
       summary: summary({
         Reading: 0,
@@ -468,8 +498,31 @@ describe("buildStartSuggestions", () => {
         Grammar: 9,
         Vocabulary: 9,
       }),
-      lowestAreaResources: [res("hard", 5), res("easy", 1)],
-      complexityScale: scale,
+      areaTags: AREA_TAGS,
+      resources: [
+        res({
+          id: "hard",
+          complexity: {
+            min: 5,
+            max: 5,
+          },
+          tagIds: ["t-reading"],
+        }),
+        res({
+          id: "easy",
+          complexity: {
+            min: 1,
+            max: 1,
+          },
+          tagIds: ["t-reading"],
+        }),
+      ],
+      complexityScale: {
+        min: 0,
+        max: 5,
+        labels: {},
+        schemes: [],
+      },
       exclusions: {
         mediaTypes: [],
         sessionTypes: [],
@@ -480,24 +533,11 @@ describe("buildStartSuggestions", () => {
       now: NOW,
     });
     // Only the level-1 book is within [0, 2]; the level-5 book is filtered out.
-    expect(suggestions.find(s => s.kind === "area")?.search?.title).toBe("Book easy");
+    expect(suggestions.find(s => s.id === "resource-easy")).toBeDefined();
+    expect(suggestions.find(s => s.id === "resource-hard")).toBeUndefined();
   });
 
-  it("prefers an actively-read resource over a finished one via content status", () => {
-    const res = (id: string, contentStatus: string | null) => ({
-      id,
-      title: `Book ${id}`,
-      url: null,
-      website: null,
-      runtimeSeconds: null,
-      mediaType: "Book",
-      complexity: null,
-      progress: null,
-      favorite: false,
-      contentStatus,
-      tagIds: [],
-      imageUrl: null,
-    });
+  it("interleaves sections across bookmarks so one book doesn't dominate", () => {
     const suggestions = buildStartSuggestions({
       summary: summary({
         Reading: 0,
@@ -507,9 +547,57 @@ describe("buildStartSuggestions", () => {
         Grammar: 9,
         Vocabulary: 9,
       }),
-      lowestAreaResources: [res("done", "finished"), res("active", "reading")],
+      areaTags: AREA_TAGS,
+      resources: [
+        res({
+          id: "bookA",
+          tagIds: ["t-reading"],
+        }),
+        res({
+          id: "bookB",
+          tagIds: ["t-reading"],
+        }),
+      ],
+      sections: [
+        sec("bookA", "a1"),
+        sec("bookA", "a2"),
+        sec("bookA", "a3"),
+        sec("bookB", "b1"),
+        sec("bookB", "b2"),
+      ],
       now: NOW,
     });
-    expect(suggestions.find(s => s.kind === "area")?.search?.title).toBe("Book active");
+    const content = suggestions.filter(s => s.id.startsWith("section-")).map(s => s.id);
+    // Round-robin: A, B, A, B, A — never the same book twice in a row while the other has items left.
+    expect(content.slice(0, 4)).toEqual(["section-a1", "section-b1", "section-a2", "section-b2"]);
+  });
+
+  it("prefers an actively-read resource over a finished one via content status", () => {
+    const suggestions = buildStartSuggestions({
+      summary: summary({
+        Reading: 0,
+        Speaking: 9,
+        Listening: 9,
+        Writing: 9,
+        Grammar: 9,
+        Vocabulary: 9,
+      }),
+      areaTags: AREA_TAGS,
+      resources: [
+        res({
+          id: "done",
+          contentStatus: "finished",
+          tagIds: ["t-listening"],
+        }),
+        res({
+          id: "active",
+          contentStatus: "reading",
+          tagIds: ["t-listening"],
+        }),
+      ],
+      now: NOW,
+    });
+    const contentIds = suggestions.filter(s => s.id.startsWith("resource-")).map(s => s.id);
+    expect(contentIds[0]).toBe("resource-active");
   });
 });

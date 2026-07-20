@@ -103,6 +103,8 @@ export const bookmarksApi = {
   /** Every bookmark section whose upstream tags include a specific tag id (e.g. a grammar note's tag). */
   sectionsByTag: (tagId: string) =>
     request<BookmarkSectionMatch[]>(`/bookmarks/sections-by-tag/${encodeURIComponent(tagId)}`),
+  /** Every section of every bookmark — the Start Something suggestion pool. */
+  sections: () => request<BookmarkSectionMatch[]>("/bookmarks/sections"),
   /** The whole bookmarks collection (+ complexity-scale metadata) for the Collections browser. */
   resources: () => request<BookmarkResourceList>("/bookmarks/resources"),
 };

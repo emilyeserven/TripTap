@@ -27,7 +27,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { XpBreakdown } from "@/components/XpBreakdown";
 import { XpRadarChart } from "@/components/XpRadarChart";
 import { useAnswerSheets } from "@/hooks/useAnswerSheets";
-import { useBookmarkResources, useBookmarkSectionsByTag } from "@/hooks/useBookmarks";
+import { useAllBookmarkSections, useBookmarkResources } from "@/hooks/useBookmarks";
 import { useGrammarNotes } from "@/hooks/useGrammarNotes";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useQuestionSheets } from "@/hooks/useQuestionSheets";
@@ -44,7 +44,7 @@ import {
   suggestionToLineupItem,
   todayDateString,
 } from "@/lib/daily-lineup";
-import { buildStartSuggestions, lowestXpArea } from "@/lib/start-recommendations";
+import { buildStartSuggestions } from "@/lib/start-recommendations";
 
 export const Route = createFileRoute("/start")({
   component: StartPage,
@@ -170,23 +170,14 @@ function StartPage() {
 
   const areaTags = bookmarksSettings.data?.learningAreaTags ?? {};
   const materialTypeTags = bookmarksSettings.data?.materialTypeTags ?? {};
-  // Excluded areas are skipped before resolving the tag so the fetched pool matches the pick.
-  const lowest = summary.data ? lowestXpArea(summary.data, lineup.exclusions.learningAreas) : null;
-  // The lowest area's mapped tag drives the "quick and contained" section pool. The hook no-ops on a
-  // null tag id (e.g. the tag map isn't configured), degrading to bare session links.
-  const lowestTagId = lowest ? areaTags[lowest]?.id ?? null : null;
-  const areaSections = useBookmarkSectionsByTag(lowestTagId);
-  // The full Collections resource list carries the custom properties (complexity, favorite, content
-  // status) the ranker needs — the by-tag endpoint doesn't resolve them. Filter to the area's tag.
+  // The whole Collections resource list (with complexity/favorite/content status) and every bookmark
+  // section are the suggestion pool — the ranker turns each into a candidate to reroll through.
   const allResources = useBookmarkResources();
+  const allSections = useAllBookmarkSections();
   const resources = useMemo(() => allResources.data?.resources ?? [], [allResources.data]);
   const resourcesById = useMemo(
     () => Object.fromEntries(resources.map(r => [r.id, r])),
     [resources],
-  );
-  const lowestAreaResources = useMemo(
-    () => (lowestTagId ? resources.filter(r => r.tagIds.includes(lowestTagId)) : []),
-    [resources, lowestTagId],
   );
 
   const suggestions = useMemo(() => {
@@ -199,8 +190,8 @@ function StartPage() {
       grammarNotes: grammarNotes.data,
       writingPrompts: writingPrompts.data,
       areaTags,
-      lowestAreaSections: areaSections.data,
-      lowestAreaResources,
+      sections: allSections.data,
+      resources,
       resourcesById,
       materialTypeTags,
       complexityScale: allResources.data?.complexityScale ?? null,
@@ -216,8 +207,8 @@ function StartPage() {
     grammarNotes.data,
     writingPrompts.data,
     areaTags,
-    areaSections.data,
-    lowestAreaResources,
+    allSections.data,
+    resources,
     resourcesById,
     materialTypeTags,
     allResources.data,
