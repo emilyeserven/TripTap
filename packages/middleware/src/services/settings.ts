@@ -5,16 +5,25 @@ import type {
   DictionaryProvider,
   DictionarySettings,
   DrillTag,
+  LearnerGoal,
+  LearnerProfile,
   LearningArea,
   MaterialType,
   OcrSettings,
   RenshuuSettings,
+  SentenceTermRef,
   UpdateBookmarksSettingsInput,
   UpdateDictionarySettingsInput,
+  UpdateLearnerProfileInput,
   UpdateOcrSettingsInput,
   UpdateRenshuuSettingsInput,
 } from "@sentence-bank/types";
-import { DRILL_TAGS, LEARNING_AREAS, MATERIAL_TYPES } from "@sentence-bank/types";
+import {
+  DRILL_TAGS,
+  LEARNING_AREAS,
+  MATERIAL_TYPES,
+  MAX_LEARNER_GOALS,
+} from "@sentence-bank/types";
 import { db } from "@/db";
 import { settings } from "@/db/schema";
 
@@ -276,6 +285,72 @@ export async function updateDictionarySettings(
     await setSetting(DICTIONARY_KEYS.provider, input.provider ?? null);
   }
   return getDictionarySettings();
+}
+
+/** Settings key holding the learner profile's goals as one JSON-encoded array. Not a secret. */
+const PROFILE_GOALS_KEY = "profile.goals";
+
+/** Keep only well-formed {@link SentenceTermRef}s from a stored goal's term array. */
+function parseGoalTerms(value: unknown): SentenceTermRef[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter((term): term is SentenceTermRef => {
+    if (!term || typeof term !== "object") return false;
+    const t = term as Record<string, unknown>;
+    return typeof t.id === "string" && typeof t.name === "string";
+  });
+}
+
+/**
+ * Parse the stored goals JSON, tolerating absent/corrupt values like the other settings parsers:
+ * malformed goals are dropped, unknown learning areas are filtered out, and the list is clamped to
+ * {@link MAX_LEARNER_GOALS}.
+ */
+function parseLearnerGoals(raw: string | null): LearnerGoal[] {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter((goal): goal is Record<string, unknown> => Boolean(goal) && typeof goal === "object")
+      .filter(goal => typeof goal.id === "string" && typeof goal.title === "string")
+      .map(goal => ({
+        id: goal.id as string,
+        title: goal.title as string,
+        notes: typeof goal.notes === "string" ? goal.notes : null,
+        learningAreas: Array.isArray(goal.learningAreas)
+          ? goal.learningAreas.filter((area): area is LearningArea =>
+            (LEARNING_AREAS as readonly string[]).includes(area as string))
+          : [],
+        grammarTerms: parseGoalTerms(goal.grammarTerms),
+        resourceTerms: parseGoalTerms(goal.resourceTerms),
+      }))
+      .slice(0, MAX_LEARNER_GOALS);
+  }
+  catch {
+    return [];
+  }
+}
+
+/** The learner profile stored in the DB (empty goals when unset). */
+export async function getLearnerProfile(): Promise<LearnerProfile> {
+  const stored = await getSettings([PROFILE_GOALS_KEY]);
+  return {
+    goals: parseLearnerGoals(stored[PROFILE_GOALS_KEY] ?? null),
+  };
+}
+
+/**
+ * Apply a partial update to the learner profile. `goals` is tri-state: `undefined` leaves the value
+ * unchanged, `null`/`[]` clears it. Returns the new view.
+ */
+export async function updateLearnerProfile(
+  input: UpdateLearnerProfileInput,
+): Promise<LearnerProfile> {
+  if (input.goals !== undefined) {
+    const goals = input.goals?.slice(0, MAX_LEARNER_GOALS) ?? [];
+    await setSetting(PROFILE_GOALS_KEY, goals.length > 0 ? JSON.stringify(goals) : null);
+  }
+  return getLearnerProfile();
 }
 
 /** Settings key for the Renshuu API key. Stored server-side; overrides the `RENSHUU_API_KEY` env var. */

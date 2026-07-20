@@ -9,6 +9,8 @@ import type {
   DictionaryEntry,
   DictionarySettings,
   ExampleSentence,
+  LearnerProfile,
+  UpdateLearnerProfileInput,
   OcrSettings,
   RenshuuExampleSentence,
   RenshuuSettings,
@@ -25,6 +27,12 @@ import type {
 import { request } from "./request";
 
 export const settingsApi = {
+  getProfile: () => request<LearnerProfile>("/settings/profile"),
+  updateProfile: (input: UpdateLearnerProfileInput) =>
+    request<LearnerProfile>("/settings/profile", {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    }),
   getOcr: () => request<OcrSettings>("/settings/ocr"),
   updateOcr: (input: UpdateOcrSettingsInput) =>
     request<OcrSettings>("/settings/ocr", {
