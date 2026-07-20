@@ -569,6 +569,14 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
           <PwaUpdateItem />
           <NavItem
             item={{
+              title: "Learner Profile",
+              to: "/profile",
+              icon: TargetIcon,
+            }}
+            pathname={pathname}
+          />
+          <NavItem
+            item={{
               title: "Settings",
               to: "/settings",
               icon: SettingsIcon,

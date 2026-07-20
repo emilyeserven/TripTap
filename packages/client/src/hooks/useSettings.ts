@@ -1,6 +1,7 @@
 import type {
   UpdateBookmarksSettingsInput,
   UpdateDictionarySettingsInput,
+  UpdateLearnerProfileInput,
   UpdateOcrSettingsInput,
   UpdateRenshuuSettingsInput,
 } from "@sentence-bank/types";
@@ -14,6 +15,23 @@ const RENSHUU_SETTINGS_KEY = ["settings", "renshuu"] as const;
 const BOOKMARKS_SETTINGS_KEY = ["settings", "bookmarks"] as const;
 const DICTIONARY_SETTINGS_KEY = ["settings", "dictionary"] as const;
 const MEDIA_SETTINGS_KEY = ["settings", "media"] as const;
+const LEARNER_PROFILE_KEY = ["settings", "profile"] as const;
+
+/** The learner profile: up to three goals with their targeted areas/terms. */
+export function useLearnerProfile() {
+  return useQuery({
+    queryKey: LEARNER_PROFILE_KEY,
+    queryFn: settingsApi.getProfile,
+  });
+}
+
+export function useUpdateLearnerProfile() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: UpdateLearnerProfileInput) => settingsApi.updateProfile(input),
+    onSuccess: data => queryClient.setQueryData(LEARNER_PROFILE_KEY, data),
+  });
+}
 
 /** Non-secret status of the media object store (S3/Garage) config. */
 export function useMediaSettings() {

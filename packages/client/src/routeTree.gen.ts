@@ -14,6 +14,7 @@ import { Route as VocabRouteImport } from './routes/vocab'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SentencesRouteImport } from './routes/sentences'
 import { Route as RenshuuRouteImport } from './routes/renshuu'
+import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as GrammarRouteImport } from './routes/grammar'
 import { Route as CultureRouteImport } from './routes/culture'
 import { Route as CaptureRouteImport } from './routes/capture'
@@ -118,6 +119,11 @@ const SentencesRoute = SentencesRouteImport.update({
 const RenshuuRoute = RenshuuRouteImport.update({
   id: '/renshuu',
   path: '/renshuu',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GrammarRoute = GrammarRouteImport.update({
@@ -528,6 +534,7 @@ export interface FileRoutesByFullPath {
   '/capture': typeof CaptureRoute
   '/culture': typeof CultureRoute
   '/grammar': typeof GrammarRoute
+  '/profile': typeof ProfileRoute
   '/renshuu': typeof RenshuuRoute
   '/sentences': typeof SentencesRoute
   '/settings': typeof SettingsRoute
@@ -615,6 +622,7 @@ export interface FileRoutesByTo {
   '/capture': typeof CaptureRoute
   '/culture': typeof CultureRoute
   '/grammar': typeof GrammarRoute
+  '/profile': typeof ProfileRoute
   '/renshuu': typeof RenshuuRoute
   '/sentences': typeof SentencesRoute
   '/settings': typeof SettingsRoute
@@ -692,6 +700,7 @@ export interface FileRoutesById {
   '/capture': typeof CaptureRoute
   '/culture': typeof CultureRoute
   '/grammar': typeof GrammarRoute
+  '/profile': typeof ProfileRoute
   '/renshuu': typeof RenshuuRoute
   '/sentences': typeof SentencesRoute
   '/settings': typeof SettingsRoute
@@ -781,6 +790,7 @@ export interface FileRouteTypes {
     | '/capture'
     | '/culture'
     | '/grammar'
+    | '/profile'
     | '/renshuu'
     | '/sentences'
     | '/settings'
@@ -868,6 +878,7 @@ export interface FileRouteTypes {
     | '/capture'
     | '/culture'
     | '/grammar'
+    | '/profile'
     | '/renshuu'
     | '/sentences'
     | '/settings'
@@ -944,6 +955,7 @@ export interface FileRouteTypes {
     | '/capture'
     | '/culture'
     | '/grammar'
+    | '/profile'
     | '/renshuu'
     | '/sentences'
     | '/settings'
@@ -1032,6 +1044,7 @@ export interface RootRouteChildren {
   CaptureRoute: typeof CaptureRoute
   CultureRoute: typeof CultureRoute
   GrammarRoute: typeof GrammarRoute
+  ProfileRoute: typeof ProfileRoute
   RenshuuRoute: typeof RenshuuRoute
   SentencesRoute: typeof SentencesRoute
   SettingsRoute: typeof SettingsRoute
@@ -1127,6 +1140,13 @@ declare module '@tanstack/react-router' {
       path: '/renshuu'
       fullPath: '/renshuu'
       preLoaderRoute: typeof RenshuuRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/grammar': {
@@ -1849,6 +1869,7 @@ const rootRouteChildren: RootRouteChildren = {
   CaptureRoute: CaptureRoute,
   CultureRoute: CultureRoute,
   GrammarRoute: GrammarRoute,
+  ProfileRoute: ProfileRoute,
   RenshuuRoute: RenshuuRoute,
   SentencesRoute: SentencesRoute,
   SettingsRoute: SettingsRoute,

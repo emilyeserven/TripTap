@@ -23,6 +23,101 @@ test("PATCH /api/settings/ocr rejects a non-string key value", async () => {
   await app.close();
 });
 
+test("PATCH /api/settings/profile rejects more than three goals", async () => {
+  const app = await buildApp();
+  const goal = (id: string) => ({
+    id,
+    title: `Goal ${id}`,
+    notes: null,
+    learningAreas: [],
+    grammarTerms: [],
+    resourceTerms: [],
+  });
+  const res = await app.inject({
+    method: "PATCH",
+    url: "/api/settings/profile",
+    payload: {
+      goals: [goal("g1"), goal("g2"), goal("g3"), goal("g4")],
+    },
+  });
+  assert.equal(res.statusCode, 400);
+  await app.close();
+});
+
+test("PATCH /api/settings/profile rejects a goal missing its title", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "PATCH",
+    url: "/api/settings/profile",
+    payload: {
+      goals: [
+        {
+          id: "g1",
+          learningAreas: ["Reading"],
+          grammarTerms: [],
+          resourceTerms: [],
+        },
+      ],
+    },
+  });
+  assert.equal(res.statusCode, 400);
+  await app.close();
+});
+
+test("PATCH /api/settings/profile rejects an unknown learning area on a goal", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "PATCH",
+    url: "/api/settings/profile",
+    payload: {
+      goals: [
+        {
+          id: "g1",
+          title: "Read more",
+          notes: null,
+          learningAreas: ["Juggling"],
+          grammarTerms: [],
+          resourceTerms: [],
+        },
+      ],
+    },
+  });
+  assert.equal(res.statusCode, 400);
+  await app.close();
+});
+
+test("PATCH /api/settings/profile accepts a full valid goal", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "PATCH",
+    url: "/api/settings/profile",
+    payload: {
+      goals: [
+        {
+          id: "g1",
+          title: "Shore up particles",
+          notes: "は vs が especially",
+          learningAreas: ["Grammar", "Writing"],
+          grammarTerms: [
+            {
+              id: "t1",
+              name: "は vs が",
+              kind: "tag",
+              sourceId: "s1",
+              sourceLabel: "Grammar",
+              category: "grammar",
+            },
+          ],
+          resourceTerms: [],
+        },
+      ],
+    },
+  });
+  // Without a live DB the handler fails downstream; schema validation must still pass.
+  assert.notEqual(res.statusCode, 400);
+  await app.close();
+});
+
 test(
   "PATCH then GET /api/settings/ocr persists keys and returns only a masked view",
   {
