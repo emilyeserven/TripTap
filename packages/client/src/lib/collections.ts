@@ -231,18 +231,50 @@ export function resourceActions(r: BookmarkResource, map: LearningAreaTagMap): R
   return hasRuntime(r) ? ["listening", "shadowing"] : ["reading", "writing"];
 }
 
-/** The complexity scale's lowest level (0-based). */
+/** The fallback lowest complexity level, used only when no scale is loaded (a scale carries its own `min`). */
 export const COMPLEXITY_MIN = 0;
 
-/** The selectable complexity levels for a scale, e.g. `[{ value: 0, label: "Absolute Beginner" }, …]`. */
-export function complexityLevelOptions(scale: ComplexityScale): { value: number;
+/** The default scheme id — the property's own generic labels. */
+export const DEFAULT_COMPLEXITY_SCHEME = "default";
+
+/**
+ * The scheme the picker starts on: the first per-category override (e.g. "Language" → JLPT) when the
+ * host defines one, otherwise the generic default. So a Japanese learner sees JLPT labels out of the box
+ * while still being able to switch back.
+ */
+export function defaultComplexitySchemeId(scale: ComplexityScale | null): string {
+  const override = scale?.schemes.find(s => s.id !== DEFAULT_COMPLEXITY_SCHEME);
+  return override?.id ?? DEFAULT_COMPLEXITY_SCHEME;
+}
+
+/**
+ * The per-level labels for a chosen scheme, merged over the default scheme so a level the override omits
+ * still gets a generic label. Falls back to the default labels when the scheme id is unknown.
+ */
+export function complexitySchemeLabels(scale: ComplexityScale, schemeId: string): Record<string, string> {
+  const scheme = scale.schemes.find(s => s.id === schemeId);
+  return {
+    ...scale.labels,
+    ...(scheme?.labels ?? {}),
+  };
+}
+
+/**
+ * The selectable complexity levels for a scale, e.g. `[{ value: 0, label: "Absolute Beginner" }, …]`.
+ * Pass `labels` (from {@link complexitySchemeLabels}) to render a chosen scheme; defaults to the scale's
+ * own labels.
+ */
+export function complexityLevelOptions(
+  scale: ComplexityScale,
+  labels: Record<string, string> = scale.labels,
+): { value: number;
   label: string; }[] {
   const out: { value: number;
     label: string; }[] = [];
-  for (let level = COMPLEXITY_MIN; level <= scale.max; level++) {
+  for (let level = scale.min; level <= scale.max; level++) {
     out.push({
       value: level,
-      label: scale.labels[String(level)] ?? `Level ${level}`,
+      label: labels[String(level)] ?? `Level ${level}`,
     });
   }
   return out;
@@ -260,18 +292,25 @@ export function matchesComplexity(
   scale: ComplexityScale | null,
 ): boolean {
   if (!scale) return true;
-  const active = selMin > COMPLEXITY_MIN || selMax < scale.max;
+  const active = selMin > scale.min || selMax < scale.max;
   if (!active) return true;
   if (!r.complexity) return false;
   return r.complexity.min <= selMax && r.complexity.max >= selMin;
 }
 
-/** A short label for a resource's complexity band, e.g. "Beginner" or "Beginner–Intermediate"; "" when unset. */
-export function formatComplexity(r: BookmarkResource, scale: ComplexityScale | null): string {
+/**
+ * A short label for a resource's complexity band, e.g. "Beginner" or "Beginner–Intermediate"; "" when
+ * unset. Pass `labels` (from {@link complexitySchemeLabels}) to render a chosen scheme.
+ */
+export function formatComplexity(
+  r: BookmarkResource,
+  scale: ComplexityScale | null,
+  labels: Record<string, string> | undefined = scale?.labels,
+): string {
   if (!r.complexity || !scale) return "";
-  const label = (level: number) => scale.labels[String(level)] ?? `Level ${level}`;
-  const lo = label(r.complexity.min);
-  return r.complexity.min === r.complexity.max ? lo : `${lo}–${label(r.complexity.max)}`;
+  const at = (level: number) => (labels ?? scale.labels)[String(level)] ?? `Level ${level}`;
+  const lo = at(r.complexity.min);
+  return r.complexity.min === r.complexity.max ? lo : `${lo}–${at(r.complexity.max)}`;
 }
 
 /** Sort by runtime; resources without a runtime always sort last regardless of direction. */
@@ -324,6 +363,8 @@ export interface CollectionsSearch {
   sort?: ResourceSort;
   cmin?: number;
   cmax?: number;
+  /** The chosen complexity labeling scheme id (`"default"` or a category id); absent = the scale's default. */
+  scheme?: string;
 }
 
 /** A non-empty trimmed string from an unknown value, or undefined. */
@@ -365,6 +406,7 @@ export function parseCollectionsSearch(raw: Record<string, unknown>): Collection
     sort: sort && (RESOURCE_SORTS as string[]).includes(sort) ? (sort as ResourceSort) : undefined,
     cmin: optionalNumber(raw.cmin),
     cmax: optionalNumber(raw.cmax),
+    scheme: optionalString(raw.scheme),
   };
 }
 

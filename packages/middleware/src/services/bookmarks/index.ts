@@ -290,18 +290,89 @@ interface ResolvedResourceProperties extends ResourcePropertyIds {
   complexityScale: ComplexityScale | null;
 }
 
-/** Read the complexity-scale metadata (max level + per-level labels) off its custom-property definition. */
-function toComplexityScale(prop: Record<string, unknown>): ComplexityScale {
-  const labels: Record<string, string> = {};
-  if (prop.ratingLabels && typeof prop.ratingLabels === "object" && !Array.isArray(prop.ratingLabels)) {
-    for (const [level, label] of Object.entries(prop.ratingLabels as Record<string, unknown>)) {
-      if (typeof label === "string") labels[level] = label;
+/** A string→string label map from an unknown value, keeping only string labels; `{}` when not an object. */
+function readLabelMap(value: unknown): Record<string, string> {
+  const out: Record<string, string> = {};
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    for (const [level, label] of Object.entries(value as Record<string, unknown>)) {
+      if (typeof label === "string" && label !== "") out[level] = label;
     }
   }
-  return {
-    max: typeof prop.ratingMax === "number" ? prop.ratingMax : 5,
+  return out;
+}
+
+/** The largest numeric key in a label map (levels are stringified numbers), or null when none parse. */
+function maxLabelLevel(labels: Record<string, string>): number | null {
+  let max: number | null = null;
+  for (const key of Object.keys(labels)) {
+    const n = Number(key);
+    if (Number.isInteger(n) && (max === null || n > max)) max = n;
+  }
+  return max;
+}
+
+/**
+ * Read the complexity-scale metadata off its custom-property definition, tolerating the various shapes
+ * the bookmarks app emits. `min` honors `ratingAllowZero`; `max` falls back to the highest labeled level
+ * then to 5. Beyond the default `ratingLabels` scheme, each `ratingCategoryLabels` entry becomes a named
+ * scheme the user can switch to (its category id resolved to a name via `categoryNames`).
+ */
+function toComplexityScale(prop: Record<string, unknown>, categoryNames: Map<string, string>): ComplexityScale {
+  const labels = readLabelMap(prop.ratingLabels);
+  const min = prop.ratingAllowZero === false ? 1 : 0;
+  const max = typeof prop.ratingMax === "number"
+    ? prop.ratingMax
+    : maxLabelLevel(labels) ?? 5;
+
+  const schemes: ComplexityScale["schemes"] = [{
+    id: "default",
+    name: "Default",
     labels,
+  }];
+  if (prop.ratingCategoryLabels && typeof prop.ratingCategoryLabels === "object"
+    && !Array.isArray(prop.ratingCategoryLabels)) {
+    for (const [categoryId, raw] of Object.entries(prop.ratingCategoryLabels as Record<string, unknown>)) {
+      const schemeLabels = readLabelMap(raw);
+      if (Object.keys(schemeLabels).length === 0) continue;
+      schemes.push({
+        id: categoryId,
+        name: categoryNames.get(categoryId) ?? "Category",
+        labels: schemeLabels,
+      });
+    }
+  }
+
+  return {
+    min,
+    max,
+    labels,
+    schemes,
   };
+}
+
+/** Resolve bookmarks-app category ids → display names, tolerating a bare array or a `{ categories }` wrapper. */
+async function fetchCategoryNames(baseUrl: string): Promise<Map<string, string>> {
+  const names = new Map<string, string>();
+  try {
+    const raw = await fetchBookmarksJson<unknown>(apiUrl(baseUrl, "/categories"));
+    const list = Array.isArray(raw)
+      ? raw
+      : (raw && typeof raw === "object"
+        ? ((raw as Record<string, unknown>).categories ?? (raw as Record<string, unknown>).items)
+        : null);
+    if (Array.isArray(list)) {
+      for (const c of list) {
+        if (c && typeof c === "object") {
+          const cat = c as Record<string, unknown>;
+          if (typeof cat.id === "string" && typeof cat.name === "string") names.set(cat.id, cat.name);
+        }
+      }
+    }
+  }
+  catch {
+    // Category names are cosmetic (scheme labels); degrade to ids-only rather than fail the request.
+  }
+  return names;
 }
 
 /**
@@ -337,10 +408,17 @@ async function resolveResourceProperties(baseUrl: string): Promise<ResolvedResou
     p.type === "boolean"
     && ((typeof p.name === "string" && p.name.toLowerCase() === "favorite") || p.slug === "favorite"));
 
+  // Resolve category names only when the complexity property carries per-category label schemes.
+  const hasCategoryLabels = Boolean(complexity?.ratingCategoryLabels
+    && typeof complexity.ratingCategoryLabels === "object"
+    && !Array.isArray(complexity.ratingCategoryLabels)
+    && Object.keys(complexity.ratingCategoryLabels).length > 0);
+  const categoryNames = hasCategoryLabels ? await fetchCategoryNames(baseUrl) : new Map<string, string>();
+
   return {
     runtimePropId: runtime && typeof runtime.id === "string" ? runtime.id : null,
     complexityPropId: complexity && typeof complexity.id === "string" ? complexity.id : null,
-    complexityScale: complexity ? toComplexityScale(complexity) : null,
+    complexityScale: complexity ? toComplexityScale(complexity, categoryNames) : null,
     progress: progress && typeof progress.id === "string"
       ? {
         id: progress.id,

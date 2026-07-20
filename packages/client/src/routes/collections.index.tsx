@@ -28,6 +28,8 @@ import {
   ALL_FILTER,
   COMPLEXITY_MIN,
   complexityLevelOptions,
+  complexitySchemeLabels,
+  defaultComplexitySchemeId,
   formatComplexity,
   formatRuntime,
   drillTagFilterOptions,
@@ -73,7 +75,6 @@ function CollectionsPage() {
   const materials = sp.materials ?? [];
   const drills = sp.drills ?? [];
   const sort = sp.sort ?? "runtime-desc";
-  const complexityMin = sp.cmin ?? COMPLEXITY_MIN;
   const complexityMax = sp.cmax ?? null;
 
   // Merge a patch into the URL search; `replace` keeps per-keystroke/toggle edits out of history.
@@ -89,6 +90,13 @@ function CollectionsPage() {
 
   const all = useMemo(() => data?.resources ?? [], [data]);
   const scale = data?.complexityScale ?? null;
+  // The complexity scale can carry several labeling schemes (generic vs a category's, e.g. JLPT); the
+  // picker defaults to a category override when the host defines one. Levels below the scale's own
+  // minimum are clamped away so a scale that starts at 1 never offers a phantom level 0.
+  const schemeId = sp.scheme ?? defaultComplexitySchemeId(scale);
+  const labels = useMemo(() => (scale ? complexitySchemeLabels(scale, schemeId) : {}), [scale, schemeId]);
+  const scaleMin = scale?.min ?? COMPLEXITY_MIN;
+  const complexityMin = Math.max(sp.cmin ?? scaleMin, scaleMin);
   const areaTags = useMemo(() => settings.data?.learningAreaTags ?? {}, [settings.data]);
   const materialTags = useMemo(() => settings.data?.materialTypeTags ?? {}, [settings.data]);
   const drillTags = useMemo(() => settings.data?.drillTags ?? {}, [settings.data]);
@@ -97,9 +105,9 @@ function CollectionsPage() {
   const areaOptions = useMemo(() => learningAreaFilterOptions(areaTags, all), [areaTags, all]);
   const materialOptions = useMemo(() => materialTypeFilterOptions(materialTags, all), [materialTags, all]);
   const drillOptions = useMemo(() => drillTagFilterOptions(drillTags, all), [drillTags, all]);
-  const levelOptions = useMemo(() => (scale ? complexityLevelOptions(scale) : []), [scale]);
+  const levelOptions = useMemo(() => (scale ? complexityLevelOptions(scale, labels) : []), [scale, labels]);
   // Default the upper complexity bound to the top of the scale until the user narrows it.
-  const selMax = complexityMax ?? scale?.max ?? COMPLEXITY_MIN;
+  const selMax = complexityMax ?? scale?.max ?? scaleMin;
 
   const shown = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -287,7 +295,7 @@ function CollectionsPage() {
             <Select
               value={String(complexityMin)}
               onValueChange={v => setFilters({
-                cmin: Number(v) === COMPLEXITY_MIN ? undefined : Number(v),
+                cmin: Number(v) === scaleMin ? undefined : Number(v),
               })}
             >
               <SelectTrigger
@@ -331,6 +339,36 @@ function CollectionsPage() {
                 ))}
               </SelectContent>
             </Select>
+            {scale.schemes.length > 1
+              ? (
+                <>
+                  <span className="text-muted-foreground">labeled</span>
+                  <Select
+                    value={schemeId}
+                    onValueChange={v => setFilters({
+                      scheme: v === defaultComplexitySchemeId(scale) ? undefined : v,
+                    })}
+                  >
+                    <SelectTrigger
+                      className="w-40"
+                      aria-label="Complexity labeling scheme"
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {scale.schemes.map(s => (
+                        <SelectItem
+                          key={s.id}
+                          value={s.id}
+                        >
+                          {s.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </>
+              )
+              : null}
           </div>
         )
         : null}
@@ -354,7 +392,7 @@ function CollectionsPage() {
         "
       >
         {shown.map((r) => {
-          const complexityLabel = formatComplexity(r, scale);
+          const complexityLabel = formatComplexity(r, scale, labels);
           const cardAreas = resourceLearningAreas(r.tagIds, areaTags);
           const cardMaterials = resourceMaterialTypes(r.tagIds, materialTags);
           const cardDrills = resourceDrillTags(r.tagIds, drillTags);
