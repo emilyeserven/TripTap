@@ -70,6 +70,8 @@ export interface GrammarNote {
   constructions: GrammarConstruction[];
   relations: GrammarRelation[];
   resources: GrammarResourceRef[];
+  /** Starred grammar points are boosted by the Start Something suggestion ranking. */
+  starred: boolean;
   /** ISO-8601 timestamp of when the note was created. */
   createdAt: string;
   /** ISO-8601 timestamp of the last update. */
@@ -86,6 +88,7 @@ export interface CreateGrammarNoteInput {
   constructions?: GrammarConstruction[];
   relations?: GrammarRelation[];
   resources?: GrammarResourceRef[];
+  starred?: boolean;
 }
 
 /** Payload for partially updating a grammar note. `tagId` is the note's identity and is immutable. */
