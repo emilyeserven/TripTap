@@ -448,7 +448,7 @@ export function GrammarNoteView({
                           src={b.imageUrl}
                           alt=""
                           loading="lazy"
-                          className="size-full object-cover"
+                          className="size-full object-contain"
                         />
                       )
                       : (

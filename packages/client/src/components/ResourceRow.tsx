@@ -34,22 +34,27 @@ export function ResourceRow({
               flex w-56 shrink-0 flex-col overflow-hidden rounded-lg border
             "
           >
-            <div className="aspect-video w-full overflow-hidden bg-muted">
-              {r.imageUrl
-                ? (
+            {r.imageUrl
+              ? (
+                <div className="w-full overflow-hidden bg-muted">
                   <img
                     src={r.imageUrl}
                     alt=""
                     loading="lazy"
-                    className="size-full object-cover"
+                    className="h-auto w-full"
                   />
-                )
-                : (
-                  <div className="flex size-full items-center justify-center">
-                    <ImageOff className="size-6 text-muted-foreground" />
-                  </div>
-                )}
-            </div>
+                </div>
+              )
+              : (
+                <div
+                  className="
+                    flex aspect-video w-full items-center justify-center
+                    bg-muted
+                  "
+                >
+                  <ImageOff className="size-6 text-muted-foreground" />
+                </div>
+              )}
             <div className="flex flex-1 flex-col gap-2 p-3">
               <div className="flex items-center gap-1">
                 {r.favorite

@@ -330,22 +330,27 @@ function CollectionsPage() {
               key={r.id}
               className="flex flex-col gap-0 overflow-hidden py-0"
             >
-              <div className="aspect-video w-full overflow-hidden bg-muted">
-                {r.imageUrl
-                  ? (
+              {r.imageUrl
+                ? (
+                  <div className="w-full overflow-hidden bg-muted">
                     <img
                       src={r.imageUrl}
                       alt=""
                       loading="lazy"
-                      className="size-full object-cover"
+                      className="h-auto w-full"
                     />
-                  )
-                  : (
-                    <div className="flex size-full items-center justify-center">
-                      <ImageOff className="size-8 text-muted-foreground" />
-                    </div>
-                  )}
-              </div>
+                  </div>
+                )
+                : (
+                  <div
+                    className="
+                      flex aspect-video w-full items-center justify-center
+                      bg-muted
+                    "
+                  >
+                    <ImageOff className="size-8 text-muted-foreground" />
+                  </div>
+                )}
               <CardContent className="flex-1 space-y-2 p-4">
                 <div className="flex items-center gap-1">
                   {r.favorite
