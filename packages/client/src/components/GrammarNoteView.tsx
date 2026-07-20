@@ -3,7 +3,7 @@ import type { BookmarkSectionMatch, BookmarkSectionRef, GrammarNote } from "@sen
 import { useMemo } from "react";
 
 import { Link } from "@tanstack/react-router";
-import { ExternalLink, ImageOff, Plus } from "lucide-react";
+import { ExternalLink, ImageOff, Plus, Star } from "lucide-react";
 import { toast } from "sonner";
 
 import { AiLessonBadge } from "@/components/ai-lesson/AiLessonBadge";
@@ -154,7 +154,33 @@ export function GrammarNoteView({
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-2xl font-semibold">{note.title}</h2>
+        <div className="flex items-center gap-2">
+          <h2 className="text-2xl font-semibold">{note.title}</h2>
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            aria-pressed={note.starred}
+            aria-label={note.starred ? "Unstar this grammar point" : "Star this grammar point"}
+            title="Starred grammar points surface more often in Start Something"
+            disabled={update.isPending}
+            onClick={() => update.mutate({
+              id: note.id,
+              input: {
+                starred: !note.starred,
+              },
+            })}
+          >
+            <Star
+              className={`
+                size-5
+                ${note.starred
+      ? "fill-amber-400 text-amber-400"
+      : "text-muted-foreground"}
+              `}
+            />
+          </Button>
+        </div>
         {note.nuance
           ? <p className="mt-1 text-sm text-muted-foreground">{note.nuance}</p>
           : null}

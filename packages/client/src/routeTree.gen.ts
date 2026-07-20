@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VocabularyRouteImport } from './routes/vocabulary'
 import { Route as VocabRouteImport } from './routes/vocab'
+import { Route as StartRouteImport } from './routes/start'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SentencesRouteImport } from './routes/sentences'
 import { Route as RenshuuRouteImport } from './routes/renshuu'
@@ -104,6 +105,11 @@ const VocabularyRoute = VocabularyRouteImport.update({
 const VocabRoute = VocabRouteImport.update({
   id: '/vocab',
   path: '/vocab',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StartRoute = StartRouteImport.update({
+  id: '/start',
+  path: '/start',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SettingsRoute = SettingsRouteImport.update({
@@ -538,6 +544,7 @@ export interface FileRoutesByFullPath {
   '/renshuu': typeof RenshuuRoute
   '/sentences': typeof SentencesRoute
   '/settings': typeof SettingsRoute
+  '/start': typeof StartRoute
   '/vocab': typeof VocabRoute
   '/vocabulary': typeof VocabularyRoute
   '/ai-lessons/$slug': typeof AiLessonsSlugRoute
@@ -626,6 +633,7 @@ export interface FileRoutesByTo {
   '/renshuu': typeof RenshuuRoute
   '/sentences': typeof SentencesRoute
   '/settings': typeof SettingsRoute
+  '/start': typeof StartRoute
   '/vocab': typeof VocabRoute
   '/vocabulary': typeof VocabularyRoute
   '/ai-lessons/$slug': typeof AiLessonsSlugRoute
@@ -704,6 +712,7 @@ export interface FileRoutesById {
   '/renshuu': typeof RenshuuRoute
   '/sentences': typeof SentencesRoute
   '/settings': typeof SettingsRoute
+  '/start': typeof StartRoute
   '/vocab': typeof VocabRoute
   '/vocabulary': typeof VocabularyRoute
   '/ai-lessons/$slug': typeof AiLessonsSlugRoute
@@ -794,6 +803,7 @@ export interface FileRouteTypes {
     | '/renshuu'
     | '/sentences'
     | '/settings'
+    | '/start'
     | '/vocab'
     | '/vocabulary'
     | '/ai-lessons/$slug'
@@ -882,6 +892,7 @@ export interface FileRouteTypes {
     | '/renshuu'
     | '/sentences'
     | '/settings'
+    | '/start'
     | '/vocab'
     | '/vocabulary'
     | '/ai-lessons/$slug'
@@ -959,6 +970,7 @@ export interface FileRouteTypes {
     | '/renshuu'
     | '/sentences'
     | '/settings'
+    | '/start'
     | '/vocab'
     | '/vocabulary'
     | '/ai-lessons/$slug'
@@ -1048,6 +1060,7 @@ export interface RootRouteChildren {
   RenshuuRoute: typeof RenshuuRoute
   SentencesRoute: typeof SentencesRoute
   SettingsRoute: typeof SettingsRoute
+  StartRoute: typeof StartRoute
   VocabRoute: typeof VocabRoute
   VocabularyRoute: typeof VocabularyRoute
   AiLessonsSlugRoute: typeof AiLessonsSlugRoute
@@ -1119,6 +1132,13 @@ declare module '@tanstack/react-router' {
       path: '/vocab'
       fullPath: '/vocab'
       preLoaderRoute: typeof VocabRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/start': {
+      id: '/start'
+      path: '/start'
+      fullPath: '/start'
+      preLoaderRoute: typeof StartRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/settings': {
@@ -1873,6 +1893,7 @@ const rootRouteChildren: RootRouteChildren = {
   RenshuuRoute: RenshuuRoute,
   SentencesRoute: SentencesRoute,
   SettingsRoute: SettingsRoute,
+  StartRoute: StartRoute,
   VocabRoute: VocabRoute,
   VocabularyRoute: VocabularyRoute,
   AiLessonsSlugRoute: AiLessonsSlugRoute,

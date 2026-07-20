@@ -1,4 +1,3 @@
-import type { QuestionSheet } from "@sentence-bank/types";
 import type * as React from "react";
 
 import { Link, createFileRoute } from "@tanstack/react-router";
@@ -6,12 +5,10 @@ import {
   BookAIcon,
   BookMarkedIcon,
   BookOpenIcon,
-  CalendarClockIcon,
   CameraIcon,
   ClipboardCheckIcon,
   ClipboardListIcon,
   DatabaseIcon,
-  DrillIcon,
   GraduationCapIcon,
   HeadphonesIcon,
   ImagesIcon,
@@ -26,25 +23,12 @@ import {
   ScrollTextIcon,
   SendIcon,
   SettingsIcon,
+  SparklesIcon,
   UserRoundIcon,
 } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useAnswerSheets } from "@/hooks/useAnswerSheets";
+import { DueSoonCard } from "@/components/DueSoonCard";
 import { usePageTitle } from "@/hooks/usePageTitle";
-import { useQuestionSheets } from "@/hooks/useQuestionSheets";
-import { dueDateMet } from "@/lib/answer-sheets";
-import { formatDueDate, isDueSoon, isOverdue } from "@/lib/due-date";
-
-/** How far ahead (in days) a due question sheet counts as "due soon" on the homepage card. */
-const DUE_SOON_DAYS = 7;
-/** Cap on how many due sheets the homepage card shows at once. */
-const DUE_SOON_LIMIT = 5;
-
-function hasDueDate(sheet: QuestionSheet): sheet is QuestionSheet & { dueDate: string } {
-  return sheet.dueDate !== null;
-}
 
 interface Tile {
   title: string;
@@ -62,25 +46,20 @@ interface TileSection {
 const sections: readonly TileSection[] = [
   {
     label: "Start Something",
-    description: "Jump straight into capturing text, a lesson, or a drill session.",
+    description: "Get a quick, contained task picked from your XP and goals.",
     tiles: [
+      {
+        title: "Start Something",
+        to: "/start",
+        icon: SparklesIcon,
+        description:
+          "See your XP per learning area and get a recommendation for what to practice next.",
+      },
       {
         title: "Capture",
         to: "/capture",
         icon: CameraIcon,
         description: "Snap or paste text and run it through OCR to mine sentences.",
-      },
-      {
-        title: "Start Lesson",
-        to: "/lessons/new",
-        icon: BookAIcon,
-        description: "Begin a new tutor-lesson record.",
-      },
-      {
-        title: "Start Drills",
-        to: "/drill-sessions/new",
-        icon: DrillIcon,
-        description: "Kick off a timed drill session.",
       },
     ],
   },
@@ -277,58 +256,6 @@ function TileCard({
       </div>
       <p className="text-sm text-muted-foreground">{tile.description}</p>
     </Link>
-  );
-}
-
-/** Homepage card surfacing question sheets that are overdue or due within {@link DUE_SOON_DAYS} days. */
-function DueSoonCard() {
-  const {
-    data: sheets,
-  } = useQuestionSheets();
-  const {
-    data: answerSheets,
-  } = useAnswerSheets();
-  const now = new Date();
-  const due = (sheets ?? [])
-    .filter(hasDueDate)
-    .filter(s => isDueSoon(s.dueDate, now, DUE_SOON_DAYS))
-    // Drop sheets already met by a completed, in-window answer sheet — they no longer need attention.
-    .filter(s => !dueDateMet(s, (answerSheets ?? []).filter(as => as.questionSheetId === s.id)))
-    .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
-    .slice(0, DUE_SOON_LIMIT);
-
-  if (due.length === 0) return null;
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-base">
-          <CalendarClockIcon className="size-4" />
-          Question sheets due soon
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-2">
-        {due.map(sheet => (
-          <Link
-            key={sheet.id}
-            to="/question-sheets/$id"
-            params={{
-              id: sheet.id,
-            }}
-            className="
-              flex items-center justify-between gap-2 rounded-md border p-2
-              text-sm transition-colors
-              hover:bg-accent
-            "
-          >
-            <span className="font-medium">{sheet.title}</span>
-            <Badge variant={isOverdue(sheet.dueDate, now) ? "destructive" : "outline"}>
-              Due {formatDueDate(sheet.dueDate)}
-            </Badge>
-          </Link>
-        ))}
-      </CardContent>
-    </Card>
   );
 }
 
