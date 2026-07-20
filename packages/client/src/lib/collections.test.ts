@@ -20,6 +20,7 @@ import {
   matchesDrillTags,
   matchesLearningAreas,
   matchesMaterialTypes,
+  matchesMediaKind,
   matchesMediaType,
   materialTypeFilterOptions,
   mediaTypeFilterOptions,
@@ -165,6 +166,35 @@ describe("mediaTypeFilterOptions / matchesMediaType", () => {
     expect(matchesMediaType(video, ALL_FILTER)).toBe(true);
     expect(matchesMediaType(video, "Video")).toBe(true);
     expect(matchesMediaType(book, "Video")).toBe(false);
+  });
+});
+
+describe("matchesMediaKind", () => {
+  const video = resource({
+    id: "a",
+    mediaType: "YouTube Video",
+  });
+  const book = resource({
+    id: "b",
+    mediaType: "Book",
+  });
+  const none = resource({
+    id: "c",
+    mediaType: null,
+  });
+
+  it("passes everything for 'all'", () => {
+    expect(matchesMediaKind(video, "all")).toBe(true);
+    expect(matchesMediaKind(book, "all")).toBe(true);
+    expect(matchesMediaKind(none, "all")).toBe(true);
+  });
+
+  it("matches videos and books case-insensitively, excluding untyped resources", () => {
+    expect(matchesMediaKind(video, "video")).toBe(true);
+    expect(matchesMediaKind(book, "video")).toBe(false);
+    expect(matchesMediaKind(none, "video")).toBe(false);
+    expect(matchesMediaKind(book, "book")).toBe(true);
+    expect(matchesMediaKind(video, "book")).toBe(false);
   });
 });
 

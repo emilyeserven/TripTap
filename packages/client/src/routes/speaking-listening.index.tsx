@@ -1,15 +1,18 @@
-import { useMemo } from "react";
+import type { ResourceMediaKind } from "@/lib/collections";
+
+import { useMemo, useState } from "react";
 
 import { createFileRoute, Link } from "@tanstack/react-router";
 
 import { HubSection } from "@/components/HubSection";
 import { ResourceRow } from "@/components/ResourceRow";
+import { Button } from "@/components/ui/button";
 import { useBookmarkResources } from "@/hooks/useBookmarks";
 import { useListeningSessions } from "@/hooks/useListeningSessions";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useBookmarksSettings } from "@/hooks/useSettings";
 import { useShadowingSessions } from "@/hooks/useShadowingSessions";
-import { resourceLearningAreas } from "@/lib/collections";
+import { matchesMediaKind, resourceLearningAreas } from "@/lib/collections";
 
 export const Route = createFileRoute("/speaking-listening/")({
   component: SpeakingListeningPage,
@@ -18,6 +21,22 @@ export const Route = createFileRoute("/speaking-listening/")({
 const PREVIEW_LIMIT = 6;
 const VIEW_ALL_CLASS = "text-sm font-medium text-primary hover:underline";
 
+const MEDIA_FILTERS: { value: ResourceMediaKind;
+  label: string; }[] = [
+  {
+    value: "all",
+    label: "All",
+  },
+  {
+    value: "video",
+    label: "Videos",
+  },
+  {
+    value: "book",
+    label: "Books",
+  },
+];
+
 function SpeakingListeningPage() {
   usePageTitle("Speaking & Listening");
   const resources = useBookmarkResources();
@@ -25,13 +44,42 @@ function SpeakingListeningPage() {
   const listeningSessions = useListeningSessions();
   const shadowingSessions = useShadowingSessions();
 
+  const [mediaKind, setMediaKind] = useState<ResourceMediaKind>("all");
+
   const areaTags = useMemo(() => settings.data?.learningAreaTags ?? {}, [settings.data]);
-  const rowResources = useMemo(
+  const areaResources = useMemo(
     () => (resources.data?.resources ?? []).filter((r) => {
       const areas = resourceLearningAreas(r.tagIds, areaTags);
       return areas.includes("Listening") || areas.includes("Speaking");
     }),
     [resources.data, areaTags],
+  );
+  const rowResources = useMemo(
+    () => areaResources.filter(r => matchesMediaKind(r, mediaKind)),
+    [areaResources, mediaKind],
+  );
+
+  const mediaFilter = (
+    <div
+      className="flex gap-1"
+      role="group"
+      aria-label="Filter resources by type"
+    >
+      {MEDIA_FILTERS.map(({
+        value, label,
+      }) => (
+        <Button
+          key={value}
+          type="button"
+          size="sm"
+          variant={mediaKind === value ? "default" : "outline"}
+          aria-pressed={mediaKind === value}
+          onClick={() => setMediaKind(value)}
+        >
+          {label}
+        </Button>
+      ))}
+    </div>
   );
 
   const listeningViewAll = (
@@ -60,11 +108,19 @@ function SpeakingListeningPage() {
         </p>
       </div>
 
-      <HubSection title="Resources">
+      <HubSection
+        title="Resources"
+        action={areaResources.length > 0 ? mediaFilter : undefined}
+      >
         <ResourceRow
           resources={rowResources}
           areaTags={areaTags}
-          emptyText="No resources tagged Listening or Speaking yet."
+          endpointUrl={settings.data?.endpointUrl}
+          emptyText={
+            areaResources.length === 0
+              ? "No resources tagged Listening or Speaking yet."
+              : `No ${mediaKind === "video" ? "videos" : "books"} tagged Listening or Speaking yet.`
+          }
         />
       </HubSection>
 

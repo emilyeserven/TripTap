@@ -4,20 +4,25 @@ import { ExternalLink, ImageOff, Star } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { bookmarkAppUrl } from "@/lib/bookmarks";
 import { resourceLearningAreas } from "@/lib/collections";
 
 /**
  * A horizontally-scrolling "mixed row" of compact resource cards for the section hub pages. Each card
- * shows the bookmark's thumbnail, title (linking to the resource), favorite star, learning-area badges,
- * and progress bar — a curated shortcut into the full Resources page. Empty renders a muted note.
+ * shows the bookmark's thumbnail, title (linking to the bookmark in the bookmarks app, not its external
+ * URL), favorite star, learning-area badges, and progress bar — a curated shortcut into the full
+ * Resources page. Empty renders a muted note.
  */
 export function ResourceRow({
   resources,
   areaTags,
+  endpointUrl,
   emptyText = "No resources yet.",
 }: {
   resources: BookmarkResource[];
   areaTags: LearningAreaTagMap;
+  /** The bookmarks-app base URL (Settings), used to link each card to its bookmark; falls back to the default. */
+  endpointUrl?: string | null;
   emptyText?: string;
 }) {
   if (resources.length === 0) {
@@ -41,7 +46,7 @@ export function ResourceRow({
                     src={r.imageUrl}
                     alt=""
                     loading="lazy"
-                    className="h-auto bg-muted w-full"
+                    className="h-auto w-full bg-muted"
                   />
                 </div>
               )
@@ -67,24 +72,20 @@ export function ResourceRow({
                     />
                   )
                   : null}
-                {r.url
-                  ? (
-                    <a
-                      href={r.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="
-                        flex min-w-0 items-center gap-1 text-sm font-medium
-                        hover:underline
-                      "
-                    >
-                      <span className="truncate">{r.title}</span>
-                      <ExternalLink
-                        className="size-3 shrink-0 text-muted-foreground"
-                      />
-                    </a>
-                  )
-                  : <span className="min-w-0 truncate text-sm font-medium">{r.title}</span>}
+                <a
+                  href={bookmarkAppUrl(endpointUrl, r.id)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="
+                    flex min-w-0 items-center gap-1 text-sm font-medium
+                    hover:underline
+                  "
+                >
+                  <span className="truncate">{r.title}</span>
+                  <ExternalLink
+                    className="size-3 shrink-0 text-muted-foreground"
+                  />
+                </a>
               </div>
               {areas.length > 0
                 ? (

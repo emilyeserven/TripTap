@@ -1,9 +1,10 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 import { createFileRoute, Link } from "@tanstack/react-router";
 
 import { HubSection } from "@/components/HubSection";
 import { ResourceRow } from "@/components/ResourceRow";
+import { Button } from "@/components/ui/button";
 import { useBookmarkResources } from "@/hooks/useBookmarks";
 import { useMySentences } from "@/hooks/useMySentences";
 import { usePageTitle } from "@/hooks/usePageTitle";
@@ -19,6 +20,24 @@ export const Route = createFileRoute("/reading-writing/")({
 const PREVIEW_LIMIT = 6;
 const VIEW_ALL_CLASS = "text-sm font-medium text-primary hover:underline";
 
+type AreaFilter = "all" | "Reading" | "Writing";
+
+const AREA_FILTERS: { value: AreaFilter;
+  label: string; }[] = [
+  {
+    value: "all",
+    label: "All",
+  },
+  {
+    value: "Reading",
+    label: "Reading",
+  },
+  {
+    value: "Writing",
+    label: "Writing",
+  },
+];
+
 function ReadingWritingPage() {
   usePageTitle("Reading & Writing");
   const resources = useBookmarkResources();
@@ -27,13 +46,44 @@ function ReadingWritingPage() {
   const sentences = useMySentences();
   const readingSessions = useReadingSessions();
 
+  const [areaFilter, setAreaFilter] = useState<AreaFilter>("all");
+
   const areaTags = useMemo(() => settings.data?.learningAreaTags ?? {}, [settings.data]);
-  const rowResources = useMemo(
+  const areaResources = useMemo(
     () => (resources.data?.resources ?? []).filter((r) => {
       const areas = resourceLearningAreas(r.tagIds, areaTags);
       return areas.includes("Reading") || areas.includes("Writing");
     }),
     [resources.data, areaTags],
+  );
+  const rowResources = useMemo(
+    () => (areaFilter === "all"
+      ? areaResources
+      : areaResources.filter(r => resourceLearningAreas(r.tagIds, areaTags).includes(areaFilter))),
+    [areaResources, areaFilter, areaTags],
+  );
+
+  const areaFilterGroup = (
+    <div
+      className="flex gap-1"
+      role="group"
+      aria-label="Filter resources by learning area"
+    >
+      {AREA_FILTERS.map(({
+        value, label,
+      }) => (
+        <Button
+          key={value}
+          type="button"
+          size="sm"
+          variant={areaFilter === value ? "default" : "outline"}
+          aria-pressed={areaFilter === value}
+          onClick={() => setAreaFilter(value)}
+        >
+          {label}
+        </Button>
+      ))}
+    </div>
   );
 
   const writingViewAll = (
@@ -70,11 +120,19 @@ function ReadingWritingPage() {
         </p>
       </div>
 
-      <HubSection title="Resources">
+      <HubSection
+        title="Resources"
+        action={areaResources.length > 0 ? areaFilterGroup : undefined}
+      >
         <ResourceRow
           resources={rowResources}
           areaTags={areaTags}
-          emptyText="No resources tagged Reading or Writing yet."
+          endpointUrl={settings.data?.endpointUrl}
+          emptyText={
+            areaResources.length === 0
+              ? "No resources tagged Reading or Writing yet."
+              : `No resources tagged ${areaFilter} yet.`
+          }
         />
       </HubSection>
 

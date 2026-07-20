@@ -79,6 +79,19 @@ export function matchesMediaType(r: BookmarkResource, mediaType: string): boolea
   return mediaType === ALL_FILTER || mediaTypeKey(r) === mediaType;
 }
 
+/** A coarse media grouping for the resource-strip button filter: everything, videos, or books. */
+export type ResourceMediaKind = "all" | "video" | "book";
+
+/**
+ * True when a resource matches a coarse media kind. `"all"` passes everything; `"video"`/`"book"`
+ * match case-insensitively against the free-text media type (so "Video", "YouTube Video", "Book",
+ * etc. all match), leaving anything else out.
+ */
+export function matchesMediaKind(r: BookmarkResource, kind: ResourceMediaKind): boolean {
+  if (kind === "all") return true;
+  return mediaTypeKey(r).toLowerCase().includes(kind);
+}
+
 /** True when a resource has a runtime — i.e. it's audio/video to listen to or shadow. */
 export function hasRuntime(r: BookmarkResource): boolean {
   return r.runtimeSeconds != null;
