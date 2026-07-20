@@ -11,6 +11,12 @@ const summaryQuery = {
       maximum: 365,
       default: 7,
     },
+    tzOffsetMinutes: {
+      type: "integer",
+      minimum: -840,
+      maximum: 840,
+      default: 0,
+    },
   },
 } as const;
 
@@ -23,8 +29,9 @@ export async function xpRoutes(app: FastifyInstance): Promise<void> {
     },
   }, async (req) => {
     const {
-      days,
-    } = req.query as { days: number };
-    return getXpSummary(days);
+      days, tzOffsetMinutes,
+    } = req.query as { days: number;
+      tzOffsetMinutes: number; };
+    return getXpSummary(days, tzOffsetMinutes);
   });
 }

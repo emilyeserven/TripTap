@@ -10,12 +10,15 @@ import {
   CameraIcon,
   DrillIcon,
   HeadphonesIcon,
+  ListPlusIcon,
   PenLineIcon,
   Repeat2Icon,
   SparklesIcon,
   TargetIcon,
 } from "lucide-react";
 
+import { DailyGoalProgress } from "@/components/DailyGoalProgress";
+import { DailyLineupCard } from "@/components/DailyLineupCard";
 import { DueSoonCard } from "@/components/DueSoonCard";
 import { LearningAreaBadges } from "@/components/LearningAreaBadges";
 import { Button } from "@/components/ui/button";
@@ -27,9 +30,19 @@ import { useBookmarksByTag, useBookmarkSectionsByTag } from "@/hooks/useBookmark
 import { useGrammarNotes } from "@/hooks/useGrammarNotes";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useQuestionSheets } from "@/hooks/useQuestionSheets";
-import { useLearnerProfile, useBookmarksSettings } from "@/hooks/useSettings";
+import {
+  useBookmarksSettings,
+  useLearnerProfile,
+  useStartSettings,
+  useUpdateStartSettings,
+} from "@/hooks/useSettings";
 import { useWritingPrompts } from "@/hooks/useWritingPrompts";
 import { useXpSummary } from "@/hooks/useXp";
+import {
+  effectiveLineup,
+  suggestionToLineupItem,
+  todayDateString,
+} from "@/lib/daily-lineup";
 import { buildStartSuggestions, lowestXpArea } from "@/lib/start-recommendations";
 
 export const Route = createFileRoute("/start")({
@@ -86,26 +99,45 @@ function suggestionLinkProps(s: StartSuggestion): React.ComponentProps<typeof Li
 
 function SuggestionRow({
   suggestion,
+  inLineup,
+  onAddToLineup,
 }: {
   suggestion: StartSuggestion;
+  inLineup: boolean;
+  onAddToLineup: (suggestion: StartSuggestion) => void;
 }) {
   return (
-    <Link
-      {...suggestionLinkProps(suggestion)}
-      className="
-        flex items-center justify-between gap-2 rounded-md border p-3 text-sm
-        transition-colors
-        hover:bg-accent
-      "
-    >
-      <span className="space-y-0.5">
-        <span className="block font-medium">{suggestion.title}</span>
-        {suggestion.description && (
-          <span className="block text-xs text-muted-foreground">{suggestion.description}</span>
-        )}
-      </span>
-      {suggestion.area && <LearningAreaBadges areas={[suggestion.area]} />}
-    </Link>
+    <div className="flex items-center gap-2">
+      <Link
+        {...suggestionLinkProps(suggestion)}
+        className="
+          flex flex-1 items-center justify-between gap-2 rounded-md border p-3
+          text-sm transition-colors
+          hover:bg-accent
+        "
+      >
+        <span className="space-y-0.5">
+          <span className="block font-medium">{suggestion.title}</span>
+          {suggestion.description && (
+            <span className="block text-xs text-muted-foreground">{suggestion.description}</span>
+          )}
+        </span>
+        {suggestion.area && <LearningAreaBadges areas={[suggestion.area]} />}
+      </Link>
+      <Button
+        type="button"
+        size="sm"
+        variant="ghost"
+        aria-label={inLineup
+          ? `"${suggestion.title}" is already in today's lineup`
+          : `Add "${suggestion.title}" to today's lineup`}
+        title="Add to today's lineup"
+        disabled={inLineup}
+        onClick={() => onAddToLineup(suggestion)}
+      >
+        <ListPlusIcon className="size-4" />
+      </Button>
+    </div>
   );
 }
 
@@ -119,9 +151,25 @@ function StartPage() {
   const grammarNotes = useGrammarNotes();
   const writingPrompts = useWritingPrompts();
   const bookmarksSettings = useBookmarksSettings();
+  const startSettings = useStartSettings();
+  const updateStartSettings = useUpdateStartSettings();
+
+  const today = todayDateString(new Date());
+  // The stored lineup only counts when it was built for today; a stale one reads as an empty day.
+  const lineup = effectiveLineup(startSettings.data?.lineup ?? null, today);
+  const favoriteResourceIds = startSettings.data?.favoriteResourceIds ?? [];
+  const persistLineup = (next: typeof lineup) => {
+    updateStartSettings.mutate({
+      lineup: {
+        ...next,
+        date: today,
+      },
+    });
+  };
 
   const areaTags = bookmarksSettings.data?.learningAreaTags ?? {};
-  const lowest = summary.data ? lowestXpArea(summary.data) : null;
+  // Excluded areas are skipped before resolving the tag so the fetched pool matches the pick.
+  const lowest = summary.data ? lowestXpArea(summary.data, lineup.exclusions.learningAreas) : null;
   // The lowest area's mapped tag drives the "quick and contained" section/resource pool. The hooks
   // no-op on a null tag id (e.g. the tag map isn't configured), degrading to bare session links.
   const lowestTagId = lowest ? areaTags[lowest]?.id ?? null : null;
@@ -140,6 +188,8 @@ function StartPage() {
       areaTags,
       lowestAreaSections: areaSections.data,
       lowestAreaResources: areaResources.data,
+      exclusions: lineup.exclusions,
+      favoriteResourceIds,
       now: new Date(),
     });
   }, [
@@ -152,7 +202,23 @@ function StartPage() {
     areaTags,
     areaSections.data,
     areaResources.data,
+    lineup.exclusions,
+    favoriteResourceIds,
   ]);
+
+  const mediaTypeOptions = useMemo(() => [...new Set([
+    ...(areaSections.data ?? []).map(s => s.mediaType),
+    ...(areaResources.data ?? []).map(r => r.mediaType),
+  ].filter((m): m is string => Boolean(m)))], [areaSections.data, areaResources.data]);
+
+  const lineupIds = new Set(lineup.items.map(item => item.id));
+  const addToLineup = (suggestion: StartSuggestion) => {
+    if (lineupIds.has(suggestion.id)) return;
+    persistLineup({
+      ...lineup,
+      items: [...lineup.items, suggestionToLineupItem(suggestion)],
+    });
+  };
 
   const [hero, ...rest] = suggestions;
   const goals = profile.data?.goals ?? [];
@@ -164,6 +230,19 @@ function StartPage() {
         XP.
       </p>
 
+      {summary.data && (
+        <DailyGoalProgress
+          todayXp={summary.data.today.totalXp}
+          dailyXpGoal={profile.data?.dailyXpGoal ?? null}
+        />
+      )}
+
+      <DailyLineupCard
+        lineup={lineup}
+        mediaTypeOptions={mediaTypeOptions}
+        onChange={persistLineup}
+      />
+
       {hero
         ? (
           <Card className="border-primary/50">
@@ -174,7 +253,11 @@ function StartPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              <SuggestionRow suggestion={hero} />
+              <SuggestionRow
+                suggestion={hero}
+                inLineup={lineupIds.has(hero.id)}
+                onAddToLineup={addToLineup}
+              />
               {rest.length > 0 && (
                 <div className="space-y-2">
                   <p className="text-xs text-muted-foreground">Or pick another:</p>
@@ -182,6 +265,8 @@ function StartPage() {
                     <SuggestionRow
                       key={s.id}
                       suggestion={s}
+                      inLineup={lineupIds.has(s.id)}
+                      onAddToLineup={addToLineup}
                     />
                   ))}
                 </div>

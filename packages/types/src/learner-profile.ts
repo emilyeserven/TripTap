@@ -33,9 +33,12 @@ export interface LearnerGoal {
 export interface LearnerProfile {
   /** Up to {@link MAX_LEARNER_GOALS} goals. */
   goals: LearnerGoal[];
+  /** Minimum XP the learner wants to earn each day; null when no daily goal is set. */
+  dailyXpGoal: number | null;
 }
 
-/** Payload for updating the profile. `goals` is tri-state: omit = leave, null/[] = clear. */
+/** Payload for updating the profile. Tri-state per field: omit = leave, null/empty = clear. */
 export interface UpdateLearnerProfileInput {
   goals?: LearnerGoal[] | null;
+  dailyXpGoal?: number | null;
 }

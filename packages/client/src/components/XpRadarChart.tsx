@@ -56,7 +56,7 @@ export function XpRadarChart({
   return (
     <svg
       viewBox={`0 0 ${size} ${size}`}
-      className="mx-auto w-full max-w-sm"
+      className="mx-auto w-full max-w-sm overflow-visible"
       role="img"
       aria-label={`XP per learning area: ${areas.map(a => `${a.area} ${formatXp(a.xp)}`).join(", ")}`}
     >
