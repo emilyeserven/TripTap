@@ -160,7 +160,10 @@ function sectionNodeLabel(n: BookmarkSectionNode): string {
  * with a breadcrumb `label` built from its ancestor path. Backs the grammar note's "sections tagged with
  * this grammar point" gather.
  */
-export function matchSectionsByTag(raw: unknown, tagId: string): BookmarkSectionRef[] {
+function buildSectionRefs(
+  raw: unknown,
+  keep: (node: BookmarkSectionNode) => boolean,
+): BookmarkSectionRef[] {
   const nodes = toSectionNodes(raw);
   const byId = new Map(nodes.map(n => [n.id, n]));
   const breadcrumb = (node: BookmarkSectionNode): string => {
@@ -175,7 +178,7 @@ export function matchSectionsByTag(raw: unknown, tagId: string): BookmarkSection
     return parts.join(" › ");
   };
   return nodes
-    .filter(n => n.tagIds.includes(tagId))
+    .filter(keep)
     .map(n => ({
       id: n.id,
       label: breadcrumb(n),
@@ -186,6 +189,16 @@ export function matchSectionsByTag(raw: unknown, tagId: string): BookmarkSection
       parentId: n.parentId,
       completed: n.completed,
     }));
+}
+
+export function matchSectionsByTag(raw: unknown, tagId: string): BookmarkSectionRef[] {
+  return buildSectionRefs(raw, n => n.tagIds.includes(tagId));
+}
+
+/** Every section of a bookmark (no tag filter), as breadcrumb-labelled refs. */
+export function allSectionRefs(raw: unknown): BookmarkSectionRef[] {
+  // Skip pure container nodes (a `name` section with no position) — they aren't practiceable on their own.
+  return buildSectionRefs(raw, n => n.type !== "name" || n.startValue !== null);
 }
 
 /** The upstream bookmark's media-type name (`mediaType.name`), or null when absent/unreadable. */

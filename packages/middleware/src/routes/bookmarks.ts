@@ -11,6 +11,7 @@ import {
   getBookmark,
   getBookmarkImage,
   getBookmarkScreenshot,
+  listAllSections,
   listBookmarkResources,
   listBookmarksByTag,
   listBookmarksForCategory,
@@ -231,6 +232,19 @@ export async function bookmarksRoutes(app: FastifyInstance): Promise<void> {
     } = req.params as { tagId: string };
     try {
       return await listBookmarksByTag(tagId);
+    }
+    catch (err) {
+      return handleError(err, reply);
+    }
+  });
+
+  app.get("/api/bookmarks/sections", {
+    schema: {
+      tags: ["bookmarks"],
+    },
+  }, async (_req, reply) => {
+    try {
+      return await listAllSections();
     }
     catch (err) {
       return handleError(err, reply);
