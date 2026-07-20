@@ -99,6 +99,16 @@ test("POST /api/shadowing-sessions accepts a valid payload with segments and def
   await app.close();
 });
 
+test("GET /api/shadowing-sessions/captions requires a videoUrl", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "GET",
+    url: "/api/shadowing-sessions/captions",
+  });
+  assert.equal(res.statusCode, 400);
+  await app.close();
+});
+
 test("POST /api/shadowing-sessions accepts a kana entry carrying English context", async () => {
   const app = await buildApp();
   const res = await app.inject({

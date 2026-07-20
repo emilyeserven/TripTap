@@ -5,6 +5,7 @@ import { useRef, useState } from "react";
 
 import { ExternalLink, Play, RotateCcw, SkipForward, Square } from "lucide-react";
 
+import { AudioFilePlayer } from "@/components/AudioFilePlayer";
 import { KanaEntryToggle } from "@/components/KanaEntryToggle";
 import { PinnablePlayer } from "@/components/PinnablePlayer";
 import { SessionNotes } from "@/components/SessionNotes";
@@ -14,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { YouTubePlayer } from "@/components/YouTubePlayer";
 import { useSegmentLoop } from "@/hooks/useSegmentLoop";
 import { useUpdateShadowingSession } from "@/hooks/useShadowingSessions";
+import { shadowingSessionsApi } from "@/lib/api";
 import { formatTime, parseYouTubeId } from "@/lib/time";
 
 /**
@@ -30,6 +32,9 @@ export function ShadowingSessionView({
   const playerRef = useRef<PlayerHandle | null>(null);
   const [entries, setEntries] = useState<ListeningEntry[]>(session.entries ?? []);
   const videoId = parseYouTubeId(session.videoUrl);
+  // Uploaded audio takes precedence over a video URL; either counts as a real (seekable) timeline.
+  const audioSrc = session.hasAudio ? shadowingSessionsApi.audioUrl(session.id) : null;
+  const hasMedia = audioSrc !== null || videoId !== null;
   const segments = session.segments ?? [];
 
   const loop = useSegmentLoop({
@@ -54,17 +59,24 @@ export function ShadowingSessionView({
 
   return (
     <div className="space-y-4">
-      <PinnablePlayer canPin={!!videoId}>
-        {videoId
+      <PinnablePlayer canPin={hasMedia}>
+        {audioSrc
           ? (
-            <YouTubePlayer
+            <AudioFilePlayer
               ref={playerRef}
-              videoId={videoId}
+              src={audioSrc}
             />
           )
-          : (
-            <StopwatchPlayer ref={playerRef} />
-          )}
+          : videoId
+            ? (
+              <YouTubePlayer
+                ref={playerRef}
+                videoId={videoId}
+              />
+            )
+            : (
+              <StopwatchPlayer ref={playerRef} />
+            )}
       </PinnablePlayer>
 
       {session.bookmarkId && session.bookmarkTitle && (
@@ -209,7 +221,7 @@ export function ShadowingSessionView({
         entries={entries}
         onChange={persist}
         getCurrentTimeMs={() => playerRef.current?.getCurrentTimeMs() ?? 0}
-        source={videoId ? "video" : "stopwatch"}
+        source={hasMedia ? "video" : "stopwatch"}
       />
     </div>
   );

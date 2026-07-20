@@ -1,15 +1,37 @@
-import type { FastifyInstance } from "fastify";
+import type { FastifyInstance, FastifyReply } from "fastify";
 import type {
   CreateShadowingSessionInput,
   UpdateShadowingSessionInput,
 } from "@sentence-bank/types";
+import { MediaNotConfiguredError, MediaUnavailableError } from "@/services/media";
 import {
   createShadowingSession,
   deleteShadowingSession,
   getShadowingSession,
+  getShadowingSessionMedia,
   listShadowingSessions,
+  setShadowingSessionAudio,
   updateShadowingSession,
 } from "@/services/shadowing-sessions";
+import {
+  CaptionsNotFoundError,
+  CaptionsUnavailableError,
+  fetchCaptionSegments,
+} from "@/services/youtube-captions";
+
+/** An uploaded audio file can be large, but well under a `.apkg` — cap at 100 MiB. */
+const MAX_AUDIO_BYTES = 100 * 1024 * 1024;
+
+/** Map media error classes to HTTP status codes; rethrow anything else. */
+function handleMediaError(err: unknown, reply: FastifyReply): FastifyReply {
+  if (err instanceof MediaNotConfiguredError) return reply.code(503).send({
+    message: err.message,
+  });
+  if (err instanceof MediaUnavailableError) return reply.code(502).send({
+    message: err.message,
+  });
+  throw err;
+}
 
 const shadowingSessionParams = {
   type: "object",
@@ -191,6 +213,20 @@ const updateShadowingSessionBody = {
   },
 } as const;
 
+const captionsQuery = {
+  type: "object",
+  required: ["videoUrl"],
+  properties: {
+    videoUrl: {
+      type: "string",
+      minLength: 1,
+    },
+    lang: {
+      type: "string",
+    },
+  },
+} as const;
+
 /** CRUD routes for shadowing practice sessions, mounted under `/api/shadowing-sessions`. */
 export async function shadowingSessionsRoutes(app: FastifyInstance): Promise<void> {
   app.get("/api/shadowing-sessions", {
@@ -198,6 +234,34 @@ export async function shadowingSessionsRoutes(app: FastifyInstance): Promise<voi
       tags: ["shadowing-sessions"],
     },
   }, async () => listShadowingSessions());
+
+  // Derive practice segments from a YouTube video's captions (static path — matched before `:id`).
+  app.get("/api/shadowing-sessions/captions", {
+    schema: {
+      tags: ["shadowing-sessions"],
+      querystring: captionsQuery,
+    },
+  }, async (req, reply) => {
+    const {
+      videoUrl, lang,
+    } = req.query as { videoUrl: string;
+      lang?: string; };
+    try {
+      const segments = await fetchCaptionSegments(videoUrl, lang ?? null);
+      return {
+        segments,
+      };
+    }
+    catch (err) {
+      if (err instanceof CaptionsNotFoundError) return reply.code(404).send({
+        message: err.message,
+      });
+      if (err instanceof CaptionsUnavailableError) return reply.code(502).send({
+        message: err.message,
+      });
+      throw err;
+    }
+  });
 
   app.get("/api/shadowing-sessions/:id", {
     schema: {
@@ -213,6 +277,72 @@ export async function shadowingSessionsRoutes(app: FastifyInstance): Promise<voi
       message: "Shadowing session not found",
     });
     return session;
+  });
+
+  // Upload (or replace) the session's audio file. Multipart; the field is named `file`.
+  app.post("/api/shadowing-sessions/:id/audio", {
+    schema: {
+      tags: ["shadowing-sessions"],
+      params: shadowingSessionParams,
+      consumes: ["multipart/form-data"],
+    },
+  }, async (req, reply) => {
+    const {
+      id,
+    } = req.params as { id: string };
+    const file = await req.file({
+      limits: {
+        fileSize: MAX_AUDIO_BYTES,
+      },
+    });
+    if (!file) return reply.code(400).send({
+      message: "Expected an audio file upload",
+    });
+    const buffer = await file.toBuffer();
+    if (file.file.truncated) {
+      return reply.code(413).send({
+        message: "The audio file is too large to upload",
+      });
+    }
+    try {
+      const updated = await setShadowingSessionAudio(
+        id,
+        buffer,
+        file.filename,
+        file.mimetype || "application/octet-stream",
+      );
+      if (!updated) return reply.code(404).send({
+        message: "Shadowing session not found",
+      });
+      return updated;
+    }
+    catch (err) {
+      return handleMediaError(err, reply);
+    }
+  });
+
+  // Stream the session's stored audio for the `<audio>` player.
+  app.get("/api/shadowing-sessions/:id/audio", {
+    schema: {
+      tags: ["shadowing-sessions"],
+      params: shadowingSessionParams,
+    },
+  }, async (req, reply) => {
+    const {
+      id,
+    } = req.params as { id: string };
+    try {
+      const media = await getShadowingSessionMedia(id);
+      if (!media) return reply.code(404).send({
+        message: "No audio for this session",
+      });
+      reply.header("Content-Type", media.contentType);
+      reply.header("Cache-Control", "private, max-age=86400");
+      return reply.send(media.body);
+    }
+    catch (err) {
+      return handleMediaError(err, reply);
+    }
   });
 
   app.post("/api/shadowing-sessions", {

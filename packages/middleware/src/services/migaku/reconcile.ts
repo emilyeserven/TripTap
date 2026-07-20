@@ -10,7 +10,7 @@
 import { isNotNull } from "drizzle-orm";
 import type { MigakuReconcileResult } from "@sentence-bank/types";
 import { db } from "@/db";
-import { migakuImports, sentences, vocab } from "@/db/schema";
+import { migakuImports, sentences, shadowingSessions, vocab } from "@/db/schema";
 import { deleteMedia, listMediaObjects } from "@/services/media";
 
 /** Default grace window: objects newer than this are left alone. */
@@ -18,7 +18,7 @@ const GRACE_MS = 60 * 60 * 1000;
 
 /** Collect every object key currently referenced by a DB row. */
 async function liveKeys(): Promise<Set<string>> {
-  const [sentenceKeys, vocabKeys, importKeys] = await Promise.all([
+  const [sentenceKeys, vocabKeys, importKeys, shadowingKeys] = await Promise.all([
     db.select({
       audio: sentences.audioKey,
       image: sentences.imageKey,
@@ -30,6 +30,9 @@ async function liveKeys(): Promise<Set<string>> {
     db.select({
       apkg: migakuImports.apkgKey,
     }).from(migakuImports).where(isNotNull(migakuImports.apkgKey)),
+    db.select({
+      audio: shadowingSessions.audioKey,
+    }).from(shadowingSessions).where(isNotNull(shadowingSessions.audioKey)),
   ]);
   const set = new Set<string>();
   for (const row of sentenceKeys) {
@@ -42,6 +45,9 @@ async function liveKeys(): Promise<Set<string>> {
   }
   for (const row of importKeys) {
     if (row.apkg) set.add(row.apkg);
+  }
+  for (const row of shadowingKeys) {
+    if (row.audio) set.add(row.audio);
   }
   return set;
 }

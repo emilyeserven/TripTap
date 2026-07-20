@@ -17,7 +17,14 @@ import type {
   UpdateDrillReasonCategoryInput,
 } from "@sentence-bank/types";
 
-import { request } from "./request";
+import { BASE, request } from "./request";
+
+/** A caption-derived practice segment (no id yet — the client stamps `ShadowingSegment` ids). */
+export interface CaptionSegment {
+  startMs: number;
+  endMs: number;
+  label: string;
+}
 
 export const listeningSessionsApi = {
   list: () => request<ListeningSession[]>("/listening-sessions"),
@@ -71,6 +78,30 @@ export const shadowingSessionsApi = {
   remove: (id: string) => request<undefined>(`/shadowing-sessions/${id}`, {
     method: "DELETE",
   }),
+  /** Absolute path to the session's stored audio, for an `<audio>` element. */
+  audioUrl: (id: string) => `${BASE}/shadowing-sessions/${id}/audio`,
+  /** Multipart upload of the session's audio; bypasses `request()` so the browser sets the boundary. */
+  uploadAudio: async (id: string, file: File): Promise<ShadowingSession> => {
+    const form = new FormData();
+    form.append("file", file);
+    const res = await fetch(`${BASE}/shadowing-sessions/${id}/audio`, {
+      method: "POST",
+      body: form,
+    });
+    if (!res.ok) {
+      const body = (await res.json().catch(() => ({}))) as { message?: string };
+      throw new Error(body.message ?? `Request failed with ${res.status}`);
+    }
+    return (await res.json()) as ShadowingSession;
+  },
+  /** Derive practice segments from a YouTube video's captions. */
+  fetchCaptionSegments: (videoUrl: string, lang?: string | null) => {
+    const params = new URLSearchParams({
+      videoUrl,
+    });
+    if (lang) params.set("lang", lang);
+    return request<{ segments: CaptionSegment[] }>(`/shadowing-sessions/captions?${params.toString()}`);
+  },
 };
 
 export const drillSessionsApi = {

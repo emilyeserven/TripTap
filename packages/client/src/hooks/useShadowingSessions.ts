@@ -55,6 +55,22 @@ export function useUpdateShadowingSession() {
   });
 }
 
+export function useUploadShadowingSessionAudio() {
+  const {
+    seed,
+  } = useEntityCacheSync(SHADOWING_SESSIONS_KEY);
+  return useMutation({
+    mutationFn: ({
+      id, file,
+    }: { id: string;
+      file: File; }) => shadowingSessionsApi.uploadAudio(id, file),
+    onSuccess: seed,
+    onError: err => toast.error("Couldn't upload the audio", {
+      description: err instanceof Error ? err.message : undefined,
+    }),
+  });
+}
+
 export function useDeleteShadowingSession() {
   const {
     invalidate,

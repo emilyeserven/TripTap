@@ -40,6 +40,8 @@ export interface ShadowingSession {
   defaultMaxReplays: number;
   /** Default silent gap between reps (ms) when a segment doesn't override it. */
   defaultGapMs: number;
+  /** True when the session has an uploaded audio file (served at `/api/shadowing-sessions/:id/audio`). */
+  hasAudio: boolean;
   /** The practice segments; null if none defined yet. */
   segments: ShadowingSegment[] | null;
   /** Timestamped notes taken during practice; null if none. */

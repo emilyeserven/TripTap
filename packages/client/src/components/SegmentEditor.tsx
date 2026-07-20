@@ -1,13 +1,17 @@
 import type { ShadowingSegment } from "@sentence-bank/types";
 
-import { ArrowDown, ArrowUp, Clock, Download, Plus, Trash2 } from "lucide-react";
+import { useState } from "react";
+
+import { ArrowDown, ArrowUp, AudioWaveform, Captions, Clock, Download, Plus, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useBookmarkRecord } from "@/hooks/useBookmarks";
+import { shadowingSessionsApi } from "@/lib/api/sessions";
+import { decodeAudioFile, detectSegments, toShadowingSegments } from "@/lib/audio-segments";
 import { newId } from "@/lib/id";
-import { formatTime, parseSectionTime } from "@/lib/time";
+import { formatTime, parseSectionTime, parseYouTubeId } from "@/lib/time";
 
 /** Parse a seconds string into ms, or null when blank/invalid. */
 function secondsToMs(value: string): number | null {
@@ -37,6 +41,9 @@ export function SegmentEditor({
   defaultMaxReplays,
   defaultGapMs,
   bookmarkId,
+  audioSource,
+  videoUrl,
+  language,
 }: {
   segments: ShadowingSegment[];
   onChange: (segments: ShadowingSegment[]) => void;
@@ -44,9 +51,68 @@ export function SegmentEditor({
   defaultMaxReplays: number;
   defaultGapMs: number;
   bookmarkId: string | null;
+  /** Uploaded audio to waveform-analyze: a staged File, or the stored `/audio` URL when editing. */
+  audioSource?: File | string | null;
+  /** The session's video URL; enables caption-based detection when it's a YouTube link. */
+  videoUrl?: string | null;
+  /** Session language, used as a caption-track hint. */
+  language?: string;
 }) {
   const bookmark = useBookmarkRecord(bookmarkId);
   const importable = bookmark.data?.sections ?? [];
+
+  const [busy, setBusy] = useState<null | "audio" | "captions">(null);
+  const [detectError, setDetectError] = useState<string | null>(null);
+  const canUseCaptions = parseYouTubeId(videoUrl ?? null) !== null;
+
+  /** Waveform-analyze the uploaded audio and append the detected segments. */
+  const autoDetectFromAudio = async () => {
+    if (!audioSource || busy) return;
+    setBusy("audio");
+    setDetectError(null);
+    try {
+      const input = typeof audioSource === "string"
+        ? await (await fetch(audioSource)).arrayBuffer()
+        : audioSource;
+      const detected = toShadowingSegments(detectSegments(await decodeAudioFile(input)));
+      if (detected.length === 0) setDetectError("No speech segments were detected in the audio.");
+      else onChange([...segments, ...detected]);
+    }
+    catch (err) {
+      setDetectError(err instanceof Error ? err.message : "Could not analyze the audio.");
+    }
+    finally {
+      setBusy(null);
+    }
+  };
+
+  /** Fetch the video's captions and append them as segments. */
+  const detectFromCaptions = async () => {
+    if (!videoUrl || busy) return;
+    setBusy("captions");
+    setDetectError(null);
+    try {
+      const {
+        segments: caps,
+      } = await shadowingSessionsApi.fetchCaptionSegments(videoUrl, language);
+      const mapped: ShadowingSegment[] = caps.map(c => ({
+        id: newId(),
+        label: c.label,
+        startMs: c.startMs,
+        endMs: c.endMs,
+        maxReplays: null,
+        gapMs: null,
+      }));
+      if (mapped.length === 0) setDetectError("No captions were found for this video.");
+      else onChange([...segments, ...mapped]);
+    }
+    catch (err) {
+      setDetectError(err instanceof Error ? err.message : "Could not fetch captions.");
+    }
+    finally {
+      setBusy(null);
+    }
+  };
 
   const patch = (id: string, next: Partial<ShadowingSegment>) =>
     onChange(segments.map(s => (s.id === id
@@ -102,7 +168,33 @@ export function SegmentEditor({
     <div className="space-y-3 rounded-md border p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <Label>Segments</Label>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          {audioSource && (
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              disabled={busy !== null}
+              onClick={autoDetectFromAudio}
+              title="Split the audio into segments on silent gaps"
+            >
+              <AudioWaveform className="size-4" />
+              {busy === "audio" ? "Analyzing…" : "Auto-detect segments"}
+            </Button>
+          )}
+          {canUseCaptions && (
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              disabled={busy !== null}
+              onClick={detectFromCaptions}
+              title="Create segments from the video's captions"
+            >
+              <Captions className="size-4" />
+              {busy === "captions" ? "Fetching…" : "Detect from captions"}
+            </Button>
+          )}
           {bookmarkId && (
             <Button
               type="button"
@@ -130,6 +222,10 @@ export function SegmentEditor({
           </Button>
         </div>
       </div>
+
+      {detectError && (
+        <p className="text-sm text-destructive">{detectError}</p>
+      )}
 
       {segments.length === 0
         ? <p className="text-sm text-muted-foreground">No segments yet.</p>
