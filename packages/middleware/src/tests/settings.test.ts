@@ -118,6 +118,63 @@ test("PATCH /api/settings/profile accepts a full valid goal", async () => {
   await app.close();
 });
 
+test("PATCH /api/settings/xp rejects a negative rate", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "PATCH",
+    url: "/api/settings/xp",
+    payload: {
+      rates: {
+        shadowingLoop: -0.25,
+      },
+    },
+  });
+  assert.equal(res.statusCode, 400);
+  await app.close();
+});
+
+test("PATCH /api/settings/xp strips unknown rate keys", async () => {
+  const app = await buildApp();
+  // Fastify's AJV removes additional properties rather than rejecting them, so an unknown key is
+  // silently dropped and the request proceeds as if it were absent.
+  const res = await app.inject({
+    method: "PATCH",
+    url: "/api/settings/xp",
+    payload: {
+      rates: {
+        bribingTheTutor: 100,
+      },
+    },
+  });
+  assert.notEqual(res.statusCode, 400);
+  await app.close();
+});
+
+test("PATCH /api/settings/xp accepts overrides and a full reset", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "PATCH",
+    url: "/api/settings/xp",
+    payload: {
+      rates: {
+        readingTranslatedSentence: 3,
+        drillRound: null,
+      },
+    },
+  });
+  // Without a live DB the handler fails downstream; schema validation must still pass.
+  assert.notEqual(res.statusCode, 400);
+  const reset = await app.inject({
+    method: "PATCH",
+    url: "/api/settings/xp",
+    payload: {
+      rates: null,
+    },
+  });
+  assert.notEqual(reset.statusCode, 400);
+  await app.close();
+});
+
 test(
   "PATCH then GET /api/settings/ocr persists keys and returns only a masked view",
   {

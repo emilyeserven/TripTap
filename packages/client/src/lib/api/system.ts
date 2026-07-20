@@ -11,6 +11,8 @@ import type {
   ExampleSentence,
   LearnerProfile,
   UpdateLearnerProfileInput,
+  UpdateXpSettingsInput,
+  XpSettings,
   OcrSettings,
   RenshuuExampleSentence,
   RenshuuSettings,
@@ -28,6 +30,12 @@ import { request } from "./request";
 
 export const settingsApi = {
   getProfile: () => request<LearnerProfile>("/settings/profile"),
+  getXp: () => request<XpSettings>("/settings/xp"),
+  updateXp: (input: UpdateXpSettingsInput) =>
+    request<XpSettings>("/settings/xp", {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    }),
   updateProfile: (input: UpdateLearnerProfileInput) =>
     request<LearnerProfile>("/settings/profile", {
       method: "PATCH",
