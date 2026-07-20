@@ -242,10 +242,15 @@ const actionItems = [
 /** Primary "start a task" entry points, revealed on hover under the "Start Something" trigger. */
 const startItems = [
   {
+    title: "Start page",
+    to: "/start",
+    icon: SparklesIcon,
+    emphasis: true,
+  },
+  {
     title: "Capture",
     to: "/capture",
     icon: CameraIcon,
-    emphasis: true,
   },
   {
     title: "Start Lesson",
@@ -458,6 +463,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
               >
                 <HoverCardTrigger asChild>
                   <SidebarMenuButton
+                    asChild
                     tooltip="Start Something"
                     className="
                       bg-primary text-primary-foreground
@@ -467,9 +473,11 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                       data-[state=open]:text-primary-foreground
                     "
                   >
-                    <SparklesIcon />
-                    <span>Start Something</span>
-                    <ChevronRightIcon className="ml-auto" />
+                    <Link to="/start">
+                      <SparklesIcon />
+                      <span>Start Something</span>
+                      <ChevronRightIcon className="ml-auto" />
+                    </Link>
                   </SidebarMenuButton>
                 </HoverCardTrigger>
                 <HoverCardContent

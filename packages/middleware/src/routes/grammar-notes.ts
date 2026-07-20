@@ -157,6 +157,9 @@ const createGrammarNoteBody = {
       type: "array",
       items: resourceSchema,
     },
+    starred: {
+      type: "boolean",
+    },
   },
 } as const;
 
@@ -189,6 +192,9 @@ const updateGrammarNoteBody = {
     resources: {
       type: "array",
       items: resourceSchema,
+    },
+    starred: {
+      type: "boolean",
     },
   },
 } as const;
