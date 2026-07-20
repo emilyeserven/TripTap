@@ -22,6 +22,7 @@ export * from "./sentence-mark.js";
 export * from "./shadowing-session.js";
 export * from "./renshuu.js";
 export * from "./tatoeba.js";
+export * from "./learner-profile.js";
 export * from "./writing.js";
 export * from "./writing-prompt.js";
 export * from "./xp.js";

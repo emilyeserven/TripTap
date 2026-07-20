@@ -2,16 +2,19 @@ import type { FastifyInstance } from "fastify";
 import type {
   UpdateBookmarksSettingsInput,
   UpdateDictionarySettingsInput,
+  UpdateLearnerProfileInput,
   UpdateOcrSettingsInput,
   UpdateRenshuuSettingsInput,
 } from "@sentence-bank/types";
 import {
   getBookmarksSettings,
   getDictionarySettings,
+  getLearnerProfile,
   getOcrSettings,
   getRenshuuSettings,
   updateBookmarksSettings,
   updateDictionarySettings,
+  updateLearnerProfile,
   updateOcrSettings,
   updateRenshuuSettings,
 } from "@/services/settings";
@@ -129,6 +132,80 @@ const updateRenshuuSettingsBody = {
   },
 } as const;
 
+/** A borrowed bookmark term reference on a goal (same shape the sentence forms store). */
+const goalTermSchema = {
+  type: "object",
+  additionalProperties: false,
+  required: ["id", "name", "kind", "sourceId", "sourceLabel"],
+  properties: {
+    id: {
+      type: "string",
+    },
+    name: {
+      type: "string",
+    },
+    kind: {
+      type: "string",
+      enum: ["tag", "taxonomy"],
+    },
+    sourceId: {
+      type: "string",
+    },
+    sourceLabel: {
+      type: "string",
+    },
+    category: {
+      type: "string",
+      enum: ["vocabulary", "grammar", "general", "resource"],
+    },
+  },
+} as const;
+
+const learnerGoalSchema = {
+  type: "object",
+  additionalProperties: false,
+  required: ["id", "title", "learningAreas", "grammarTerms", "resourceTerms"],
+  properties: {
+    id: {
+      type: "string",
+    },
+    title: {
+      type: "string",
+      minLength: 1,
+    },
+    notes: {
+      type: ["string", "null"],
+    },
+    learningAreas: {
+      type: "array",
+      items: {
+        type: "string",
+        enum: ["Speaking", "Listening", "Reading", "Writing", "Grammar", "Vocabulary"],
+      },
+    },
+    grammarTerms: {
+      type: "array",
+      items: goalTermSchema,
+    },
+    resourceTerms: {
+      type: "array",
+      items: goalTermSchema,
+    },
+  },
+} as const;
+
+const updateLearnerProfileBody = {
+  type: "object",
+  additionalProperties: false,
+  properties: {
+    goals: {
+      type: ["array", "null"],
+      maxItems: 3,
+      items: learnerGoalSchema,
+    },
+  },
+} as const;
+
 const updateDictionarySettingsBody = {
   type: "object",
   additionalProperties: false,
@@ -191,6 +268,21 @@ export async function settingsRoutes(app: FastifyInstance): Promise<void> {
     },
   }, async (req) => {
     return updateRenshuuSettings(req.body as UpdateRenshuuSettingsInput);
+  });
+
+  app.get("/api/settings/profile", {
+    schema: {
+      tags: ["settings"],
+    },
+  }, async () => getLearnerProfile());
+
+  app.patch("/api/settings/profile", {
+    schema: {
+      tags: ["settings"],
+      body: updateLearnerProfileBody,
+    },
+  }, async (req) => {
+    return updateLearnerProfile(req.body as UpdateLearnerProfileInput);
   });
 
   app.get("/api/settings/media", {
