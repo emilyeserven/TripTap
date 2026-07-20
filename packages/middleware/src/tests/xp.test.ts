@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { DEFAULT_XP_RATES } from "@sentence-bank/types";
 import { buildApp } from "@/app";
+import { parseXpRateOverrides } from "@/services/settings";
 import {
   bookExercisesXp,
   countSentences,
@@ -384,6 +386,106 @@ test("summarizeGrants zero-fills all six areas and windows recent XP", () => {
   }]);
 });
 
+test("grant functions honor overridden rates", () => {
+  const rates = {
+    ...DEFAULT_XP_RATES,
+    shadowingLoop: 1,
+    readingWordNote: 3,
+  };
+  const shadowing = shadowingXp([{
+    completedLoops: 4,
+    createdAt: RECENT,
+  }], rates);
+  assert.equal(shadowing[0].xp, 4);
+  const reading = readingXp([{
+    mode: "line-by-line",
+    freeformTranslation: null,
+    lines: null,
+    wordNotes: [{
+      id: "w1",
+      word: "暑い",
+      reading: "あつい",
+      meaning: "hot",
+      status: "shaky",
+      flashcard: false,
+    }],
+    createdAt: RECENT,
+  }], rates);
+  assert.equal(reading[0].xp, 3);
+});
+
+test("parseXpRateOverrides keeps only known keys with valid values", () => {
+  const parsed = parseXpRateOverrides(JSON.stringify({
+    shadowingLoop: 0.5,
+    drillRound: -1,
+    lessonLine: "2",
+    nonsense: 9,
+  }));
+  assert.deepEqual(parsed, {
+    shadowingLoop: 0.5,
+  });
+  assert.deepEqual(parseXpRateOverrides("not json"), {});
+  assert.deepEqual(parseXpRateOverrides(null), {});
+});
+
+test("summarizeGrants counts today against the caller's local calendar day", () => {
+  // Caller is UTC+2 (tzOffsetMinutes = −120), so their July 20 runs 22:00 Jul 19 → 22:00 Jul 20 UTC.
+  const now = new Date("2026-07-20T12:00:00Z");
+  const summary = summarizeGrants(
+    [
+      // 23:30 July 19 local (21:30 Jul 19 UTC) → yesterday for this caller.
+      {
+        area: "Reading",
+        feature: "reading",
+        xp: 2,
+        at: new Date("2026-07-19T21:30:00Z"),
+      },
+      // 01:00 July 20 local (23:00 Jul 19 UTC) → today, even though it's UTC-yesterday.
+      {
+        area: "Reading",
+        feature: "reading",
+        xp: 4,
+        at: new Date("2026-07-19T23:00:00Z"),
+      },
+      // A date-only drill grant dated today counts regardless of the UTC-midnight `at`.
+      {
+        area: "Grammar",
+        feature: "drills",
+        xp: 0.25,
+        at: new Date("2026-07-20"),
+        dateOnly: "2026-07-20",
+      },
+      // …and one dated yesterday doesn't.
+      {
+        area: "Grammar",
+        feature: "drills",
+        xp: 0.5,
+        at: new Date("2026-07-19"),
+        dateOnly: "2026-07-19",
+      },
+    ],
+    7,
+    now,
+    -120,
+  );
+  assert.equal(summary.today.totalXp, 4.25);
+});
+
+test("summarizeGrants treats today as the UTC day when no offset is given", () => {
+  const now = new Date("2026-07-20T12:00:00Z");
+  const summary = summarizeGrants(
+    [{
+      area: "Reading",
+      feature: "reading",
+      xp: 2,
+      at: new Date("2026-07-20T01:30:00Z"),
+    }],
+    7,
+    now,
+  );
+  assert.equal(summary.today.totalXp, 2);
+});
+
 test("GET /api/xp/summary rejects an out-of-range days value", async () => {
   const app = await buildApp();
   const res = await app.inject({
@@ -399,6 +501,16 @@ test("GET /api/xp/summary rejects a non-integer days value", async () => {
   const res = await app.inject({
     method: "GET",
     url: "/api/xp/summary?days=abc",
+  });
+  assert.equal(res.statusCode, 400);
+  await app.close();
+});
+
+test("GET /api/xp/summary rejects an out-of-range timezone offset", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "GET",
+    url: "/api/xp/summary?tzOffsetMinutes=900",
   });
   assert.equal(res.statusCode, 400);
   await app.close();

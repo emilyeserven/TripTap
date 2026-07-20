@@ -1,6 +1,7 @@
 import type { GrammarNote } from "@sentence-bank/types";
 
 import { Link } from "@tanstack/react-router";
+import { Star } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -26,18 +27,26 @@ export function GrammarNoteCard({
     <Card>
       <CardContent className="space-y-2 p-4">
         <div className="flex items-baseline justify-between gap-2">
-          <Link
-            to="/grammar-notes/$id"
-            params={{
-              id: note.id,
-            }}
-            className="
-              text-lg font-semibold
-              hover:underline
-            "
-          >
-            {note.title}
-          </Link>
+          <span className="inline-flex items-center gap-1.5">
+            <Link
+              to="/grammar-notes/$id"
+              params={{
+                id: note.id,
+              }}
+              className="
+                text-lg font-semibold
+                hover:underline
+              "
+            >
+              {note.title}
+            </Link>
+            {note.starred && (
+              <Star
+                aria-label="Starred"
+                className="size-4 fill-amber-400 text-amber-400"
+              />
+            )}
+          </span>
           {note.nuance
             ? <span className="text-sm text-muted-foreground">{note.nuance}</span>
             : null}

@@ -27,6 +27,7 @@ function toGrammarNote(row: GrammarNoteRow): GrammarNote {
     constructions: row.constructions ?? [],
     relations: row.relations ?? [],
     resources: row.resources ?? [],
+    starred: row.starred,
     createdAt:
       row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
     updatedAt:
@@ -45,6 +46,7 @@ function toInsert(input: CreateGrammarNoteInput) {
     constructions: input.constructions ?? [],
     relations: input.relations ?? [],
     resources: input.resources ?? [],
+    starred: input.starred ?? false,
   };
 }
 

@@ -1,8 +1,11 @@
 import type {
   UpdateBookmarksSettingsInput,
   UpdateDictionarySettingsInput,
+  UpdateLearnerProfileInput,
   UpdateOcrSettingsInput,
   UpdateRenshuuSettingsInput,
+  UpdateStartSettingsInput,
+  UpdateXpSettingsInput,
 } from "@sentence-bank/types";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -14,6 +17,64 @@ const RENSHUU_SETTINGS_KEY = ["settings", "renshuu"] as const;
 const BOOKMARKS_SETTINGS_KEY = ["settings", "bookmarks"] as const;
 const DICTIONARY_SETTINGS_KEY = ["settings", "dictionary"] as const;
 const MEDIA_SETTINGS_KEY = ["settings", "media"] as const;
+const LEARNER_PROFILE_KEY = ["settings", "profile"] as const;
+
+/** The learner profile: up to three goals with their targeted areas/terms. */
+export function useLearnerProfile() {
+  return useQuery({
+    queryKey: LEARNER_PROFILE_KEY,
+    queryFn: settingsApi.getProfile,
+  });
+}
+
+const XP_SETTINGS_KEY = ["settings", "xp"] as const;
+const START_SETTINGS_KEY = ["settings", "start"] as const;
+
+/** The Start Something settings: local resource favorites + the (possibly stale) daily lineup. */
+export function useStartSettings() {
+  return useQuery({
+    queryKey: START_SETTINGS_KEY,
+    queryFn: settingsApi.getStart,
+  });
+}
+
+export function useUpdateStartSettings() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: UpdateStartSettingsInput) => settingsApi.updateStart(input),
+    onSuccess: data => queryClient.setQueryData(START_SETTINGS_KEY, data),
+  });
+}
+
+/** The effective XP rates (defaults merged with any overrides). */
+export function useXpSettings() {
+  return useQuery({
+    queryKey: XP_SETTINGS_KEY,
+    queryFn: settingsApi.getXp,
+  });
+}
+
+export function useUpdateXpSettings() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: UpdateXpSettingsInput) => settingsApi.updateXp(input),
+    onSuccess: (data) => {
+      queryClient.setQueryData(XP_SETTINGS_KEY, data);
+      // XP is derived, so new rates re-score everything — drop every cached summary.
+      queryClient.invalidateQueries({
+        queryKey: ["xp-summary"],
+      });
+    },
+  });
+}
+
+export function useUpdateLearnerProfile() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: UpdateLearnerProfileInput) => settingsApi.updateProfile(input),
+    onSuccess: data => queryClient.setQueryData(LEARNER_PROFILE_KEY, data),
+  });
+}
 
 /** Non-secret status of the media object store (S3/Garage) config. */
 export function useMediaSettings() {

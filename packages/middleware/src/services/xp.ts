@@ -10,9 +10,10 @@ import type {
   WritingCorrection,
   XpAreaSummary,
   XpFeature,
+  XpRates,
   XpSummary,
 } from "@sentence-bank/types";
-import { LEARNING_AREAS } from "@sentence-bank/types";
+import { DEFAULT_XP_RATES, LEARNING_AREAS } from "@sentence-bank/types";
 import { db } from "@/db";
 import {
   answerSheets,
@@ -25,6 +26,7 @@ import {
   shadowingSessions,
   writings,
 } from "@/db/schema";
+import { getXpRates } from "@/services/settings";
 
 /**
  * XP is *derived*: every function here recounts the learner's persisted content instead of reading a
@@ -38,23 +40,13 @@ export interface XpGrant {
   xp: number;
   /** When the work happened, for the recent-window rollup. */
   at: Date;
+  /**
+   * The learner-entered calendar date (YYYY-MM-DD) for date-only sources (drills, lessons). Their
+   * `at` is midnight UTC, which lands on the wrong local day for non-UTC users — the today rollup
+   * compares this string directly instead.
+   */
+  dateOnly?: string;
 }
-
-/** XP rates, in one place so the rules read like the spec. */
-export const XP_RATES = {
-  readingTranslatedSentence: 2,
-  readingWordNote: 1,
-  writingSentence: 1,
-  writingCorrection: 1,
-  questionSheetAuthored: 5,
-  answerEntryList: 2,
-  answerEntryGrid: 0.25,
-  listeningEntry: 1,
-  shadowingLoop: 0.25,
-  drillRound: 0.25,
-  lessonLine: 1,
-  lessonWordNote: 0.5,
-} as const;
 
 /** Count the sentences in a free-text block: split on Japanese/latin terminators and newlines. */
 export function countSentences(text: string | null): number {
@@ -95,13 +87,13 @@ interface ReadingXpRow {
 }
 
 /** 2xp per translated sentence + 1xp per word note → Reading. */
-export function readingXp(rows: ReadingXpRow[]): XpGrant[] {
+export function readingXp(rows: ReadingXpRow[], rates: XpRates = DEFAULT_XP_RATES): XpGrant[] {
   return rows.flatMap((row) => {
     const translated = row.mode === "line-by-line"
       ? (row.lines ?? []).filter(line => line.translation?.trim()).length
       : countSentences(row.freeformTranslation);
-    const xp = translated * XP_RATES.readingTranslatedSentence
-      + (row.wordNotes?.length ?? 0) * XP_RATES.readingWordNote;
+    const xp = translated * rates.readingTranslatedSentence
+      + (row.wordNotes?.length ?? 0) * rates.readingWordNote;
     return xp > 0
       ? [{
         area: "Reading" as const,
@@ -129,10 +121,14 @@ interface MySentenceXpRow {
  * 1xp per sentence written + 1xp per correction → Writing. My Sentences promoted from a writing
  * (`writingId` set) are skipped: their sentence and correction were already counted on the writing.
  */
-export function writingXp(rows: WritingXpRow[], sentences: MySentenceXpRow[]): XpGrant[] {
+export function writingXp(
+  rows: WritingXpRow[],
+  sentences: MySentenceXpRow[],
+  rates: XpRates = DEFAULT_XP_RATES,
+): XpGrant[] {
   const fromWritings = rows.flatMap((row) => {
-    const xp = countSentences(row.text) * XP_RATES.writingSentence
-      + (row.corrections?.length ?? 0) * XP_RATES.writingCorrection;
+    const xp = countSentences(row.text) * rates.writingSentence
+      + (row.corrections?.length ?? 0) * rates.writingCorrection;
     return xp > 0
       ? [{
         area: "Writing" as const,
@@ -147,7 +143,7 @@ export function writingXp(rows: WritingXpRow[], sentences: MySentenceXpRow[]): X
     .map(row => ({
       area: "Writing" as const,
       feature: "writing" as const,
-      xp: XP_RATES.writingSentence + (row.correction ? XP_RATES.writingCorrection : 0),
+      xp: rates.writingSentence + (row.correction ? rates.writingCorrection : 0),
       at: row.createdAt,
     }));
   return [...fromWritings, ...fromSentences];
@@ -173,12 +169,13 @@ interface AnswerSheetXpRow {
 export function bookExercisesXp(
   sheets: QuestionSheetXpRow[],
   answers: AnswerSheetXpRow[],
+  rates: XpRates = DEFAULT_XP_RATES,
 ): XpGrant[] {
   const byId = new Map(sheets.map(sheet => [sheet.id, sheet]));
   const authored = sheets.flatMap(sheet => splitAcrossAreas(
     sheet.learningAreas,
     "bookExercises",
-    XP_RATES.questionSheetAuthored,
+    rates.questionSheetAuthored,
     sheet.createdAt,
   ));
   const answered = answers.flatMap((answer) => {
@@ -186,8 +183,8 @@ export function bookExercisesXp(
     if (entryCount === 0) return [];
     const sheet = byId.get(answer.questionSheetId);
     const rate = (sheet?.layout as QuestionSheetLayout) === "grid"
-      ? XP_RATES.answerEntryGrid
-      : XP_RATES.answerEntryList;
+      ? rates.answerEntryGrid
+      : rates.answerEntryList;
     return splitAcrossAreas(
       sheet?.learningAreas ?? null,
       "bookExercises",
@@ -204,12 +201,12 @@ interface ListeningXpRow {
 }
 
 /** 1xp per typed entry → Listening. */
-export function listeningXp(rows: ListeningXpRow[]): XpGrant[] {
+export function listeningXp(rows: ListeningXpRow[], rates: XpRates = DEFAULT_XP_RATES): XpGrant[] {
   return rows.flatMap(row => (row.entries?.length
     ? [{
       area: "Listening" as const,
       feature: "listening" as const,
-      xp: row.entries.length * XP_RATES.listeningEntry,
+      xp: row.entries.length * rates.listeningEntry,
       at: row.createdAt,
     }]
     : []));
@@ -221,12 +218,12 @@ interface ShadowingXpRow {
 }
 
 /** 0.25xp per completed segment loop → Speaking. */
-export function shadowingXp(rows: ShadowingXpRow[]): XpGrant[] {
+export function shadowingXp(rows: ShadowingXpRow[], rates: XpRates = DEFAULT_XP_RATES): XpGrant[] {
   return rows.flatMap(row => (row.completedLoops > 0
     ? [{
       area: "Speaking" as const,
       feature: "shadowing" as const,
-      xp: row.completedLoops * XP_RATES.shadowingLoop,
+      xp: row.completedLoops * rates.shadowingLoop,
       at: row.createdAt,
     }]
     : []));
@@ -239,13 +236,14 @@ interface DrillXpRow {
 }
 
 /** 0.25xp per round → the session's chosen area, defaulting to Grammar. */
-export function drillXp(rows: DrillXpRow[]): XpGrant[] {
+export function drillXp(rows: DrillXpRow[], rates: XpRates = DEFAULT_XP_RATES): XpGrant[] {
   return rows.flatMap(row => (row.rounds > 0
     ? [{
       area: row.learningArea ?? ("Grammar" as const),
       feature: "drills" as const,
-      xp: row.rounds * XP_RATES.drillRound,
+      xp: row.rounds * rates.drillRound,
       at: new Date(row.date),
+      dateOnly: row.date,
     }]
     : []));
 }
@@ -257,7 +255,7 @@ interface LessonXpRow {
 }
 
 /** 1xp per line → Listening; 0.5xp per fully-filled word note → Vocabulary. */
-export function lessonXp(rows: LessonXpRow[]): XpGrant[] {
+export function lessonXp(rows: LessonXpRow[], rates: XpRates = DEFAULT_XP_RATES): XpGrant[] {
   return rows.flatMap((row) => {
     const at = new Date(row.date);
     const grants: XpGrant[] = [];
@@ -266,8 +264,9 @@ export function lessonXp(rows: LessonXpRow[]): XpGrant[] {
       grants.push({
         area: "Listening",
         feature: "lessons",
-        xp: lines * XP_RATES.lessonLine,
+        xp: lines * rates.lessonLine,
         at,
+        dateOnly: row.date,
       });
     }
     const filled = (row.wordNotes ?? []).filter(isFilledWordNote).length;
@@ -275,8 +274,9 @@ export function lessonXp(rows: LessonXpRow[]): XpGrant[] {
       grants.push({
         area: "Vocabulary",
         feature: "lessons",
-        xp: filled * XP_RATES.lessonWordNote,
+        xp: filled * rates.lessonWordNote,
         at,
+        dateOnly: row.date,
       });
     }
     return grants;
@@ -288,8 +288,23 @@ function roundXp(xp: number): number {
   return Math.round(xp * 100) / 100;
 }
 
-/** Fold a flat grant list into the wire summary: zero-filled areas + a recent-window rollup. */
-export function summarizeGrants(grants: XpGrant[], days: number, now: Date): XpSummary {
+/** A timestamp's calendar date (YYYY-MM-DD) in the timezone `offsetMinutes` west of UTC. */
+function localDateString(at: Date, offsetMinutes: number): string {
+  // JS getTimezoneOffset() is UTC − local, so subtracting shifts UTC into the caller's local clock.
+  return new Date(at.getTime() - offsetMinutes * 60_000).toISOString().slice(0, 10);
+}
+
+/**
+ * Fold a flat grant list into the wire summary: zero-filled areas, a recent-window rollup, and a
+ * today total computed against the caller's local calendar day (`tzOffsetMinutes`, as reported by
+ * the browser's `getTimezoneOffset()`).
+ */
+export function summarizeGrants(
+  grants: XpGrant[],
+  days: number,
+  now: Date,
+  tzOffsetMinutes = 0,
+): XpSummary {
   const areas = new Map<LearningArea, XpAreaSummary>(
     LEARNING_AREAS.map(area => [area, {
       area,
@@ -299,6 +314,8 @@ export function summarizeGrants(grants: XpGrant[], days: number, now: Date): XpS
   );
   const recentAreas = new Map<LearningArea, number>();
   const cutoff = now.getTime() - days * 24 * 60 * 60 * 1000;
+  const today = localDateString(now, tzOffsetMinutes);
+  let todayXp = 0;
 
   for (const grant of grants) {
     const area = areas.get(grant.area);
@@ -308,6 +325,10 @@ export function summarizeGrants(grants: XpGrant[], days: number, now: Date): XpS
     if (grant.at.getTime() >= cutoff) {
       recentAreas.set(grant.area, (recentAreas.get(grant.area) ?? 0) + grant.xp);
     }
+    // Date-only sources (drills, lessons) carry the learner-entered date; compare it directly so a
+    // midnight-UTC `at` can't land the grant on the wrong local day.
+    const grantDay = grant.dateOnly ?? localDateString(grant.at, tzOffsetMinutes);
+    if (grantDay === today) todayXp += grant.xp;
   }
 
   const summaries = [...areas.values()].map(area => ({
@@ -332,12 +353,20 @@ export function summarizeGrants(grants: XpGrant[], days: number, now: Date): XpS
       totalXp: roundXp(recent.reduce((sum, area) => sum + area.xp, 0)),
       areas: recent,
     },
+    today: {
+      totalXp: roundXp(todayXp),
+    },
   };
 }
 
-/** Compute the full XP summary from the database (narrow selects; all rules live above). */
-export async function getXpSummary(days: number): Promise<XpSummary> {
+/**
+ * Compute the full XP summary from the database (narrow selects; all rules live above), using the
+ * effective rates (defaults merged with any Settings-page overrides) so a rate change retroactively
+ * re-scores everything on the next fetch.
+ */
+export async function getXpSummary(days: number, tzOffsetMinutes = 0): Promise<XpSummary> {
   const [
+    rates,
     readingRows,
     writingRows,
     mySentenceRows,
@@ -348,6 +377,7 @@ export async function getXpSummary(days: number): Promise<XpSummary> {
     drillRows,
     lessonRows,
   ] = await Promise.all([
+    getXpRates(),
     db.select({
       mode: readingSessions.mode,
       freeformTranslation: readingSessions.freeformTranslation,
@@ -397,13 +427,13 @@ export async function getXpSummary(days: number): Promise<XpSummary> {
   ]);
 
   const grants = [
-    ...readingXp(readingRows),
-    ...writingXp(writingRows, mySentenceRows),
-    ...bookExercisesXp(sheetRows as QuestionSheetXpRow[], answerRows),
-    ...listeningXp(listeningRows),
-    ...shadowingXp(shadowingRows),
-    ...drillXp(drillRows),
-    ...lessonXp(lessonRows),
+    ...readingXp(readingRows, rates),
+    ...writingXp(writingRows, mySentenceRows, rates),
+    ...bookExercisesXp(sheetRows as QuestionSheetXpRow[], answerRows, rates),
+    ...listeningXp(listeningRows, rates),
+    ...shadowingXp(shadowingRows, rates),
+    ...drillXp(drillRows, rates),
+    ...lessonXp(lessonRows, rates),
   ];
-  return summarizeGrants(grants, days, new Date());
+  return summarizeGrants(grants, days, new Date(), tzOffsetMinutes);
 }

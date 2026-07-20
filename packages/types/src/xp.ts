@@ -24,6 +24,48 @@ export const XP_FEATURES = [
 /** One feature bucket from {@link XP_FEATURES}. */
 export type XpFeature = (typeof XP_FEATURES)[number];
 
+/**
+ * Default XP per counted item. The learner can override any rate on the Settings page (stored under
+ * the `xp.rates` settings key); because XP is derived, a changed rate retroactively re-scores all
+ * existing content on the next summary fetch.
+ */
+export const DEFAULT_XP_RATES = {
+  readingTranslatedSentence: 2,
+  readingWordNote: 1,
+  writingSentence: 1,
+  writingCorrection: 1,
+  questionSheetAuthored: 5,
+  answerEntryList: 2,
+  answerEntryGrid: 0.25,
+  listeningEntry: 1,
+  shadowingLoop: 0.25,
+  drillRound: 0.25,
+  lessonLine: 1,
+  lessonWordNote: 0.5,
+} as const;
+
+/** One adjustable rate from {@link DEFAULT_XP_RATES}. */
+export type XpRateKey = keyof typeof DEFAULT_XP_RATES;
+
+/** The stable key list, for iterating rates in UI/validation. */
+export const XP_RATE_KEYS = Object.keys(DEFAULT_XP_RATES) as XpRateKey[];
+
+/** A full set of effective rates (defaults merged with any stored overrides). */
+export type XpRates = Record<XpRateKey, number>;
+
+/** The response of `GET /api/settings/xp`: the effective rates. */
+export interface XpSettings {
+  rates: XpRates;
+}
+
+/**
+ * Payload for updating the rates. Tri-state per key: omit = leave, `null` = reset to default, a
+ * number = override. `rates: null` resets everything.
+ */
+export interface UpdateXpSettingsInput {
+  rates?: Partial<Record<XpRateKey, number | null>> | null;
+}
+
 /** All-time XP for one learning area, with a per-feature breakdown. */
 export interface XpAreaSummary {
   area: LearningArea;
@@ -47,4 +89,6 @@ export interface XpSummary {
   totalXp: number;
   areas: XpAreaSummary[];
   recent: XpRecentSummary;
+  /** XP earned so far in the caller's local calendar day (per the `tzOffsetMinutes` query param). */
+  today: { totalXp: number };
 }

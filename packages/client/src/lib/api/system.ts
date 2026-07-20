@@ -9,6 +9,12 @@ import type {
   DictionaryEntry,
   DictionarySettings,
   ExampleSentence,
+  LearnerProfile,
+  StartSettings,
+  UpdateLearnerProfileInput,
+  UpdateStartSettingsInput,
+  UpdateXpSettingsInput,
+  XpSettings,
   OcrSettings,
   RenshuuExampleSentence,
   RenshuuSettings,
@@ -25,6 +31,24 @@ import type {
 import { request } from "./request";
 
 export const settingsApi = {
+  getProfile: () => request<LearnerProfile>("/settings/profile"),
+  getXp: () => request<XpSettings>("/settings/xp"),
+  getStart: () => request<StartSettings>("/settings/start"),
+  updateStart: (input: UpdateStartSettingsInput) =>
+    request<StartSettings>("/settings/start", {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    }),
+  updateXp: (input: UpdateXpSettingsInput) =>
+    request<XpSettings>("/settings/xp", {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    }),
+  updateProfile: (input: UpdateLearnerProfileInput) =>
+    request<LearnerProfile>("/settings/profile", {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    }),
   getOcr: () => request<OcrSettings>("/settings/ocr"),
   updateOcr: (input: UpdateOcrSettingsInput) =>
     request<OcrSettings>("/settings/ocr", {

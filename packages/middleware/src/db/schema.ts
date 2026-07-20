@@ -517,6 +517,8 @@ export const grammarNotes = pgTable("grammar_notes", {
   constructions: jsonb("constructions").$type<GrammarConstruction[]>(),
   relations: jsonb("relations").$type<GrammarRelation[]>(),
   resources: jsonb("resources").$type<GrammarResourceRef[]>(),
+  // Starred grammar points are boosted by the Start Something suggestion ranking.
+  starred: boolean("starred").notNull().default(false),
   createdAt: timestamp("created_at", {
     withTimezone: true,
   }).notNull().defaultNow(),

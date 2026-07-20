@@ -2,19 +2,41 @@ import { eq, inArray } from "drizzle-orm";
 import type {
   BookmarksSettings,
   BookmarksSource,
+  DailyLineup,
   DictionaryProvider,
   DictionarySettings,
   DrillTag,
+  LearnerGoal,
+  LearnerProfile,
   LearningArea,
+  LineupItem,
+  LineupSessionType,
   MaterialType,
   OcrSettings,
   RenshuuSettings,
+  SentenceTermRef,
+  StartSettings,
+  StartSuggestionKind,
   UpdateBookmarksSettingsInput,
   UpdateDictionarySettingsInput,
+  UpdateLearnerProfileInput,
   UpdateOcrSettingsInput,
   UpdateRenshuuSettingsInput,
+  UpdateStartSettingsInput,
+  UpdateXpSettingsInput,
+  XpRateKey,
+  XpRates,
+  XpSettings,
 } from "@sentence-bank/types";
-import { DRILL_TAGS, LEARNING_AREAS, MATERIAL_TYPES } from "@sentence-bank/types";
+import {
+  DEFAULT_XP_RATES,
+  DRILL_TAGS,
+  LEARNING_AREAS,
+  LINEUP_SESSION_TYPES,
+  MATERIAL_TYPES,
+  MAX_LEARNER_GOALS,
+  XP_RATE_KEYS,
+} from "@sentence-bank/types";
 import { db } from "@/db";
 import { settings } from "@/db/schema";
 
@@ -276,6 +298,262 @@ export async function updateDictionarySettings(
     await setSetting(DICTIONARY_KEYS.provider, input.provider ?? null);
   }
   return getDictionarySettings();
+}
+
+/** Settings key holding the learner profile's goals as one JSON-encoded array. Not a secret. */
+const PROFILE_GOALS_KEY = "profile.goals";
+
+/** Keep only well-formed {@link SentenceTermRef}s from a stored goal's term array. */
+function parseGoalTerms(value: unknown): SentenceTermRef[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter((term): term is SentenceTermRef => {
+    if (!term || typeof term !== "object") return false;
+    const t = term as Record<string, unknown>;
+    return typeof t.id === "string" && typeof t.name === "string";
+  });
+}
+
+/**
+ * Parse the stored goals JSON, tolerating absent/corrupt values like the other settings parsers:
+ * malformed goals are dropped, unknown learning areas are filtered out, and the list is clamped to
+ * {@link MAX_LEARNER_GOALS}.
+ */
+function parseLearnerGoals(raw: string | null): LearnerGoal[] {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter((goal): goal is Record<string, unknown> => Boolean(goal) && typeof goal === "object")
+      .filter(goal => typeof goal.id === "string" && typeof goal.title === "string")
+      .map(goal => ({
+        id: goal.id as string,
+        title: goal.title as string,
+        notes: typeof goal.notes === "string" ? goal.notes : null,
+        learningAreas: Array.isArray(goal.learningAreas)
+          ? goal.learningAreas.filter((area): area is LearningArea =>
+            (LEARNING_AREAS as readonly string[]).includes(area as string))
+          : [],
+        grammarTerms: parseGoalTerms(goal.grammarTerms),
+        resourceTerms: parseGoalTerms(goal.resourceTerms),
+      }))
+      .slice(0, MAX_LEARNER_GOALS);
+  }
+  catch {
+    return [];
+  }
+}
+
+/** Settings key holding the minimum XP the learner wants to earn each day. Not a secret. */
+const PROFILE_DAILY_XP_GOAL_KEY = "profile.dailyXpGoal";
+
+/** Parse the stored daily goal: a finite positive number, else unset. */
+function parseDailyXpGoal(raw: string | null): number | null {
+  if (!raw) return null;
+  const value = Number(raw);
+  return Number.isFinite(value) && value > 0 ? value : null;
+}
+
+/** The learner profile stored in the DB (empty goals / no daily goal when unset). */
+export async function getLearnerProfile(): Promise<LearnerProfile> {
+  const stored = await getSettings([PROFILE_GOALS_KEY, PROFILE_DAILY_XP_GOAL_KEY]);
+  return {
+    goals: parseLearnerGoals(stored[PROFILE_GOALS_KEY] ?? null),
+    dailyXpGoal: parseDailyXpGoal(stored[PROFILE_DAILY_XP_GOAL_KEY] ?? null),
+  };
+}
+
+/**
+ * Apply a partial update to the learner profile. Tri-state per field: `undefined` leaves a value
+ * unchanged; `null`/`[]`/`0` clears it. Returns the new view.
+ */
+export async function updateLearnerProfile(
+  input: UpdateLearnerProfileInput,
+): Promise<LearnerProfile> {
+  if (input.goals !== undefined) {
+    const goals = input.goals?.slice(0, MAX_LEARNER_GOALS) ?? [];
+    await setSetting(PROFILE_GOALS_KEY, goals.length > 0 ? JSON.stringify(goals) : null);
+  }
+  if (input.dailyXpGoal !== undefined) {
+    await setSetting(
+      PROFILE_DAILY_XP_GOAL_KEY,
+      input.dailyXpGoal && input.dailyXpGoal > 0 ? String(input.dailyXpGoal) : null,
+    );
+  }
+  return getLearnerProfile();
+}
+
+/** Settings keys for the Start Something page: local resource favorites and the daily lineup. */
+const START_KEYS = {
+  favoriteResourceIds: "start.favoriteResourceIds",
+  lineup: "start.lineup",
+} as const;
+
+/** Parse the stored favorite ids: a JSON array of strings, corrupt → empty. */
+export function parseFavoriteResourceIds(raw: string | null): string[] {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    return Array.isArray(parsed) ? parsed.filter((id): id is string => typeof id === "string") : [];
+  }
+  catch {
+    return [];
+  }
+}
+
+/** Keep only string-valued entries of a snapshotted params/search record. */
+function parseStringRecord(value: unknown): Record<string, string> | undefined {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return undefined;
+  const entries = Object.entries(value as Record<string, unknown>)
+    .filter((entry): entry is [string, string] => typeof entry[1] === "string");
+  return entries.length > 0 ? Object.fromEntries(entries) : undefined;
+}
+
+const SUGGESTION_KINDS = ["due-sheet", "area", "starred-grammar", "goal"] as const;
+
+/**
+ * Parse the stored lineup, tolerating absent/corrupt values: malformed items are dropped, exclusion
+ * arrays are filtered to known values (media types are free-form upstream names), and anything
+ * without a valid date is treated as unset. Staleness (date ≠ today) is a client concern.
+ */
+export function parseDailyLineup(raw: string | null): DailyLineup | null {
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw) as Record<string, unknown>;
+    if (!parsed || typeof parsed !== "object") return null;
+    if (typeof parsed.date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(parsed.date)) return null;
+    const items = Array.isArray(parsed.items)
+      ? parsed.items
+        .filter((item): item is Record<string, unknown> => Boolean(item) && typeof item === "object")
+        .filter(item =>
+          typeof item.id === "string"
+          && typeof item.title === "string"
+          && typeof item.to === "string"
+          && (SUGGESTION_KINDS as readonly string[]).includes(item.kind as string))
+        .map((item): LineupItem => ({
+          id: item.id as string,
+          kind: item.kind as StartSuggestionKind,
+          area: (LEARNING_AREAS as readonly string[]).includes(item.area as string)
+            ? item.area as LearningArea
+            : null,
+          title: item.title as string,
+          description: typeof item.description === "string" ? item.description : null,
+          to: item.to as string,
+          params: parseStringRecord(item.params),
+          search: parseStringRecord(item.search),
+          done: item.done === true,
+        }))
+      : [];
+    const exclusions = (parsed.exclusions ?? {}) as Record<string, unknown>;
+    return {
+      date: parsed.date,
+      items,
+      exclusions: {
+        mediaTypes: Array.isArray(exclusions.mediaTypes)
+          ? exclusions.mediaTypes.filter((m): m is string => typeof m === "string")
+          : [],
+        sessionTypes: Array.isArray(exclusions.sessionTypes)
+          ? exclusions.sessionTypes.filter((t): t is LineupSessionType =>
+            (LINEUP_SESSION_TYPES as readonly string[]).includes(t as string))
+          : [],
+        learningAreas: Array.isArray(exclusions.learningAreas)
+          ? exclusions.learningAreas.filter((a): a is LearningArea =>
+            (LEARNING_AREAS as readonly string[]).includes(a as string))
+          : [],
+      },
+    };
+  }
+  catch {
+    return null;
+  }
+}
+
+/** The Start Something settings stored in the DB. */
+export async function getStartSettings(): Promise<StartSettings> {
+  const stored = await getSettings(Object.values(START_KEYS));
+  return {
+    favoriteResourceIds: parseFavoriteResourceIds(stored[START_KEYS.favoriteResourceIds] ?? null),
+    lineup: parseDailyLineup(stored[START_KEYS.lineup] ?? null),
+  };
+}
+
+/**
+ * Apply a partial update to the Start Something settings. Tri-state per field: `undefined` leaves a
+ * value unchanged; `null`/`[]` clears it. The lineup is replaced whole (never merged) — the client
+ * always sends the full day document.
+ */
+export async function updateStartSettings(input: UpdateStartSettingsInput): Promise<StartSettings> {
+  if (input.favoriteResourceIds !== undefined) {
+    const ids = input.favoriteResourceIds ?? [];
+    await setSetting(START_KEYS.favoriteResourceIds, ids.length > 0 ? JSON.stringify(ids) : null);
+  }
+  if (input.lineup !== undefined) {
+    await setSetting(START_KEYS.lineup, input.lineup ? JSON.stringify(input.lineup) : null);
+  }
+  return getStartSettings();
+}
+
+/** Settings key holding the learner's XP-rate overrides as one JSON object. Not a secret. */
+const XP_RATES_KEY = "xp.rates";
+
+/** Parse stored overrides, keeping only known rate keys with finite non-negative numbers. */
+export function parseXpRateOverrides(raw: string | null): Partial<XpRates> {
+  const out: Partial<XpRates> = {};
+  if (!raw) return out;
+  try {
+    const parsed = JSON.parse(raw) as Record<string, unknown>;
+    for (const key of XP_RATE_KEYS) {
+      const value = parsed[key];
+      if (typeof value === "number" && Number.isFinite(value) && value >= 0) out[key] = value;
+    }
+  }
+  catch {
+    // Corrupt value — treat as unset.
+  }
+  return out;
+}
+
+/** The effective XP rates: the defaults with any stored overrides on top. */
+export async function getXpRates(): Promise<XpRates> {
+  const stored = await getSettings([XP_RATES_KEY]);
+  return {
+    ...DEFAULT_XP_RATES,
+    ...parseXpRateOverrides(stored[XP_RATES_KEY] ?? null),
+  };
+}
+
+/** The XP settings view (the effective rates). */
+export async function getXpSettings(): Promise<XpSettings> {
+  return {
+    rates: await getXpRates(),
+  };
+}
+
+/**
+ * Apply a partial update to the XP-rate overrides. Tri-state per key: omitted keys keep their current
+ * override, `null` resets a key to its default, a number overrides it; `rates: null` resets all. Only
+ * values differing from the default are stored. Because XP is derived, the next summary fetch
+ * recalculates everything with the new rates — there is no ledger to migrate.
+ */
+export async function updateXpSettings(input: UpdateXpSettingsInput): Promise<XpSettings> {
+  if (input.rates !== undefined) {
+    if (input.rates === null) {
+      await setSetting(XP_RATES_KEY, null);
+    }
+    else {
+      const stored = await getSettings([XP_RATES_KEY]);
+      const overrides = parseXpRateOverrides(stored[XP_RATES_KEY] ?? null);
+      for (const key of XP_RATE_KEYS) {
+        const value = input.rates[key as XpRateKey];
+        if (value === undefined) continue;
+        if (value === null || value === DEFAULT_XP_RATES[key]) delete overrides[key];
+        else overrides[key] = value;
+      }
+      const hasAny = Object.keys(overrides).length > 0;
+      await setSetting(XP_RATES_KEY, hasAny ? JSON.stringify(overrides) : null);
+    }
+  }
+  return getXpSettings();
 }
 
 /** Settings key for the Renshuu API key. Stored server-side; overrides the `RENSHUU_API_KEY` env var. */
