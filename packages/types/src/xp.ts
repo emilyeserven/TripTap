@@ -89,4 +89,6 @@ export interface XpSummary {
   totalXp: number;
   areas: XpAreaSummary[];
   recent: XpRecentSummary;
+  /** XP earned so far in the caller's local calendar day (per the `tzOffsetMinutes` query param). */
+  today: { totalXp: number };
 }

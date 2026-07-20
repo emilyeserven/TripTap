@@ -5,6 +5,7 @@ import type {
   UpdateLearnerProfileInput,
   UpdateOcrSettingsInput,
   UpdateRenshuuSettingsInput,
+  UpdateStartSettingsInput,
   UpdateXpSettingsInput,
 } from "@sentence-bank/types";
 import {
@@ -13,12 +14,14 @@ import {
   getLearnerProfile,
   getOcrSettings,
   getRenshuuSettings,
+  getStartSettings,
   getXpSettings,
   updateBookmarksSettings,
   updateDictionarySettings,
   updateLearnerProfile,
   updateOcrSettings,
   updateRenshuuSettings,
+  updateStartSettings,
   updateXpSettings,
 } from "@/services/settings";
 import { mediaStatus, testMediaConnection } from "@/services/media";
@@ -206,6 +209,117 @@ const updateLearnerProfileBody = {
       maxItems: 3,
       items: learnerGoalSchema,
     },
+    dailyXpGoal: {
+      type: ["number", "null"],
+      minimum: 0,
+    },
+  },
+} as const;
+
+const learningAreaEnum = [
+  "Speaking",
+  "Listening",
+  "Reading",
+  "Writing",
+  "Grammar",
+  "Vocabulary",
+] as const;
+
+/** A snapshotted router-link params/search record: string values only. */
+const stringRecordSchema = {
+  type: "object",
+  additionalProperties: {
+    type: "string",
+  },
+} as const;
+
+const lineupItemSchema = {
+  type: "object",
+  additionalProperties: false,
+  required: ["id", "kind", "title", "to", "done"],
+  properties: {
+    id: {
+      type: "string",
+    },
+    kind: {
+      type: "string",
+      enum: ["due-sheet", "area", "starred-grammar", "goal"],
+    },
+    area: {
+      type: ["string", "null"],
+      enum: [...learningAreaEnum, null],
+    },
+    title: {
+      type: "string",
+      minLength: 1,
+    },
+    description: {
+      type: ["string", "null"],
+    },
+    to: {
+      type: "string",
+      minLength: 1,
+    },
+    params: stringRecordSchema,
+    search: stringRecordSchema,
+    done: {
+      type: "boolean",
+    },
+  },
+} as const;
+
+const updateStartSettingsBody = {
+  type: "object",
+  additionalProperties: false,
+  properties: {
+    favoriteResourceIds: {
+      type: ["array", "null"],
+      items: {
+        type: "string",
+      },
+    },
+    lineup: {
+      type: ["object", "null"],
+      additionalProperties: false,
+      required: ["date", "items", "exclusions"],
+      properties: {
+        date: {
+          type: "string",
+          pattern: "^\\d{4}-\\d{2}-\\d{2}$",
+        },
+        items: {
+          type: "array",
+          items: lineupItemSchema,
+        },
+        exclusions: {
+          type: "object",
+          additionalProperties: false,
+          required: ["mediaTypes", "sessionTypes", "learningAreas"],
+          properties: {
+            mediaTypes: {
+              type: "array",
+              items: {
+                type: "string",
+              },
+            },
+            sessionTypes: {
+              type: "array",
+              items: {
+                type: "string",
+                enum: ["reading", "listening", "shadowing", "writing", "drills", "practice"],
+              },
+            },
+            learningAreas: {
+              type: "array",
+              items: {
+                type: "string",
+                enum: learningAreaEnum,
+              },
+            },
+          },
+        },
+      },
+    },
   },
 } as const;
 
@@ -317,6 +431,21 @@ export async function settingsRoutes(app: FastifyInstance): Promise<void> {
     },
   }, async (req) => {
     return updateLearnerProfile(req.body as UpdateLearnerProfileInput);
+  });
+
+  app.get("/api/settings/start", {
+    schema: {
+      tags: ["settings"],
+    },
+  }, async () => getStartSettings());
+
+  app.patch("/api/settings/start", {
+    schema: {
+      tags: ["settings"],
+      body: updateStartSettingsBody,
+    },
+  }, async (req) => {
+    return updateStartSettings(req.body as UpdateStartSettingsInput);
   });
 
   app.get("/api/settings/xp", {

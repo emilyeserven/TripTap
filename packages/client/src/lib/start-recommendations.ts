@@ -6,7 +6,9 @@ import type {
   LearnerProfile,
   LearningArea,
   LearningAreaTagMap,
+  LineupExclusions,
   QuestionSheet,
+  StartSuggestionKind,
   WritingPrompt,
   XpSummary,
 } from "@sentence-bank/types";
@@ -14,6 +16,7 @@ import type {
 import { LEARNING_AREAS } from "@sentence-bank/types";
 
 import { dueDateMet } from "@/lib/answer-sheets";
+import { SESSION_TYPE_ROUTES } from "@/lib/daily-lineup";
 import { isDueSoon } from "@/lib/due-date";
 
 /** How far ahead (in days) a due question sheet counts as a "do this first" suggestion. */
@@ -27,7 +30,7 @@ const DUE_LIMIT = 2;
  */
 export interface StartSuggestion {
   id: string;
-  kind: "due-sheet" | "area" | "starred-grammar" | "goal";
+  kind: StartSuggestionKind;
   /** The learning area this suggestion practices; null when it spans several. */
   area: LearningArea | null;
   title: string;
@@ -51,17 +54,43 @@ export interface StartRecommendationInput {
   lowestAreaSections?: BookmarkSectionMatch[];
   /** Whole resources tagged with the lowest area's mapped tag (fallback when no sections match). */
   lowestAreaResources?: BookmarkResource[];
+  /** Today's lineup exclusions — excluded properties never produce suggestions. */
+  exclusions?: LineupExclusions;
+  /** Bookmark ids the learner starred locally; boosted to the front of the pick pools. */
+  favoriteResourceIds?: string[];
   now: Date;
 }
 
-/** The area with the least all-time XP (ties break in `LEARNING_AREAS` order). */
-export function lowestXpArea(summary: XpSummary): LearningArea {
+/**
+ * The non-excluded area with the least all-time XP (ties break in `LEARNING_AREAS` order); null when
+ * every area is excluded for the day.
+ */
+export function lowestXpArea(
+  summary: XpSummary,
+  excludedAreas: LearningArea[] = [],
+): LearningArea | null {
   const byArea = new Map(summary.areas.map(a => [a.area, a.xp]));
-  let lowest: LearningArea = LEARNING_AREAS[0];
-  for (const area of LEARNING_AREAS) {
-    if ((byArea.get(area) ?? 0) < (byArea.get(lowest) ?? 0)) lowest = area;
+  const candidates = LEARNING_AREAS.filter(area => !excludedAreas.includes(area));
+  let lowest: LearningArea | null = null;
+  for (const area of candidates) {
+    if (lowest === null || (byArea.get(area) ?? 0) < (byArea.get(lowest) ?? 0)) lowest = area;
   }
   return lowest;
+}
+
+/** Drop sections/resources whose media type is excluded today (unknown media types pass). */
+function allowedByMediaType(mediaType: string | null, exclusions: LineupExclusions | undefined) {
+  return !mediaType || !(exclusions?.mediaTypes ?? []).includes(mediaType);
+}
+
+/** Stable sort with locally-starred bookmarks first, then upstream favorites, keeping list order. */
+function favoritesFirst<T>(
+  items: T[],
+  isLocalFavorite: (item: T) => boolean,
+  isUpstreamFavorite: (item: T) => boolean,
+): T[] {
+  const rank = (item: T) => (isLocalFavorite(item) ? 0 : isUpstreamFavorite(item) ? 1 : 2);
+  return [...items].sort((a, b) => rank(a) - rank(b));
 }
 
 /** The goals that explicitly target `area`, used to explain why a pick matters. */
@@ -311,14 +340,34 @@ function goalSuggestions(
  * starred grammar point, then goal nudges. The first entry is the hero suggestion.
  */
 export function buildStartSuggestions(input: StartRecommendationInput): StartSuggestion[] {
+  const {
+    exclusions,
+  } = input;
+  const favoriteIds = input.favoriteResourceIds ?? [];
+  // Filter today's excluded media types out of the pick pools, then float favorites to the front —
+  // locally-starred bookmarks first, then ones favorited in the bookmarks app itself.
+  const pools: StartRecommendationInput = {
+    ...input,
+    lowestAreaSections: favoritesFirst(
+      (input.lowestAreaSections ?? []).filter(s => allowedByMediaType(s.mediaType, exclusions)),
+      s => favoriteIds.includes(s.bookmarkId),
+      () => false,
+    ),
+    lowestAreaResources: favoritesFirst(
+      (input.lowestAreaResources ?? []).filter(r => allowedByMediaType(r.mediaType, exclusions)),
+      r => favoriteIds.includes(r.id),
+      r => r.favorite,
+    ),
+  };
+
   const suggestions: StartSuggestion[] = [...dueSheetSuggestions(input)];
-  const lowest = lowestXpArea(input.summary);
-  const areaPick = areaSuggestion(input, lowest);
-  suggestions.push(areaPick);
+  const lowest = lowestXpArea(input.summary, exclusions?.learningAreas);
+  const areaPick = lowest !== null ? areaSuggestion(pools, lowest) : null;
+  if (areaPick) suggestions.push(areaPick);
 
   // Track grammar-note ids already used so the starred/goal slots don't repeat the area pick.
   const usedNoteIds = new Set<string>(
-    areaPick.to === "/grammar-notes/$id" && areaPick.params ? [areaPick.params.id] : [],
+    areaPick?.to === "/grammar-notes/$id" && areaPick.params ? [areaPick.params.id] : [],
   );
   const starred = starredGrammarSuggestion(input, usedNoteIds);
   if (starred) {
@@ -326,5 +375,13 @@ export function buildStartSuggestions(input: StartRecommendationInput): StartSug
     suggestions.push(starred);
   }
   suggestions.push(...goalSuggestions(input, usedNoteIds));
-  return suggestions;
+
+  // Finally, drop anything pointing at an activity excluded for today (due sheets map to no session
+  // type on purpose — deadlines always surface) and anything for an excluded area.
+  const excludedRoutes = new Set(
+    (exclusions?.sessionTypes ?? []).flatMap(type => SESSION_TYPE_ROUTES[type]),
+  );
+  return suggestions.filter(s =>
+    !excludedRoutes.has(s.to)
+    && !(s.area && (exclusions?.learningAreas ?? []).includes(s.area) && s.kind !== "due-sheet"));
 }

@@ -10,7 +10,9 @@ import type {
   DictionarySettings,
   ExampleSentence,
   LearnerProfile,
+  StartSettings,
   UpdateLearnerProfileInput,
+  UpdateStartSettingsInput,
   UpdateXpSettingsInput,
   XpSettings,
   OcrSettings,
@@ -31,6 +33,12 @@ import { request } from "./request";
 export const settingsApi = {
   getProfile: () => request<LearnerProfile>("/settings/profile"),
   getXp: () => request<XpSettings>("/settings/xp"),
+  getStart: () => request<StartSettings>("/settings/start"),
+  updateStart: (input: UpdateStartSettingsInput) =>
+    request<StartSettings>("/settings/start", {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    }),
   updateXp: (input: UpdateXpSettingsInput) =>
     request<XpSettings>("/settings/xp", {
       method: "PATCH",

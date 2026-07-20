@@ -4,6 +4,7 @@ import type {
   UpdateLearnerProfileInput,
   UpdateOcrSettingsInput,
   UpdateRenshuuSettingsInput,
+  UpdateStartSettingsInput,
   UpdateXpSettingsInput,
 } from "@sentence-bank/types";
 
@@ -27,6 +28,23 @@ export function useLearnerProfile() {
 }
 
 const XP_SETTINGS_KEY = ["settings", "xp"] as const;
+const START_SETTINGS_KEY = ["settings", "start"] as const;
+
+/** The Start Something settings: local resource favorites + the (possibly stale) daily lineup. */
+export function useStartSettings() {
+  return useQuery({
+    queryKey: START_SETTINGS_KEY,
+    queryFn: settingsApi.getStart,
+  });
+}
+
+export function useUpdateStartSettings() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: UpdateStartSettingsInput) => settingsApi.updateStart(input),
+    onSuccess: data => queryClient.setQueryData(START_SETTINGS_KEY, data),
+  });
+}
 
 /** The effective XP rates (defaults merged with any overrides). */
 export function useXpSettings() {

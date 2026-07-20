@@ -142,6 +142,11 @@ export const drillReasonCategoriesApi = {
 };
 
 export const xpApi = {
-  summary: (days?: number) =>
-    request<XpSummary>(`/xp/summary${days != null ? `?days=${days}` : ""}`),
+  summary: (days?: number) => {
+    const params = new URLSearchParams();
+    if (days != null) params.set("days", String(days));
+    // "Today" is the caller's calendar day; the browser's offset tells the server where that falls.
+    params.set("tzOffsetMinutes", String(new Date().getTimezoneOffset()));
+    return request<XpSummary>(`/xp/summary?${params.toString()}`);
+  },
 };
