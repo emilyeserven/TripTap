@@ -2,11 +2,13 @@ import type {
   AnswerSheet,
   BookmarkResource,
   BookmarkSectionMatch,
+  ComplexityScale,
   GrammarNote,
   LearnerProfile,
   LearningArea,
   LearningAreaTagMap,
   LineupExclusions,
+  MaterialTypeTagMap,
   QuestionSheet,
   StartSuggestionKind,
   WritingPrompt,
@@ -16,8 +18,43 @@ import type {
 import { LEARNING_AREAS } from "@sentence-bank/types";
 
 import { dueDateMet } from "@/lib/answer-sheets";
+import { matchesComplexity, resourceMaterialTypes } from "@/lib/collections";
 import { SESSION_TYPE_ROUTES } from "@/lib/daily-lineup";
 import { isDueSoon } from "@/lib/due-date";
+
+/**
+ * Content-status preference for suggestions (lower = preferred): actively-consumed and queued material
+ * first, done/abandoned last. Unknown/unset statuses sit in the neutral middle. Read from the bookmark
+ * app's "Content Status" choices property.
+ */
+const CONTENT_STATUS_RANK: Record<string, number> = {
+  "reading": 0,
+  "shortlist": 1,
+  "paused": 2,
+  "not-started": 3,
+  "ai-summary-queue": 4,
+  "summarized-by-ai": 4,
+  "finished": 5,
+  "dropped": 6,
+};
+
+function contentStatusRank(status: string | null): number {
+  return status && status in CONTENT_STATUS_RANK ? CONTENT_STATUS_RANK[status] : 3;
+}
+
+/**
+ * Parse a section's raw `startValue` into a sortable number: a `HH:MM:SS(.mmm)` / `M:SS` timestamp to
+ * seconds, a plain page number to itself. Null when it can't be read (caller keeps upstream order).
+ */
+export function parseStartValue(value: string | null | undefined): number | null {
+  if (!value) return null;
+  const trimmed = value.trim();
+  if (/^\d+(\.\d+)?$/.test(trimmed)) return Number(trimmed);
+  if (/^(\d+:)?\d{1,2}:\d{2}(\.\d+)?$/.test(trimmed)) {
+    return trimmed.split(":").reduce((acc, part) => acc * 60 + Number(part), 0);
+  }
+  return null;
+}
 
 /** How far ahead (in days) a due question sheet counts as a "do this first" suggestion. */
 export const DUE_SOON_DAYS = 7;
@@ -54,6 +91,12 @@ export interface StartRecommendationInput {
   lowestAreaSections?: BookmarkSectionMatch[];
   /** Whole resources tagged with the lowest area's mapped tag (fallback when no sections match). */
   lowestAreaResources?: BookmarkResource[];
+  /** All resources by bookmark id, so a section can read its owning bookmark's complexity/status/type. */
+  resourcesById?: Record<string, BookmarkResource>;
+  /** The material-type → tag map, for detecting Sequential vs Out-of-Order resources. */
+  materialTypeTags?: MaterialTypeTagMap;
+  /** The complexity scale, for the complexity-band filter. */
+  complexityScale?: ComplexityScale | null;
   /** Today's lineup exclusions — excluded properties never produce suggestions. */
   exclusions?: LineupExclusions;
   /** Bookmark ids the learner starred locally; boosted to the front of the pick pools. */
@@ -83,14 +126,98 @@ function allowedByMediaType(mediaType: string | null, exclusions: LineupExclusio
   return !mediaType || !(exclusions?.mediaTypes ?? []).includes(mediaType);
 }
 
-/** Stable sort with locally-starred bookmarks first, then upstream favorites, keeping list order. */
-function favoritesFirst<T>(
-  items: T[],
-  isLocalFavorite: (item: T) => boolean,
-  isUpstreamFavorite: (item: T) => boolean,
-): T[] {
-  const rank = (item: T) => (isLocalFavorite(item) ? 0 : isUpstreamFavorite(item) ? 1 : 2);
-  return [...items].sort((a, b) => rank(a) - rank(b));
+/** True when a resource's complexity is inside the day's band (unrated resources pass when no band). */
+function withinComplexity(
+  resource: BookmarkResource | undefined,
+  input: StartRecommendationInput,
+): boolean {
+  const scale = input.complexityScale ?? null;
+  if (!scale || !resource) return true;
+  const min = input.exclusions?.complexityMin ?? scale.min;
+  const max = input.exclusions?.complexityMax ?? scale.max;
+  return matchesComplexity(resource, min, max, scale);
+}
+
+/** The owning resource of a section, looked up by bookmark id. */
+function sectionResource(
+  section: BookmarkSectionMatch,
+  input: StartRecommendationInput,
+): BookmarkResource | undefined {
+  return input.resourcesById?.[section.bookmarkId];
+}
+
+/**
+ * Order resources by preference: locally-starred first, then upstream-favorited, then by content
+ * status (actively-reading before finished/dropped), keeping list order within a tier. Stable.
+ */
+function orderResources(items: BookmarkResource[], favoriteIds: string[]): BookmarkResource[] {
+  const rank = (r: BookmarkResource): [number, number] => [
+    favoriteIds.includes(r.id) ? 0 : r.favorite ? 1 : 2,
+    contentStatusRank(r.contentStatus),
+  ];
+  return [...items].sort((a, b) => {
+    const [af, ac] = rank(a);
+    const [bf, bc] = rank(b);
+    return af - bf || ac - bc;
+  });
+}
+
+/** Order sections by their owning resource's preference (favorite, then content status). */
+function orderSections(
+  items: BookmarkSectionMatch[],
+  input: StartRecommendationInput,
+  favoriteIds: string[],
+): BookmarkSectionMatch[] {
+  const rank = (s: BookmarkSectionMatch): [number, number] => {
+    const r = sectionResource(s, input);
+    return [
+      favoriteIds.includes(s.bookmarkId) ? 0 : r?.favorite ? 1 : 2,
+      contentStatusRank(r?.contentStatus ?? null),
+    ];
+  };
+  return [...items].sort((a, b) => {
+    const [af, ac] = rank(a);
+    const [bf, bc] = rank(b);
+    return af - bf || ac - bc;
+  });
+}
+
+/**
+ * Gate a bookmark's sections by its material type. Sequential-Material bookmarks only offer the first
+ * not-yet-completed section (by `startValue` order) — don't skip ahead. Out-of-Order (or untagged)
+ * bookmarks offer every section. Operates across a mixed-bookmark list, grouping by bookmark id.
+ */
+function gateSequentialSections(
+  sections: BookmarkSectionMatch[],
+  input: StartRecommendationInput,
+): BookmarkSectionMatch[] {
+  const materialTypeTags = input.materialTypeTags ?? {};
+  const byBookmark = new Map<string, BookmarkSectionMatch[]>();
+  for (const s of sections) {
+    const list = byBookmark.get(s.bookmarkId) ?? [];
+    list.push(s);
+    byBookmark.set(s.bookmarkId, list);
+  }
+  const out: BookmarkSectionMatch[] = [];
+  for (const [bookmarkId, group] of byBookmark) {
+    const resource = input.resourcesById?.[bookmarkId];
+    const sequential = resource
+      && resourceMaterialTypes(resource.tagIds, materialTypeTags).includes("Sequential Material");
+    if (!sequential) {
+      out.push(...group);
+      continue;
+    }
+    // Next actionable section = the first uncompleted one in document order.
+    const ordered = [...group].sort((a, b) => {
+      const av = parseStartValue(a.section.startValue);
+      const bv = parseStartValue(b.section.startValue);
+      if (av !== null && bv !== null) return av - bv;
+      return a.section.label.localeCompare(b.section.label);
+    });
+    const next = ordered.find(s => !s.section.completed);
+    if (next) out.push(next);
+  }
+  return out;
 }
 
 /** The goals that explicitly target `area`, used to explain why a pick matters. */
@@ -134,16 +261,17 @@ function dueSheetSuggestions(input: StartRecommendationInput): StartSuggestion[]
 }
 
 /**
- * The concrete pick for the lowest-XP area. Prefers a tagged bookmark *section* (quick and contained),
- * then a whole tagged resource, then the bare session entry point for the area.
+ * The concrete pick for one area. Prefers a tagged bookmark *section* (quick and contained), then a
+ * whole tagged resource, then the bare session entry point. `section`/`resource` are the already
+ * filtered-and-ordered top candidates for this area (empty for non-lowest areas → a bare link).
  */
-function areaSuggestion(input: StartRecommendationInput, area: LearningArea): StartSuggestion {
-  const goals = goalsForArea(input.profile, area);
-  const why = goals.length > 0
-    ? `${area} is your lowest area and part of "${goals[0].title}".`
-    : `${area} is your lowest area.`;
-  const section = input.lowestAreaSections?.[0];
-  const resource = input.lowestAreaResources?.[0];
+function areaSuggestion(
+  input: StartRecommendationInput,
+  area: LearningArea,
+  section: BookmarkSectionMatch | undefined,
+  resource: BookmarkResource | undefined,
+  why: string,
+): StartSuggestion {
   const base = {
     id: `area-${area}`,
     kind: "area" as const,
@@ -335,39 +463,66 @@ function goalSuggestions(
   });
 }
 
+/** The "why this area" line, mentioning a matching goal and whether it's the lowest-XP area. */
+function areaReason(input: StartRecommendationInput, area: LearningArea, isLowest: boolean): string {
+  const goals = goalsForArea(input.profile, area);
+  const lead = isLowest ? `${area} is your lowest area` : `Some ${area} practice`;
+  return goals.length > 0 ? `${lead} and part of "${goals[0].title}".` : `${lead}.`;
+}
+
 /**
- * The ranked Start Something list: due sheets first, then the lowest-XP area's concrete pick, then a
- * starred grammar point, then goal nudges. The first entry is the hero suggestion.
+ * The ranked Start Something list: due sheets first, then a concrete pick for each non-excluded area
+ * ordered by ascending XP (the lowest area gets the rich section/resource pick from the loaded pools;
+ * the rest get their bare session link), then a starred grammar point and goal nudges. Returns the
+ * whole pool — the page shows a window of it and rerolls through the rest.
  */
 export function buildStartSuggestions(input: StartRecommendationInput): StartSuggestion[] {
   const {
     exclusions,
   } = input;
   const favoriteIds = input.favoriteResourceIds ?? [];
-  // Filter today's excluded media types out of the pick pools, then float favorites to the front —
-  // locally-starred bookmarks first, then ones favorited in the bookmarks app itself.
-  const pools: StartRecommendationInput = {
-    ...input,
-    lowestAreaSections: favoritesFirst(
-      (input.lowestAreaSections ?? []).filter(s => allowedByMediaType(s.mediaType, exclusions)),
-      s => favoriteIds.includes(s.bookmarkId),
-      () => false,
+
+  // The lowest area's rich pools: drop excluded media types + out-of-band complexity, gate sequential
+  // material to its next uncompleted section, then order by favorite + content status.
+  const sections = orderSections(
+    gateSequentialSections(
+      (input.lowestAreaSections ?? [])
+        .filter(s => allowedByMediaType(s.mediaType, exclusions))
+        .filter(s => withinComplexity(sectionResource(s, input), input)),
+      input,
     ),
-    lowestAreaResources: favoritesFirst(
-      (input.lowestAreaResources ?? []).filter(r => allowedByMediaType(r.mediaType, exclusions)),
-      r => favoriteIds.includes(r.id),
-      r => r.favorite,
-    ),
-  };
+    input,
+    favoriteIds,
+  );
+  const resources = orderResources(
+    (input.lowestAreaResources ?? [])
+      .filter(r => allowedByMediaType(r.mediaType, exclusions))
+      .filter(r => withinComplexity(r, input)),
+    favoriteIds,
+  );
 
   const suggestions: StartSuggestion[] = [...dueSheetSuggestions(input)];
-  const lowest = lowestXpArea(input.summary, exclusions?.learningAreas);
-  const areaPick = lowest !== null ? areaSuggestion(pools, lowest) : null;
-  if (areaPick) suggestions.push(areaPick);
 
-  // Track grammar-note ids already used so the starred/goal slots don't repeat the area pick.
+  // One area pick per non-excluded area, lowest XP first. Only the lowest area gets the loaded pools.
+  const excludedAreas = exclusions?.learningAreas ?? [];
+  const byXp = new Map(input.summary.areas.map(a => [a.area, a.xp]));
+  const rankedAreas = LEARNING_AREAS
+    .filter(area => !excludedAreas.includes(area))
+    .sort((a, b) => (byXp.get(a) ?? 0) - (byXp.get(b) ?? 0));
+  rankedAreas.forEach((area, i) => {
+    const isLowest = i === 0;
+    suggestions.push(areaSuggestion(
+      input,
+      area,
+      isLowest ? sections[0] : undefined,
+      isLowest ? resources[0] : undefined,
+      areaReason(input, area, isLowest),
+    ));
+  });
+
+  // Track grammar-note ids already used so the starred/goal slots don't repeat an area pick.
   const usedNoteIds = new Set<string>(
-    areaPick?.to === "/grammar-notes/$id" && areaPick.params ? [areaPick.params.id] : [],
+    suggestions.flatMap(s => (s.to === "/grammar-notes/$id" && s.params ? [s.params.id] : [])),
   );
   const starred = starredGrammarSuggestion(input, usedNoteIds);
   if (starred) {
@@ -376,12 +531,12 @@ export function buildStartSuggestions(input: StartRecommendationInput): StartSug
   }
   suggestions.push(...goalSuggestions(input, usedNoteIds));
 
-  // Finally, drop anything pointing at an activity excluded for today (due sheets map to no session
-  // type on purpose — deadlines always surface) and anything for an excluded area.
+  // Finally, drop anything pointing at an activity excluded for today, or a non-due suggestion for an
+  // excluded area (due sheets map to no session type and always surface — deadlines win).
   const excludedRoutes = new Set(
     (exclusions?.sessionTypes ?? []).flatMap(type => SESSION_TYPE_ROUTES[type]),
   );
   return suggestions.filter(s =>
     !excludedRoutes.has(s.to)
-    && !(s.area && (exclusions?.learningAreas ?? []).includes(s.area) && s.kind !== "due-sheet"));
+    && !(s.area && excludedAreas.includes(s.area) && s.kind !== "due-sheet"));
 }

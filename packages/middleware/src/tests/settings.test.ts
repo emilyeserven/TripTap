@@ -322,6 +322,8 @@ test("parseDailyLineup drops malformed items and unknown exclusion values", () =
       mediaTypes: ["Book", 3],
       sessionTypes: ["drills", "juggling"],
       learningAreas: ["Reading", "Cooking"],
+      complexityMin: 1,
+      complexityMax: "nope",
     },
   }));
   assert.equal(parsed?.items.length, 1);
@@ -332,6 +334,9 @@ test("parseDailyLineup drops malformed items and unknown exclusion values", () =
   assert.deepEqual(parsed?.exclusions.mediaTypes, ["Book"]);
   assert.deepEqual(parsed?.exclusions.sessionTypes, ["drills"]);
   assert.deepEqual(parsed?.exclusions.learningAreas, ["Reading"]);
+  // A numeric complexity bound is kept; a non-numeric one coerces to null.
+  assert.equal(parsed?.exclusions.complexityMin, 1);
+  assert.equal(parsed?.exclusions.complexityMax, null);
 });
 
 test("parseDailyLineup and parseFavoriteResourceIds tolerate corrupt values", () => {

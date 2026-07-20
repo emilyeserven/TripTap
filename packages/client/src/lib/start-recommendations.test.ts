@@ -24,6 +24,7 @@ function summary(xpByArea: Partial<Record<string, number>>): XpSummary {
     },
     today: {
       totalXp: 0,
+      areas: [],
     },
   };
 }
@@ -154,7 +155,7 @@ describe("buildStartSuggestions", () => {
     expect(area?.search).toBeUndefined();
   });
 
-  it("always surfaces a starred grammar point", () => {
+  it("surfaces a starred grammar point (as the Grammar pick or its own slot)", () => {
     const suggestions = buildStartSuggestions({
       summary: summary({
         Grammar: 50,
@@ -165,9 +166,9 @@ describe("buildStartSuggestions", () => {
       })],
       now: NOW,
     });
-    const starred = suggestions.find(s => s.kind === "starred-grammar");
-    expect(starred).toBeDefined();
-    expect(starred?.params?.id).toBe("n-starred");
+    // Every area now gets a pick, so a starred note surfaces via the Grammar area pick when it isn't
+    // claimed by a dedicated starred slot — either way it appears in Up Next.
+    expect(suggestions.some(s => s.params?.id === "n-starred")).toBe(true);
   });
 
   it("prefers a starred note for the Grammar area pick and doesn't repeat it", () => {
@@ -304,6 +305,7 @@ describe("buildStartSuggestions", () => {
       complexity: null,
       progress: null,
       favorite,
+      contentStatus: null,
       tagIds: [],
       imageUrl: null,
     });
@@ -365,8 +367,149 @@ describe("buildStartSuggestions", () => {
       })],
       now: NOW,
     });
-    const goal = suggestions.find(s => s.kind === "goal");
-    expect(goal?.params?.id).toBe("n-goal");
-    expect(goal?.description).toContain("Master particles");
+    // The goal's grammar note surfaces in Up Next — via the Grammar area pick or the dedicated goal
+    // slot, depending on which claims it first.
+    expect(suggestions.some(s => s.params?.id === "n-goal")).toBe(true);
+  });
+
+  it("gates a sequential resource to its first uncompleted section", () => {
+    const seqTag = {
+      id: "seq-tag",
+      name: "Sequential",
+    };
+    const bookmark = {
+      id: "bk",
+      title: "Genki I",
+      url: null,
+      website: null,
+      runtimeSeconds: null,
+      mediaType: "Book",
+      complexity: null,
+      progress: null,
+      favorite: false,
+      contentStatus: null,
+      tagIds: ["seq-tag"],
+      imageUrl: null,
+    };
+    const section = (id: string, page: string, completed: boolean) => ({
+      bookmarkId: "bk",
+      bookmarkTitle: "Genki I",
+      bookmarkUrl: null,
+      imageUrl: null,
+      mediaType: "Book",
+      tagIds: ["seq-tag"],
+      section: {
+        id,
+        label: `p. ${page}`,
+        type: "page" as const,
+        startValue: page,
+        endValue: null,
+        completed,
+      },
+    });
+    const suggestions = buildStartSuggestions({
+      summary: summary({
+        Reading: 0,
+        Speaking: 9,
+        Listening: 9,
+        Writing: 9,
+        Grammar: 9,
+        Vocabulary: 9,
+      }),
+      lowestAreaSections: [
+        // Out of order and mixed completion: 1 done, 2 not, 3 not.
+        section("s3", "30", false),
+        section("s1", "10", true),
+        section("s2", "20", false),
+      ],
+      resourcesById: {
+        bk: bookmark,
+      },
+      materialTypeTags: {
+        "Sequential Material": seqTag,
+      },
+      now: NOW,
+    });
+    const area = suggestions.find(s => s.kind === "area");
+    // The first uncompleted section by page order is p.20 (s2); p.10 is done, p.30 is further ahead.
+    expect(area?.title).toContain("p. 20");
+  });
+
+  it("drops resources outside the complexity band", () => {
+    const scale = {
+      min: 0,
+      max: 5,
+      labels: {},
+      schemes: [],
+    };
+    const res = (id: string, level: number) => ({
+      id,
+      title: `Book ${id}`,
+      url: null,
+      website: null,
+      runtimeSeconds: null,
+      mediaType: "Book",
+      complexity: {
+        min: level,
+        max: level,
+      },
+      progress: null,
+      favorite: false,
+      contentStatus: null,
+      tagIds: [],
+      imageUrl: null,
+    });
+    const suggestions = buildStartSuggestions({
+      summary: summary({
+        Reading: 0,
+        Speaking: 9,
+        Listening: 9,
+        Writing: 9,
+        Grammar: 9,
+        Vocabulary: 9,
+      }),
+      lowestAreaResources: [res("hard", 5), res("easy", 1)],
+      complexityScale: scale,
+      exclusions: {
+        mediaTypes: [],
+        sessionTypes: [],
+        learningAreas: [],
+        complexityMin: 0,
+        complexityMax: 2,
+      },
+      now: NOW,
+    });
+    // Only the level-1 book is within [0, 2]; the level-5 book is filtered out.
+    expect(suggestions.find(s => s.kind === "area")?.search?.title).toBe("Book easy");
+  });
+
+  it("prefers an actively-read resource over a finished one via content status", () => {
+    const res = (id: string, contentStatus: string | null) => ({
+      id,
+      title: `Book ${id}`,
+      url: null,
+      website: null,
+      runtimeSeconds: null,
+      mediaType: "Book",
+      complexity: null,
+      progress: null,
+      favorite: false,
+      contentStatus,
+      tagIds: [],
+      imageUrl: null,
+    });
+    const suggestions = buildStartSuggestions({
+      summary: summary({
+        Reading: 0,
+        Speaking: 9,
+        Listening: 9,
+        Writing: 9,
+        Grammar: 9,
+        Vocabulary: 9,
+      }),
+      lowestAreaResources: [res("done", "finished"), res("active", "reading")],
+      now: NOW,
+    });
+    expect(suggestions.find(s => s.kind === "area")?.search?.title).toBe("Book active");
   });
 });

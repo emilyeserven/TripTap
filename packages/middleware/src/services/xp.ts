@@ -313,9 +313,9 @@ export function summarizeGrants(
     }]),
   );
   const recentAreas = new Map<LearningArea, number>();
+  const todayAreas = new Map<LearningArea, number>();
   const cutoff = now.getTime() - days * 24 * 60 * 60 * 1000;
   const today = localDateString(now, tzOffsetMinutes);
-  let todayXp = 0;
 
   for (const grant of grants) {
     const area = areas.get(grant.area);
@@ -328,7 +328,9 @@ export function summarizeGrants(
     // Date-only sources (drills, lessons) carry the learner-entered date; compare it directly so a
     // midnight-UTC `at` can't land the grant on the wrong local day.
     const grantDay = grant.dateOnly ?? localDateString(grant.at, tzOffsetMinutes);
-    if (grantDay === today) todayXp += grant.xp;
+    if (grantDay === today) {
+      todayAreas.set(grant.area, (todayAreas.get(grant.area) ?? 0) + grant.xp);
+    }
   }
 
   const summaries = [...areas.values()].map(area => ({
@@ -344,6 +346,12 @@ export function summarizeGrants(
       area,
       xp: roundXp(recentAreas.get(area) ?? 0),
     }));
+  const todayByArea = LEARNING_AREAS
+    .filter(area => (todayAreas.get(area) ?? 0) > 0)
+    .map(area => ({
+      area,
+      xp: roundXp(todayAreas.get(area) ?? 0),
+    }));
 
   return {
     totalXp: roundXp(summaries.reduce((sum, area) => sum + area.xp, 0)),
@@ -354,7 +362,8 @@ export function summarizeGrants(
       areas: recent,
     },
     today: {
-      totalXp: roundXp(todayXp),
+      totalXp: roundXp(todayByArea.reduce((sum, area) => sum + area.xp, 0)),
+      areas: todayByArea,
     },
   };
 }

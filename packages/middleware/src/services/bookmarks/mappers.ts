@@ -134,6 +134,7 @@ export function toSectionNodes(raw: unknown): BookmarkSectionNode[] {
         endValue: strOrNull(o.endValue),
         url: strOrNull(o.url),
         tagIds: Array.isArray(o.tagIds) ? o.tagIds.filter((t): t is string => typeof t === "string") : [],
+        completed: o.completed === true,
       });
       if (Array.isArray(o.children)) walk(o.children, o.id);
     }
@@ -183,6 +184,7 @@ export function matchSectionsByTag(raw: unknown, tagId: string): BookmarkSection
       endValue: n.endValue,
       name: n.name,
       parentId: n.parentId,
+      completed: n.completed,
     }));
 }
 
@@ -239,6 +241,23 @@ export interface ResourcePropertyIds {
   complexityPropId: string | null;
   progress?: ProgressPropertyFormat | null;
   favoritePropId?: string | null;
+  /** The "Content Status" choices property id, read out of `choicesValues`. */
+  contentStatusPropId?: string | null;
+}
+
+/** The first chosen value of a `choices` property for `propertyId`, or null. */
+function readChoiceValue(choicesValues: unknown, propertyId: string | null | undefined): string | null {
+  if (!propertyId || !Array.isArray(choicesValues)) return null;
+  for (const cv of choicesValues) {
+    if (cv && typeof cv === "object") {
+      const c = cv as Record<string, unknown>;
+      if (c.propertyId === propertyId && Array.isArray(c.values)) {
+        const first = c.values.find((v): v is string => typeof v === "string" && v !== "");
+        if (first !== undefined) return first;
+      }
+    }
+  }
+  return null;
 }
 
 /** True when a `booleanValues` entry for `propertyId` is set to true. */
@@ -365,6 +384,7 @@ export function toBookmarkResource(raw: unknown, propIds: ResourcePropertyIds): 
 
   const progress = propIds.progress ? readProgress(o, propIds.progress) : null;
   const favorite = readBoolean(o.booleanValues, propIds.favoritePropId);
+  const contentStatus = readChoiceValue(o.choicesValues, propIds.contentStatusPropId);
 
   const mediaType = readMediaType(o);
 
@@ -392,6 +412,7 @@ export function toBookmarkResource(raw: unknown, propIds: ResourcePropertyIds): 
     complexity,
     progress,
     favorite,
+    contentStatus,
     tagIds,
     imageUrl,
   };

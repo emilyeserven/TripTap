@@ -60,6 +60,7 @@ describe("DailyLineupCard", () => {
       <DailyLineupCard
         lineup={lineup()}
         mediaTypeOptions={[]}
+        complexityScale={null}
         onChange={onChange}
       />,
     );
@@ -76,6 +77,7 @@ describe("DailyLineupCard", () => {
       <DailyLineupCard
         lineup={lineup()}
         mediaTypeOptions={[]}
+        complexityScale={null}
         onChange={vi.fn()}
       />,
     );
@@ -89,6 +91,7 @@ describe("DailyLineupCard", () => {
       <DailyLineupCard
         lineup={lineup()}
         mediaTypeOptions={[]}
+        complexityScale={null}
         onChange={onChange}
       />,
     );
@@ -107,6 +110,7 @@ describe("DailyLineupCard", () => {
       <DailyLineupCard
         lineup={lineup()}
         mediaTypeOptions={[]}
+        complexityScale={null}
         onChange={vi.fn()}
       />,
     );

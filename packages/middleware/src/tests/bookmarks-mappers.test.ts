@@ -6,6 +6,7 @@ import {
   flattenTimestampSections,
   matchSectionsByTag,
   toBookmarkRecord,
+  toBookmarkResource,
   toOption,
   toOptions,
   toSectionNodes,
@@ -195,6 +196,113 @@ describe("bookmarks mappers", () => {
     assert.equal(nodes[2].endValue, "2:00");
     assert.equal(nodes[0].startValue, null);
     assert.equal(nodes[3].url, "https://example.com/ch");
+  });
+
+  it("toSectionNodes reads the upstream completed flag (default false)", () => {
+    const nodes = toSectionNodes([
+      {
+        sections: [
+          {
+            type: "page",
+            id: "done",
+            name: "Read",
+            startValue: "1",
+            completed: true,
+          },
+          {
+            type: "page",
+            id: "todo",
+            name: "Unread",
+            startValue: "2",
+          },
+        ],
+      },
+    ]);
+    assert.deepEqual(nodes.map(n => [n.id, n.completed]), [
+      ["done", true],
+      ["todo", false],
+    ]);
+  });
+
+  it("matchSectionsByTag carries the completed flag through", () => {
+    const matches = matchSectionsByTag([
+      {
+        sections: [
+          {
+            type: "page",
+            id: "s1",
+            name: "One",
+            tagIds: ["t"],
+            completed: true,
+          },
+          {
+            type: "page",
+            id: "s2",
+            name: "Two",
+            tagIds: ["t"],
+          },
+        ],
+      },
+    ], "t");
+    assert.deepEqual(matches.map(m => [m.id, m.completed]), [
+      ["s1", true],
+      ["s2", false],
+    ]);
+  });
+
+  it("toBookmarkResource reads Content Status from choicesValues", () => {
+    const resource = toBookmarkResource(
+      {
+        id: "b1",
+        title: "Terrace House",
+        choicesValues: [
+          {
+            propertyId: "other",
+            values: ["ignore"],
+          },
+          {
+            propertyId: "cs",
+            values: ["reading", "second"],
+          },
+        ],
+      },
+      {
+        runtimePropId: null,
+        complexityPropId: null,
+        contentStatusPropId: "cs",
+      },
+    );
+    assert.equal(resource?.contentStatus, "reading");
+  });
+
+  it("toBookmarkResource leaves contentStatus null when unset or unresolved", () => {
+    const noProp = toBookmarkResource(
+      {
+        id: "b1",
+        title: "X",
+        choicesValues: [{
+          propertyId: "cs",
+          values: ["reading"],
+        }],
+      },
+      {
+        runtimePropId: null,
+        complexityPropId: null,
+      },
+    );
+    assert.equal(noProp?.contentStatus, null);
+    const noValue = toBookmarkResource(
+      {
+        id: "b1",
+        title: "X",
+      },
+      {
+        runtimePropId: null,
+        complexityPropId: null,
+        contentStatusPropId: "cs",
+      },
+    );
+    assert.equal(noValue?.contentStatus, null);
   });
 
   it("toSectionNodes skips entries without a string id and unknown types default to name", () => {

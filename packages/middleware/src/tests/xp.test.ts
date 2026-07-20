@@ -469,6 +469,17 @@ test("summarizeGrants counts today against the caller's local calendar day", () 
     -120,
   );
   assert.equal(summary.today.totalXp, 4.25);
+  // Today is also broken out per area (only areas with XP today appear).
+  assert.deepEqual(summary.today.areas, [
+    {
+      area: "Reading",
+      xp: 4,
+    },
+    {
+      area: "Grammar",
+      xp: 0.25,
+    },
+  ]);
 });
 
 test("summarizeGrants treats today as the UTC day when no offset is given", () => {

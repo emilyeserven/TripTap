@@ -33,6 +33,10 @@ export interface LineupExclusions {
   mediaTypes: string[];
   sessionTypes: LineupSessionType[];
   learningAreas: LearningArea[];
+  /** Lowest complexity level to allow (inclusive); null/absent means no lower bound. */
+  complexityMin?: number | null;
+  /** Highest complexity level to allow (inclusive); null/absent means no upper bound. */
+  complexityMax?: number | null;
 }
 
 /** One locked-in lineup entry: a snapshot of the suggestion it was built from, plus done state. */

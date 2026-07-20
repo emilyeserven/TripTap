@@ -23,6 +23,8 @@ export function emptyLineup(date: string): DailyLineup {
       mediaTypes: [],
       sessionTypes: [],
       learningAreas: [],
+      complexityMin: null,
+      complexityMax: null,
     },
   };
 }
