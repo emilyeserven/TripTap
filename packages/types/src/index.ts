@@ -606,6 +606,8 @@ export interface BookmarkRecord {
   title: string;
   /** The primary link (the video URL for Listen-and-Shadow); null when the bookmark has none. */
   url: string | null;
+  /** The upstream media type name (e.g. "Video", "Book", "Podcast"); null when unknown. Groups the picker. */
+  mediaType: string | null;
   /** Flattened timestamp sections; empty on the list endpoint, populated on the single-record fetch. */
   sections: BookmarkSection[];
   /** The full Sections tree (all entry types, hierarchical); empty on the list endpoint. */

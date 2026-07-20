@@ -186,6 +186,15 @@ export function matchSectionsByTag(raw: unknown, tagId: string): BookmarkSection
     }));
 }
 
+/** The upstream bookmark's media-type name (`mediaType.name`), or null when absent/unreadable. */
+function readMediaType(o: Record<string, unknown>): string | null {
+  if (o.mediaType && typeof o.mediaType === "object") {
+    const m = o.mediaType as Record<string, unknown>;
+    if (typeof m.name === "string") return m.name;
+  }
+  return null;
+}
+
 /** Pull the fields we depend on from an upstream bookmark record, optionally flattening its sections. */
 export function toBookmarkRecord(raw: unknown, includeSections: boolean): BookmarkRecord | null {
   if (!raw || typeof raw !== "object") return null;
@@ -196,6 +205,7 @@ export function toBookmarkRecord(raw: unknown, includeSections: boolean): Bookma
     id: o.id,
     title,
     url: typeof o.url === "string" ? o.url : null,
+    mediaType: readMediaType(o),
     sections: includeSections ? flattenTimestampSections(o.sectionsValues) : [],
     sectionTree: includeSections ? toSectionNodes(o.sectionsValues) : [],
   };
@@ -356,11 +366,7 @@ export function toBookmarkResource(raw: unknown, propIds: ResourcePropertyIds): 
   const progress = propIds.progress ? readProgress(o, propIds.progress) : null;
   const favorite = readBoolean(o.booleanValues, propIds.favoritePropId);
 
-  let mediaType: string | null = null;
-  if (o.mediaType && typeof o.mediaType === "object") {
-    const m = o.mediaType as Record<string, unknown>;
-    if (typeof m.name === "string") mediaType = m.name;
-  }
+  const mediaType = readMediaType(o);
 
   // Resolve the display image the way the bookmarks app does (`resolveBookmarkDisplayImage`): honor the
   // `imageDisplayPreference`, falling back to the other source when the preferred one is missing. So a
