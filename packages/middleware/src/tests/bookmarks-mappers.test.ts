@@ -118,6 +118,9 @@ describe("bookmarks mappers", () => {
       id: "b1",
       title: "Podcast",
       url: "https://example.com",
+      mediaType: {
+        name: "Video",
+      },
       sectionsValues: [
         {
           sections: [{
@@ -133,6 +136,12 @@ describe("bookmarks mappers", () => {
     assert.equal(toBookmarkRecord(raw, false)?.sectionTree.length, 0);
     assert.equal(toBookmarkRecord(raw, true)?.sections.length, 1);
     assert.equal(toBookmarkRecord(raw, true)?.sectionTree.length, 1);
+    // Media type surfaces for grouping the picker; absent/unreadable → null.
+    assert.equal(toBookmarkRecord(raw, false)?.mediaType, "Video");
+    assert.equal(toBookmarkRecord({
+      id: "b2",
+      title: "Untyped",
+    }, false)?.mediaType, null);
     assert.equal(toBookmarkRecord({
       title: "no id",
     }, true), null);
@@ -258,6 +267,7 @@ describe("bookmarks mappers", () => {
         id: "b",
         title: "Zeta",
         url: null,
+        mediaType: null,
         sections: [],
         sectionTree: [],
       },
@@ -265,6 +275,7 @@ describe("bookmarks mappers", () => {
         id: "a",
         title: "Alpha",
         url: null,
+        mediaType: null,
         sections: [],
         sectionTree: [],
       },
@@ -272,6 +283,7 @@ describe("bookmarks mappers", () => {
         id: "b",
         title: "Zeta (dupe)",
         url: null,
+        mediaType: null,
         sections: [],
         sectionTree: [],
       },

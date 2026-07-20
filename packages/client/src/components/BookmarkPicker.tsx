@@ -39,21 +39,38 @@ export function BookmarkPicker({
   const record = useBookmarkRecord(enableSections ? selectedBookmarkId : null);
   const sectionTree = record.data?.sectionTree ?? [];
 
+  // Group the choices by media type ("Video", "Book", …) so the list separates by medium. Bookmarks
+  // without one fall under "Other". Only worth grouping when the source spans more than one media type;
+  // a single-type source stays a flat list. Sort by (media type, title) so each group is contiguous —
+  // the combobox renders a section header whenever an option's section differs from the previous one's.
+  const data = records.data ?? [];
+  const mediaTypes = new Set(data.map(r => r.mediaType ?? "Other"));
+  const grouped = mediaTypes.size > 1;
+  const sorted = grouped
+    ? [...data].sort((a, b) =>
+      (a.mediaType ?? "Other").localeCompare(b.mediaType ?? "Other") || a.title.localeCompare(b.title))
+    : data;
+
   // Keep the currently-selected bookmark visible even before the list finishes loading (e.g. in edit mode).
   const recordOptions = [
     {
       value: "",
       label: "No bookmark",
     },
-    ...(selectedBookmarkId && !(records.data ?? []).some(r => r.id === selectedBookmarkId)
+    ...(selectedBookmarkId && !data.some(r => r.id === selectedBookmarkId)
       ? [{
         value: selectedBookmarkId,
         label: selectedBookmarkTitle ?? selectedBookmarkId,
       }]
       : []),
-    ...(records.data ?? []).map(r => ({
+    ...sorted.map(r => ({
       value: r.id,
       label: r.title,
+      ...(grouped
+        ? {
+          section: r.mediaType ?? "Other",
+        }
+        : {}),
     })),
   ];
 

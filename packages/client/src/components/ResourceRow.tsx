@@ -36,12 +36,14 @@ export function ResourceRow({
           >
             {r.imageUrl
               ? (
-                <img
-                  src={r.imageUrl}
-                  alt=""
-                  loading="lazy"
-                  className="w-full bg-muted"
-                />
+                <div className="w-full overflow-hidden bg-muted">
+                  <img
+                    src={r.imageUrl}
+                    alt=""
+                    loading="lazy"
+                    className="h-auto bg-muted w-full"
+                  />
+                </div>
               )
               : (
                 <div

@@ -161,7 +161,7 @@ function CapturesPage() {
                       <img
                         src={capturesApi.imageUrl(capture.id)}
                         alt=""
-                        className="size-full object-cover"
+                        className="size-full object-contain"
                       />
                     )
                     : <ImageOff className="size-6 text-muted-foreground" />}
