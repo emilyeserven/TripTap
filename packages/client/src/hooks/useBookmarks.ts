@@ -176,6 +176,15 @@ export function useBookmarksByTag(tagId: string | null) {
   });
 }
 
+/** Every section of every bookmark — the Start Something suggestion pool. */
+export function useAllBookmarkSections() {
+  return useQuery({
+    queryKey: [...BOOKMARKS_KEY, "sections"],
+    queryFn: () => bookmarksApi.sections(),
+    ...BOOKMARKS_QUERY_OPTIONS,
+  });
+}
+
 /** The bookmark sections carrying a specific tag id. Deferred until a tag id is provided. */
 export function useBookmarkSectionsByTag(tagId: string | null) {
   return useQuery({

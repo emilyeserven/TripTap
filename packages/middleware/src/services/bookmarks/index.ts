@@ -16,6 +16,7 @@ import type { ResourcePropertyIds } from "@/services/bookmarks/mappers";
 import { apiUrl, resolveBookmarksConfig } from "@/services/bookmarks/config";
 import { BookmarksNotConfiguredError } from "@/services/bookmarks/errors";
 import {
+  allSectionRefs,
   createdOption,
   dedupeBookmarksByTitle,
   isRecord,
@@ -212,7 +213,11 @@ export async function listBookmarksByTag(tagId: string): Promise<BookmarkResourc
  * its `sectionsValues` — and walks their sections. Backs the grammar note's "sections tagged with this
  * grammar point" gather.
  */
-export async function listSectionsByTag(tagId: string): Promise<BookmarkSectionMatch[]> {
+/**
+ * Sections across all bookmarks as {@link BookmarkSectionMatch}es. With a `tagId`, only sections
+ * carrying that tag (a grammar note's gather); with `null`, every section (the Start Something pool).
+ */
+async function listSections(tagId: string | null): Promise<BookmarkSectionMatch[]> {
   const {
     baseUrl,
   } = await resolveBookmarksConfig();
@@ -226,7 +231,9 @@ export async function listSectionsByTag(tagId: string): Promise<BookmarkSectionM
       runtimePropId: null,
       complexityPropId: null,
     });
-    const sections = matchSectionsByTag(b.sectionsValues, tagId);
+    const sections = tagId === null
+      ? allSectionRefs(b.sectionsValues)
+      : matchSectionsByTag(b.sectionsValues, tagId);
     for (const section of sections) {
       out.push({
         bookmarkId: b.id,
@@ -241,6 +248,15 @@ export async function listSectionsByTag(tagId: string): Promise<BookmarkSectionM
   }
   return out.sort((a, b) =>
     a.bookmarkTitle.localeCompare(b.bookmarkTitle) || a.section.label.localeCompare(b.section.label));
+}
+
+export function listSectionsByTag(tagId: string): Promise<BookmarkSectionMatch[]> {
+  return listSections(tagId);
+}
+
+/** Every section of every bookmark — the Start Something suggestion pool. */
+export function listAllSections(): Promise<BookmarkSectionMatch[]> {
+  return listSections(null);
 }
 
 /** A single bookmark by id, including its flattened timestamp sections. Null when not found/unreadable. */

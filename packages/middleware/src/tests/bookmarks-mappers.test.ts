@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
 import {
+  allSectionRefs,
   dedupeBookmarksByTitle,
   flattenTimestampSections,
   matchSectionsByTag,
@@ -222,6 +223,44 @@ describe("bookmarks mappers", () => {
       ["done", true],
       ["todo", false],
     ]);
+  });
+
+  it("allSectionRefs returns every positioned section regardless of tag", () => {
+    const refs = allSectionRefs([
+      {
+        sections: [
+          // A pure container (name, no position) is skipped; its positioned children are kept.
+          {
+            type: "name",
+            id: "ch",
+            name: "Chapter",
+            children: [
+              {
+                type: "page",
+                id: "p1",
+                name: "One",
+                startValue: "1",
+                tagIds: [],
+              },
+              {
+                type: "timestamp",
+                id: "t1",
+                name: "Clip",
+                startValue: "1:00",
+                endValue: "2:00",
+                completed: true,
+              },
+            ],
+          },
+        ],
+      },
+    ]);
+    assert.deepEqual(refs.map(r => [r.id, r.completed]), [
+      ["p1", false],
+      ["t1", true],
+    ]);
+    // Breadcrumb includes the container ancestor.
+    assert.equal(refs[0].label, "Chapter › One");
   });
 
   it("matchSectionsByTag carries the completed flag through", () => {
