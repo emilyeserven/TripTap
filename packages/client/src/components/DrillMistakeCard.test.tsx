@@ -92,6 +92,33 @@ describe("DrillMistakeCard", () => {
     expect(screen.getByLabelText<HTMLInputElement>("Tatoeba search").value).toBe("食べた");
   });
 
+  it("shows a skipped note (not a blank answer) when the prompt is empty and a question exists", () => {
+    renderCard(
+      <DrillMistakeCard
+        mistake={mistake({
+          question: "昨日、何をしましたか",
+          prompt: "",
+        })}
+        categories={categories}
+      />,
+    );
+    expect(screen.getByText("You skipped this one.")).toBeInTheDocument();
+    expect(screen.queryByText(/You put:/)).not.toBeInTheDocument();
+  });
+
+  it("shows a skipped headline when both the prompt and question are empty", () => {
+    renderCard(
+      <DrillMistakeCard
+        mistake={mistake({
+          prompt: "  ",
+          correctAnswer: "食べた",
+        })}
+        categories={categories}
+      />,
+    );
+    expect(screen.getByText("Skipped — no answer given.")).toBeInTheDocument();
+  });
+
   it("resolves reason refs to their taxonomy labels, falling back for deleted refs", () => {
     renderCard(
       <DrillMistakeCard
