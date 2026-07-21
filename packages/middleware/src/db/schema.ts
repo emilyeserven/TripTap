@@ -6,6 +6,7 @@ import type {
   DrillMistakeReasonRef,
   DrillReason,
   DrillSubcategory,
+  DrillType,
   FuriToken,
   GrammarConstruction,
   GrammarExample,
@@ -618,8 +619,11 @@ export const drillSessions = pgTable("drill_sessions", {
   title: text("title"),
   notes: text("notes"),
   mistakes: jsonb("mistakes").$type<DrillMistake[]>(),
-  // Questions attempted this session (XP: 0.25 each); editable on the Edit page and the session-view counter.
+  // Questions attempted this session; editable on the Edit page and the session-view counter. XP per
+  // question depends on `type`.
   questions: integer("questions").notNull().default(0),
+  // Question format setting the per-question XP rate; null (legacy) scores as fill-in-the-blank.
+  type: text("type").$type<DrillType>(),
   // The LearningArea this session's XP counts toward; null falls back to Grammar.
   learningArea: text("learning_area").$type<LearningArea>(),
   createdAt: timestamp("created_at", {

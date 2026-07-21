@@ -3,7 +3,7 @@ import type {
   CreateDrillSessionInput,
   UpdateDrillSessionInput,
 } from "@sentence-bank/types";
-import { LEARNING_AREAS } from "@sentence-bank/types";
+import { DRILL_TYPES, LEARNING_AREAS } from "@sentence-bank/types";
 import {
   createDrillSession,
   deleteDrillSession,
@@ -87,6 +87,10 @@ const createSessionBody = {
     questions: {
       type: "integer",
       minimum: 0,
+    },
+    type: {
+      type: ["string", "null"],
+      enum: [...DRILL_TYPES, null],
     },
     learningArea: {
       type: ["string", "null"],

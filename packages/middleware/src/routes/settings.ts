@@ -372,6 +372,7 @@ const updateXpSettingsBody = {
         listeningPassiveMinute: xpRateValueSchema,
         shadowingLoop: xpRateValueSchema,
         drillQuestion: xpRateValueSchema,
+        drillQuestionMultipleChoice: xpRateValueSchema,
         lessonLine: xpRateValueSchema,
         lessonWordNote: xpRateValueSchema,
         theoryStudyPageDense: xpRateValueSchema,

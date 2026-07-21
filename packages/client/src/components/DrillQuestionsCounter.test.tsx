@@ -22,6 +22,7 @@ function session(over: Partial<DrillSession>): DrillSession {
     notes: null,
     mistakes: null,
     questions: 0,
+    type: null,
     learningArea: null,
     createdAt: "2026-07-20T00:00:00Z",
     updatedAt: "2026-07-20T00:00:00Z",

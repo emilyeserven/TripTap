@@ -1,8 +1,11 @@
-import type { DrillMistake, DrillSession, LearningArea } from "@sentence-bank/types";
+import type { DrillMistake, DrillSession, DrillType, LearningArea } from "@sentence-bank/types";
 
 import { useState } from "react";
 
+import { DEFAULT_XP_RATES } from "@sentence-bank/types";
+
 import { DrillMistakes } from "@/components/DrillMistakes";
+import { DrillTypeSelect } from "@/components/DrillTypeSelect";
 import { LearningAreaSelect } from "@/components/LearningAreaSelect";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,9 +40,18 @@ export function DrillSessionForm({
   const [notes, setNotes] = useState(session?.notes ?? "");
   const [mistakes, setMistakes] = useState<DrillMistake[]>(session?.mistakes ?? []);
   const [questions, setQuestions] = useState(String(session?.questions ?? 0));
+  // New sessions default to fill-in-the-blank; existing ones keep their stored type (may be null legacy).
+  const [type, setType] = useState<DrillType | null>(
+    session ? session.type : "fill-in-the-blank",
+  );
   const [learningArea, setLearningArea] = useState<LearningArea | null>(
     session?.learningArea ?? null,
   );
+
+  // Multiple-choice questions earn less; a null (legacy) type scores at the fill-in-the-blank rate.
+  const xpPerQuestion = type === "multiple-choice"
+    ? DEFAULT_XP_RATES.drillQuestionMultipleChoice
+    : DEFAULT_XP_RATES.drillQuestion;
 
   const pending = create.isPending || update.isPending;
   const canSubmit = date.trim().length > 0 && !pending;
@@ -62,6 +74,7 @@ export function DrillSessionForm({
       notes: notes.trim() || null,
       mistakes: cleaned.length > 0 ? cleaned : null,
       questions: Math.max(0, Math.trunc(Number(questions) || 0)),
+      type,
       learningArea,
     };
     const saved = editing
@@ -119,9 +132,31 @@ export function DrillSessionForm({
       </div>
 
       <div className="space-y-1.5">
+        <Label>Drill type</Label>
+        <p className="text-xs text-muted-foreground">
+          Multiple-choice questions earn
+          {" "}
+          {DEFAULT_XP_RATES.drillQuestionMultipleChoice}
+          {" "}
+          XP each; fill-in-the-blank earn
+          {" "}
+          {DEFAULT_XP_RATES.drillQuestion}
+          .
+        </p>
+        <DrillTypeSelect
+          value={type}
+          onChange={setType}
+        />
+      </div>
+
+      <div className="space-y-1.5">
         <Label htmlFor="drill-questions">Questions attempted</Label>
         <p className="text-xs text-muted-foreground">
-          How many questions you drilled this session. Earns 0.25 XP each.
+          How many questions you drilled this session. Earns
+          {" "}
+          {xpPerQuestion}
+          {" "}
+          XP each.
         </p>
         <Input
           id="drill-questions"

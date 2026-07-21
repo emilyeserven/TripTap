@@ -10,6 +10,18 @@
 
 import type { LearningArea } from "./question-sheet.js";
 
+/* ── Drill type ───────────────────────────────────────────────────────────────────────────────── */
+
+/**
+ * The format of the questions drilled this session. Drives the per-question XP rate: multiple-choice
+ * questions are easier and worth less than fill-in-the-blank ones. A session is a single type; log a
+ * mixed session as two. Legacy sessions have no type (`null`) and score at the fill-in-the-blank rate.
+ */
+export type DrillType = "multiple-choice" | "fill-in-the-blank";
+
+/** The drill types, for iterating in schemas/pickers. */
+export const DRILL_TYPES = ["multiple-choice", "fill-in-the-blank"] as const;
+
 /* ── Reason taxonomy ──────────────────────────────────────────────────────────────────────────── */
 
 /** One user-defined reason (the leaf of the taxonomy), e.g. "Wrong tense". */
@@ -87,8 +99,10 @@ export interface DrillSession {
   title: string | null;
   notes: string | null;
   mistakes: DrillMistake[] | null;
-  /** Number of questions attempted this session (XP: 0.25 each). */
+  /** Number of questions attempted this session. XP per question depends on {@link type}. */
   questions: number;
+  /** Question format; sets the per-question XP rate. null (legacy) scores as fill-in-the-blank. */
+  type: DrillType | null;
   /** The learning area this session's XP counts toward; null falls back to Grammar. */
   learningArea: LearningArea | null;
   /** ISO-8601 timestamp of when the session was added. */
@@ -104,6 +118,7 @@ export interface CreateDrillSessionInput {
   notes?: string | null;
   mistakes?: DrillMistake[] | null;
   questions?: number;
+  type?: DrillType | null;
   learningArea?: LearningArea | null;
 }
 

@@ -147,7 +147,8 @@ function withinComplexity(
 /**
  * Gate a bookmark's sections by its material type. Sequential-Material bookmarks only offer the first
  * not-yet-completed section (by `startValue` order) — don't skip ahead. Out-of-Order (or untagged)
- * bookmarks offer every section. Operates across a mixed-bookmark list, grouping by bookmark id.
+ * bookmarks offer every uncompleted section. Completed sections are never offered either way.
+ * Operates across a mixed-bookmark list, grouping by bookmark id.
  */
 function gateSequentialSections(
   sections: BookmarkSectionMatch[],
@@ -166,7 +167,8 @@ function gateSequentialSections(
     const sequential = resource
       && resourceMaterialTypes(resource.tagIds, materialTypeTags).includes("Sequential Material");
     if (!sequential) {
-      out.push(...group);
+      // Completed sections are never suggested, whatever the material type.
+      out.push(...group.filter(s => !s.section.completed));
       continue;
     }
     // Next actionable section = the first uncompleted one in document order.

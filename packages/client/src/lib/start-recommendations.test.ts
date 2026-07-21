@@ -489,6 +489,43 @@ describe("buildStartSuggestions", () => {
     expect(suggestions.find(s => s.id === "section-s3")).toBeUndefined();
   });
 
+  it("hides a completed section of a non-sequential resource", () => {
+    const bookmark = res({
+      id: "bk",
+      title: "Assorted readings",
+      mediaType: "Book",
+      tagIds: ["t-reading"],
+    });
+    const suggestions = buildStartSuggestions({
+      summary: summary({
+        Reading: 0,
+        Speaking: 9,
+        Listening: 9,
+        Writing: 9,
+        Grammar: 9,
+        Vocabulary: 9,
+      }),
+      areaTags: AREA_TAGS,
+      resources: [bookmark],
+      resourcesById: {
+        bk: bookmark,
+      },
+      // No material-type tag → out-of-order: every *uncompleted* section is offered, completed ones dropped.
+      sections: [
+        sec("bk", "s1", {
+          label: "Day 1",
+          completed: true,
+        }),
+        sec("bk", "s2", {
+          label: "Day 2",
+        }),
+      ],
+      now: NOW,
+    });
+    expect(suggestions.find(s => s.id === "section-s1")).toBeUndefined();
+    expect(suggestions.find(s => s.id === "section-s2")).toBeDefined();
+  });
+
   it("drops resources outside the complexity band", () => {
     const suggestions = buildStartSuggestions({
       summary: summary({
@@ -656,16 +693,20 @@ describe("buildStartSuggestions", () => {
           tagIds: ["t-reading"],
         }),
       ],
+      // "touched" has a completed section (→ started) plus an uncompleted one that still surfaces.
       sections: [
         sec("fresh", "f1"),
-        sec("touched", "t1", {
+        sec("touched", "t-done", {
           completed: true,
         }),
+        sec("touched", "t1"),
       ],
       now: NOW,
     });
     const sectionIds = suggestions.filter(s => s.id.startsWith("section-")).map(s => s.id);
+    // The started resource's uncompleted section leads; its completed section is hidden.
     expect(sectionIds[0]).toBe("section-t1");
+    expect(sectionIds).not.toContain("section-t-done");
   });
 });
 

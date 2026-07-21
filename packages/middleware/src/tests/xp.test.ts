@@ -307,6 +307,7 @@ test("listening, shadowing, and drill XP use their per-unit rates", () => {
       title: "Drill 1",
       date: "2026-07-19",
       questions: 4,
+      type: "fill-in-the-blank",
       learningArea: "Vocabulary",
     },
     {
@@ -314,13 +315,26 @@ test("listening, shadowing, and drill XP use their per-unit rates", () => {
       title: null,
       date: "2026-07-19",
       questions: 4,
+      type: null,
       learningArea: null,
     },
+    {
+      id: "d3",
+      title: "Quiz",
+      date: "2026-07-19",
+      questions: 4,
+      type: "multiple-choice",
+      learningArea: "Vocabulary",
+    },
   ]);
+  // Fill-in-the-blank scores 0.25/question; a null (legacy) type scores at the same rate.
   assert.equal(drills[0].xp, 1);
   assert.equal(drills[0].area, "Vocabulary");
   // No area chosen falls back to Grammar.
   assert.equal(drills[1].area, "Grammar");
+  assert.equal(drills[1].xp, 1);
+  // Multiple-choice scores the lower 0.1/question rate.
+  assert.equal(drills[2].xp, 0.4);
 });
 
 test("lessonXp splits lines to Listening and filled word notes to Vocabulary", () => {

@@ -28,6 +28,7 @@ function session(id: string, date: string, questions: (string | null)[]): DrillS
     notes: null,
     mistakes: questions.map(q => mistake(q)),
     questions: 0,
+    type: null,
     learningArea: null,
     createdAt: `${date}T00:00:00Z`,
     updatedAt: `${date}T00:00:00Z`,
