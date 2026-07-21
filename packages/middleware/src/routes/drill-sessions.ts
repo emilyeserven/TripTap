@@ -68,6 +68,31 @@ const mistakesSchema = {
   },
 } as const;
 
+/** A reference to one section of a bookmark (denormalized), or null. */
+const bookmarkSectionRefSchema = {
+  type: ["object", "null"],
+  additionalProperties: false,
+  required: ["id", "label", "type"],
+  properties: {
+    id: {
+      type: "string",
+    },
+    label: {
+      type: "string",
+    },
+    type: {
+      type: "string",
+      enum: ["name", "url", "page", "timestamp"],
+    },
+    startValue: {
+      type: ["string", "null"],
+    },
+    endValue: {
+      type: ["string", "null"],
+    },
+  },
+} as const;
+
 const createSessionBody = {
   type: "object",
   required: ["date"],
@@ -96,6 +121,16 @@ const createSessionBody = {
       type: ["string", "null"],
       enum: [...LEARNING_AREAS, null],
     },
+    bookmarkId: {
+      type: ["string", "null"],
+    },
+    bookmarkTitle: {
+      type: ["string", "null"],
+    },
+    bookmarkUrl: {
+      type: ["string", "null"],
+    },
+    section: bookmarkSectionRefSchema,
   },
 } as const;
 
