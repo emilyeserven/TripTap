@@ -294,6 +294,10 @@ export type NewMySentenceRow = typeof mySentences.$inferInsert;
  */
 export const writings = pgTable("writings", {
   id: uuid("id").primaryKey().defaultRandom(),
+  /** The calendar day (YYYY-MM-DD) this writing was worked on, for grouping activity by day. */
+  date: date("date", {
+    mode: "string",
+  }).notNull(),
   text: text("text").notNull(),
   /** What the learner intended to say; null if none. */
   meaning: text("meaning"),
@@ -389,6 +393,10 @@ export type NewAnswerSheetRow = typeof answerSheets.$inferInsert;
  */
 export const listeningSessions = pgTable("listening_sessions", {
   id: uuid("id").primaryKey().defaultRandom(),
+  /** The calendar day (YYYY-MM-DD) this session happened, for grouping activity by day. */
+  date: date("date", {
+    mode: "string",
+  }).notNull(),
   title: text("title").notNull(),
   videoUrl: text("video_url"),
   language: text("language").notNull(),
@@ -421,6 +429,10 @@ export type NewListeningSessionRow = typeof listeningSessions.$inferInsert;
  */
 export const shadowingSessions = pgTable("shadowing_sessions", {
   id: uuid("id").primaryKey().defaultRandom(),
+  /** The calendar day (YYYY-MM-DD) this session happened, for grouping activity by day. */
+  date: date("date", {
+    mode: "string",
+  }).notNull(),
   title: text("title").notNull(),
   videoUrl: text("video_url"),
   language: text("language").notNull(),
@@ -460,6 +472,10 @@ export type NewShadowingSessionRow = typeof shadowingSessions.$inferInsert;
  */
 export const readingSessions = pgTable("reading_sessions", {
   id: uuid("id").primaryKey().defaultRandom(),
+  /** The calendar day (YYYY-MM-DD) this session happened, for grouping activity by day. */
+  date: date("date", {
+    mode: "string",
+  }).notNull(),
   title: text("title").notNull(),
   language: text("language").notNull(),
   sourceId: uuid("source_id").references((): AnyPgColumn => sources.id, {

@@ -16,6 +16,7 @@ import {
   useUploadShadowingSessionAudio,
 } from "@/hooks/useShadowingSessions";
 import { shadowingSessionsApi } from "@/lib/api";
+import { todayDateString } from "@/lib/daily-lineup";
 import { sectionRefToSegment } from "@/lib/sections";
 import { parseYouTubeId } from "@/lib/time";
 
@@ -29,6 +30,7 @@ interface SeedBookmark {
 /** The form's initial field values: the session's values when editing, else seeded from the bookmark. */
 function initialFormState(session: ShadowingSession | undefined, initialBookmark: SeedBookmark | undefined) {
   return {
+    date: session?.date ?? todayDateString(new Date()),
     title: session?.title ?? "",
     language: session?.language ?? "Japanese",
     videoUrl: session?.videoUrl ?? initialBookmark?.url ?? "",
@@ -63,6 +65,7 @@ export function ShadowingSessionForm({
   const editing = session !== undefined;
 
   const init = initialFormState(session, initialBookmark);
+  const [date, setDate] = useState(init.date);
   const [title, setTitle] = useState(init.title);
   const [language, setLanguage] = useState(init.language);
   const [videoUrl, setVideoUrl] = useState(init.videoUrl);
@@ -103,6 +106,7 @@ export function ShadowingSessionForm({
   const submit = async () => {
     if (!canSubmit) return;
     const input = {
+      date,
       title: title.trim(),
       language: language.trim(),
       videoUrl: videoUrl.trim() || null,
@@ -139,6 +143,21 @@ export function ShadowingSessionForm({
         void submit();
       }}
     >
+      <div
+        className="
+          space-y-1.5
+          sm:max-w-xs
+        "
+      >
+        <Label htmlFor="ss-date">Date</Label>
+        <Input
+          id="ss-date"
+          type="date"
+          value={date}
+          onChange={e => setDate(e.target.value)}
+        />
+      </div>
+
       <div className="space-y-1.5">
         <Label htmlFor="ss-title">Title</Label>
         <Input

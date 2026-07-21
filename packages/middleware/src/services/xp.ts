@@ -83,6 +83,7 @@ interface ReadingXpRow {
   freeformTranslation: string | null;
   lines: ReadingLine[] | null;
   wordNotes: WordNote[] | null;
+  date: string;
   createdAt: Date;
 }
 
@@ -99,7 +100,8 @@ export function readingXp(rows: ReadingXpRow[], rates: XpRates = DEFAULT_XP_RATE
         area: "Reading" as const,
         feature: "reading" as const,
         xp,
-        at: row.createdAt,
+        at: new Date(row.date),
+        dateOnly: row.date,
       }]
       : [];
   });
@@ -108,6 +110,7 @@ export function readingXp(rows: ReadingXpRow[], rates: XpRates = DEFAULT_XP_RATE
 interface WritingXpRow {
   text: string;
   corrections: WritingCorrection[] | null;
+  date: string;
   createdAt: Date;
 }
 
@@ -134,7 +137,8 @@ export function writingXp(
         area: "Writing" as const,
         feature: "writing" as const,
         xp,
-        at: row.createdAt,
+        at: new Date(row.date),
+        dateOnly: row.date,
       }]
       : [];
   });
@@ -199,6 +203,7 @@ interface ListeningXpRow {
   entries: ListeningEntry[] | null;
   passive: boolean;
   durationMinutes: number;
+  date: string;
   createdAt: Date;
 }
 
@@ -216,7 +221,8 @@ export function listeningXp(rows: ListeningXpRow[], rates: XpRates = DEFAULT_XP_
         area: "Listening" as const,
         feature: "listening" as const,
         xp,
-        at: row.createdAt,
+        at: new Date(row.date),
+        dateOnly: row.date,
       }]
       : [];
   });
@@ -224,6 +230,7 @@ export function listeningXp(rows: ListeningXpRow[], rates: XpRates = DEFAULT_XP_
 
 interface ShadowingXpRow {
   completedLoops: number;
+  date: string;
   createdAt: Date;
 }
 
@@ -234,7 +241,8 @@ export function shadowingXp(rows: ShadowingXpRow[], rates: XpRates = DEFAULT_XP_
       area: "Speaking" as const,
       feature: "shadowing" as const,
       xp: row.completedLoops * rates.shadowingLoop,
-      at: row.createdAt,
+      at: new Date(row.date),
+      dateOnly: row.date,
     }]
     : []));
 }
@@ -402,11 +410,13 @@ export async function getXpSummary(days: number, tzOffsetMinutes = 0): Promise<X
       freeformTranslation: readingSessions.freeformTranslation,
       lines: readingSessions.lines,
       wordNotes: readingSessions.wordNotes,
+      date: readingSessions.date,
       createdAt: readingSessions.createdAt,
     }).from(readingSessions),
     db.select({
       text: writings.text,
       corrections: writings.corrections,
+      date: writings.date,
       createdAt: writings.createdAt,
     }).from(writings),
     db.select({
@@ -429,10 +439,12 @@ export async function getXpSummary(days: number, tzOffsetMinutes = 0): Promise<X
       entries: listeningSessions.entries,
       passive: listeningSessions.passive,
       durationMinutes: listeningSessions.durationMinutes,
+      date: listeningSessions.date,
       createdAt: listeningSessions.createdAt,
     }).from(listeningSessions),
     db.select({
       completedLoops: shadowingSessions.completedLoops,
+      date: shadowingSessions.date,
       createdAt: shadowingSessions.createdAt,
     }).from(shadowingSessions),
     db.select({

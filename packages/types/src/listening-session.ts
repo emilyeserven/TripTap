@@ -35,6 +35,8 @@ export interface ListeningEntry {
 /** A listen-and-shadow session. */
 export interface ListeningSession {
   id: string;
+  /** ISO date (YYYY-MM-DD) the session happened, for grouping activity by day. */
+  date: string;
   title: string;
   /** The YouTube URL played for this session; null when not yet set. */
   videoUrl: string | null;
@@ -65,10 +67,12 @@ export interface ListeningSession {
   updatedAt: string;
 }
 
-/** Payload for creating a listening session. Only `title` + `language` are required. */
+/** Payload for creating a listening session. `title`, `language`, and `date` are required. */
 export interface CreateListeningSessionInput {
   title: string;
   language: string;
+  /** ISO date (YYYY-MM-DD) the session happened. */
+  date: string;
   videoUrl?: string | null;
   bookmarkId?: string | null;
   bookmarkTitle?: string | null;

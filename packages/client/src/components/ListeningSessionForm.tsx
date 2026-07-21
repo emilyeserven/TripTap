@@ -14,6 +14,7 @@ import {
   useCreateListeningSession,
   useUpdateListeningSession,
 } from "@/hooks/useListeningSessions";
+import { todayDateString } from "@/lib/daily-lineup";
 
 /**
  * Create/edit form for a listen-and-shadow session. Passing `session` puts it in edit mode. Choosing a
@@ -36,6 +37,7 @@ export function ListeningSessionForm({
   const update = useUpdateListeningSession();
   const editing = session !== undefined;
 
+  const [date, setDate] = useState(session?.date ?? todayDateString(new Date()));
   const [title, setTitle] = useState(session?.title ?? "");
   const [language, setLanguage] = useState(session?.language ?? "Japanese");
   const [videoUrl, setVideoUrl] = useState(session?.videoUrl ?? initialBookmark?.url ?? "");
@@ -61,6 +63,7 @@ export function ListeningSessionForm({
     if (!canSubmit) return;
     const terms = [...vocabTerms, ...grammarTerms];
     const input = {
+      date,
       title: title.trim(),
       language: language.trim(),
       videoUrl: videoUrl.trim() || null,
@@ -91,6 +94,21 @@ export function ListeningSessionForm({
         void submit();
       }}
     >
+      <div
+        className="
+          space-y-1.5
+          sm:max-w-xs
+        "
+      >
+        <Label htmlFor="ls-date">Date</Label>
+        <Input
+          id="ls-date"
+          type="date"
+          value={date}
+          onChange={e => setDate(e.target.value)}
+        />
+      </div>
+
       <div className="space-y-1.5">
         <Label htmlFor="ls-title">Title</Label>
         <Input

@@ -17,6 +17,7 @@ function toMode(mode: string | null): ReadingTranslationMode {
 function toReadingSession(row: ReadingSessionRow): ReadingSession {
   return {
     id: row.id,
+    date: row.date,
     title: row.title,
     language: row.language,
     sourceId: row.sourceId,
@@ -37,6 +38,7 @@ function toReadingSession(row: ReadingSessionRow): ReadingSession {
 /** Drizzle insert shape for one reading-session row, from the create input. */
 function toInsert(input: CreateReadingSessionInput) {
   return {
+    date: input.date,
     title: input.title,
     language: input.language,
     sourceId: input.sourceId ?? null,
@@ -50,9 +52,12 @@ function toInsert(input: CreateReadingSessionInput) {
   };
 }
 
-/** List reading sessions, newest first. */
+/** List reading sessions, most recent date first. */
 export async function listReadingSessions(): Promise<ReadingSession[]> {
-  const rows = await db.select().from(readingSessions).orderBy(desc(readingSessions.createdAt));
+  const rows = await db
+    .select()
+    .from(readingSessions)
+    .orderBy(desc(readingSessions.date), desc(readingSessions.createdAt));
   return rows.map(toReadingSession);
 }
 

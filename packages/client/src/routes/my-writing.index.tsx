@@ -16,6 +16,7 @@ import { WritingCard } from "@/components/WritingCard";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useWritingPrompts } from "@/hooks/useWritingPrompts";
 import { useCreateWriting, useWritings } from "@/hooks/useWritings";
+import { todayDateString } from "@/lib/daily-lineup";
 
 export const Route = createFileRoute("/my-writing/")({
   component: MyWritingPage,
@@ -51,6 +52,7 @@ function MyWritingPage() {
       {
         text: "",
         language: "Japanese",
+        date: todayDateString(new Date()),
         readyToReview: false,
         promptTitle: seed?.promptTitle ?? null,
         promptText: seed?.promptText ?? null,

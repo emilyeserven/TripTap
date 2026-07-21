@@ -51,6 +51,7 @@ import {
   sortResources,
   websiteFilterOptions,
 } from "@/lib/collections";
+import { todayDateString } from "@/lib/daily-lineup";
 
 export const Route = createFileRoute("/collections/")({
   component: CollectionsPage,
@@ -158,6 +159,7 @@ function CollectionsPage() {
       {
         text: "",
         language: "Japanese",
+        date: todayDateString(new Date()),
         readyToReview: false,
         promptTitle: title,
         promptText: null,

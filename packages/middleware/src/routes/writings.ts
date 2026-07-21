@@ -97,7 +97,7 @@ const correctionsSchema = {
 
 const createWritingBody = {
   type: "object",
-  required: ["text", "language"],
+  required: ["text", "language", "date"],
   additionalProperties: false,
   properties: {
     text: {
@@ -106,6 +106,10 @@ const createWritingBody = {
     language: {
       type: "string",
       minLength: 1,
+    },
+    date: {
+      type: "string",
+      format: "date",
     },
     meaning: {
       type: ["string", "null"],
