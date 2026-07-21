@@ -471,12 +471,9 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                 className={cn(
                   `
                     relative overflow-hidden border border-primary/60
-                    bg-primary/10 font-medium
-                    hover:bg-primary/10
+                    bg-primary/10 font-medium text-foreground
+                    hover:bg-primary/10 hover:text-foreground
                   `,
-                  fillPercent >= 100
-                    ? "text-primary-foreground"
-                    : "text-foreground",
                   goalMet && `
                     animate-pulse border-primary shadow-[0_0_12px_2px] ring-1
                     shadow-primary/50 ring-primary
