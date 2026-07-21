@@ -1,5 +1,6 @@
 import type {
   AnswerSheetEntry,
+  DrillMistake,
   DrillType,
   LearningArea,
   LessonListeningNote,
@@ -323,21 +324,35 @@ interface DrillXpRow {
   questions: number;
   type: DrillType | null;
   learningArea: LearningArea | null;
+  mistakes: DrillMistake[] | null;
+}
+
+/** A mistake is "corrected" (its penalty regained) once it has a correct answer and at least one reason. */
+function isMistakeCorrected(mistake: DrillMistake): boolean {
+  return Boolean(mistake.correctAnswer && mistake.correctAnswer.trim()) && mistake.reasons.length > 0;
 }
 
 /**
- * Per-question XP → the session's chosen area, defaulting to Grammar. Multiple-choice questions score
- * at the lower `drillQuestionMultipleChoice` rate; every other type (incl. legacy `null`) at
- * `drillQuestion` (fill-in-the-blank).
+ * Drill XP → the session's chosen area, defaulting to Grammar. Questions score per-type
+ * (`drillQuestionMultipleChoice` vs `drillQuestion`). Each logged mistake costs `drillMistakePenalty`,
+ * regained in full by `drillMistakeCorrected` once it carries a correct answer + a reason — so a
+ * session with only uncorrected mistakes yields negative XP.
  */
 export function drillXp(rows: DrillXpRow[], rates: XpRates = DEFAULT_XP_RATES): XpGrant[] {
-  return rows.flatMap(row => (row.questions > 0
-    ? [{
+  return rows.flatMap((row) => {
+    const mistakes = row.mistakes ?? [];
+    if (row.questions <= 0 && mistakes.length === 0) return [];
+    const questionXp = row.questions * (row.type === "multiple-choice"
+      ? rates.drillQuestionMultipleChoice
+      : rates.drillQuestion);
+    const mistakeXp = mistakes.reduce(
+      (sum, m) => sum - rates.drillMistakePenalty + (isMistakeCorrected(m) ? rates.drillMistakeCorrected : 0),
+      0,
+    );
+    return [{
       area: row.learningArea ?? ("Grammar" as const),
       feature: "drills" as const,
-      xp: row.questions * (row.type === "multiple-choice"
-        ? rates.drillQuestionMultipleChoice
-        : rates.drillQuestion),
+      xp: questionXp + mistakeXp,
       at: new Date(row.date),
       dateOnly: row.date,
       sourceId: row.id,
@@ -346,8 +361,8 @@ export function drillXp(rows: DrillXpRow[], rates: XpRates = DEFAULT_XP_RATES): 
       params: {
         id: row.id,
       },
-    }]
-    : []));
+    }];
+  });
 }
 
 interface LessonXpRow {
@@ -657,6 +672,7 @@ export async function loadXpGrants(): Promise<XpGrant[]> {
       questions: drillSessions.questions,
       type: drillSessions.type,
       learningArea: drillSessions.learningArea,
+      mistakes: drillSessions.mistakes,
     }).from(drillSessions),
     db.select({
       id: lessons.id,

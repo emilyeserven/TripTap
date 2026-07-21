@@ -373,6 +373,8 @@ const updateXpSettingsBody = {
         shadowingLoop: xpRateValueSchema,
         drillQuestion: xpRateValueSchema,
         drillQuestionMultipleChoice: xpRateValueSchema,
+        drillMistakePenalty: xpRateValueSchema,
+        drillMistakeCorrected: xpRateValueSchema,
         lessonLine: xpRateValueSchema,
         lessonWordNote: xpRateValueSchema,
         theoryStudyPageDense: xpRateValueSchema,

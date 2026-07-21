@@ -26,6 +26,8 @@ const RATE_LABELS: Record<XpRateKey, string> = {
   shadowingLoop: "Shadowing — loop",
   drillQuestion: "Drills — fill-in-the-blank question",
   drillQuestionMultipleChoice: "Drills — multiple-choice question",
+  drillMistakePenalty: "Drills — mistake penalty",
+  drillMistakeCorrected: "Drills — corrected mistake regain",
   lessonLine: "Lessons — line",
   lessonWordNote: "Lessons — word fully filled out",
   theoryStudyPageDense: "Theory study — dense page",

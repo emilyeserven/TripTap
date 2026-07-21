@@ -43,6 +43,8 @@ export const DEFAULT_XP_RATES = {
   shadowingLoop: 0.25,
   drillQuestion: 0.25,
   drillQuestionMultipleChoice: 0.1,
+  drillMistakePenalty: 0.1,
+  drillMistakeCorrected: 0.1,
   lessonLine: 1,
   lessonWordNote: 0.5,
   theoryStudyPageDense: 2,
