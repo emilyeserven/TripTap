@@ -473,8 +473,8 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                   // Progress rides as a slim bar along the bottom edge, clear of the label so the
                   // text contrast never depends on the fill width.
                   `
-                    relative overflow-hidden border border-primary/60 bg-primary
-                    font-medium text-primary-foreground
+                    relative h-10 overflow-hidden border border-primary/60
+                    bg-primary font-medium text-primary-foreground
                     hover:bg-primary hover:text-primary-foreground
                   `,
                   goalMet && `
