@@ -60,3 +60,32 @@ test("POST /api/drill-sessions accepts a question count and a valid learning are
   assert.notEqual(res.statusCode, 400);
   await app.close();
 });
+
+test("POST /api/drill-sessions accepts a valid drill type", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/drill-sessions",
+    payload: {
+      date: "2026-07-20",
+      questions: 12,
+      type: "multiple-choice",
+    },
+  });
+  assert.notEqual(res.statusCode, 400);
+  await app.close();
+});
+
+test("POST /api/drill-sessions rejects an unknown drill type", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/drill-sessions",
+    payload: {
+      date: "2026-07-20",
+      type: "essay",
+    },
+  });
+  assert.equal(res.statusCode, 400);
+  await app.close();
+});

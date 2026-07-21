@@ -1,5 +1,6 @@
 import type {
   AnswerSheetEntry,
+  DrillType,
   LearningArea,
   LessonListeningNote,
   LessonWordNote,
@@ -320,16 +321,23 @@ interface DrillXpRow {
   title: string | null;
   date: string;
   questions: number;
+  type: DrillType | null;
   learningArea: LearningArea | null;
 }
 
-/** 0.25xp per question → the session's chosen area, defaulting to Grammar. */
+/**
+ * Per-question XP → the session's chosen area, defaulting to Grammar. Multiple-choice questions score
+ * at the lower `drillQuestionMultipleChoice` rate; every other type (incl. legacy `null`) at
+ * `drillQuestion` (fill-in-the-blank).
+ */
 export function drillXp(rows: DrillXpRow[], rates: XpRates = DEFAULT_XP_RATES): XpGrant[] {
   return rows.flatMap(row => (row.questions > 0
     ? [{
       area: row.learningArea ?? ("Grammar" as const),
       feature: "drills" as const,
-      xp: row.questions * rates.drillQuestion,
+      xp: row.questions * (row.type === "multiple-choice"
+        ? rates.drillQuestionMultipleChoice
+        : rates.drillQuestion),
       at: new Date(row.date),
       dateOnly: row.date,
       sourceId: row.id,
@@ -623,6 +631,7 @@ export async function loadXpGrants(): Promise<XpGrant[]> {
       title: drillSessions.title,
       date: drillSessions.date,
       questions: drillSessions.questions,
+      type: drillSessions.type,
       learningArea: drillSessions.learningArea,
     }).from(drillSessions),
     db.select({

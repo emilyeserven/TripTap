@@ -37,7 +37,8 @@ describe("XpRatesCard", () => {
       name: "Varies",
     })).toBeInTheDocument();
     expect(screen.getByText("Book exercises — question sheet created")).toBeInTheDocument();
-    expect(screen.getByText("Drills — question")).toBeInTheDocument();
+    expect(screen.getByText("Drills — fill-in-the-blank question")).toBeInTheDocument();
+    expect(screen.getByText("Drills — multiple-choice question")).toBeInTheDocument();
     expect(screen.getByText("Theory study — dense page")).toBeInTheDocument();
   });
 });

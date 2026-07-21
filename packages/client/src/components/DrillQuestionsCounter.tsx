@@ -6,9 +6,10 @@ import { Button } from "@/components/ui/button";
 import { useUpdateDrillSession } from "@/hooks/useDrillSessions";
 
 /**
- * A tally counter for questions attempted during a drill session (XP: 0.25 each). Each click PATCHes
- * immediately — the count is the whole payload, so there's nothing to batch. The Edit page also exposes
- * this value as a plain number field for entering a larger count directly.
+ * A tally counter for questions attempted during a drill session (XP per question depends on the
+ * session's drill type). Each click PATCHes immediately — the count is the whole payload, so there's
+ * nothing to batch. The Edit page also exposes this value as a plain number field for entering a
+ * larger count directly.
  */
 export function DrillQuestionsCounter({
   session,
