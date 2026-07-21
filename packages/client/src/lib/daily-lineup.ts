@@ -1,5 +1,11 @@
 import type { StartSuggestion } from "@/lib/start-recommendations";
-import type { DailyLineup, LearningArea, LineupItem, LineupSessionType } from "@sentence-bank/types";
+import type {
+  DailyLineup,
+  DeferredLineupItem,
+  LearningArea,
+  LineupItem,
+  LineupSessionType,
+} from "@sentence-bank/types";
 
 import { newId } from "@/lib/id";
 
@@ -34,6 +40,41 @@ export function emptyLineup(date: string): DailyLineup {
 /** The lineup to show for `today`: the stored one when current, otherwise a fresh empty day. */
 export function effectiveLineup(stored: DailyLineup | null, today: string): DailyLineup {
   return stored && stored.date === today ? stored : emptyLineup(today);
+}
+
+/** Tomorrow's date (YYYY-MM-DD) in the client's local calendar. */
+export function tomorrowDateString(now: Date): string {
+  const next = new Date(now);
+  next.setDate(next.getDate() + 1);
+  return todayDateString(next);
+}
+
+/** Deferred/carried-over items whose day has arrived — available to add on `today`. */
+export function availableDeferred(
+  deferred: DeferredLineupItem[],
+  today: string,
+): DeferredLineupItem[] {
+  return deferred.filter(item => item.deferredTo <= today);
+}
+
+/** Set an item aside for `deferredTo` (resets its done state). */
+export function toDeferred(item: LineupItem, deferredTo: string): DeferredLineupItem {
+  return {
+    ...item,
+    done: false,
+    deferredTo,
+  };
+}
+
+/** Strip the deferral marker back to a plain, not-done lineup item (to re-add it to a day). */
+export function fromDeferred(item: DeferredLineupItem): LineupItem {
+  const {
+    deferredTo: _deferredTo, ...rest
+  } = item;
+  return {
+    ...rest,
+    done: false,
+  };
 }
 
 /** Snapshot a suggestion into a lineup entry (not yet done). */

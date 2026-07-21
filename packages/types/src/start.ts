@@ -67,16 +67,29 @@ export interface DailyLineup {
   exclusions: LineupExclusions;
 }
 
+/**
+ * A lineup item set aside for a future day — either explicitly deferred, or an uncompleted item
+ * harvested when its day rolled over. Lives in its own durable store (unlike the today-only lineup
+ * blob, which is wiped each day), and surfaces as an add-candidate once `deferredTo` reaches today.
+ */
+export interface DeferredLineupItem extends LineupItem {
+  /** Client-local YYYY-MM-DD this item becomes available to add again. */
+  deferredTo: string;
+}
+
 /** The response of `GET /api/settings/start`. */
 export interface StartSettings {
   /** Bookmark ids of locally-favorited resources, prioritized in Start Something suggestions. */
   favoriteResourceIds: string[];
   /** The stored lineup; null when none has been built. May be stale — the client date-checks it. */
   lineup: DailyLineup | null;
+  /** Items deferred to a future day / carried over from an earlier one, awaiting re-add. */
+  deferred: DeferredLineupItem[];
 }
 
 /** Payload for updating the Start settings. Tri-state per field: omit = leave, null/[] = clear. */
 export interface UpdateStartSettingsInput {
   favoriteResourceIds?: string[] | null;
   lineup?: DailyLineup | null;
+  deferred?: DeferredLineupItem[] | null;
 }

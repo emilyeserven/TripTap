@@ -3,12 +3,13 @@ import type { StartSuggestion } from "@/lib/start-recommendations";
 import type { BookmarkSectionMatch } from "@sentence-bank/types";
 import type * as React from "react";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Link, createFileRoute } from "@tanstack/react-router";
 import {
   BookAIcon,
   BookOpenIcon,
+  CalendarArrowUp,
   CameraIcon,
   DrillIcon,
   HeadphonesIcon,
@@ -16,16 +17,24 @@ import {
   PenLineIcon,
   RefreshCwIcon,
   Repeat2Icon,
+  SlidersHorizontalIcon,
   SparklesIcon,
   TargetIcon,
+  X,
 } from "lucide-react";
 
 import { DailyGoalProgress } from "@/components/DailyGoalProgress";
 import { DailyLineupCard } from "@/components/DailyLineupCard";
 import { DueSoonCard } from "@/components/DueSoonCard";
 import { LearningAreaBadges } from "@/components/LearningAreaBadges";
+import { LineupExclusionsEditor } from "@/components/LineupExclusionsEditor";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { XpBreakdown } from "@/components/XpBreakdown";
 import { XpRadarChart } from "@/components/XpRadarChart";
 import { useAnswerSheets } from "@/hooks/useAnswerSheets";
@@ -42,9 +51,14 @@ import {
 import { useWritingPrompts } from "@/hooks/useWritingPrompts";
 import { useXpSummary } from "@/hooks/useXp";
 import {
+  availableDeferred,
   effectiveLineup,
+  emptyLineup,
+  fromDeferred,
   suggestionToLineupItem,
+  toDeferred,
   todayDateString,
+  tomorrowDateString,
 } from "@/lib/daily-lineup";
 import { buildStartSuggestions } from "@/lib/start-recommendations";
 
@@ -170,6 +184,68 @@ function StartPage() {
     });
   };
 
+  const deferred = startSettings.data?.deferred ?? [];
+  const tomorrow = tomorrowDateString(new Date());
+  // Deferred/carried-over items whose day has arrived — offered in the "Carried over" card.
+  const carriedOver = availableDeferred(deferred, today);
+
+  // When the day rolls over, harvest the stale lineup's uncompleted items into the durable deferred
+  // store (the today-only blob would otherwise be wiped on the next save) and reset the stale blob.
+  const harvestedFor = useRef<string | null>(null);
+  useEffect(() => {
+    const stored = startSettings.data?.lineup;
+    if (!stored || stored.date >= today) return;
+    if (harvestedFor.current === stored.date) return;
+    harvestedFor.current = stored.date;
+    const existing = startSettings.data?.deferred ?? [];
+    const existingIds = new Set(existing.map(d => d.id));
+    const harvested = stored.items
+      .filter(item => !item.done && !existingIds.has(item.id))
+      .map(item => toDeferred(item, today));
+    updateStartSettings.mutate({
+      lineup: emptyLineup(today),
+      ...(harvested.length > 0
+        ? {
+          deferred: [...existing, ...harvested],
+        }
+        : {}),
+    });
+  }, [startSettings.data, today, updateStartSettings]);
+
+  /** Move an item off today's lineup and onto tomorrow's carried-over list. */
+  const deferToTomorrow = (item: typeof lineup.items[number]) => {
+    updateStartSettings.mutate({
+      lineup: {
+        ...lineup,
+        date: today,
+        items: lineup.items.filter(i => i.id !== item.id),
+      },
+      deferred: [...deferred.filter(d => d.id !== item.id), toDeferred(item, tomorrow)],
+    });
+  };
+
+  /** Add a carried-over item back into today's lineup and clear it from the deferred store. */
+  const addDeferred = (item: typeof deferred[number]) => {
+    const items = lineup.items.some(i => i.id === item.id)
+      ? lineup.items
+      : [...lineup.items, fromDeferred(item)];
+    updateStartSettings.mutate({
+      lineup: {
+        ...lineup,
+        date: today,
+        items,
+      },
+      deferred: deferred.filter(d => d.id !== item.id),
+    });
+  };
+
+  /** Drop a carried-over item without adding it. */
+  const dismissDeferred = (id: string) => {
+    updateStartSettings.mutate({
+      deferred: deferred.filter(d => d.id !== id),
+    });
+  };
+
   const areaTags = bookmarksSettings.data?.learningAreaTags ?? {};
   const materialTypeTags = bookmarksSettings.data?.materialTypeTags ?? {};
   // The whole Collections resource list (with complexity/favorite/content status) and every bookmark
@@ -269,21 +345,74 @@ function StartPage() {
 
       <DailyLineupCard
         lineup={lineup}
-        mediaTypeOptions={mediaTypeOptions}
-        complexityScale={allResources.data?.complexityScale ?? null}
         resources={resources}
         sectionsByResource={sectionsByResource}
         onChange={persistLineup}
+        onDefer={deferToTomorrow}
       />
 
-      {upNext.length > 0
-        ? (
-          <Card className="border-primary/50">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="flex items-center gap-2 text-base">
-                <SparklesIcon className="size-4" />
-                Up next
-              </CardTitle>
+      {carriedOver.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <CalendarArrowUp className="size-4" />
+              Carried over
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {carriedOver.map(item => (
+              <div
+                key={item.id}
+                className="
+                  flex items-center gap-2 rounded-md border p-2 text-sm
+                "
+              >
+                <span className="flex-1 font-medium">{item.title}</span>
+                {item.area && <LearningAreaBadges areas={[item.area]} />}
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  aria-label={`Add "${item.title}" to today's lineup`}
+                  onClick={() => addDeferred(item)}
+                >
+                  <ListPlusIcon className="size-4" />
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  aria-label={`Dismiss "${item.title}"`}
+                  onClick={() => dismissDeferred(item.id)}
+                >
+                  <X className="size-4" />
+                </Button>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
+      <Collapsible asChild>
+        <Card className="border-primary/50">
+          <CardHeader
+            className="flex flex-row items-center justify-between gap-2"
+          >
+            <CardTitle className="flex items-center gap-2 text-base">
+              <SparklesIcon className="size-4" />
+              Up next
+            </CardTitle>
+            <div className="flex items-center gap-2">
+              <CollapsibleTrigger asChild>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                >
+                  <SlidersHorizontalIcon className="size-4" />
+                  Filter
+                </Button>
+              </CollapsibleTrigger>
               {available.length > UP_NEXT_COUNT && (
                 <Button
                   type="button"
@@ -295,26 +424,39 @@ function StartPage() {
                   Reroll
                 </Button>
               )}
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {upNext.map(s => (
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <CollapsibleContent className="pb-1">
+              <LineupExclusionsEditor
+                exclusions={lineup.exclusions}
+                mediaTypeOptions={mediaTypeOptions}
+                complexityScale={allResources.data?.complexityScale ?? null}
+                onChange={exclusions => persistLineup({
+                  ...lineup,
+                  exclusions,
+                })}
+              />
+            </CollapsibleContent>
+            {upNext.length > 0
+              ? upNext.map(s => (
                 <SuggestionRow
                   key={s.id}
                   suggestion={s}
                   inLineup={false}
                   onAddToLineup={addToLineup}
                 />
-              ))}
-            </CardContent>
-          </Card>
-        )
-        : (
-          <p className="text-sm text-muted-foreground">
-            {summary.isLoading
-              ? "Working out what to suggest…"
-              : "Nothing to suggest right now — everything's in your lineup, or log some practice first."}
-          </p>
-        )}
+              ))
+              : (
+                <p className="text-sm text-muted-foreground">
+                  {summary.isLoading
+                    ? "Working out what to suggest…"
+                    : "Nothing to suggest right now — everything's in your lineup, or filtered out."}
+                </p>
+              )}
+          </CardContent>
+        </Card>
+      </Collapsible>
 
       <div className="flex flex-wrap gap-2">
         {QUICK_STARTS.map(item => (

@@ -4,6 +4,7 @@ import type { OcrSettings } from "@sentence-bank/types";
 import { buildApp } from "@/app";
 import {
   parseDailyLineup,
+  parseDeferredItems,
   parseFavoriteResourceIds,
   serializeSource,
   serializeTagMap,
@@ -391,6 +392,87 @@ test("PATCH /api/settings/start accepts a learner-authored custom item", async (
   // The "custom" kind must validate — a title-only custom item was previously rejected (400).
   assert.notEqual(res.statusCode, 400);
   await app.close();
+});
+
+test("PATCH /api/settings/start accepts a deferred/carried-over item", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "PATCH",
+    url: "/api/settings/start",
+    payload: {
+      deferred: [
+        {
+          id: "custom-abc",
+          kind: "custom",
+          area: null,
+          title: "Finish yesterday's reading",
+          description: null,
+          to: "/reading-sessions/new",
+          done: false,
+          deferredTo: "2026-07-21",
+        },
+      ],
+    },
+  });
+  assert.notEqual(res.statusCode, 400);
+  await app.close();
+});
+
+test("PATCH /api/settings/start rejects a deferred item without a deferredTo date", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "PATCH",
+    url: "/api/settings/start",
+    payload: {
+      deferred: [
+        {
+          id: "i1",
+          kind: "area",
+          area: null,
+          title: "No date",
+          description: null,
+          to: "/practice",
+          done: false,
+        },
+      ],
+    },
+  });
+  assert.equal(res.statusCode, 400);
+  await app.close();
+});
+
+test("parseDeferredItems keeps valid entries and drops those with a bad/absent deferredTo", () => {
+  const parsed = parseDeferredItems(JSON.stringify([
+    {
+      id: "ok",
+      kind: "custom",
+      area: null,
+      title: "Carried",
+      to: "/practice",
+      done: false,
+      deferredTo: "2026-07-21",
+    },
+    // Missing deferredTo → dropped.
+    {
+      id: "nodate",
+      kind: "area",
+      title: "No date",
+      to: "/practice",
+      done: false,
+    },
+    // Malformed deferredTo → dropped.
+    {
+      id: "baddate",
+      kind: "area",
+      title: "Bad date",
+      to: "/practice",
+      done: false,
+      deferredTo: "tomorrow",
+    },
+  ]));
+  assert.equal(parsed.length, 1);
+  assert.equal(parsed[0].id, "ok");
+  assert.equal(parsed[0].deferredTo, "2026-07-21");
 });
 
 test("parseDailyLineup drops malformed items and unknown exclusion values", () => {

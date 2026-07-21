@@ -3,14 +3,18 @@ import type { DailyLineup, LineupItem } from "@sentence-bank/types";
 import { describe, expect, it } from "vitest";
 
 import {
+  availableDeferred,
   customLineupItem,
   effectiveLineup,
+  fromDeferred,
   moveItem,
   removeItem,
   renameItem,
   suggestionToLineupItem,
+  toDeferred,
   todayDateString,
   toggleItemDone,
+  tomorrowDateString,
 } from "./daily-lineup";
 
 function item(id: string, done = false): LineupItem {
@@ -135,5 +139,32 @@ describe("lineup item helpers", () => {
 
   it("removes items by id", () => {
     expect(removeItem([item("a"), item("b")], "a").map(i => i.id)).toEqual(["b"]);
+  });
+});
+
+describe("deferral helpers", () => {
+  it("tomorrowDateString advances one local day", () => {
+    expect(tomorrowDateString(new Date(2026, 6, 20, 23, 30))).toBe("2026-07-21");
+    // Month/year rollover.
+    expect(tomorrowDateString(new Date(2026, 11, 31, 8, 0))).toBe("2027-01-01");
+  });
+
+  it("toDeferred stamps the date and resets done; fromDeferred strips it back", () => {
+    const deferred = toDeferred(item("a", true), "2026-07-21");
+    expect(deferred.deferredTo).toBe("2026-07-21");
+    expect(deferred.done).toBe(false);
+    const back = fromDeferred(deferred);
+    expect("deferredTo" in back).toBe(false);
+    expect(back.done).toBe(false);
+    expect(back.id).toBe("a");
+  });
+
+  it("availableDeferred surfaces only items whose day has arrived", () => {
+    const items = [
+      toDeferred(item("today"), "2026-07-20"),
+      toDeferred(item("past"), "2026-07-18"),
+      toDeferred(item("future"), "2026-07-21"),
+    ];
+    expect(availableDeferred(items, "2026-07-20").map(i => i.id)).toEqual(["today", "past"]);
   });
 });

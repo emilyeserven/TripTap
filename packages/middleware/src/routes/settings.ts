@@ -287,6 +287,20 @@ const lineupItemSchema = {
   },
 } as const;
 
+/** A deferred/carried-over item: a lineup item plus the date it becomes available again. */
+const deferredItemSchema = {
+  type: "object",
+  additionalProperties: false,
+  required: ["id", "kind", "title", "to", "done", "deferredTo"],
+  properties: {
+    ...lineupItemSchema.properties,
+    deferredTo: {
+      type: "string",
+      pattern: "^\\d{4}-\\d{2}-\\d{2}$",
+    },
+  },
+} as const;
+
 const updateStartSettingsBody = {
   type: "object",
   additionalProperties: false,
@@ -344,6 +358,10 @@ const updateStartSettingsBody = {
           },
         },
       },
+    },
+    deferred: {
+      type: ["array", "null"],
+      items: deferredItemSchema,
     },
   },
 } as const;
