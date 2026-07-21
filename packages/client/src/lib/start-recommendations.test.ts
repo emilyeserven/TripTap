@@ -3,6 +3,7 @@ import type {
   BookmarkSectionMatch,
   GrammarNote,
   LearningAreaTagMap,
+  LineupItem,
   QuestionSheet,
   XpSummary,
 } from "@sentence-bank/types";
@@ -10,7 +11,7 @@ import type {
 import { LEARNING_AREAS } from "@sentence-bank/types";
 import { describe, expect, it } from "vitest";
 
-import { buildStartSuggestions, lowestXpArea } from "./start-recommendations";
+import { buildStartSuggestions, lowestXpArea, retargetLineupItem } from "./start-recommendations";
 
 const NOW = new Date("2026-07-20T12:00:00Z");
 
@@ -599,5 +600,122 @@ describe("buildStartSuggestions", () => {
     });
     const contentIds = suggestions.filter(s => s.id.startsWith("resource-")).map(s => s.id);
     expect(contentIds[0]).toBe("resource-active");
+  });
+
+  it("prefers an already-started resource (logged progress) over an untouched one", () => {
+    const suggestions = buildStartSuggestions({
+      summary: summary({
+        Reading: 0,
+        Speaking: 9,
+        Listening: 9,
+        Writing: 9,
+        Grammar: 9,
+        Vocabulary: 9,
+      }),
+      areaTags: AREA_TAGS,
+      resources: [
+        res({
+          id: "fresh",
+          tagIds: ["t-listening"],
+        }),
+        res({
+          id: "started",
+          tagIds: ["t-listening"],
+          progress: {
+            current: 5,
+            total: 20,
+            percent: 0.25,
+            label: "5 of 20",
+          },
+        }),
+      ],
+      now: NOW,
+    });
+    const contentIds = suggestions.filter(s => s.id.startsWith("resource-")).map(s => s.id);
+    expect(contentIds[0]).toBe("resource-started");
+  });
+
+  it("treats a resource with a completed section as started", () => {
+    const suggestions = buildStartSuggestions({
+      summary: summary({
+        Reading: 0,
+        Speaking: 9,
+        Listening: 9,
+        Writing: 9,
+        Grammar: 9,
+        Vocabulary: 9,
+      }),
+      areaTags: AREA_TAGS,
+      resources: [
+        res({
+          id: "fresh",
+          tagIds: ["t-reading"],
+        }),
+        res({
+          id: "touched",
+          tagIds: ["t-reading"],
+        }),
+      ],
+      sections: [
+        sec("fresh", "f1"),
+        sec("touched", "t1", {
+          completed: true,
+        }),
+      ],
+      now: NOW,
+    });
+    const sectionIds = suggestions.filter(s => s.id.startsWith("section-")).map(s => s.id);
+    expect(sectionIds[0]).toBe("section-t1");
+  });
+});
+
+describe("retargetLineupItem", () => {
+  const base: LineupItem = {
+    id: "section-a1",
+    kind: "area",
+    area: "Reading",
+    title: "Read \"Ch. 1\" of Book A",
+    description: "Reading practice from your resources.",
+    to: "/reading-sessions/new",
+    search: {
+      title: "Book A",
+    },
+    resourceId: "bookA",
+    sectionId: "a1",
+    done: false,
+  };
+
+  it("swaps to a different section of the same resource, keeping the activity", () => {
+    const next = retargetLineupItem(
+      base,
+      res({
+        id: "bookA",
+        title: "Book A",
+      }),
+      sec("bookA", "a2", {
+        label: "Ch. 2",
+      }).section,
+    );
+    expect(next.id).toBe("section-a2");
+    expect(next.title).toBe("Read \"Ch. 2\" of Book A");
+    expect(next.sectionId).toBe("a2");
+    expect(next.to).toBe("/reading-sessions/new");
+    expect(next.area).toBe("Reading");
+    expect(next.done).toBe(false);
+  });
+
+  it("changes to a whole different resource, clearing the section", () => {
+    const next = retargetLineupItem(
+      base,
+      res({
+        id: "bookB",
+        title: "Book B",
+      }),
+      null,
+    );
+    expect(next.id).toBe("resource-bookB");
+    expect(next.title).toBe("Read a bit of Book B");
+    expect(next.resourceId).toBe("bookB");
+    expect(next.sectionId).toBeUndefined();
   });
 });

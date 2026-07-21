@@ -264,6 +264,12 @@ const lineupItemSchema = {
     },
     params: stringRecordSchema,
     search: stringRecordSchema,
+    resourceId: {
+      type: "string",
+    },
+    sectionId: {
+      type: "string",
+    },
     done: {
       type: "boolean",
     },

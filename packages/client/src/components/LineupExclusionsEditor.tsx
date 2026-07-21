@@ -103,8 +103,9 @@ export function LineupExclusionsEditor({
   return (
     <div className="space-y-3">
       <p className="text-sm text-muted-foreground">
-        Rule things out for today — excluded properties won&apos;t be suggested (e.g. exclude Book
-        when you won&apos;t be home).
+        Tune today&apos;s suggestions. Turn off activities, learning areas, or media types you
+        can&apos;t do right now (e.g. Book when you won&apos;t be home), and set a complexity range to
+        match your energy. These hold for the rest of today.
       </p>
       <ChipRow
         label="Activities"
@@ -136,7 +137,8 @@ export function LineupExclusionsEditor({
       />
       {complexityScale && levels.length > 0 && (
         <div className="space-y-1">
-          <p className="text-xs text-muted-foreground">Complexity level</p>
+          <p className="text-xs text-muted-foreground">Complexity range</p>
+          <p className="text-xs text-muted-foreground">Only suggest resources rated in this range.</p>
           <div className="flex items-center gap-2">
             <Select
               value={String(min)}

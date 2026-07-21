@@ -24,6 +24,7 @@ import { useBookmarkResources, useRefreshBookmarks } from "@/hooks/useBookmarks"
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useBookmarksSettings, useStartSettings, useUpdateStartSettings } from "@/hooks/useSettings";
 import { useCreateWriting } from "@/hooks/useWritings";
+import { bookmarkAppUrl } from "@/lib/bookmarks";
 import {
   ALL_FILTER,
   COMPLEXITY_MIN,
@@ -471,24 +472,20 @@ function CollectionsPage() {
                       `}
                     />
                   </button>
-                  {r.url
-                    ? (
-                      <a
-                        href={r.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="
-                          flex min-w-0 items-center gap-1 font-medium
-                          hover:underline
-                        "
-                      >
-                        <span className="truncate">{r.title}</span>
-                        <ExternalLink
-                          className="size-3.5 shrink-0 text-muted-foreground"
-                        />
-                      </a>
-                    )
-                    : <span className="min-w-0 truncate font-medium">{r.title}</span>}
+                  <a
+                    href={bookmarkAppUrl(settings.data?.endpointUrl, r.id)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="
+                      flex min-w-0 items-center gap-1 font-medium
+                      hover:underline
+                    "
+                  >
+                    <span className="truncate">{r.title}</span>
+                    <ExternalLink
+                      className="size-3.5 shrink-0 text-muted-foreground"
+                    />
+                  </a>
                 </div>
                 <div
                   className="

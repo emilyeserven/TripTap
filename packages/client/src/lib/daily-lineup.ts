@@ -45,6 +45,8 @@ export function suggestionToLineupItem(suggestion: StartSuggestion): LineupItem 
     to: suggestion.to,
     params: suggestion.params,
     search: suggestion.search,
+    resourceId: suggestion.resourceId,
+    sectionId: suggestion.sectionId,
     done: false,
   };
 }
@@ -55,6 +57,18 @@ export function toggleItemDone(items: LineupItem[], id: string): LineupItem[] {
     ? {
       ...item,
       done: !item.done,
+    }
+    : item));
+}
+
+/** Set one item's title (the lineup editor's rename control); empty/blank titles are ignored. */
+export function renameItem(items: LineupItem[], id: string, title: string): LineupItem[] {
+  const trimmed = title.trim();
+  if (!trimmed) return items;
+  return items.map(item => (item.id === id
+    ? {
+      ...item,
+      title: trimmed,
     }
     : item));
 }

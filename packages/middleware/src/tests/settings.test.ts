@@ -339,6 +339,26 @@ test("parseDailyLineup drops malformed items and unknown exclusion values", () =
   assert.equal(parsed?.exclusions.complexityMax, null);
 });
 
+test("parseDailyLineup preserves the resource/section origin of a content item", () => {
+  const parsed = parseDailyLineup(JSON.stringify({
+    date: "2026-07-20",
+    items: [
+      {
+        id: "section-a1",
+        kind: "area",
+        area: "Reading",
+        title: "Read \"Ch. 1\" of Book A",
+        to: "/reading-sessions/new",
+        resourceId: "bookA",
+        sectionId: "a1",
+        done: false,
+      },
+    ],
+  }));
+  assert.equal(parsed?.items[0].resourceId, "bookA");
+  assert.equal(parsed?.items[0].sectionId, "a1");
+});
+
 test("parseDailyLineup and parseFavoriteResourceIds tolerate corrupt values", () => {
   assert.equal(parseDailyLineup("not json"), null);
   assert.equal(parseDailyLineup(JSON.stringify({

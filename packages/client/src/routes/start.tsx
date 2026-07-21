@@ -1,4 +1,5 @@
 import type { StartSuggestion } from "@/lib/start-recommendations";
+import type { BookmarkSectionMatch } from "@sentence-bank/types";
 import type * as React from "react";
 
 import { useMemo, useState } from "react";
@@ -179,6 +180,12 @@ function StartPage() {
     () => Object.fromEntries(resources.map(r => [r.id, r])),
     [resources],
   );
+  // Sections grouped by owning bookmark, for the lineup editor's per-item "swap section" picker.
+  const sectionsByResource = useMemo(() => {
+    const map: Record<string, BookmarkSectionMatch[]> = {};
+    for (const s of allSections.data ?? []) (map[s.bookmarkId] ??= []).push(s);
+    return map;
+  }, [allSections.data]);
 
   const suggestions = useMemo(() => {
     if (!summary.data) return [];
@@ -262,6 +269,8 @@ function StartPage() {
         lineup={lineup}
         mediaTypeOptions={mediaTypeOptions}
         complexityScale={allResources.data?.complexityScale ?? null}
+        resources={resources}
+        sectionsByResource={sectionsByResource}
         onChange={persistLineup}
       />
 
