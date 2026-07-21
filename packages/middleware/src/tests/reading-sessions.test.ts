@@ -140,3 +140,28 @@ test("POST /api/reading-sessions accepts a valid freeform payload", async () => 
   assert.notEqual(res.statusCode, 400);
   await app.close();
 });
+
+test("POST /api/reading-sessions accepts an attached bookmark resource + section", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/reading-sessions",
+    payload: {
+      title: "Read \"Day 1\" of 初級読解",
+      language: "Japanese",
+      date: "2026-07-20",
+      bookmarkId: "bk-1",
+      bookmarkTitle: "初級読解",
+      bookmarkUrl: null,
+      section: {
+        id: "sec-1",
+        label: "Day 1",
+        type: "page",
+        startValue: "1",
+        endValue: null,
+      },
+    },
+  });
+  assert.notEqual(res.statusCode, 400);
+  await app.close();
+});

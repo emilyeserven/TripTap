@@ -309,17 +309,36 @@ function areaSuggestion(
         : resource
           ? `Read a bit of ${resource.title}`
           : "Start a short reading session";
-      const readingTitle = section?.bookmarkTitle ?? resource?.title;
+      // Carry the resource (and section, when picked) so the reading form preselects them.
+      const search = section
+        ? sessionSearch(
+          "/reading-sessions/new",
+          section.bookmarkId,
+          section.bookmarkTitle,
+          section.bookmarkUrl,
+          section.section,
+        )
+        : resource
+          ? sessionSearch("/reading-sessions/new", resource.id, resource.title, resource.url)
+          : null;
       return {
         ...base,
         title,
         description: why,
         to: "/reading-sessions/new",
-        ...(readingTitle
+        ...(search
           ? {
-            search: {
-              title: readingTitle,
-            },
+            search,
+            ...(section
+              ? {
+                resourceId: section.bookmarkId,
+                sectionId: section.section.id,
+              }
+              : resource
+                ? {
+                  resourceId: resource.id,
+                }
+                : {}),
           }
           : {}),
       };
@@ -457,17 +476,15 @@ export function sessionLinkFor(area: LearningArea | null): { to: string;
   }
 }
 
-/** Link search params prefilling the session form for `to` from a bookmark. */
+/** Link search params prefilling the session form for `to` from a bookmark (and optional section). */
 export function sessionSearch(
   to: string,
   bookmarkId: string,
   bookmarkTitle: string,
   bookmarkUrl: string | null,
+  section: BookmarkSectionRef | null = null,
 ): Record<string, string> {
-  if (to === "/reading-sessions/new") return {
-    title: bookmarkTitle,
-  };
-  return {
+  const bookmark = {
     bookmarkId,
     bookmarkTitle,
     ...(bookmarkUrl
@@ -475,7 +492,19 @@ export function sessionSearch(
         bookmarkUrl,
       }
       : {}),
+    // The reading form resolves a preselected section from this JSON-encoded ref.
+    ...(section
+      ? {
+        section: JSON.stringify(section),
+      }
+      : {}),
   };
+  // The reading form also prefills its title box; other session forms leave the title empty.
+  if (to === "/reading-sessions/new") return {
+    title: bookmarkTitle,
+    ...bookmark,
+  };
+  return bookmark;
 }
 
 /**
@@ -638,7 +667,7 @@ function contentSuggestions(input: StartRecommendationInput, favoriteIds: string
             title: `${verb} "${match.section.label}" of ${resource.title}`,
             description: area ? `${area} practice from your resources.` : "From your resources.",
             to,
-            search: sessionSearch(to, resource.id, resource.title, resource.url),
+            search: sessionSearch(to, resource.id, resource.title, resource.url, match.section),
             resourceId: resource.id,
             sectionId: match.section.id,
           },

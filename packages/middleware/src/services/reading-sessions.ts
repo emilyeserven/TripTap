@@ -28,6 +28,10 @@ function toReadingSession(row: ReadingSessionRow): ReadingSession {
     summary: row.summary,
     lines: row.lines ?? null,
     wordNotes: row.wordNotes ?? null,
+    bookmarkId: row.bookmarkId ?? null,
+    bookmarkTitle: row.bookmarkTitle ?? null,
+    bookmarkUrl: row.bookmarkUrl ?? null,
+    section: row.section ?? null,
     createdAt:
       row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
     updatedAt:
@@ -49,6 +53,10 @@ function toInsert(input: CreateReadingSessionInput) {
     summary: input.summary ?? null,
     lines: input.lines ?? null,
     wordNotes: input.wordNotes ?? null,
+    bookmarkId: input.bookmarkId ?? null,
+    bookmarkTitle: input.bookmarkTitle ?? null,
+    bookmarkUrl: input.bookmarkUrl ?? null,
+    section: input.section ?? null,
   };
 }
 

@@ -491,6 +491,11 @@ export const readingSessions = pgTable("reading_sessions", {
   summary: text("summary"),
   lines: jsonb("lines").$type<ReadingLine[]>(),
   wordNotes: jsonb("word_notes").$type<WordNote[]>(),
+  // The bookmark resource this reading was based on (denormalized), and an optional specific section.
+  bookmarkId: text("bookmark_id"),
+  bookmarkTitle: text("bookmark_title"),
+  bookmarkUrl: text("bookmark_url"),
+  section: jsonb("section").$type<BookmarkSectionRef>(),
   createdAt: timestamp("created_at", {
     withTimezone: true,
   }).notNull().defaultNow(),

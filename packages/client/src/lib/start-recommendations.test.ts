@@ -203,6 +203,38 @@ describe("buildStartSuggestions", () => {
     });
   });
 
+  it("carries the resource and section onto a reading suggestion for preselection", () => {
+    const suggestions = buildStartSuggestions({
+      summary: summary({
+        Reading: 0,
+        Speaking: 9,
+        Listening: 9,
+        Writing: 9,
+        Grammar: 9,
+        Vocabulary: 9,
+      }),
+      areaTags: AREA_TAGS,
+      resources: [res({
+        id: "bk",
+        title: "初級読解",
+        url: "https://example.com/r",
+        mediaType: "Book",
+        tagIds: ["t-reading"],
+      })],
+      sections: [sec("bk", "s1", {
+        label: "Day 1",
+        startValue: "1",
+      })],
+      now: NOW,
+    });
+    const pick = suggestions.find(s => s.id === "section-s1");
+    expect(pick?.to).toBe("/reading-sessions/new");
+    expect(pick?.search?.bookmarkId).toBe("bk");
+    expect(pick?.search?.title).toBe("初級読解");
+    // The section rides along JSON-encoded so the reading form can preselect it.
+    expect(JSON.parse(pick?.search?.section ?? "{}").id).toBe("s1");
+  });
+
   it("falls back to the bare per-area session link when there are no resources", () => {
     const suggestions = buildStartSuggestions({
       summary: summary({

@@ -1,4 +1,5 @@
 import type {
+  BookmarkSectionRef,
   ReadingLine,
   ReadingSession,
   ReadingTranslationMode,
@@ -7,6 +8,7 @@ import type {
 
 import { useState } from "react";
 
+import { BookmarkPicker } from "@/components/BookmarkPicker";
 import { ReadingLineEditor } from "@/components/ReadingLineEditor";
 import { ReadingWordNotesEditor } from "@/components/ReadingWordNotesEditor";
 import { SourcePicker } from "@/components/SourcePicker";
@@ -31,11 +33,19 @@ import { todayDateString } from "@/lib/daily-lineup";
 export function ReadingSessionForm({
   session,
   initialTitle,
+  initialBookmark,
+  initialSection,
   onSuccess,
 }: {
   session?: ReadingSession;
   /** Prefill the title on a new session (e.g. started from a Collections item); ignored when editing. */
   initialTitle?: string;
+  /** Seed a brand-new session from a bookmark resource (e.g. from Start Something); ignored when editing. */
+  initialBookmark?: { id: string;
+    title: string;
+    url: string | null; };
+  /** Preselect a specific section of {@link initialBookmark}; ignored when editing. */
+  initialSection?: BookmarkSectionRef | null;
   onSuccess?: (id: string) => void;
 }) {
   const create = useCreateReadingSession();
@@ -55,6 +65,14 @@ export function ReadingSessionForm({
   const [summary, setSummary] = useState(session?.summary ?? "");
   const [lines, setLines] = useState<ReadingLine[]>(session?.lines ?? []);
   const [wordNotes, setWordNotes] = useState<WordNote[]>(session?.wordNotes ?? []);
+  const [bookmarkId, setBookmarkId] = useState(session?.bookmarkId ?? initialBookmark?.id ?? null);
+  const [bookmarkTitle, setBookmarkTitle] = useState(
+    session?.bookmarkTitle ?? initialBookmark?.title ?? null,
+  );
+  const [bookmarkUrl, setBookmarkUrl] = useState(session?.bookmarkUrl ?? initialBookmark?.url ?? null);
+  const [section, setSection] = useState<BookmarkSectionRef | null>(
+    session?.section ?? initialSection ?? null,
+  );
 
   const pending = create.isPending || update.isPending;
   const canSubmit = title.trim().length > 0 && language.trim().length > 0 && !pending;
@@ -86,6 +104,10 @@ export function ReadingSessionForm({
       summary: summary.trim() || null,
       lines: cleanLines.length > 0 ? cleanLines : null,
       wordNotes: cleanWords.length > 0 ? cleanWords : null,
+      bookmarkId,
+      bookmarkTitle,
+      bookmarkUrl,
+      section,
     };
     const saved = editing
       ? await update.mutateAsync({
@@ -164,6 +186,22 @@ export function ReadingSessionForm({
           />
         </div>
       </div>
+
+      <BookmarkPicker
+        selectedBookmarkId={bookmarkId}
+        selectedBookmarkTitle={bookmarkTitle}
+        label="Resource (optional)"
+        onPick={(record) => {
+          setBookmarkId(record?.id ?? null);
+          setBookmarkTitle(record?.title ?? null);
+          setBookmarkUrl(record?.url ?? null);
+          // Picking a different resource clears any previously chosen section.
+          setSection(null);
+        }}
+        enableSections
+        selectedSection={section}
+        onPickSection={setSection}
+      />
 
       <div className="space-y-1.5">
         <Label htmlFor="rs-summary">Summary (optional)</Label>
