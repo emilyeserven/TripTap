@@ -23,7 +23,7 @@ const RATE_LABELS: Record<XpRateKey, string> = {
   answerEntryGrid: "Book exercises — table-style question answered",
   listeningEntry: "Listening — sentence",
   shadowingLoop: "Shadowing — loop",
-  drillRound: "Drills — round",
+  drillQuestion: "Drills — question",
   lessonLine: "Lessons — line",
   lessonWordNote: "Lessons — word fully filled out",
 };

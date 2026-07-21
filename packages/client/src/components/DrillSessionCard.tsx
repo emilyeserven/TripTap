@@ -41,10 +41,10 @@ export function DrillSessionCard({
               </Badge>
             )
             : null}
-          {session.rounds > 0
+          {session.questions > 0
             ? (
               <Badge variant="secondary">
-                {session.rounds} {session.rounds === 1 ? "round" : "rounds"}
+                {session.questions} {session.questions === 1 ? "question" : "questions"}
               </Badge>
             )
             : null}

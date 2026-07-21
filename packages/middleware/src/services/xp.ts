@@ -231,17 +231,17 @@ export function shadowingXp(rows: ShadowingXpRow[], rates: XpRates = DEFAULT_XP_
 
 interface DrillXpRow {
   date: string;
-  rounds: number;
+  questions: number;
   learningArea: LearningArea | null;
 }
 
-/** 0.25xp per round → the session's chosen area, defaulting to Grammar. */
+/** 0.25xp per question → the session's chosen area, defaulting to Grammar. */
 export function drillXp(rows: DrillXpRow[], rates: XpRates = DEFAULT_XP_RATES): XpGrant[] {
-  return rows.flatMap(row => (row.rounds > 0
+  return rows.flatMap(row => (row.questions > 0
     ? [{
       area: row.learningArea ?? ("Grammar" as const),
       feature: "drills" as const,
-      xp: row.rounds * rates.drillRound,
+      xp: row.questions * rates.drillQuestion,
       at: new Date(row.date),
       dateOnly: row.date,
     }]
@@ -425,7 +425,7 @@ export async function getXpSummary(days: number, tzOffsetMinutes = 0): Promise<X
     }).from(shadowingSessions),
     db.select({
       date: drillSessions.date,
-      rounds: drillSessions.rounds,
+      questions: drillSessions.questions,
       learningArea: drillSessions.learningArea,
     }).from(drillSessions),
     db.select({

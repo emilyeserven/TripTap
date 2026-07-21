@@ -259,12 +259,12 @@ test("listening, shadowing, and drill XP use their per-unit rates", () => {
   const drills = drillXp([
     {
       date: "2026-07-19",
-      rounds: 4,
+      questions: 4,
       learningArea: "Vocabulary",
     },
     {
       date: "2026-07-19",
-      rounds: 4,
+      questions: 4,
       learningArea: null,
     },
   ]);
@@ -417,7 +417,7 @@ test("grant functions honor overridden rates", () => {
 test("parseXpRateOverrides keeps only known keys with valid values", () => {
   const parsed = parseXpRateOverrides(JSON.stringify({
     shadowingLoop: 0.5,
-    drillRound: -1,
+    drillQuestion: -1,
     lessonLine: "2",
     nonsense: 9,
   }));

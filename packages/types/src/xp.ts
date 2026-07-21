@@ -39,7 +39,7 @@ export const DEFAULT_XP_RATES = {
   answerEntryGrid: 0.25,
   listeningEntry: 1,
   shadowingLoop: 0.25,
-  drillRound: 0.25,
+  drillQuestion: 0.25,
   lessonLine: 1,
   lessonWordNote: 0.5,
 } as const;
