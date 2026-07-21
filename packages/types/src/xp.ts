@@ -38,6 +38,7 @@ export const DEFAULT_XP_RATES = {
   answerEntryList: 2,
   answerEntryGrid: 0.25,
   listeningEntry: 1,
+  listeningPassiveMinute: 0.5,
   shadowingLoop: 0.25,
   drillQuestion: 0.25,
   lessonLine: 1,

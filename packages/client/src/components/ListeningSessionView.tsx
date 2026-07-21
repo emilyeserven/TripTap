@@ -77,6 +77,16 @@ export function ListeningSessionView({
         </p>
       )}
 
+      {session.passive && (
+        <p className="text-sm text-muted-foreground">
+          Passive listening ·
+          {" "}
+          <span className="font-medium text-foreground">
+            {session.durationMinutes} {session.durationMinutes === 1 ? "minute" : "minutes"}
+          </span>
+        </p>
+      )}
+
       {session.section && (
         <p
           className="

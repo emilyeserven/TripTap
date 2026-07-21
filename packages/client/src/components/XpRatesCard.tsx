@@ -22,6 +22,7 @@ const RATE_LABELS: Record<XpRateKey, string> = {
   answerEntryList: "Book exercises — question answered",
   answerEntryGrid: "Book exercises — table-style question answered",
   listeningEntry: "Listening — sentence",
+  listeningPassiveMinute: "Listening — passive minute",
   shadowingLoop: "Shadowing — loop",
   drillQuestion: "Drills — question",
   lessonLine: "Lessons — line",
