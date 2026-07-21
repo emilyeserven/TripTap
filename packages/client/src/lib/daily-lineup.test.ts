@@ -6,6 +6,7 @@ import {
   effectiveLineup,
   moveItem,
   removeItem,
+  renameItem,
   suggestionToLineupItem,
   todayDateString,
   toggleItemDone,
@@ -75,6 +76,27 @@ describe("lineup item helpers", () => {
     expect(snapshotted.params).toEqual({
       id: "n1",
     });
+  });
+
+  it("carries the resource/section origin onto the snapshot", () => {
+    const snapshotted = suggestionToLineupItem({
+      id: "section-x",
+      kind: "area",
+      area: "Reading",
+      title: "Read \"Ch. 1\" of Book",
+      description: null,
+      to: "/reading-sessions/new",
+      resourceId: "bk1",
+      sectionId: "sec1",
+    });
+    expect(snapshotted.resourceId).toBe("bk1");
+    expect(snapshotted.sectionId).toBe("sec1");
+  });
+
+  it("renames an item by id, ignoring blank titles", () => {
+    const items = [item("a"), item("b")];
+    expect(renameItem(items, "a", "  New name ").find(i => i.id === "a")?.title).toBe("New name");
+    expect(renameItem(items, "a", "   ")).toBe(items);
   });
 
   it("toggles done state by id", () => {

@@ -2,12 +2,14 @@ import type {
   AnswerSheet,
   BookmarkResource,
   BookmarkSectionMatch,
+  BookmarkSectionRef,
   ComplexityScale,
   GrammarNote,
   LearnerProfile,
   LearningArea,
   LearningAreaTagMap,
   LineupExclusions,
+  LineupItem,
   MaterialTypeTagMap,
   QuestionSheet,
   StartSuggestionKind,
@@ -76,6 +78,10 @@ export interface StartSuggestion {
   to: string;
   params?: Record<string, string>;
   search?: Record<string, string>;
+  /** The bookmark resource this pick was built from (content picks only), so the lineup can retarget it. */
+  resourceId?: string;
+  /** The specific section of that resource, when this is a section pick (absent for whole-resource picks). */
+  sectionId?: string;
 }
 
 /** Everything the ranker reads. All optional except the XP summary — absent data just narrows picks. */
@@ -471,6 +477,34 @@ function sessionSearch(
 }
 
 /**
+ * Rebuild a lineup item to point at a (possibly different) resource and, optionally, one of its
+ * sections — keeping the item's activity (`to`/`area`). Backs the lineup editor's "change resource" and
+ * "swap section" controls. `section` null ⇒ a whole-resource pick. The id is regenerated from the new
+ * target so an equivalent Up Next suggestion is recognised as already in the lineup, matching the ids
+ * {@link contentSuggestions} mints.
+ */
+export function retargetLineupItem(
+  item: LineupItem,
+  resource: BookmarkResource,
+  section: BookmarkSectionRef | null,
+): LineupItem {
+  const {
+    verb,
+  } = sessionLinkFor(item.area);
+  const title = section
+    ? `${verb} "${section.label}" of ${resource.title}`
+    : `${verb} a bit of ${resource.title}`;
+  return {
+    ...item,
+    id: section ? `section-${section.id}` : `resource-${resource.id}`,
+    title,
+    search: sessionSearch(item.to, resource.id, resource.title, resource.url),
+    resourceId: resource.id,
+    sectionId: section?.id,
+  };
+}
+
+/**
  * The area a resource is practiced in: the lowest-XP of its (non-excluded) mapped learning areas, so
  * suggestions nudge toward neglected skills. Returns `null` when the resource maps to no area (still
  * suggestable, generically), or `"excluded"` when every one of its areas is excluded today.
@@ -488,24 +522,42 @@ function resourceArea(
   return usable.reduce((lowest, a) => ((byXp.get(a) ?? 0) < (byXp.get(lowest) ?? 0) ? a : lowest));
 }
 
-/** A sortable rank for a content pick: neglected area first, then favorite, then content status. */
+/**
+ * Whether the learner has already begun a resource: some reading/watching progress logged upstream, or
+ * at least one of its sections marked completed. Started resources are nudged ahead of untouched ones so
+ * suggestions lean toward finishing what you began (Content Status is a separate, later rank tier).
+ */
+function isStarted(
+  resource: BookmarkResource | undefined,
+  sections: BookmarkSectionMatch[],
+): boolean {
+  if (!resource) return false;
+  return (resource.progress?.current ?? 0) > 0 || sections.some(s => s.section.completed);
+}
+
+/**
+ * A sortable rank for a content pick: neglected area first, then favorite, then already-started, then
+ * content status. `sections` are the resource's own sections (for the started check).
+ */
 function contentRank(
   resource: BookmarkResource | undefined,
   area: LearningArea | null,
   input: StartRecommendationInput,
   favoriteIds: string[],
-): [number, number, number] {
+  sections: BookmarkSectionMatch[],
+): [number, number, number, number] {
   const byXp = new Map(input.summary.areas.map(a => [a.area, a.xp]));
   return [
     area ? byXp.get(area) ?? 0 : Number.MAX_SAFE_INTEGER,
     resource && favoriteIds.includes(resource.id) ? 0 : resource?.favorite ? 1 : 2,
+    isStarted(resource, sections) ? 0 : 1,
     contentStatusRank(resource?.contentStatus ?? null),
   ];
 }
 
 interface ContentPick {
   suggestion: StartSuggestion;
-  rank: [number, number, number];
+  rank: [number, number, number, number];
   bookmarkId: string;
 }
 
@@ -572,7 +624,8 @@ function contentSuggestions(input: StartRecommendationInput, favoriteIds: string
     // If today's session type for this area is excluded, skip the whole resource.
     if ((exclusions?.sessionTypes ?? []).some(type => SESSION_TYPE_ROUTES[type].includes(to))) continue;
 
-    const sections = gateSequentialSections(sectionsByBookmark.get(resource.id) ?? [], input);
+    const rawSections = sectionsByBookmark.get(resource.id) ?? [];
+    const sections = gateSequentialSections(rawSections, input);
     if (sections.length > 0) {
       for (const match of sections) {
         picks.push({
@@ -584,8 +637,10 @@ function contentSuggestions(input: StartRecommendationInput, favoriteIds: string
             description: area ? `${area} practice from your resources.` : "From your resources.",
             to,
             search: sessionSearch(to, resource.id, resource.title, resource.url),
+            resourceId: resource.id,
+            sectionId: match.section.id,
           },
-          rank: contentRank(resource, area, input, favoriteIds),
+          rank: contentRank(resource, area, input, favoriteIds, rawSections),
           bookmarkId: resource.id,
         });
       }
@@ -600,8 +655,9 @@ function contentSuggestions(input: StartRecommendationInput, favoriteIds: string
           description: area ? `${area} practice from your resources.` : "From your resources.",
           to,
           search: sessionSearch(to, resource.id, resource.title, resource.url),
+          resourceId: resource.id,
         },
-        rank: contentRank(resource, area, input, favoriteIds),
+        rank: contentRank(resource, area, input, favoriteIds, rawSections),
         bookmarkId: resource.id,
       });
     }

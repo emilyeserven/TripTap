@@ -50,6 +50,10 @@ export interface LineupItem {
   to: string;
   params?: Record<string, string>;
   search?: Record<string, string>;
+  /** The bookmark resource this item was built from, so it can be retargeted (rename/swap section). */
+  resourceId?: string;
+  /** The specific section of that resource, when the item is a section pick (absent for whole-resource). */
+  sectionId?: string;
   done: boolean;
 }
 

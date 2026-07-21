@@ -53,17 +53,26 @@ function lineup(): DailyLineup {
   };
 }
 
+/** Render the card with sensible defaults for the pickers the edit tests don't exercise. */
+function renderCard(overrides: Partial<React.ComponentProps<typeof DailyLineupCard>> = {}) {
+  const onChange = overrides.onChange ?? vi.fn();
+  render(
+    <DailyLineupCard
+      lineup={lineup()}
+      mediaTypeOptions={[]}
+      complexityScale={null}
+      resources={[]}
+      sectionsByResource={{}}
+      {...overrides}
+      onChange={onChange}
+    />,
+  );
+  return onChange as ReturnType<typeof vi.fn>;
+}
+
 describe("DailyLineupCard", () => {
   it("checks off an item and hands back the full lineup", () => {
-    const onChange = vi.fn();
-    render(
-      <DailyLineupCard
-        lineup={lineup()}
-        mediaTypeOptions={[]}
-        complexityScale={null}
-        onChange={onChange}
-      />,
-    );
+    const onChange = renderCard();
     fireEvent.click(screen.getByRole("checkbox", {
       name: "Mark \"Shadow something\" done",
     }));
@@ -73,28 +82,13 @@ describe("DailyLineupCard", () => {
   });
 
   it("strikes through completed items", () => {
-    render(
-      <DailyLineupCard
-        lineup={lineup()}
-        mediaTypeOptions={[]}
-        complexityScale={null}
-        onChange={vi.fn()}
-      />,
-    );
+    renderCard();
     expect(screen.getByText("Review は").className).toContain("line-through");
     expect(screen.getByText("Shadow something").className).not.toContain("line-through");
   });
 
   it("reorders and removes items", () => {
-    const onChange = vi.fn();
-    render(
-      <DailyLineupCard
-        lineup={lineup()}
-        mediaTypeOptions={[]}
-        complexityScale={null}
-        onChange={onChange}
-      />,
-    );
+    const onChange = renderCard();
     fireEvent.click(screen.getByRole("button", {
       name: "Move \"Review は\" up",
     }));
@@ -106,14 +100,25 @@ describe("DailyLineupCard", () => {
   });
 
   it("shows the done tally", () => {
-    render(
-      <DailyLineupCard
-        lineup={lineup()}
-        mediaTypeOptions={[]}
-        complexityScale={null}
-        onChange={vi.fn()}
-      />,
-    );
+    renderCard();
     expect(screen.getByText("1/2 done")).toBeInTheDocument();
+  });
+
+  it("renames an item from the edit popover", () => {
+    const onChange = renderCard();
+    fireEvent.click(screen.getByRole("button", {
+      name: "Edit \"Shadow something\"",
+    }));
+    const input = screen.getByLabelText("Name") as HTMLInputElement;
+    fireEvent.change(input, {
+      target: {
+        value: "Warm-up shadowing",
+      },
+    });
+    fireEvent.keyDown(input, {
+      key: "Enter",
+    });
+    const next = onChange.mock.calls.at(-1)?.[0] as DailyLineup;
+    expect(next.items.find(i => i.id === "a")?.title).toBe("Warm-up shadowing");
   });
 });

@@ -441,6 +441,8 @@ export function parseDailyLineup(raw: string | null): DailyLineup | null {
           to: item.to as string,
           params: parseStringRecord(item.params),
           search: parseStringRecord(item.search),
+          resourceId: typeof item.resourceId === "string" ? item.resourceId : undefined,
+          sectionId: typeof item.sectionId === "string" ? item.sectionId : undefined,
           done: item.done === true,
         }))
       : [];
