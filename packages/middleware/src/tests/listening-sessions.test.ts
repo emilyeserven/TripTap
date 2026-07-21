@@ -11,6 +11,36 @@ test("POST /api/listening-sessions rejects a payload missing language", async ()
     url: "/api/listening-sessions",
     payload: {
       title: "Terrace House ep. 1",
+      date: "2026-07-20",
+    },
+  });
+  assert.equal(res.statusCode, 400);
+  await app.close();
+});
+
+test("POST /api/listening-sessions rejects a payload missing date", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/listening-sessions",
+    payload: {
+      title: "Terrace House ep. 1",
+      language: "Japanese",
+    },
+  });
+  assert.equal(res.statusCode, 400);
+  await app.close();
+});
+
+test("POST /api/listening-sessions rejects a malformed date", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/listening-sessions",
+    payload: {
+      title: "Terrace House ep. 1",
+      language: "Japanese",
+      date: "not-a-date",
     },
   });
   assert.equal(res.statusCode, 400);
@@ -72,6 +102,7 @@ test("POST /api/listening-sessions accepts a valid payload with an entry and a t
     payload: {
       title: "Terrace House ep. 1",
       language: "Japanese",
+      date: "2026-07-20",
       videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
       bookmarkId: "bm1",
       bookmarkTitle: "Terrace House",
@@ -110,6 +141,7 @@ test("POST /api/listening-sessions accepts a passive session with a duration", a
     payload: {
       title: "Podcast on the commute",
       language: "Japanese",
+      date: "2026-07-20",
       passive: true,
       durationMinutes: 45,
     },
@@ -143,6 +175,7 @@ test("POST /api/listening-sessions accepts a kana entry carrying English context
     payload: {
       title: "Terrace House ep. 1",
       language: "Japanese",
+      date: "2026-07-20",
       entries: [
         {
           id: "e1",

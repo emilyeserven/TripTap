@@ -17,6 +17,20 @@ test("POST /api/writings rejects a payload missing language", async () => {
   await app.close();
 });
 
+test("POST /api/writings rejects a payload missing date", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/writings",
+    payload: {
+      text: "今日は寒いです。",
+      language: "Japanese",
+    },
+  });
+  assert.equal(res.statusCode, 400);
+  await app.close();
+});
+
 test("POST /api/writings rejects a terms entry with an unknown category", async () => {
   const app = await buildApp();
   const res = await app.inject({
@@ -70,6 +84,7 @@ test("POST /api/writings accepts a valid payload with tags and a correction", as
     payload: {
       text: "今日は寒いですから、コートを着ます。",
       language: "Japanese",
+      date: "2026-07-20",
       meaning: "It's cold today, so I'll wear a coat.",
       comments: "Practicing ～から.",
       readyToReview: true,
