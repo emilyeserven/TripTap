@@ -3,6 +3,7 @@ import multipart from "@fastify/multipart";
 import swagger from "@fastify/swagger";
 import swaggerUi from "@fastify/swagger-ui";
 import Fastify, { type FastifyInstance } from "fastify";
+import { activityRoutes } from "@/routes/activity";
 import { aiLessonRoutes } from "@/routes/ai-lessons";
 import { answerSheetRoutes } from "@/routes/answer-sheets";
 import { bookmarksRoutes } from "@/routes/bookmarks";
@@ -180,6 +181,10 @@ export async function buildApp(): Promise<FastifyInstance> {
           name: "xp",
           description: "Experience points derived from learner activity, per learning area",
         },
+        {
+          name: "activity",
+          description: "Daily activity feed derived from learner XP",
+        },
       ],
     },
   });
@@ -217,6 +222,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(migakuImportRoutes);
   await app.register(settingsRoutes);
   await app.register(xpRoutes);
+  await app.register(activityRoutes);
 
   return app;
 }

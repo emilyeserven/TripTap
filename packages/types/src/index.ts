@@ -5,6 +5,7 @@
  * (`@sentence-bank/client`) so the wire contract stays in one place.
  */
 
+export * from "./activity.js";
 export * from "./answer-sheet.js";
 export * from "./ai-lesson.js";
 export * from "./dictionary.js";

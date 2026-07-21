@@ -18,6 +18,7 @@ import type {
   TheorySession,
   CreateTheorySessionInput,
   UpdateTheorySessionInput,
+  ActivityDay,
   XpSummary,
 } from "@sentence-bank/types";
 
@@ -169,5 +170,15 @@ export const xpApi = {
     // "Today" is the caller's calendar day; the browser's offset tells the server where that falls.
     params.set("tzOffsetMinutes", String(new Date().getTimezoneOffset()));
     return request<XpSummary>(`/xp/summary?${params.toString()}`);
+  },
+};
+
+export const activityApi = {
+  list: (days?: number) => {
+    const params = new URLSearchParams();
+    if (days != null) params.set("days", String(days));
+    // Group work by the caller's calendar day; the browser's offset tells the server where that falls.
+    params.set("tzOffsetMinutes", String(new Date().getTimezoneOffset()));
+    return request<ActivityDay[]>(`/activity?${params.toString()}`);
   },
 };
