@@ -1,5 +1,5 @@
 import type { CollectionsSearch, ResourceSort } from "@/lib/collections";
-import type { DrillTag, LearningArea, MaterialType } from "@sentence-bank/types";
+import type { DrillTag, LearningArea, MaterialType, TheoryTag } from "@sentence-bank/types";
 
 import { useMemo } from "react";
 
@@ -45,10 +45,13 @@ import {
   mediaTypeFilterOptions,
   parseCollectionsSearch,
   resourceActions,
+  matchesTheoryTags,
   resourceDrillTags,
   resourceLearningAreas,
   resourceMaterialTypes,
+  resourceTheoryTags,
   sortResources,
+  theoryTagFilterOptions,
   websiteFilterOptions,
 } from "@/lib/collections";
 import { todayDateString } from "@/lib/daily-lineup";
@@ -89,6 +92,7 @@ function CollectionsPage() {
   const areas = sp.areas ?? [];
   const materials = sp.materials ?? [];
   const drills = sp.drills ?? [];
+  const theory = sp.theory ?? [];
   const sort = sp.sort ?? "runtime-desc";
   const complexityMax = sp.cmax ?? null;
 
@@ -115,11 +119,13 @@ function CollectionsPage() {
   const areaTags = useMemo(() => settings.data?.learningAreaTags ?? {}, [settings.data]);
   const materialTags = useMemo(() => settings.data?.materialTypeTags ?? {}, [settings.data]);
   const drillTags = useMemo(() => settings.data?.drillTags ?? {}, [settings.data]);
+  const theoryTags = useMemo(() => settings.data?.theoryTags ?? {}, [settings.data]);
   const websiteOptions = useMemo(() => websiteFilterOptions(all), [all]);
   const mediaTypeOptions = useMemo(() => mediaTypeFilterOptions(all), [all]);
   const areaOptions = useMemo(() => learningAreaFilterOptions(areaTags, all), [areaTags, all]);
   const materialOptions = useMemo(() => materialTypeFilterOptions(materialTags, all), [materialTags, all]);
   const drillOptions = useMemo(() => drillTagFilterOptions(drillTags, all), [drillTags, all]);
+  const theoryOptions = useMemo(() => theoryTagFilterOptions(theoryTags, all), [theoryTags, all]);
   const levelOptions = useMemo(() => (scale ? complexityLevelOptions(scale, labels) : []), [scale, labels]);
   // Default the upper complexity bound to the top of the scale until the user narrows it.
   const selMax = complexityMax ?? scale?.max ?? scaleMin;
@@ -133,6 +139,7 @@ function CollectionsPage() {
       && matchesLearningAreas(r, areas, areaTags)
       && matchesMaterialTypes(r, materials, materialTags)
       && matchesDrillTags(r, drills, drillTags)
+      && matchesTheoryTags(r, theory, theoryTags)
       && matchesComplexity(r, complexityMin, selMax, scale));
     return sortResources(filtered, sort);
   }, [
@@ -146,6 +153,8 @@ function CollectionsPage() {
     materialTags,
     drills,
     drillTags,
+    theory,
+    theoryTags,
     complexityMin,
     selMax,
     scale,
@@ -283,6 +292,21 @@ function CollectionsPage() {
             />
           )
           : null}
+        {theoryOptions.length > 0
+          ? (
+            <MultiSelect
+              value={theory}
+              onChange={v => setFilters({
+                theory: v.length ? (v as TheoryTag[]) : undefined,
+              })}
+              options={theoryOptions}
+              ariaLabel="Filter by theory tag"
+              placeholder="All theory tags"
+              searchPlaceholder="Search theory tags…"
+              className="w-48"
+            />
+          )
+          : null}
         <Select
           value={sort}
           onValueChange={v => setFilters({
@@ -412,6 +436,7 @@ function CollectionsPage() {
           const cardAreas = resourceLearningAreas(r.tagIds, areaTags);
           const cardMaterials = resourceMaterialTypes(r.tagIds, materialTags);
           const cardDrills = resourceDrillTags(r.tagIds, drillTags);
+          const cardTheory = resourceTheoryTags(r.tagIds, theoryTags);
           const actions = resourceActions(r, areaTags);
           return (
             <Card
@@ -513,6 +538,13 @@ function CollectionsPage() {
                     </Badge>
                   ))}
                   {cardDrills.map(tag => (
+                    <Badge
+                      key={tag}
+                      variant="outline"
+                    >{tag}
+                    </Badge>
+                  ))}
+                  {cardTheory.map(tag => (
                     <Badge
                       key={tag}
                       variant="outline"

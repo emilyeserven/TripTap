@@ -17,6 +17,7 @@ import type {
   SentenceTermRef,
   StartSettings,
   StartSuggestionKind,
+  TheoryTag,
   UpdateBookmarksSettingsInput,
   UpdateDictionarySettingsInput,
   UpdateLearnerProfileInput,
@@ -35,6 +36,7 @@ import {
   LINEUP_SESSION_TYPES,
   MATERIAL_TYPES,
   MAX_LEARNER_GOALS,
+  THEORY_TAGS,
   XP_RATE_KEYS,
 } from "@sentence-bank/types";
 import { db } from "@/db";
@@ -141,6 +143,7 @@ const BOOKMARKS_KEYS = {
   learningAreaTags: "bookmarks.learningAreaTags",
   materialTypeTags: "bookmarks.materialTypeTags",
   drillTags: "bookmarks.drillTags",
+  theoryTags: "bookmarks.theoryTags",
 } as const;
 
 /**
@@ -217,6 +220,7 @@ export async function getBookmarksSettings(): Promise<BookmarksSettings> {
     learningAreaTags: parseTagMap<LearningArea>(stored[BOOKMARKS_KEYS.learningAreaTags] ?? null, LEARNING_AREAS),
     materialTypeTags: parseTagMap<MaterialType>(stored[BOOKMARKS_KEYS.materialTypeTags] ?? null, MATERIAL_TYPES),
     drillTags: parseTagMap<DrillTag>(stored[BOOKMARKS_KEYS.drillTags] ?? null, DRILL_TAGS),
+    theoryTags: parseTagMap<TheoryTag>(stored[BOOKMARKS_KEYS.theoryTags] ?? null, THEORY_TAGS),
   };
 }
 
@@ -256,6 +260,11 @@ export async function updateBookmarksSettings(
     const map = input.drillTags;
     const hasAny = map && Object.keys(map).length > 0;
     await setSetting(BOOKMARKS_KEYS.drillTags, hasAny ? JSON.stringify(map) : null);
+  }
+  if (input.theoryTags !== undefined) {
+    const map = input.theoryTags;
+    const hasAny = map && Object.keys(map).length > 0;
+    await setSetting(BOOKMARKS_KEYS.theoryTags, hasAny ? JSON.stringify(map) : null);
   }
   return getBookmarksSettings();
 }

@@ -453,6 +453,22 @@ export type DrillTagMap = Partial<Record<DrillTag, { id: string;
   name: string; }>>;
 
 /**
+ * Resource classifications that behave as theory material. A single-key axis (like {@link DrillTag})
+ * so it reuses the same mapping/filter/badge machinery and stays extensible.
+ */
+export const THEORY_TAGS = ["Theory"] as const;
+
+/** One theory tag from {@link THEORY_TAGS}. */
+export type TheoryTag = (typeof THEORY_TAGS)[number];
+
+/**
+ * A theory tag ({@link TheoryTag}) mapped to one tag from the Resources source (id + denormalized
+ * name). Lets a resource bookmark carrying that tag be badged and filtered as theory material.
+ */
+export type TheoryTagMap = Partial<Record<TheoryTag, { id: string;
+  name: string; }>>;
+
+/**
  * Bookmarks integration settings as returned by `GET /api/settings/bookmarks`. Unlike
  * {@link OcrSettings} these are not secrets, so raw values are returned.
  */
@@ -473,6 +489,8 @@ export interface BookmarksSettings {
   materialTypeTags: MaterialTypeTagMap;
   /** Drill-tag → Resources-source-tag mappings, powering the Collections drill filter. */
   drillTags: DrillTagMap;
+  /** Theory-tag → Resources-source-tag mappings, powering the Collections theory filter. */
+  theoryTags: TheoryTagMap;
 }
 
 /**
@@ -488,6 +506,7 @@ export interface UpdateBookmarksSettingsInput {
   learningAreaTags?: LearningAreaTagMap | null;
   materialTypeTags?: MaterialTypeTagMap | null;
   drillTags?: DrillTagMap | null;
+  theoryTags?: TheoryTagMap | null;
 }
 
 /**

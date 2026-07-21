@@ -7,9 +7,11 @@ import type {
   LearningAreaTagMap,
   MaterialType,
   MaterialTypeTagMap,
+  TheoryTag,
+  TheoryTagMap,
 } from "@sentence-bank/types";
 
-import { DRILL_TAGS, LEARNING_AREAS, MATERIAL_TYPES } from "@sentence-bank/types";
+import { DRILL_TAGS, LEARNING_AREAS, MATERIAL_TYPES, THEORY_TAGS } from "@sentence-bank/types";
 
 /** Sentinel for the "no website filter" option (mirrors `lib/answer-sheets.ts`'s `ALL_FILTER`). */
 export const ALL_FILTER = "all";
@@ -205,6 +207,42 @@ export function matchesDrillTags(
   return selected.some(tag => tags.includes(tag as DrillTag));
 }
 
+/** The theory tags a resource carries: the mapped theory tags whose tag is on the resource. */
+export function resourceTheoryTags(tagIds: string[], map: TheoryTagMap): TheoryTag[] {
+  return THEORY_TAGS.filter((tag) => {
+    const mapped = map[tag];
+    return mapped ? tagIds.includes(mapped.id) : false;
+  });
+}
+
+/**
+ * The theory tags that have a tag configured, as filter options with per-tag resource counts
+ * (empty when nothing is mapped).
+ */
+export function theoryTagFilterOptions(
+  map: TheoryTagMap,
+  resources: BookmarkResource[],
+): FilterOption[] {
+  return THEORY_TAGS.filter(tag => map[tag]).map((tag) => {
+    const count = resources.filter(r => resourceTheoryTags(r.tagIds, map).includes(tag)).length;
+    return {
+      value: tag,
+      label: `${tag} (${count})`,
+    };
+  });
+}
+
+/** True when a resource matches the selected theory tags (empty selection passes; ANY match otherwise). */
+export function matchesTheoryTags(
+  r: BookmarkResource,
+  selected: string[],
+  map: TheoryTagMap,
+): boolean {
+  if (selected.length === 0) return true;
+  const tags = resourceTheoryTags(r.tagIds, map);
+  return selected.some(tag => tags.includes(tag as TheoryTag));
+}
+
 /** One session-start action a Collections card can offer. */
 export type ResourceAction = "listening" | "shadowing" | "reading" | "writing";
 
@@ -360,6 +398,7 @@ export interface CollectionsSearch {
   areas?: LearningArea[];
   materials?: MaterialType[];
   drills?: DrillTag[];
+  theory?: TheoryTag[];
   sort?: ResourceSort;
   cmin?: number;
   cmax?: number;
@@ -403,6 +442,7 @@ export function parseCollectionsSearch(raw: Record<string, unknown>): Collection
     areas: allowedMembers(raw.areas, LEARNING_AREAS),
     materials: allowedMembers(raw.materials, MATERIAL_TYPES),
     drills: allowedMembers(raw.drills, DRILL_TAGS),
+    theory: allowedMembers(raw.theory, THEORY_TAGS),
     sort: sort && (RESOURCE_SORTS as string[]).includes(sort) ? (sort as ResourceSort) : undefined,
     cmin: optionalNumber(raw.cmin),
     cmax: optionalNumber(raw.cmax),
