@@ -10,9 +10,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { newId } from "@/lib/id";
 
 /**
- * The mistake editor for a drill session. Each row captures what was gotten wrong, the correct answer
- * (optional), the reasons it's tagged with, and a free-text reflection on *why*. A row is kept on save
- * only when its `prompt` is filled (handled by the parent form).
+ * The mistake editor for a drill session. Each row captures what was gotten wrong (optional — leave it
+ * empty to record a skipped answer), the correct answer (optional), the reasons it's tagged with, and a
+ * free-text reflection on *why*. The parent form keeps any row with content and drops only blank ones.
  */
 export function DrillMistakes({
   mistakes,
@@ -102,13 +102,13 @@ export function DrillMistakes({
                   "
                 >
                   <div className="space-y-1.5">
-                    <Label>What you got wrong</Label>
+                    <Label>What you got wrong (optional)</Label>
                     <Input
                       value={m.prompt}
                       onChange={e => patch(m.id, {
                         prompt: e.target.value,
                       })}
-                      placeholder="e.g. 食べれる"
+                      placeholder="e.g. 食べれる — leave empty if you skipped it"
                       aria-label="What you got wrong"
                     />
                   </div>
