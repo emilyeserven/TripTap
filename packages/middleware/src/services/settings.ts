@@ -88,6 +88,29 @@ function hint(value: string | null): string | null {
   return value.length <= 4 ? value : value.slice(-4);
 }
 
+/**
+ * Apply one tri-state settings field: `undefined` leaves the stored value unchanged; otherwise the
+ * value is serialized and written (with `null`/`""` clearing it). Keeps the many partial-update
+ * writers a flat list of one-liners instead of a wall of `if (x !== undefined)` blocks.
+ */
+async function setFieldIfPresent<T>(
+  key: string,
+  value: T | undefined,
+  serialize: (value: T) => string | null,
+): Promise<void> {
+  if (value !== undefined) await setSetting(key, serialize(value));
+}
+
+/** Serialize a bookmarks source to its stored JSON, or null when unset. */
+export function serializeSource(source: BookmarksSource | null): string | null {
+  return source ? JSON.stringify(source) : null;
+}
+
+/** Serialize a tag map to its stored JSON, or null when it has no entries. */
+export function serializeTagMap(map: object | null): string | null {
+  return map && Object.keys(map).length > 0 ? JSON.stringify(map) : null;
+}
+
 /** The cloud OCR API keys stored in the DB (each `null` when unset). */
 export async function getOcrSecrets(): Promise<{
   ocrSpaceApiKey: string | null;
@@ -231,41 +254,15 @@ export async function getBookmarksSettings(): Promise<BookmarksSettings> {
 export async function updateBookmarksSettings(
   input: UpdateBookmarksSettingsInput,
 ): Promise<BookmarksSettings> {
-  if (input.endpointUrl !== undefined) {
-    await setSetting(BOOKMARKS_KEYS.endpointUrl, input.endpointUrl?.trim() ?? null);
-  }
-  if (input.source !== undefined) {
-    await setSetting(BOOKMARKS_KEYS.source, input.source ? JSON.stringify(input.source) : null);
-  }
-  if (input.grammarSource !== undefined) {
-    await setSetting(BOOKMARKS_KEYS.grammarSource, input.grammarSource ? JSON.stringify(input.grammarSource) : null);
-  }
-  if (input.generalSource !== undefined) {
-    await setSetting(BOOKMARKS_KEYS.generalSource, input.generalSource ? JSON.stringify(input.generalSource) : null);
-  }
-  if (input.resourceSource !== undefined) {
-    await setSetting(BOOKMARKS_KEYS.resourceSource, input.resourceSource ? JSON.stringify(input.resourceSource) : null);
-  }
-  if (input.learningAreaTags !== undefined) {
-    const map = input.learningAreaTags;
-    const hasAny = map && Object.keys(map).length > 0;
-    await setSetting(BOOKMARKS_KEYS.learningAreaTags, hasAny ? JSON.stringify(map) : null);
-  }
-  if (input.materialTypeTags !== undefined) {
-    const map = input.materialTypeTags;
-    const hasAny = map && Object.keys(map).length > 0;
-    await setSetting(BOOKMARKS_KEYS.materialTypeTags, hasAny ? JSON.stringify(map) : null);
-  }
-  if (input.drillTags !== undefined) {
-    const map = input.drillTags;
-    const hasAny = map && Object.keys(map).length > 0;
-    await setSetting(BOOKMARKS_KEYS.drillTags, hasAny ? JSON.stringify(map) : null);
-  }
-  if (input.theoryTags !== undefined) {
-    const map = input.theoryTags;
-    const hasAny = map && Object.keys(map).length > 0;
-    await setSetting(BOOKMARKS_KEYS.theoryTags, hasAny ? JSON.stringify(map) : null);
-  }
+  await setFieldIfPresent(BOOKMARKS_KEYS.endpointUrl, input.endpointUrl, v => v?.trim() ?? null);
+  await setFieldIfPresent(BOOKMARKS_KEYS.source, input.source, serializeSource);
+  await setFieldIfPresent(BOOKMARKS_KEYS.grammarSource, input.grammarSource, serializeSource);
+  await setFieldIfPresent(BOOKMARKS_KEYS.generalSource, input.generalSource, serializeSource);
+  await setFieldIfPresent(BOOKMARKS_KEYS.resourceSource, input.resourceSource, serializeSource);
+  await setFieldIfPresent(BOOKMARKS_KEYS.learningAreaTags, input.learningAreaTags, serializeTagMap);
+  await setFieldIfPresent(BOOKMARKS_KEYS.materialTypeTags, input.materialTypeTags, serializeTagMap);
+  await setFieldIfPresent(BOOKMARKS_KEYS.drillTags, input.drillTags, serializeTagMap);
+  await setFieldIfPresent(BOOKMARKS_KEYS.theoryTags, input.theoryTags, serializeTagMap);
   return getBookmarksSettings();
 }
 
