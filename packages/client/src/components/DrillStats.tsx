@@ -1,10 +1,12 @@
 import { useMemo, useState } from "react";
 
+import { DrillRecurringCallout } from "@/components/DrillRecurringCallout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useDrillReasonCategories } from "@/hooks/useDrillReasonCategories";
 import { useDrillSessions } from "@/hooks/useDrillSessions";
 import { REASON_PATH_SEP, resolveReasonRef } from "@/lib/drill-reasons";
+import { flaggedRecurringQuestions } from "@/lib/drill-recurring";
 
 type Granularity = "category" | "subcategory" | "reason";
 
@@ -42,6 +44,8 @@ export function DrillStats() {
     () => sessions.reduce((n, s) => n + (s.mistakes?.length ?? 0), 0),
     [sessions],
   );
+
+  const recurring = useMemo(() => flaggedRecurringQuestions(sessions, new Date()), [sessions]);
 
   const rows = useMemo(() => {
     const counts = new Map<string, number>();
@@ -85,6 +89,8 @@ export function DrillStats() {
 
   return (
     <section className="space-y-6">
+      <DrillRecurringCallout items={recurring} />
+
       <div>
         <p className="text-sm text-muted-foreground">
           Where your mistakes cluster, across {sessions.length}{" "}
