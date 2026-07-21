@@ -2,7 +2,12 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { OcrSettings } from "@sentence-bank/types";
 import { buildApp } from "@/app";
-import { parseDailyLineup, parseFavoriteResourceIds } from "@/services/settings";
+import {
+  parseDailyLineup,
+  parseFavoriteResourceIds,
+  serializeSource,
+  serializeTagMap,
+} from "@/services/settings";
 
 // The schema-validation test runs without a database. The persist → masked-read → clear round-trip
 // needs a live Postgres, so it is gated behind RUN_DB_TESTS.
@@ -423,6 +428,28 @@ test("parseDailyLineup and parseFavoriteResourceIds tolerate corrupt values", ()
   })), null);
   assert.deepEqual(parseFavoriteResourceIds("not json"), []);
   assert.deepEqual(parseFavoriteResourceIds(JSON.stringify(["a", 2, "b"])), ["a", "b"]);
+});
+
+test("serializeSource stringifies a source and nulls an absent one", () => {
+  const source = {
+    kind: "tag" as const,
+    id: "t1",
+    label: "Vocab",
+  };
+  assert.equal(serializeSource(source), JSON.stringify(source));
+  assert.equal(serializeSource(null), null);
+});
+
+test("serializeTagMap stringifies a non-empty map and nulls an empty/absent one", () => {
+  const map = {
+    Reading: {
+      id: "tag1",
+      name: "Reading",
+    },
+  };
+  assert.equal(serializeTagMap(map), JSON.stringify(map));
+  assert.equal(serializeTagMap({}), null);
+  assert.equal(serializeTagMap(null), null);
 });
 
 test(
