@@ -112,7 +112,7 @@ const bookmarkSectionRefSchema = {
 
 const createListeningSessionBody = {
   type: "object",
-  required: ["title", "language"],
+  required: ["title", "language", "date"],
   additionalProperties: false,
   properties: {
     title: {
@@ -122,6 +122,10 @@ const createListeningSessionBody = {
     language: {
       type: "string",
       minLength: 1,
+    },
+    date: {
+      type: "string",
+      format: "date",
     },
     videoUrl: {
       type: ["string", "null"],

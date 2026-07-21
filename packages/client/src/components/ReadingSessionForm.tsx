@@ -19,6 +19,7 @@ import {
   useCreateReadingSession,
   useUpdateReadingSession,
 } from "@/hooks/useReadingSessions";
+import { todayDateString } from "@/lib/daily-lineup";
 
 /**
  * Create/edit form for a reading session. The learner records where the passage came from, then
@@ -41,6 +42,7 @@ export function ReadingSessionForm({
   const update = useUpdateReadingSession();
   const editing = session !== undefined;
 
+  const [date, setDate] = useState(session?.date ?? todayDateString(new Date()));
   const [title, setTitle] = useState(session?.title ?? initialTitle ?? "");
   const [language, setLanguage] = useState(session?.language ?? "Japanese");
   const [sourceId, setSourceId] = useState<string | null>(session?.sourceId ?? null);
@@ -73,6 +75,7 @@ export function ReadingSessionForm({
         meaning: w.meaning?.trim() || null,
       }));
     const input = {
+      date,
       title: title.trim(),
       language: language.trim(),
       sourceId,
@@ -101,6 +104,21 @@ export function ReadingSessionForm({
         void submit();
       }}
     >
+      <div
+        className="
+          space-y-1.5
+          sm:max-w-xs
+        "
+      >
+        <Label htmlFor="rs-date">Date</Label>
+        <Input
+          id="rs-date"
+          type="date"
+          value={date}
+          onChange={e => setDate(e.target.value)}
+        />
+      </div>
+
       <div
         className="
           grid gap-4

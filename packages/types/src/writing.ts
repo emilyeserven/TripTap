@@ -33,6 +33,8 @@ export interface WritingCorrection {
 /** A free-form writing entry. */
 export interface Writing {
   id: string;
+  /** ISO date (YYYY-MM-DD) the writing was worked on, for grouping activity by day. */
+  date: string;
   /** The free-write body — may hold multiple sentences and line breaks. */
   text: string;
   /** What the learner intended to say; null if none. */
@@ -57,10 +59,12 @@ export interface Writing {
   updatedAt: string;
 }
 
-/** Payload for creating a writing. Only `text` + `language` are required. */
+/** Payload for creating a writing. `text`, `language`, and `date` are required. */
 export interface CreateWritingInput {
   text: string;
   language: string;
+  /** ISO date (YYYY-MM-DD) the writing was worked on. */
+  date: string;
   meaning?: string | null;
   comments?: string | null;
   /** Defaults to false server-side when omitted. */

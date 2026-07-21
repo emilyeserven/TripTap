@@ -1,6 +1,10 @@
-import type { XpFeature, XpSummary } from "@sentence-bank/types";
+import type { XpAreaSummary, XpFeature, XpSummary } from "@sentence-bank/types";
 
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatXp } from "@/lib/xp";
+
+/** Which slice of the summary the breakdown shows. */
+export type XpBreakdownView = "all-time" | "today";
 
 /** Reader-facing names for the XP feature buckets. */
 const FEATURE_LABELS: Record<XpFeature, string> = {
@@ -11,53 +15,97 @@ const FEATURE_LABELS: Record<XpFeature, string> = {
   shadowing: "Shadowing",
   drills: "Drills",
   lessons: "Lessons",
+  theoryStudy: "Theory study",
 };
 
+/** One learning area's bar with an indented, per-feature row breakdown beneath it. */
+function AreaRow({
+  area,
+  max,
+}: {
+  area: XpAreaSummary;
+  max: number;
+}) {
+  const features = (Object.entries(area.byFeature) as [XpFeature, number][])
+    .sort(([, a], [, b]) => b - a);
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center justify-between gap-2 text-sm">
+        <span>{area.area}</span>
+        <span className="shrink-0 text-muted-foreground tabular-nums">
+          {formatXp(area.xp)} xp
+        </span>
+      </div>
+      <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+        <div
+          className="h-full rounded-full bg-primary"
+          style={{
+            width: `${(area.xp / max) * 100}%`,
+          }}
+        />
+      </div>
+      {features.length > 0 && (
+        <ul className="space-y-0.5 pl-3 text-xs text-muted-foreground">
+          {features.map(([feature, xp]) => (
+            <li
+              key={feature}
+              className="flex items-center justify-between gap-2"
+            >
+              <span>{FEATURE_LABELS[feature]}</span>
+              <span className="shrink-0 tabular-nums">{formatXp(xp)}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 /**
- * The table view of the XP summary: one bar row per learning area (the `DrillStats` bar style) with
- * its per-feature makeup, plus the recent-window rollup so "what have I done lately" is one glance.
+ * The table view of the XP summary: one bar row per learning area (the `DrillStats` bar style) with a
+ * per-feature row breakdown beneath, a Today ⇄ All-time toggle over the areas, plus the recent-window
+ * rollup so "what have I done lately" is one glance. The toggle is controlled so the page can lift it.
  */
 export function XpBreakdown({
   summary,
+  view,
+  onViewChange,
 }: {
   summary: XpSummary;
+  view: XpBreakdownView;
+  onViewChange: (view: XpBreakdownView) => void;
 }) {
-  const max = Math.max(1, ...summary.areas.map(a => a.xp));
+  const areas = view === "today" ? summary.today.areas : summary.areas;
+  const max = Math.max(1, ...areas.map(a => a.xp));
   return (
     <div className="space-y-4">
-      <div className="space-y-3">
-        {summary.areas.map((area) => {
-          const features = Object.entries(area.byFeature) as [XpFeature, number][];
-          return (
-            <div
-              key={area.area}
-              className="space-y-1"
-            >
-              <div className="flex items-center justify-between gap-2 text-sm">
-                <span>{area.area}</span>
-                <span className="shrink-0 text-muted-foreground tabular-nums">
-                  {formatXp(area.xp)} xp
-                </span>
-              </div>
-              <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
-                <div
-                  className="h-full rounded-full bg-primary"
-                  style={{
-                    width: `${(area.xp / max) * 100}%`,
-                  }}
-                />
-              </div>
-              {features.length > 0 && (
-                <p className="text-xs text-muted-foreground">
-                  {features
-                    .map(([feature, xp]) => `${FEATURE_LABELS[feature]} ${formatXp(xp)}`)
-                    .join(" · ")}
-                </p>
-              )}
-            </div>
-          );
-        })}
-      </div>
+      <Tabs
+        value={view}
+        onValueChange={v => onViewChange(v as XpBreakdownView)}
+      >
+        <TabsList>
+          <TabsTrigger value="today">Today</TabsTrigger>
+          <TabsTrigger value="all-time">All-time</TabsTrigger>
+        </TabsList>
+      </Tabs>
+
+      {areas.length === 0
+        ? (
+          <p className="text-sm text-muted-foreground">
+            No XP yet today — log some practice and it’ll show up here.
+          </p>
+        )
+        : (
+          <div className="space-y-3">
+            {areas.map(area => (
+              <AreaRow
+                key={area.area}
+                area={area}
+                max={max}
+              />
+            ))}
+          </div>
+        )}
 
       <p className="text-sm text-muted-foreground">
         Last

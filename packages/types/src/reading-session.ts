@@ -49,6 +49,8 @@ export interface WordNote {
 /** A reading session. */
 export interface ReadingSession {
   id: string;
+  /** ISO date (YYYY-MM-DD) the session happened, for grouping activity by day. */
+  date: string;
   title: string;
   /** Target language, e.g. "Japanese". */
   language: string;
@@ -74,10 +76,12 @@ export interface ReadingSession {
   updatedAt: string;
 }
 
-/** Payload for creating a reading session. Only `title` + `language` are required. */
+/** Payload for creating a reading session. `title`, `language`, and `date` are required. */
 export interface CreateReadingSessionInput {
   title: string;
   language: string;
+  /** ISO date (YYYY-MM-DD) the session happened. */
+  date: string;
   sourceId?: string | null;
   page?: string | null;
   mode?: ReadingTranslationMode;

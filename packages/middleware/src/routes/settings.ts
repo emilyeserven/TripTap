@@ -113,6 +113,15 @@ const drillTagsSchema = {
   },
 } as const;
 
+/** The theory-tag → tag map: keys are theory tags, values are `{ id, name }`. */
+const theoryTagsSchema = {
+  type: ["object", "null"],
+  additionalProperties: false,
+  properties: {
+    Theory: mappedTagSchema,
+  },
+} as const;
+
 const updateBookmarksSettingsBody = {
   type: "object",
   additionalProperties: false,
@@ -127,6 +136,7 @@ const updateBookmarksSettingsBody = {
     learningAreaTags: learningAreaTagsSchema,
     materialTypeTags: materialTypeTagsSchema,
     drillTags: drillTagsSchema,
+    theoryTags: theoryTagsSchema,
   },
 } as const;
 
@@ -364,6 +374,11 @@ const updateXpSettingsBody = {
         drillQuestion: xpRateValueSchema,
         lessonLine: xpRateValueSchema,
         lessonWordNote: xpRateValueSchema,
+        theoryStudyPageDense: xpRateValueSchema,
+        theoryStudyPageMedium: xpRateValueSchema,
+        theoryStudyPageLight: xpRateValueSchema,
+        theoryStudyPer250Words: xpRateValueSchema,
+        theoryStudyNote: xpRateValueSchema,
       },
     },
   },

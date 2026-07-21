@@ -52,7 +52,8 @@ describe("XpRadarChart", () => {
       />,
     );
     const svg = screen.getByRole("img");
-    expect(svg).toHaveAccessibleName(/All-time: Speaking 0.*Vocabulary 10/);
+    // Axes are reordered by RADAR_AREA_ORDER (Grammar first, Vocabulary last).
+    expect(svg).toHaveAccessibleName(/All-time: Grammar 8.*Vocabulary 10/);
     expect(svg).toHaveAccessibleName(/Today: Reading 3/);
   });
 

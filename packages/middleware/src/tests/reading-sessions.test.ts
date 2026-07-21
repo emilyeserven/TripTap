@@ -17,6 +17,20 @@ test("POST /api/reading-sessions rejects a payload missing language", async () =
   await app.close();
 });
 
+test("POST /api/reading-sessions rejects a payload missing date", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/reading-sessions",
+    payload: {
+      title: "Chapter 3",
+      language: "Japanese",
+    },
+  });
+  assert.equal(res.statusCode, 400);
+  await app.close();
+});
+
 test("POST /api/reading-sessions rejects an unknown mode", async () => {
   const app = await buildApp();
   const res = await app.inject({
@@ -62,6 +76,7 @@ test("POST /api/reading-sessions accepts a valid line-by-line payload with lines
     payload: {
       title: "Chapter 3",
       language: "Japanese",
+      date: "2026-07-20",
       mode: "line-by-line",
       page: "p. 12–13",
       lines: [
@@ -115,6 +130,7 @@ test("POST /api/reading-sessions accepts a valid freeform payload", async () => 
     payload: {
       title: "News article",
       language: "Japanese",
+      date: "2026-07-20",
       mode: "freeform",
       passage: "本文…",
       freeformTranslation: "My translation of the whole passage.",

@@ -11,6 +11,7 @@ import { listeningSessions, type ListeningSessionRow } from "@/db/schema";
 function toListeningSession(row: ListeningSessionRow): ListeningSession {
   return {
     id: row.id,
+    date: row.date,
     title: row.title,
     videoUrl: row.videoUrl,
     language: row.language,
@@ -32,6 +33,7 @@ function toListeningSession(row: ListeningSessionRow): ListeningSession {
 /** Drizzle insert shape for one listening-session row, from the create input. */
 function toInsert(input: CreateListeningSessionInput) {
   return {
+    date: input.date,
     title: input.title,
     videoUrl: input.videoUrl ?? null,
     language: input.language,
@@ -46,9 +48,12 @@ function toInsert(input: CreateListeningSessionInput) {
   };
 }
 
-/** List listening sessions, newest first. */
+/** List listening sessions, most recent date first. */
 export async function listListeningSessions(): Promise<ListeningSession[]> {
-  const rows = await db.select().from(listeningSessions).orderBy(desc(listeningSessions.createdAt));
+  const rows = await db
+    .select()
+    .from(listeningSessions)
+    .orderBy(desc(listeningSessions.date), desc(listeningSessions.createdAt));
   return rows.map(toListeningSession);
 }
 

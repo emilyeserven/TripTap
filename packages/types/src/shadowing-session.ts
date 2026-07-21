@@ -28,6 +28,8 @@ export interface ShadowingSegment {
 /** A shadowing practice session. */
 export interface ShadowingSession {
   id: string;
+  /** ISO date (YYYY-MM-DD) the session happened, for grouping activity by day. */
+  date: string;
   title: string;
   videoUrl: string | null;
   language: string;
@@ -54,10 +56,12 @@ export interface ShadowingSession {
   updatedAt: string;
 }
 
-/** Payload for creating a shadowing session. Only `title` + `language` are required. */
+/** Payload for creating a shadowing session. `title`, `language`, and `date` are required. */
 export interface CreateShadowingSessionInput {
   title: string;
   language: string;
+  /** ISO date (YYYY-MM-DD) the session happened. */
+  date: string;
   videoUrl?: string | null;
   bookmarkId?: string | null;
   bookmarkTitle?: string | null;

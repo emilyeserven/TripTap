@@ -1,3 +1,4 @@
+import type { XpBreakdownView } from "@/components/XpBreakdown";
 import type { StartSuggestion } from "@/lib/start-recommendations";
 import type { BookmarkSectionMatch } from "@sentence-bank/types";
 import type * as React from "react";
@@ -242,6 +243,7 @@ function StartPage() {
   // advances the window (wrapping) so the learner can cycle through the alternatives.
   const available = suggestions.filter(s => !lineupIds.has(s.id));
   const [rerollOffset, setRerollOffset] = useState(0);
+  const [breakdownView, setBreakdownView] = useState<XpBreakdownView>("all-time");
   const UP_NEXT_COUNT = 3;
   const start = available.length > 0 ? rerollOffset % available.length : 0;
   const upNext = available.length <= UP_NEXT_COUNT
@@ -357,7 +359,13 @@ function StartPage() {
           </CardHeader>
           <CardContent>
             {summary.data
-              ? <XpBreakdown summary={summary.data} />
+              ? (
+                <XpBreakdown
+                  summary={summary.data}
+                  view={breakdownView}
+                  onViewChange={setBreakdownView}
+                />
+              )
               : <p className="text-sm text-muted-foreground">Loading XP…</p>}
           </CardContent>
         </Card>

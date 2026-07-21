@@ -1,8 +1,8 @@
-import type { XpRateKey } from "@sentence-bank/types";
+import type { LearningArea, XpRateKey } from "@sentence-bank/types";
 
 import { useEffect, useState } from "react";
 
-import { DEFAULT_XP_RATES, XP_RATE_KEYS } from "@sentence-bank/types";
+import { DEFAULT_XP_RATES, LEARNING_AREAS, XP_RATE_KEYS } from "@sentence-bank/types";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,33 @@ const RATE_LABELS: Record<XpRateKey, string> = {
   drillQuestion: "Drills — question",
   lessonLine: "Lessons — line",
   lessonWordNote: "Lessons — word fully filled out",
+  theoryStudyPageDense: "Theory study — dense page",
+  theoryStudyPageMedium: "Theory study — medium page",
+  theoryStudyPageLight: "Theory study — light page",
+  theoryStudyPer250Words: "Theory study — per 250 words",
+  theoryStudyNote: "Theory study — note",
+};
+
+/**
+ * Which learning area each rate feeds, so the card can group its inputs by area. Keys omitted here
+ * (book-exercise and drill rates) split their XP across a record's areas, so they don't belong to one
+ * area — they're rendered under a "Varies" subsection instead.
+ */
+const RATE_AREAS: Partial<Record<XpRateKey, LearningArea>> = {
+  readingTranslatedSentence: "Reading",
+  readingWordNote: "Reading",
+  writingSentence: "Writing",
+  writingCorrection: "Writing",
+  listeningEntry: "Listening",
+  listeningPassiveMinute: "Listening",
+  lessonLine: "Listening",
+  shadowingLoop: "Speaking",
+  lessonWordNote: "Vocabulary",
+  theoryStudyPageDense: "Grammar",
+  theoryStudyPageMedium: "Grammar",
+  theoryStudyPageLight: "Grammar",
+  theoryStudyPer250Words: "Grammar",
+  theoryStudyNote: "Grammar",
 };
 
 /**
@@ -87,6 +114,20 @@ export function XpRatesCard() {
     });
   };
 
+  // Group the rate inputs by the learning area they feed; keys that split across a record's areas
+  // (book-exercise and drill rates) land in a trailing "Varies" section.
+  const sections: { heading: string;
+    keys: XpRateKey[]; }[] = [
+    ...LEARNING_AREAS.map(area => ({
+      heading: area,
+      keys: XP_RATE_KEYS.filter(key => RATE_AREAS[key] === area),
+    })),
+    {
+      heading: "Varies",
+      keys: XP_RATE_KEYS.filter(key => !RATE_AREAS[key]),
+    },
+  ].filter(section => section.keys.length > 0);
+
   return (
     <Card>
       <CardHeader>
@@ -96,46 +137,56 @@ export function XpRatesCard() {
           rate re-scores everything — past and future — the next time totals load.
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-5">
         {!draft
           ? <p className="text-sm text-muted-foreground">Loading rates…</p>
           : (
-            <div
-              className="
-                grid gap-x-6 gap-y-3
-                sm:grid-cols-2
-              "
-            >
-              {XP_RATE_KEYS.map(key => (
+            <div className="space-y-5">
+              {sections.map(section => (
                 <div
-                  key={key}
-                  className="space-y-1"
+                  key={section.heading}
+                  className="space-y-2"
                 >
-                  <Label
-                    htmlFor={`xp-rate-${key}`}
-                    className="text-xs"
+                  <h3 className="text-sm font-semibold">{section.heading}</h3>
+                  <div
+                    className="
+                      grid gap-x-6 gap-y-3
+                      sm:grid-cols-2
+                    "
                   >
-                    {RATE_LABELS[key]}
-                    {Number(draft[key]) !== DEFAULT_XP_RATES[key] && (
-                      <span className="ml-1 text-muted-foreground">
-                        (default {formatXp(DEFAULT_XP_RATES[key])})
-                      </span>
-                    )}
-                  </Label>
-                  <Input
-                    id={`xp-rate-${key}`}
-                    type="number"
-                    min={0}
-                    step={0.25}
-                    inputMode="decimal"
-                    value={draft[key]}
-                    onChange={e => setDraft(prev => (prev
-                      ? {
-                        ...prev,
-                        [key]: e.target.value,
-                      }
-                      : prev))}
-                  />
+                    {section.keys.map(key => (
+                      <div
+                        key={key}
+                        className="space-y-1"
+                      >
+                        <Label
+                          htmlFor={`xp-rate-${key}`}
+                          className="text-xs"
+                        >
+                          {RATE_LABELS[key]}
+                          {Number(draft[key]) !== DEFAULT_XP_RATES[key] && (
+                            <span className="ml-1 text-muted-foreground">
+                              (default {formatXp(DEFAULT_XP_RATES[key])})
+                            </span>
+                          )}
+                        </Label>
+                        <Input
+                          id={`xp-rate-${key}`}
+                          type="number"
+                          min={0}
+                          step={0.25}
+                          inputMode="decimal"
+                          value={draft[key]}
+                          onChange={e => setDraft(prev => (prev
+                            ? {
+                              ...prev,
+                              [key]: e.target.value,
+                            }
+                            : prev))}
+                        />
+                      </div>
+                    ))}
+                  </div>
                 </div>
               ))}
             </div>

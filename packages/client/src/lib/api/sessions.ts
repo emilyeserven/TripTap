@@ -15,6 +15,10 @@ import type {
   DrillReasonCategory,
   CreateDrillReasonCategoryInput,
   UpdateDrillReasonCategoryInput,
+  TheorySession,
+  CreateTheorySessionInput,
+  UpdateTheorySessionInput,
+  ActivityDay,
   XpSummary,
 } from "@sentence-bank/types";
 
@@ -123,6 +127,24 @@ export const drillSessionsApi = {
   }),
 };
 
+export const theorySessionsApi = {
+  list: () => request<TheorySession[]>("/theory-sessions"),
+  get: (id: string) => request<TheorySession>(`/theory-sessions/${id}`),
+  create: (input: CreateTheorySessionInput) =>
+    request<TheorySession>("/theory-sessions", {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+  update: (id: string, input: UpdateTheorySessionInput) =>
+    request<TheorySession>(`/theory-sessions/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    }),
+  remove: (id: string) => request<undefined>(`/theory-sessions/${id}`, {
+    method: "DELETE",
+  }),
+};
+
 export const drillReasonCategoriesApi = {
   list: () => request<DrillReasonCategory[]>("/drill-reason-categories"),
   get: (id: string) => request<DrillReasonCategory>(`/drill-reason-categories/${id}`),
@@ -148,5 +170,15 @@ export const xpApi = {
     // "Today" is the caller's calendar day; the browser's offset tells the server where that falls.
     params.set("tzOffsetMinutes", String(new Date().getTimezoneOffset()));
     return request<XpSummary>(`/xp/summary?${params.toString()}`);
+  },
+};
+
+export const activityApi = {
+  list: (days?: number) => {
+    const params = new URLSearchParams();
+    if (days != null) params.set("days", String(days));
+    // Group work by the caller's calendar day; the browser's offset tells the server where that falls.
+    params.set("tzOffsetMinutes", String(new Date().getTimezoneOffset()));
+    return request<ActivityDay[]>(`/activity?${params.toString()}`);
   },
 };

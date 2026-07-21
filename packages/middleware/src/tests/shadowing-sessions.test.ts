@@ -17,6 +17,20 @@ test("POST /api/shadowing-sessions rejects a payload missing language", async ()
   await app.close();
 });
 
+test("POST /api/shadowing-sessions rejects a payload missing date", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/shadowing-sessions",
+    payload: {
+      title: "Shadowing drill",
+      language: "Japanese",
+    },
+  });
+  assert.equal(res.statusCode, 400);
+  await app.close();
+});
+
 test("POST /api/shadowing-sessions rejects negative completedLoops", async () => {
   const app = await buildApp();
   const res = await app.inject({
@@ -85,6 +99,7 @@ test("POST /api/shadowing-sessions accepts a valid payload with segments and def
     payload: {
       title: "Shadowing drill",
       language: "Japanese",
+      date: "2026-07-20",
       videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
       defaultMaxReplays: 5,
       defaultGapMs: 500,
@@ -132,6 +147,7 @@ test("POST /api/shadowing-sessions accepts a kana entry carrying English context
     payload: {
       title: "Shadowing drill",
       language: "Japanese",
+      date: "2026-07-20",
       entries: [
         {
           id: "e1",

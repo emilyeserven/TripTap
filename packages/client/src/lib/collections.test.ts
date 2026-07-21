@@ -4,6 +4,7 @@ import type {
   DrillTagMap,
   LearningAreaTagMap,
   MaterialTypeTagMap,
+  TheoryTagMap,
 } from "@sentence-bank/types";
 
 import { describe, expect, it } from "vitest";
@@ -24,6 +25,7 @@ import {
   matchesMaterialTypes,
   matchesMediaKind,
   matchesMediaType,
+  matchesTheoryTags,
   materialTypeFilterOptions,
   mediaTypeFilterOptions,
   matchesWebsite,
@@ -32,8 +34,10 @@ import {
   resourceDrillTags,
   resourceLearningAreas,
   resourceMaterialTypes,
+  resourceTheoryTags,
   sortByRuntime,
   sortResources,
+  theoryTagFilterOptions,
   websiteFilterOptions,
 } from "./collections";
 
@@ -613,6 +617,54 @@ describe("matchesDrillTags", () => {
   });
 });
 
+const THEORY_MAP: TheoryTagMap = {
+  Theory: {
+    id: "tT",
+    name: "Theory",
+  },
+};
+
+describe("resourceTheoryTags", () => {
+  it("returns Theory only when the mapped tag is on the resource", () => {
+    expect(resourceTheoryTags(["tT"], THEORY_MAP)).toEqual(["Theory"]);
+    expect(resourceTheoryTags(["nope"], THEORY_MAP)).toEqual([]);
+    expect(resourceTheoryTags(["tT"], {})).toEqual([]);
+  });
+});
+
+describe("theoryTagFilterOptions", () => {
+  it("lists the mapped Theory tag with a resource count, or nothing when unmapped", () => {
+    const resources = [
+      resource({
+        tagIds: ["tT"],
+      }),
+      resource({
+        tagIds: [],
+      }),
+    ];
+    expect(theoryTagFilterOptions(THEORY_MAP, resources)).toEqual([
+      {
+        value: "Theory",
+        label: "Theory (1)",
+      },
+    ]);
+    expect(theoryTagFilterOptions({}, resources)).toEqual([]);
+  });
+});
+
+describe("matchesTheoryTags", () => {
+  it("passes everything when nothing is selected, else matches the Theory tag", () => {
+    const r = resource({
+      tagIds: ["tT"],
+    });
+    expect(matchesTheoryTags(r, [], THEORY_MAP)).toBe(true);
+    expect(matchesTheoryTags(r, ["Theory"], THEORY_MAP)).toBe(true);
+    expect(matchesTheoryTags(resource({
+      tagIds: [],
+    }), ["Theory"], THEORY_MAP)).toBe(false);
+  });
+});
+
 describe("resourceActions", () => {
   it("derives session buttons from the resource's learning areas (Listening also offers shadowing)", () => {
     expect(resourceActions(resource({
@@ -698,6 +750,7 @@ describe("parseCollectionsSearch", () => {
       areas: undefined,
       materials: undefined,
       drills: undefined,
+      theory: undefined,
       sort: undefined,
       cmin: undefined,
       cmax: undefined,
@@ -712,6 +765,7 @@ describe("parseCollectionsSearch", () => {
       areas: ["Reading", "Writing"],
       materials: ["Graded"],
       drills: ["Drills"],
+      theory: ["Theory"],
       sort: "progress-asc",
       cmin: 1,
       cmax: 4,
@@ -723,6 +777,7 @@ describe("parseCollectionsSearch", () => {
       areas: ["Reading", "Writing"],
       materials: ["Graded"],
       drills: ["Drills"],
+      theory: ["Theory"],
       sort: "progress-asc",
       cmin: 1,
       cmax: 4,

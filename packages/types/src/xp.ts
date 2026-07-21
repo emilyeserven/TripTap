@@ -19,6 +19,7 @@ export const XP_FEATURES = [
   "shadowing",
   "drills",
   "lessons",
+  "theoryStudy",
 ] as const;
 
 /** One feature bucket from {@link XP_FEATURES}. */
@@ -43,6 +44,11 @@ export const DEFAULT_XP_RATES = {
   drillQuestion: 0.25,
   lessonLine: 1,
   lessonWordNote: 0.5,
+  theoryStudyPageDense: 2,
+  theoryStudyPageMedium: 1,
+  theoryStudyPageLight: 0.5,
+  theoryStudyPer250Words: 1,
+  theoryStudyNote: 0.25,
 } as const;
 
 /** One adjustable rate from {@link DEFAULT_XP_RATES}. */
@@ -88,9 +94,8 @@ export interface XpRecentSummary {
 /** XP earned so far in the caller's local calendar day (per the `tzOffsetMinutes` query param). */
 export interface XpTodaySummary {
   totalXp: number;
-  /** Per-area today totals; areas with no XP today are omitted. */
-  areas: { area: LearningArea;
-    xp: number; }[];
+  /** Per-area today totals with a per-feature breakdown; areas with no XP today are omitted. */
+  areas: XpAreaSummary[];
 }
 
 /** The response of `GET /api/xp/summary`. `areas` always holds all six areas, zero-filled. */

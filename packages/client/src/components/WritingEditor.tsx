@@ -10,12 +10,14 @@ import { useUpdateWriting } from "../hooks/useWritings";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 
 /** The autosaved fields of a writing (corrections are managed separately in correction mode). */
 interface Draft {
+  date: string;
   text: string;
   meaning: string;
   comments: string;
@@ -26,6 +28,7 @@ interface Draft {
 
 function toDraft(w: Writing): Draft {
   return {
+    date: w.date,
     text: w.text,
     meaning: w.meaning ?? "",
     comments: w.comments ?? "",
@@ -37,6 +40,7 @@ function toDraft(w: Writing): Draft {
 
 function toInput(draft: Draft): UpdateWritingInput {
   return {
+    date: draft.date,
     text: draft.text,
     meaning: draft.meaning || null,
     comments: draft.comments || null,
@@ -130,6 +134,20 @@ export function WritingEditor({
           {status === "Saved" ? <Check className="size-4 text-primary" /> : null}
           {status}
         </span>
+      </div>
+
+      <div
+        className="
+          space-y-1.5
+          sm:max-w-xs
+        "
+      >
+        <Label className="text-sm">Date</Label>
+        <Input
+          type="date"
+          value={draft.date}
+          onChange={e => set("date", e.target.value)}
+        />
       </div>
 
       {correcting

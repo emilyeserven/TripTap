@@ -167,7 +167,7 @@ const bookmarkSectionRefSchema = {
 
 const createShadowingSessionBody = {
   type: "object",
-  required: ["title", "language"],
+  required: ["title", "language", "date"],
   additionalProperties: false,
   properties: {
     title: {
@@ -177,6 +177,10 @@ const createShadowingSessionBody = {
     language: {
       type: "string",
       minLength: 1,
+    },
+    date: {
+      type: "string",
+      format: "date",
     },
     videoUrl: {
       type: ["string", "null"],

@@ -5,6 +5,7 @@ import { buildApp } from "@/app";
 import { parseXpRateOverrides } from "@/services/settings";
 import {
   bookExercisesXp,
+  ceilToQuarter,
   countSentences,
   drillXp,
   isFilledWordNote,
@@ -13,6 +14,7 @@ import {
   readingXp,
   shadowingXp,
   summarizeGrants,
+  theoryStudyXp,
   writingXp,
 } from "@/services/xp";
 
@@ -34,8 +36,11 @@ test("countSentences splits on Japanese and latin terminators and newlines", () 
 test("readingXp counts translated lines at 2xp and word notes at 1xp", () => {
   const grants = readingXp([
     {
+      id: "r1",
+      title: "Reading 1",
       mode: "line-by-line",
       freeformTranslation: null,
+      date: "2026-07-19",
       lines: [
         {
           id: "l1",
@@ -84,8 +89,11 @@ test("readingXp counts translated lines at 2xp and word notes at 1xp", () => {
 test("readingXp counts freeform translations by sentence", () => {
   const grants = readingXp([
     {
+      id: "r1",
+      title: "Reading 1",
       mode: "freeform",
       freeformTranslation: "First. Second。",
+      date: "2026-07-19",
       lines: null,
       wordNotes: null,
       createdAt: RECENT,
@@ -98,7 +106,9 @@ test("writingXp counts sentences and corrections, skipping promoted my-sentences
   const grants = writingXp(
     [
       {
+        id: "w1",
         text: "一文目。二文目。",
+        date: "2026-07-19",
         corrections: [
           {
             id: "c1",
@@ -115,18 +125,21 @@ test("writingXp counts sentences and corrections, skipping promoted my-sentences
     [
       // Promoted from the writing above — must not double-count.
       {
+        id: "ms1",
         writingId: "w1",
         correction: "一文目です。",
         createdAt: RECENT,
       },
       // Standalone corrected sentence: 1 (sentence) + 1 (correction).
       {
+        id: "ms2",
         writingId: null,
         correction: "直した。",
         createdAt: RECENT,
       },
       // Standalone uncorrected sentence: 1.
       {
+        id: "ms3",
         writingId: null,
         correction: null,
         createdAt: RECENT,
@@ -143,12 +156,14 @@ test("bookExercisesXp splits sheet XP across areas and rates grid entries at 0.2
   const sheets = [
     {
       id: "s1",
+      title: "Sheet 1",
       layout: "list",
       learningAreas: ["Reading", "Grammar"] as ("Reading" | "Grammar")[],
       createdAt: RECENT,
     },
     {
       id: "s2",
+      title: "Sheet 2",
       layout: "grid",
       learningAreas: null,
       createdAt: RECENT,
@@ -156,6 +171,8 @@ test("bookExercisesXp splits sheet XP across areas and rates grid entries at 0.2
   ];
   const answers = [
     {
+      id: "a1",
+      title: null,
       questionSheetId: "s1",
       entries: [
         {
@@ -182,6 +199,8 @@ test("bookExercisesXp splits sheet XP across areas and rates grid entries at 0.2
       createdAt: RECENT,
     },
     {
+      id: "a2",
+      title: null,
       questionSheetId: "s2",
       entries: [
         {
@@ -199,6 +218,8 @@ test("bookExercisesXp splits sheet XP across areas and rates grid entries at 0.2
     },
     // Orphaned answer sheet (its sheet was deleted) falls back to Grammar at the list rate.
     {
+      id: "a3",
+      title: null,
       questionSheetId: "gone",
       entries: [
         {
@@ -227,6 +248,9 @@ test("bookExercisesXp splits sheet XP across areas and rates grid entries at 0.2
 test("listening, shadowing, and drill XP use their per-unit rates", () => {
   const listening = listeningXp([
     {
+      id: "ls1",
+      title: "Listening 1",
+      date: "2026-07-19",
       entries: [
         {
           id: "e1",
@@ -254,6 +278,9 @@ test("listening, shadowing, and drill XP use their per-unit rates", () => {
   // A passive session scores by the minute (0.5 each), ignoring notes.
   const passive = listeningXp([
     {
+      id: "ls2",
+      title: "Listening 2",
+      date: "2026-07-19",
       entries: null,
       passive: true,
       durationMinutes: 45,
@@ -265,6 +292,9 @@ test("listening, shadowing, and drill XP use their per-unit rates", () => {
   assert.equal(passive[0].feature, "listening");
 
   const shadowing = shadowingXp([{
+    id: "sh1",
+    title: "Shadowing 1",
+    date: "2026-07-19",
     completedLoops: 8,
     createdAt: RECENT,
   }]);
@@ -273,11 +303,15 @@ test("listening, shadowing, and drill XP use their per-unit rates", () => {
 
   const drills = drillXp([
     {
+      id: "d1",
+      title: "Drill 1",
       date: "2026-07-19",
       questions: 4,
       learningArea: "Vocabulary",
     },
     {
+      id: "d2",
+      title: null,
       date: "2026-07-19",
       questions: 4,
       learningArea: null,
@@ -408,13 +442,19 @@ test("grant functions honor overridden rates", () => {
     readingWordNote: 3,
   };
   const shadowing = shadowingXp([{
+    id: "sh1",
+    title: "Shadowing 1",
+    date: "2026-07-19",
     completedLoops: 4,
     createdAt: RECENT,
   }], rates);
   assert.equal(shadowing[0].xp, 4);
   const reading = readingXp([{
+    id: "r1",
+    title: "Reading 1",
     mode: "line-by-line",
     freeformTranslation: null,
+    date: "2026-07-19",
     lines: null,
     wordNotes: [{
       id: "w1",
@@ -427,6 +467,138 @@ test("grant functions honor overridden rates", () => {
     createdAt: RECENT,
   }], rates);
   assert.equal(reading[0].xp, 3);
+});
+
+test("ceilToQuarter rounds up to the nearest 0.25", () => {
+  assert.equal(ceilToQuarter(0), 0);
+  assert.equal(ceilToQuarter(1), 1);
+  assert.equal(ceilToQuarter(794 / 250), 3.25);
+  assert.equal(ceilToQuarter(251 / 250), 1.25);
+  assert.equal(ceilToQuarter(3.0001), 3.25);
+});
+
+test("theoryStudyXp scores pages by density → Grammar", () => {
+  const row = {
+    id: "t1",
+    title: "Theory 1",
+    date: "2026-07-19",
+    entryMode: "pages" as const,
+    wordCount: null,
+    notesCount: 0,
+  };
+  const dense = theoryStudyXp([{
+    ...row,
+    pages: 3,
+    density: "dense",
+  }]);
+  assert.equal(dense[0].xp, 6);
+  assert.equal(dense[0].area, "Grammar");
+  assert.equal(dense[0].feature, "theoryStudy");
+  assert.equal(dense[0].dateOnly, "2026-07-19");
+  assert.equal(theoryStudyXp([{
+    ...row,
+    pages: 3,
+    density: "medium",
+  }])[0].xp, 3);
+  assert.equal(theoryStudyXp([{
+    ...row,
+    pages: 3,
+    density: "light",
+  }])[0].xp, 1.5);
+  // Null density defaults to medium.
+  assert.equal(theoryStudyXp([{
+    ...row,
+    pages: 2,
+    density: null,
+  }])[0].xp, 2);
+});
+
+test("theoryStudyXp scores words at ⌈words/250⌉ rounded up to 0.25, plus notes", () => {
+  const base = {
+    id: "t1",
+    title: null,
+    date: "2026-07-19",
+    entryMode: "words" as const,
+    pages: null,
+    density: null,
+    notesCount: 0,
+  };
+  assert.equal(theoryStudyXp([{
+    ...base,
+    wordCount: 794,
+  }])[0].xp, 3.25);
+  assert.equal(theoryStudyXp([{
+    ...base,
+    wordCount: 250,
+  }])[0].xp, 1);
+  assert.equal(theoryStudyXp([{
+    ...base,
+    wordCount: 251,
+  }])[0].xp, 1.25);
+  // Zero words and zero notes earns nothing at all.
+  assert.deepEqual(theoryStudyXp([{
+    ...base,
+    wordCount: 0,
+  }]), []);
+  // Notes add 0.25 each, on top of the word sub-total.
+  assert.equal(theoryStudyXp([{
+    ...base,
+    wordCount: 250,
+    notesCount: 2,
+  }])[0].xp, 1.5);
+  // A words entry with only notes still earns from the notes.
+  assert.equal(theoryStudyXp([{
+    ...base,
+    wordCount: 0,
+    notesCount: 3,
+  }])[0].xp, 0.75);
+});
+
+test("the four dated sessions stamp dateOnly for local-day bucketing", () => {
+  const reading = readingXp([{
+    id: "r1",
+    title: "R",
+    mode: "freeform",
+    freeformTranslation: "One.",
+    date: "2026-07-20",
+    lines: null,
+    wordNotes: null,
+    createdAt: OLD,
+  }]);
+  const writing = writingXp([{
+    id: "w1",
+    text: "文。",
+    date: "2026-07-20",
+    corrections: null,
+    createdAt: OLD,
+  }], []);
+  const listening = listeningXp([{
+    id: "l1",
+    title: "L",
+    date: "2026-07-20",
+    entries: null,
+    passive: true,
+    durationMinutes: 10,
+    createdAt: OLD,
+  }]);
+  const shadowing = shadowingXp([{
+    id: "s1",
+    title: "S",
+    date: "2026-07-20",
+    completedLoops: 4,
+    createdAt: OLD,
+  }]);
+  for (const grants of [reading, writing, listening, shadowing]) {
+    assert.equal(grants[0].dateOnly, "2026-07-20");
+  }
+  // All four land in "today" via their learner date even though createdAt is old.
+  const summary = summarizeGrants(
+    [...reading, ...writing, ...listening, ...shadowing],
+    7,
+    new Date("2026-07-20T12:00:00Z"),
+  );
+  assert.ok(summary.today.totalXp > 0);
+  assert.equal(summary.today.totalXp, summary.totalXp);
 });
 
 test("parseXpRateOverrides keeps only known keys with valid values", () => {
@@ -484,15 +656,21 @@ test("summarizeGrants counts today against the caller's local calendar day", () 
     -120,
   );
   assert.equal(summary.today.totalXp, 4.25);
-  // Today is also broken out per area (only areas with XP today appear).
+  // Today is also broken out per area with a per-feature makeup (only areas with XP today appear).
   assert.deepEqual(summary.today.areas, [
     {
       area: "Reading",
       xp: 4,
+      byFeature: {
+        reading: 4,
+      },
     },
     {
       area: "Grammar",
       xp: 0.25,
+      byFeature: {
+        drills: 0.25,
+      },
     },
   ]);
 });

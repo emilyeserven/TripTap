@@ -3,6 +3,7 @@ import multipart from "@fastify/multipart";
 import swagger from "@fastify/swagger";
 import swaggerUi from "@fastify/swagger-ui";
 import Fastify, { type FastifyInstance } from "fastify";
+import { activityRoutes } from "@/routes/activity";
 import { aiLessonRoutes } from "@/routes/ai-lessons";
 import { answerSheetRoutes } from "@/routes/answer-sheets";
 import { bookmarksRoutes } from "@/routes/bookmarks";
@@ -27,6 +28,7 @@ import { sentenceRoutes } from "@/routes/sentences";
 import { settingsRoutes } from "@/routes/settings";
 import { shadowingSessionsRoutes } from "@/routes/shadowing-sessions";
 import { sourceRoutes } from "@/routes/sources";
+import { theorySessionRoutes } from "@/routes/theory-sessions";
 import { tutorRoutes } from "@/routes/tutors";
 import { vocabRoutes } from "@/routes/vocab";
 import { writingRoutes } from "@/routes/writings";
@@ -128,6 +130,10 @@ export async function buildApp(): Promise<FastifyInstance> {
           description: "Drill Buddy — the reusable mistake-reason taxonomy",
         },
         {
+          name: "theory-sessions",
+          description: "Theory study sessions — pages/word-count study earning Grammar XP",
+        },
+        {
           name: "health",
           description: "Service health",
         },
@@ -175,6 +181,10 @@ export async function buildApp(): Promise<FastifyInstance> {
           name: "xp",
           description: "Experience points derived from learner activity, per learning area",
         },
+        {
+          name: "activity",
+          description: "Daily activity feed derived from learner XP",
+        },
       ],
     },
   });
@@ -202,6 +212,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(lessonRoutes);
   await app.register(drillReasonCategoryRoutes);
   await app.register(drillSessionRoutes);
+  await app.register(theorySessionRoutes);
   await app.register(sourceRoutes);
   await app.register(vocabRoutes);
   await app.register(captureRoutes);
@@ -211,6 +222,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(migakuImportRoutes);
   await app.register(settingsRoutes);
   await app.register(xpRoutes);
+  await app.register(activityRoutes);
 
   return app;
 }

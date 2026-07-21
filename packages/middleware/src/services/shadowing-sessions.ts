@@ -19,6 +19,7 @@ function mediaKey(filename: string): string {
 function toShadowingSession(row: ShadowingSessionRow): ShadowingSession {
   return {
     id: row.id,
+    date: row.date,
     title: row.title,
     videoUrl: row.videoUrl,
     language: row.language,
@@ -43,6 +44,7 @@ function toShadowingSession(row: ShadowingSessionRow): ShadowingSession {
 /** Drizzle insert shape for one shadowing-session row, from the create input. */
 function toInsert(input: CreateShadowingSessionInput) {
   return {
+    date: input.date,
     title: input.title,
     videoUrl: input.videoUrl ?? null,
     language: input.language,
@@ -59,9 +61,12 @@ function toInsert(input: CreateShadowingSessionInput) {
   };
 }
 
-/** List shadowing sessions, newest first. */
+/** List shadowing sessions, most recent date first. */
 export async function listShadowingSessions(): Promise<ShadowingSession[]> {
-  const rows = await db.select().from(shadowingSessions).orderBy(desc(shadowingSessions.createdAt));
+  const rows = await db
+    .select()
+    .from(shadowingSessions)
+    .orderBy(desc(shadowingSessions.date), desc(shadowingSessions.createdAt));
   return rows.map(toShadowingSession);
 }
 

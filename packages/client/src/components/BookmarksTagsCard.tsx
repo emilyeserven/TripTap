@@ -8,12 +8,13 @@ import type {
   MaterialTypeTagMap,
   SentenceTermCategory,
   TagTermOption,
+  TheoryTagMap,
 } from "@sentence-bank/types";
 import type { UseQueryResult } from "@tanstack/react-query";
 
 import { useEffect, useRef, useState } from "react";
 
-import { DRILL_TAGS, LEARNING_AREAS, MATERIAL_TYPES } from "@sentence-bank/types";
+import { DRILL_TAGS, LEARNING_AREAS, MATERIAL_TYPES, THEORY_TAGS } from "@sentence-bank/types";
 import { Check, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -390,6 +391,25 @@ function DrillTagFields({
   );
 }
 
+/** Maps the Theory classification to one Resources-source tag. */
+function TheoryTagFields({
+  value,
+  onChange,
+}: {
+  value: TheoryTagMap;
+  onChange: (next: TheoryTagMap) => void;
+}) {
+  return (
+    <TagMapFields
+      keys={THEORY_TAGS}
+      value={value}
+      onChange={onChange}
+      title="Theory tags"
+      hint="Map the Theory classification to one Resources-source tag. Tagged resources are badged and filterable as theory material on the Collections page and grammar notes."
+    />
+  );
+}
+
 /**
  * Settings card for the external bookmarks tag/taxonomy integration. The user sets the API endpoint
  * and picks one source per channel (Vocabulary, Grammar, General) — a parent tag (its children become
@@ -421,6 +441,7 @@ export function BookmarksTagsCard() {
   const [areaTags, setAreaTags] = useState<LearningAreaTagMap>({});
   const [materialTags, setMaterialTags] = useState<MaterialTypeTagMap>({});
   const [drillTags, setDrillTags] = useState<DrillTagMap>({});
+  const [theoryTags, setTheoryTags] = useState<TheoryTagMap>({});
   const [saved, setSaved] = useState(false);
 
   // Seed local state from the loaded settings once (later refetches must not clobber edits).
@@ -438,6 +459,7 @@ export function BookmarksTagsCard() {
     setAreaTags(settings.data.learningAreaTags ?? {});
     setMaterialTags(settings.data.materialTypeTags ?? {});
     setDrillTags(settings.data.drillTags ?? {});
+    setTheoryTags(settings.data.theoryTags ?? {});
   }, [settings.data]);
 
   function flashSaved() {
@@ -455,6 +477,7 @@ export function BookmarksTagsCard() {
       learningAreaTags: areaTags,
       materialTypeTags: materialTags,
       drillTags,
+      theoryTags,
     });
     flashSaved();
   }
@@ -522,6 +545,11 @@ export function BookmarksTagsCard() {
         <DrillTagFields
           value={drillTags}
           onChange={setDrillTags}
+        />
+
+        <TheoryTagFields
+          value={theoryTags}
+          onChange={setTheoryTags}
         />
 
         <div className="flex items-center gap-3">

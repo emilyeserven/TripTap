@@ -176,6 +176,62 @@ test("PATCH /api/settings/xp accepts overrides and a full reset", async () => {
   await app.close();
 });
 
+test("PATCH /api/settings/xp accepts the theory-study rate keys", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "PATCH",
+    url: "/api/settings/xp",
+    payload: {
+      rates: {
+        theoryStudyPageDense: 3,
+        theoryStudyPageMedium: 1.5,
+        theoryStudyPageLight: 0.5,
+        theoryStudyPer250Words: 1,
+        theoryStudyNote: 0.25,
+      },
+    },
+  });
+  // Without a live DB the handler fails downstream; schema validation must still pass.
+  assert.notEqual(res.statusCode, 400);
+  await app.close();
+});
+
+test("PATCH /api/settings/bookmarks accepts a theory tag mapping", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "PATCH",
+    url: "/api/settings/bookmarks",
+    payload: {
+      theoryTags: {
+        Theory: {
+          id: "tag1",
+          name: "Theory",
+        },
+      },
+    },
+  });
+  // Schema validation must pass; persistence needs a live DB (not asserted here).
+  assert.notEqual(res.statusCode, 400);
+  await app.close();
+});
+
+test("PATCH /api/settings/bookmarks rejects a theory tag missing its name", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "PATCH",
+    url: "/api/settings/bookmarks",
+    payload: {
+      theoryTags: {
+        Theory: {
+          id: "tag1",
+        },
+      },
+    },
+  });
+  assert.equal(res.statusCode, 400);
+  await app.close();
+});
+
 test("PATCH /api/settings/start rejects a lineup without a date", async () => {
   const app = await buildApp();
   const res = await app.inject({

@@ -6,6 +6,8 @@ import type {
   ListeningEntry,
   QuestionSheetLayout,
   ReadingLine,
+  TheoryDensity,
+  TheoryEntryMode,
   WordNote,
   WritingCorrection,
   XpAreaSummary,
@@ -24,6 +26,7 @@ import {
   questionSheets,
   readingSessions,
   shadowingSessions,
+  theorySessions,
   writings,
 } from "@/db/schema";
 import { getXpRates } from "@/services/settings";
@@ -46,6 +49,15 @@ export interface XpGrant {
    * compares this string directly instead.
    */
   dateOnly?: string;
+  /**
+   * Optional attribution for the daily activity log. `sourceId` identifies the row that produced the
+   * grant so multi-grant sources (a lesson's listening + vocab, a sheet's areas) merge into one
+   * activity item; `title`/`to`/`params` link it. `summarizeGrants` ignores these.
+   */
+  sourceId?: string;
+  title?: string | null;
+  to?: string;
+  params?: Record<string, string>;
 }
 
 /** Count the sentences in a free-text block: split on Japanese/latin terminators and newlines. */
@@ -68,6 +80,7 @@ function splitAcrossAreas(
   feature: XpFeature,
   xp: number,
   at: Date,
+  meta?: Pick<XpGrant, "sourceId" | "title" | "to" | "params">,
 ): XpGrant[] {
   const targets = areas && areas.length > 0 ? areas : ["Grammar" as const];
   return targets.map(area => ({
@@ -75,14 +88,18 @@ function splitAcrossAreas(
     feature,
     xp: xp / targets.length,
     at,
+    ...meta,
   }));
 }
 
 interface ReadingXpRow {
+  id: string;
+  title: string;
   mode: string;
   freeformTranslation: string | null;
   lines: ReadingLine[] | null;
   wordNotes: WordNote[] | null;
+  date: string;
   createdAt: Date;
 }
 
@@ -99,19 +116,29 @@ export function readingXp(rows: ReadingXpRow[], rates: XpRates = DEFAULT_XP_RATE
         area: "Reading" as const,
         feature: "reading" as const,
         xp,
-        at: row.createdAt,
+        at: new Date(row.date),
+        dateOnly: row.date,
+        sourceId: row.id,
+        title: row.title,
+        to: "/reading-sessions/$id",
+        params: {
+          id: row.id,
+        },
       }]
       : [];
   });
 }
 
 interface WritingXpRow {
+  id: string;
   text: string;
   corrections: WritingCorrection[] | null;
+  date: string;
   createdAt: Date;
 }
 
 interface MySentenceXpRow {
+  id: string;
   writingId: string | null;
   correction: string | null;
   createdAt: Date;
@@ -134,7 +161,14 @@ export function writingXp(
         area: "Writing" as const,
         feature: "writing" as const,
         xp,
-        at: row.createdAt,
+        at: new Date(row.date),
+        dateOnly: row.date,
+        sourceId: row.id,
+        title: null,
+        to: "/my-writing/$id",
+        params: {
+          id: row.id,
+        },
       }]
       : [];
   });
@@ -145,18 +179,24 @@ export function writingXp(
       feature: "writing" as const,
       xp: rates.writingSentence + (row.correction ? rates.writingCorrection : 0),
       at: row.createdAt,
+      sourceId: row.id,
+      title: null,
+      to: "/my-sentences",
     }));
   return [...fromWritings, ...fromSentences];
 }
 
 interface QuestionSheetXpRow {
   id: string;
+  title: string;
   layout: string;
   learningAreas: LearningArea[] | null;
   createdAt: Date;
 }
 
 interface AnswerSheetXpRow {
+  id: string;
+  title: string | null;
   questionSheetId: string;
   entries: AnswerSheetEntry[] | null;
   createdAt: Date;
@@ -177,6 +217,14 @@ export function bookExercisesXp(
     "bookExercises",
     rates.questionSheetAuthored,
     sheet.createdAt,
+    {
+      sourceId: sheet.id,
+      title: sheet.title,
+      to: "/question-sheets/$id",
+      params: {
+        id: sheet.id,
+      },
+    },
   ));
   const answered = answers.flatMap((answer) => {
     const entryCount = answer.entries?.length ?? 0;
@@ -190,15 +238,26 @@ export function bookExercisesXp(
       "bookExercises",
       entryCount * rate,
       answer.createdAt,
+      {
+        sourceId: answer.id,
+        title: answer.title ?? sheet?.title ?? null,
+        to: "/answer-sheets/$id",
+        params: {
+          id: answer.id,
+        },
+      },
     );
   });
   return [...authored, ...answered];
 }
 
 interface ListeningXpRow {
+  id: string;
+  title: string;
   entries: ListeningEntry[] | null;
   passive: boolean;
   durationMinutes: number;
+  date: string;
   createdAt: Date;
 }
 
@@ -216,14 +275,24 @@ export function listeningXp(rows: ListeningXpRow[], rates: XpRates = DEFAULT_XP_
         area: "Listening" as const,
         feature: "listening" as const,
         xp,
-        at: row.createdAt,
+        at: new Date(row.date),
+        dateOnly: row.date,
+        sourceId: row.id,
+        title: row.title,
+        to: "/listening-sessions/$id",
+        params: {
+          id: row.id,
+        },
       }]
       : [];
   });
 }
 
 interface ShadowingXpRow {
+  id: string;
+  title: string;
   completedLoops: number;
+  date: string;
   createdAt: Date;
 }
 
@@ -234,12 +303,21 @@ export function shadowingXp(rows: ShadowingXpRow[], rates: XpRates = DEFAULT_XP_
       area: "Speaking" as const,
       feature: "shadowing" as const,
       xp: row.completedLoops * rates.shadowingLoop,
-      at: row.createdAt,
+      at: new Date(row.date),
+      dateOnly: row.date,
+      sourceId: row.id,
+      title: row.title,
+      to: "/shadowing/$id",
+      params: {
+        id: row.id,
+      },
     }]
     : []));
 }
 
 interface DrillXpRow {
+  id: string;
+  title: string | null;
   date: string;
   questions: number;
   learningArea: LearningArea | null;
@@ -254,11 +332,19 @@ export function drillXp(rows: DrillXpRow[], rates: XpRates = DEFAULT_XP_RATES): 
       xp: row.questions * rates.drillQuestion,
       at: new Date(row.date),
       dateOnly: row.date,
+      sourceId: row.id,
+      title: row.title,
+      to: "/drill-sessions/$id",
+      params: {
+        id: row.id,
+      },
     }]
     : []));
 }
 
 interface LessonXpRow {
+  id: string;
+  title: string | null;
   date: string;
   listeningNotes: LessonListeningNote[] | null;
   wordNotes: LessonWordNote[] | null;
@@ -268,6 +354,14 @@ interface LessonXpRow {
 export function lessonXp(rows: LessonXpRow[], rates: XpRates = DEFAULT_XP_RATES): XpGrant[] {
   return rows.flatMap((row) => {
     const at = new Date(row.date);
+    const meta = {
+      sourceId: row.id,
+      title: row.title,
+      to: "/lessons/$id",
+      params: {
+        id: row.id,
+      },
+    };
     const grants: XpGrant[] = [];
     const lines = row.listeningNotes?.length ?? 0;
     if (lines > 0) {
@@ -277,6 +371,7 @@ export function lessonXp(rows: LessonXpRow[], rates: XpRates = DEFAULT_XP_RATES)
         xp: lines * rates.lessonLine,
         at,
         dateOnly: row.date,
+        ...meta,
       });
     }
     const filled = (row.wordNotes ?? []).filter(isFilledWordNote).length;
@@ -287,9 +382,65 @@ export function lessonXp(rows: LessonXpRow[], rates: XpRates = DEFAULT_XP_RATES)
         xp: filled * rates.lessonWordNote,
         at,
         dateOnly: row.date,
+        ...meta,
       });
     }
     return grants;
+  });
+}
+
+interface TheoryStudyXpRow {
+  id: string;
+  title: string | null;
+  date: string;
+  entryMode: TheoryEntryMode;
+  pages: number | null;
+  density: TheoryDensity | null;
+  wordCount: number | null;
+  notesCount: number;
+}
+
+/** Round `x` up to the nearest 0.25 (794/250 = 3.176 → 3.25). */
+export function ceilToQuarter(x: number): number {
+  return Math.ceil(x * 4) / 4;
+}
+
+/**
+ * Theory study XP → Grammar. In "pages" mode, pages × the density's per-page rate; in "words" mode,
+ * the word count over 250 (rounded up to the nearest quarter) at the per-250-words rate. Either way,
+ * plus a flat rate per self-reported note. Density defaults to medium when unset.
+ */
+export function theoryStudyXp(rows: TheoryStudyXpRow[], rates: XpRates = DEFAULT_XP_RATES): XpGrant[] {
+  const densityRate = (density: TheoryDensity | null): number => {
+    switch (density) {
+      case "dense":
+        return rates.theoryStudyPageDense;
+      case "light":
+        return rates.theoryStudyPageLight;
+      default:
+        return rates.theoryStudyPageMedium;
+    }
+  };
+  return rows.flatMap((row) => {
+    const base = row.entryMode === "pages"
+      ? (row.pages ?? 0) * densityRate(row.density)
+      : ceilToQuarter((row.wordCount ?? 0) / 250 * rates.theoryStudyPer250Words);
+    const xp = base + (row.notesCount ?? 0) * rates.theoryStudyNote;
+    return xp > 0
+      ? [{
+        area: "Grammar" as const,
+        feature: "theoryStudy" as const,
+        xp,
+        at: new Date(row.date),
+        dateOnly: row.date,
+        sourceId: row.id,
+        title: row.title,
+        to: "/theory-sessions/$id",
+        params: {
+          id: row.id,
+        },
+      }]
+      : [];
   });
 }
 
@@ -299,7 +450,7 @@ function roundXp(xp: number): number {
 }
 
 /** A timestamp's calendar date (YYYY-MM-DD) in the timezone `offsetMinutes` west of UTC. */
-function localDateString(at: Date, offsetMinutes: number): string {
+export function localDateString(at: Date, offsetMinutes: number): string {
   // JS getTimezoneOffset() is UTC − local, so subtracting shifts UTC into the caller's local clock.
   return new Date(at.getTime() - offsetMinutes * 60_000).toISOString().slice(0, 10);
 }
@@ -323,7 +474,13 @@ export function summarizeGrants(
     }]),
   );
   const recentAreas = new Map<LearningArea, number>();
-  const todayAreas = new Map<LearningArea, number>();
+  const todayAreas = new Map<LearningArea, XpAreaSummary>(
+    LEARNING_AREAS.map(area => [area, {
+      area,
+      xp: 0,
+      byFeature: {},
+    }]),
+  );
   const cutoff = now.getTime() - days * 24 * 60 * 60 * 1000;
   const today = localDateString(now, tzOffsetMinutes);
 
@@ -339,7 +496,11 @@ export function summarizeGrants(
     // midnight-UTC `at` can't land the grant on the wrong local day.
     const grantDay = grant.dateOnly ?? localDateString(grant.at, tzOffsetMinutes);
     if (grantDay === today) {
-      todayAreas.set(grant.area, (todayAreas.get(grant.area) ?? 0) + grant.xp);
+      const todayArea = todayAreas.get(grant.area);
+      if (todayArea) {
+        todayArea.xp += grant.xp;
+        todayArea.byFeature[grant.feature] = (todayArea.byFeature[grant.feature] ?? 0) + grant.xp;
+      }
     }
   }
 
@@ -356,11 +517,14 @@ export function summarizeGrants(
       area,
       xp: roundXp(recentAreas.get(area) ?? 0),
     }));
-  const todayByArea = LEARNING_AREAS
-    .filter(area => (todayAreas.get(area) ?? 0) > 0)
+  const todayByArea = [...todayAreas.values()]
+    .filter(area => area.xp > 0)
     .map(area => ({
-      area,
-      xp: roundXp(todayAreas.get(area) ?? 0),
+      area: area.area,
+      xp: roundXp(area.xp),
+      byFeature: Object.fromEntries(
+        Object.entries(area.byFeature).map(([feature, xp]) => [feature, roundXp(xp)]),
+      ) as XpAreaSummary["byFeature"],
     }));
 
   return {
@@ -379,11 +543,12 @@ export function summarizeGrants(
 }
 
 /**
- * Compute the full XP summary from the database (narrow selects; all rules live above), using the
- * effective rates (defaults merged with any Settings-page overrides) so a rate change retroactively
- * re-scores everything on the next fetch.
+ * Load every XP grant from the database (narrow selects; all rules live in the per-feature functions
+ * above), using the effective rates (defaults merged with any Settings-page overrides) so a rate
+ * change retroactively re-scores everything on the next fetch. Shared by the summary and the activity
+ * feed so their numbers can never diverge.
  */
-export async function getXpSummary(days: number, tzOffsetMinutes = 0): Promise<XpSummary> {
+export async function loadXpGrants(): Promise<XpGrant[]> {
   const [
     rates,
     readingRows,
@@ -395,59 +560,89 @@ export async function getXpSummary(days: number, tzOffsetMinutes = 0): Promise<X
     shadowingRows,
     drillRows,
     lessonRows,
+    theoryRows,
   ] = await Promise.all([
     getXpRates(),
     db.select({
+      id: readingSessions.id,
+      title: readingSessions.title,
       mode: readingSessions.mode,
       freeformTranslation: readingSessions.freeformTranslation,
       lines: readingSessions.lines,
       wordNotes: readingSessions.wordNotes,
+      date: readingSessions.date,
       createdAt: readingSessions.createdAt,
     }).from(readingSessions),
     db.select({
+      id: writings.id,
       text: writings.text,
       corrections: writings.corrections,
+      date: writings.date,
       createdAt: writings.createdAt,
     }).from(writings),
     db.select({
+      id: mySentences.id,
       writingId: mySentences.writingId,
       correction: mySentences.correction,
       createdAt: mySentences.createdAt,
     }).from(mySentences),
     db.select({
       id: questionSheets.id,
+      title: questionSheets.title,
       layout: questionSheets.layout,
       learningAreas: questionSheets.learningAreas,
       createdAt: questionSheets.createdAt,
     }).from(questionSheets),
     db.select({
+      id: answerSheets.id,
+      title: answerSheets.title,
       questionSheetId: answerSheets.questionSheetId,
       entries: answerSheets.entries,
       createdAt: answerSheets.createdAt,
     }).from(answerSheets),
     db.select({
+      id: listeningSessions.id,
+      title: listeningSessions.title,
       entries: listeningSessions.entries,
       passive: listeningSessions.passive,
       durationMinutes: listeningSessions.durationMinutes,
+      date: listeningSessions.date,
       createdAt: listeningSessions.createdAt,
     }).from(listeningSessions),
     db.select({
+      id: shadowingSessions.id,
+      title: shadowingSessions.title,
       completedLoops: shadowingSessions.completedLoops,
+      date: shadowingSessions.date,
       createdAt: shadowingSessions.createdAt,
     }).from(shadowingSessions),
     db.select({
+      id: drillSessions.id,
+      title: drillSessions.title,
       date: drillSessions.date,
       questions: drillSessions.questions,
       learningArea: drillSessions.learningArea,
     }).from(drillSessions),
     db.select({
+      id: lessons.id,
+      title: lessons.title,
       date: lessons.date,
       listeningNotes: lessons.listeningNotes,
       wordNotes: lessons.wordNotes,
     }).from(lessons),
+    db.select({
+      id: theorySessions.id,
+      title: theorySessions.title,
+      date: theorySessions.date,
+      entryMode: theorySessions.entryMode,
+      pages: theorySessions.pages,
+      density: theorySessions.density,
+      wordCount: theorySessions.wordCount,
+      notesCount: theorySessions.notesCount,
+    }).from(theorySessions),
   ]);
 
-  const grants = [
+  return [
     ...readingXp(readingRows, rates),
     ...writingXp(writingRows, mySentenceRows, rates),
     ...bookExercisesXp(sheetRows as QuestionSheetXpRow[], answerRows, rates),
@@ -455,6 +650,15 @@ export async function getXpSummary(days: number, tzOffsetMinutes = 0): Promise<X
     ...shadowingXp(shadowingRows, rates),
     ...drillXp(drillRows, rates),
     ...lessonXp(lessonRows, rates),
+    ...theoryStudyXp(theoryRows, rates),
   ];
+}
+
+/**
+ * Compute the full XP summary from the database, using the effective rates (defaults merged with any
+ * Settings-page overrides) so a rate change retroactively re-scores everything on the next fetch.
+ */
+export async function getXpSummary(days: number, tzOffsetMinutes = 0): Promise<XpSummary> {
+  const grants = await loadXpGrants();
   return summarizeGrants(grants, days, new Date(), tzOffsetMinutes);
 }

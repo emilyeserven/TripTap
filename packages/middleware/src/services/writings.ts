@@ -11,6 +11,7 @@ import { writings, type WritingRow } from "@/db/schema";
 function toWriting(row: WritingRow): Writing {
   return {
     id: row.id,
+    date: row.date,
     text: row.text,
     meaning: row.meaning,
     comments: row.comments,
@@ -30,6 +31,7 @@ function toWriting(row: WritingRow): Writing {
 /** Drizzle insert shape for one writing row, from the create input. */
 function toInsert(input: CreateWritingInput) {
   return {
+    date: input.date,
     text: input.text,
     meaning: input.meaning ?? null,
     comments: input.comments ?? null,
@@ -42,9 +44,12 @@ function toInsert(input: CreateWritingInput) {
   };
 }
 
-/** List writings, newest first. */
+/** List writings, most recent date first. */
 export async function listWritings(): Promise<Writing[]> {
-  const rows = await db.select().from(writings).orderBy(desc(writings.createdAt));
+  const rows = await db
+    .select()
+    .from(writings)
+    .orderBy(desc(writings.date), desc(writings.createdAt));
   return rows.map(toWriting);
 }
 

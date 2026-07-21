@@ -83,7 +83,7 @@ const wordNotesSchema = {
 
 const createReadingSessionBody = {
   type: "object",
-  required: ["title", "language"],
+  required: ["title", "language", "date"],
   additionalProperties: false,
   properties: {
     title: {
@@ -93,6 +93,10 @@ const createReadingSessionBody = {
     language: {
       type: "string",
       minLength: 1,
+    },
+    date: {
+      type: "string",
+      format: "date",
     },
     sourceId: {
       type: ["string", "null"],

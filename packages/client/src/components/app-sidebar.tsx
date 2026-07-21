@@ -7,6 +7,7 @@ import {
   BookMarkedIcon,
   BookOpenIcon,
   BookOpenTextIcon,
+  BrainIcon,
   CameraIcon,
   ChartColumnIcon,
   ChevronDownIcon,
@@ -215,6 +216,11 @@ const actionItems = [
         icon: ChartColumnIcon,
       },
     ],
+  },
+  {
+    title: "Theory Study",
+    to: "/theory-sessions",
+    icon: BrainIcon,
   },
   {
     title: "Import & Export",
