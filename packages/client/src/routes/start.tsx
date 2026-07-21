@@ -348,6 +348,8 @@ function StartPage() {
                 <XpRadarChart
                   areas={summary.data.areas}
                   todayAreas={summary.data.today.areas}
+                  yesterdayAreas={summary.data.yesterday.areas}
+                  dailyXpGoal={profile.data?.dailyXpGoal ?? null}
                 />
               )
               : <p className="text-sm text-muted-foreground">Loading XP…</p>}

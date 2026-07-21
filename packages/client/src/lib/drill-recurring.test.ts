@@ -30,6 +30,10 @@ function session(id: string, date: string, questions: (string | null)[]): DrillS
     questions: 0,
     type: null,
     learningArea: null,
+    bookmarkId: null,
+    bookmarkTitle: null,
+    bookmarkUrl: null,
+    section: null,
     createdAt: `${date}T00:00:00Z`,
     updatedAt: `${date}T00:00:00Z`,
   };

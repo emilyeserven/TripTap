@@ -626,6 +626,11 @@ export const drillSessions = pgTable("drill_sessions", {
   type: text("type").$type<DrillType>(),
   // The LearningArea this session's XP counts toward; null falls back to Grammar.
   learningArea: text("learning_area").$type<LearningArea>(),
+  // The bookmark resource this drilling was based on (denormalized), and an optional specific section.
+  bookmarkId: text("bookmark_id"),
+  bookmarkTitle: text("bookmark_title"),
+  bookmarkUrl: text("bookmark_url"),
+  section: jsonb("section").$type<BookmarkSectionRef>(),
   createdAt: timestamp("created_at", {
     withTimezone: true,
   }).notNull().defaultNow(),

@@ -7,11 +7,30 @@ import { usePageTitle } from "@/hooks/usePageTitle";
 
 export const Route = createFileRoute("/drill-sessions/new")({
   component: NewDrillSessionPage,
+  validateSearch: (search: Record<string, unknown>): {
+    bookmarkId?: string;
+    bookmarkTitle?: string;
+    bookmarkUrl?: string;
+  } => ({
+    bookmarkId: typeof search.bookmarkId === "string" ? search.bookmarkId : undefined,
+    bookmarkTitle: typeof search.bookmarkTitle === "string" ? search.bookmarkTitle : undefined,
+    bookmarkUrl: typeof search.bookmarkUrl === "string" ? search.bookmarkUrl : undefined,
+  }),
 });
 
 function NewDrillSessionPage() {
   usePageTitle("New drill session");
   const navigate = useNavigate();
+  const {
+    bookmarkId, bookmarkTitle, bookmarkUrl,
+  } = Route.useSearch();
+  const initialBookmark = bookmarkId
+    ? {
+      id: bookmarkId,
+      title: bookmarkTitle ?? "",
+      url: bookmarkUrl ?? null,
+    }
+    : undefined;
 
   return (
     <section className="max-w-3xl space-y-6">
@@ -26,6 +45,7 @@ function NewDrillSessionPage() {
         </Link>
       </Button>
       <DrillSessionForm
+        initialBookmark={initialBookmark}
         onSuccess={id =>
           navigate({
             to: "/drill-sessions/$id",

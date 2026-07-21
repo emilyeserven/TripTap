@@ -309,6 +309,7 @@ test("listening, shadowing, and drill XP use their per-unit rates", () => {
       questions: 4,
       type: "fill-in-the-blank",
       learningArea: "Vocabulary",
+      mistakes: null,
     },
     {
       id: "d2",
@@ -317,6 +318,7 @@ test("listening, shadowing, and drill XP use their per-unit rates", () => {
       questions: 4,
       type: null,
       learningArea: null,
+      mistakes: null,
     },
     {
       id: "d3",
@@ -325,6 +327,7 @@ test("listening, shadowing, and drill XP use their per-unit rates", () => {
       questions: 4,
       type: "multiple-choice",
       learningArea: "Vocabulary",
+      mistakes: null,
     },
   ]);
   // Fill-in-the-blank scores 0.25/question; a null (legacy) type scores at the same rate.
@@ -335,6 +338,53 @@ test("listening, shadowing, and drill XP use their per-unit rates", () => {
   assert.equal(drills[1].xp, 1);
   // Multiple-choice scores the lower 0.1/question rate.
   assert.equal(drills[2].xp, 0.4);
+});
+
+test("drillXp penalizes each mistake and regains it once corrected", () => {
+  const [grant] = drillXp([
+    {
+      id: "dm",
+      title: "Mistakes only",
+      date: "2026-07-19",
+      questions: 0,
+      type: "fill-in-the-blank",
+      learningArea: "Grammar",
+      mistakes: [
+        // Uncorrected (no answer) → −0.1.
+        {
+          id: "m1",
+          question: "食べる potential?",
+          prompt: "",
+          correctAnswer: null,
+          reflection: null,
+          reasons: [],
+        },
+        // Has an answer but no reason → still uncorrected, −0.1.
+        {
+          id: "m2",
+          question: "〜ば vs 〜たら",
+          prompt: "",
+          correctAnswer: "conditional nuance",
+          reflection: null,
+          reasons: [],
+        },
+        // Correct answer + a reason → regained, net 0.
+        {
+          id: "m3",
+          question: "は vs が",
+          prompt: "",
+          correctAnswer: "topic vs subject",
+          reflection: null,
+          reasons: [{
+            categoryId: "c1",
+          }],
+        },
+      ],
+    },
+  ]);
+  // A mistakes-only session still grants (guard relaxed): −0.1 −0.1 + 0 = −0.2 (float-tolerant).
+  assert.ok(Math.abs(grant.xp - -0.2) < 1e-9, `expected ~-0.2, got ${grant.xp}`);
+  assert.equal(grant.area, "Grammar");
 });
 
 test("lessonXp splits lines to Listening and filled word notes to Vocabulary", () => {
@@ -694,6 +744,24 @@ test("summarizeGrants counts today against the caller's local calendar day", () 
       xp: 0.25,
       byFeature: {
         drills: 0.25,
+      },
+    },
+  ]);
+  // The two yesterday-dated grants land in the `yesterday` bucket, same per-area shape as today.
+  assert.equal(summary.yesterday.totalXp, 2.5);
+  assert.deepEqual(summary.yesterday.areas, [
+    {
+      area: "Reading",
+      xp: 2,
+      byFeature: {
+        reading: 2,
+      },
+    },
+    {
+      area: "Grammar",
+      xp: 0.5,
+      byFeature: {
+        drills: 0.5,
       },
     },
   ]);

@@ -1,5 +1,7 @@
 import type { DrillSession } from "@sentence-bank/types";
 
+import { ExternalLink } from "lucide-react";
+
 import { DrillMistakeCard } from "@/components/DrillMistakeCard";
 import { DrillQuestionsCounter } from "@/components/DrillQuestionsCounter";
 import { Badge } from "@/components/ui/badge";
@@ -30,6 +32,30 @@ export function DrillSessionView({
           </Badge>
           {session.learningArea && <Badge variant="outline">{session.learningArea}</Badge>}
         </div>
+        {session.bookmarkId && session.bookmarkTitle && (
+          <p className="text-sm text-muted-foreground">
+            From resource:
+            {" "}
+            <span className="font-medium text-foreground">{session.bookmarkTitle}</span>
+            {session.section && (
+              <span> · {session.section.label}</span>
+            )}
+            {session.bookmarkUrl && (
+              <a
+                href={session.bookmarkUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="
+                  ml-2 inline-flex items-center gap-1 text-primary
+                  hover:underline
+                "
+              >
+                open
+                <ExternalLink className="size-3" />
+              </a>
+            )}
+          </p>
+        )}
         {session.notes
           ? <p className="text-sm whitespace-pre-wrap">{session.notes}</p>
           : null}

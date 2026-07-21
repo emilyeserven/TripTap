@@ -3,6 +3,7 @@ import type { DailyLineup, LineupItem } from "@sentence-bank/types";
 import { describe, expect, it } from "vitest";
 
 import {
+  customLineupItem,
   effectiveLineup,
   moveItem,
   removeItem,
@@ -91,6 +92,26 @@ describe("lineup item helpers", () => {
     });
     expect(snapshotted.resourceId).toBe("bk1");
     expect(snapshotted.sectionId).toBe("sec1");
+  });
+
+  it("builds a custom item with a fresh custom-prefixed id and no done flag", () => {
+    const custom = customLineupItem({
+      title: "Review yesterday's mistakes",
+      description: "Drill the ones I skipped.",
+      area: "Grammar",
+      to: "/drill-sessions/new",
+    });
+    expect(custom.kind).toBe("custom");
+    expect(custom.id.startsWith("custom-")).toBe(true);
+    expect(custom.done).toBe(false);
+    expect(custom.title).toBe("Review yesterday's mistakes");
+    // Two custom items never share an id (so reroll dedupe can't clobber one).
+    expect(customLineupItem({
+      title: "a",
+      description: null,
+      area: null,
+      to: "/reading-sessions/new",
+    }).id).not.toBe(custom.id);
   });
 
   it("renames an item by id, ignoring blank titles", () => {

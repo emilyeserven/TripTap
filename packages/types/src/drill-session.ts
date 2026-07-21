@@ -8,6 +8,7 @@
  * aggregated into statistics over time. Consumed by both the Fastify API and the React client.
  */
 
+import type { BookmarkSectionRef } from "./index.js";
 import type { LearningArea } from "./question-sheet.js";
 
 /* ── Drill type ───────────────────────────────────────────────────────────────────────────────── */
@@ -105,6 +106,12 @@ export interface DrillSession {
   type: DrillType | null;
   /** The learning area this session's XP counts toward; null falls back to Grammar. */
   learningArea: LearningArea | null;
+  /** The bookmark resource this drilling was based on, if any (denormalized for display). */
+  bookmarkId: string | null;
+  bookmarkTitle: string | null;
+  bookmarkUrl: string | null;
+  /** A specific section of the linked bookmark, when the drilling targeted one; else null. */
+  section: BookmarkSectionRef | null;
   /** ISO-8601 timestamp of when the session was added. */
   createdAt: string;
   /** ISO-8601 timestamp of the last update. */
@@ -120,6 +127,10 @@ export interface CreateDrillSessionInput {
   questions?: number;
   type?: DrillType | null;
   learningArea?: LearningArea | null;
+  bookmarkId?: string | null;
+  bookmarkTitle?: string | null;
+  bookmarkUrl?: string | null;
+  section?: BookmarkSectionRef | null;
 }
 
 /** Payload for partially updating a drill session. */

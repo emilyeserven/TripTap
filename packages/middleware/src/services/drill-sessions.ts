@@ -18,6 +18,10 @@ function toDrillSession(row: DrillSessionRow): DrillSession {
     questions: row.questions,
     type: row.type ?? null,
     learningArea: row.learningArea ?? null,
+    bookmarkId: row.bookmarkId ?? null,
+    bookmarkTitle: row.bookmarkTitle ?? null,
+    bookmarkUrl: row.bookmarkUrl ?? null,
+    section: row.section ?? null,
     createdAt:
       row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
     updatedAt:
@@ -35,6 +39,10 @@ function toInsert(input: CreateDrillSessionInput) {
     questions: input.questions ?? 0,
     type: input.type ?? null,
     learningArea: input.learningArea ?? null,
+    bookmarkId: input.bookmarkId ?? null,
+    bookmarkTitle: input.bookmarkTitle ?? null,
+    bookmarkUrl: input.bookmarkUrl ?? null,
+    section: input.section ?? null,
   };
 }
 

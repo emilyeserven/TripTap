@@ -1,9 +1,16 @@
-import type { DrillMistake, DrillSession, DrillType, LearningArea } from "@sentence-bank/types";
+import type {
+  BookmarkSectionRef,
+  DrillMistake,
+  DrillSession,
+  DrillType,
+  LearningArea,
+} from "@sentence-bank/types";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { DEFAULT_XP_RATES } from "@sentence-bank/types";
 
+import { BookmarkPicker } from "@/components/BookmarkPicker";
 import { DrillMistakes } from "@/components/DrillMistakes";
 import { DrillTypeSelect } from "@/components/DrillTypeSelect";
 import { LearningAreaSelect } from "@/components/LearningAreaSelect";
@@ -18,6 +25,12 @@ function todayIso(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
+/** A suggested session title built from the attached resource (and section, when one is chosen). */
+function drillTitleFor(bookmarkTitle: string | null, section: BookmarkSectionRef | null): string {
+  if (!bookmarkTitle) return "";
+  return section ? `Drill "${section.label}" of ${bookmarkTitle}` : `Drill ${bookmarkTitle}`;
+}
+
 /**
  * Create/edit form for a drill session. One component powers both the new and edit pages — pass a
  * `session` to edit an existing one. A mistake row is kept on save when it has any content (question,
@@ -27,9 +40,14 @@ function todayIso(): string {
 export function DrillSessionForm({
   session,
   onSuccess,
+  initialBookmark,
 }: {
   session?: DrillSession;
   onSuccess?: (id: string) => void;
+  /** Seed a brand-new session from a bookmark (e.g. from the Find a Resource page); ignored when editing. */
+  initialBookmark?: { id: string;
+    title: string;
+    url: string | null; };
 }) {
   const create = useCreateDrillSession();
   const update = useUpdateDrillSession();
@@ -47,6 +65,23 @@ export function DrillSessionForm({
   const [learningArea, setLearningArea] = useState<LearningArea | null>(
     session?.learningArea ?? null,
   );
+  const [bookmarkId, setBookmarkId] = useState(session?.bookmarkId ?? initialBookmark?.id ?? null);
+  const [bookmarkTitle, setBookmarkTitle] = useState(
+    session?.bookmarkTitle ?? initialBookmark?.title ?? null,
+  );
+  const [bookmarkUrl, setBookmarkUrl] = useState(session?.bookmarkUrl ?? initialBookmark?.url ?? null);
+  const [section, setSection] = useState<BookmarkSectionRef | null>(session?.section ?? null);
+  // The last title we auto-filled from the resource — so we only overwrite an untouched/auto title.
+  const lastAutoTitle = useRef("");
+
+  // Fill the title from the picked resource/section unless the learner has typed their own.
+  const applyResourceTitle = (nextTitle: string | null, nextSection: BookmarkSectionRef | null) => {
+    const suggested = drillTitleFor(nextTitle, nextSection);
+    if (suggested && (title.trim() === "" || title === lastAutoTitle.current)) {
+      setTitle(suggested);
+      lastAutoTitle.current = suggested;
+    }
+  };
 
   // Multiple-choice questions earn less; a null (legacy) type scores at the fill-in-the-blank rate.
   const xpPerQuestion = type === "multiple-choice"
@@ -76,6 +111,10 @@ export function DrillSessionForm({
       questions: Math.max(0, Math.trunc(Number(questions) || 0)),
       type,
       learningArea,
+      bookmarkId,
+      bookmarkTitle,
+      bookmarkUrl,
+      section,
     };
     const saved = editing
       ? await update.mutateAsync({
@@ -119,6 +158,26 @@ export function DrillSessionForm({
           />
         </div>
       </div>
+
+      <BookmarkPicker
+        selectedBookmarkId={bookmarkId}
+        selectedBookmarkTitle={bookmarkTitle}
+        label="Resource (optional)"
+        onPick={(record) => {
+          setBookmarkId(record?.id ?? null);
+          setBookmarkTitle(record?.title ?? null);
+          setBookmarkUrl(record?.url ?? null);
+          // Picking a new resource clears any section, then seeds the title from the resource.
+          setSection(null);
+          applyResourceTitle(record?.title ?? null, null);
+        }}
+        enableSections
+        selectedSection={section}
+        onPickSection={(ref) => {
+          setSection(ref);
+          applyResourceTitle(bookmarkTitle, ref);
+        }}
+      />
 
       <div className="space-y-1.5">
         <Label>Learning area (optional)</Label>

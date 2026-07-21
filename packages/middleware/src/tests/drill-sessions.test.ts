@@ -89,3 +89,27 @@ test("POST /api/drill-sessions rejects an unknown drill type", async () => {
   assert.equal(res.statusCode, 400);
   await app.close();
 });
+
+test("POST /api/drill-sessions accepts an attached bookmark resource + section", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/drill-sessions",
+    payload: {
+      date: "2026-07-20",
+      title: "Drill \"Ch. 3\" of Genki I",
+      bookmarkId: "bk-1",
+      bookmarkTitle: "Genki I",
+      bookmarkUrl: null,
+      section: {
+        id: "sec-1",
+        label: "Ch. 3",
+        type: "page",
+        startValue: "30",
+        endValue: null,
+      },
+    },
+  });
+  assert.notEqual(res.statusCode, 400);
+  await app.close();
+});

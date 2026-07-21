@@ -1,5 +1,7 @@
 import type { StartSuggestion } from "@/lib/start-recommendations";
-import type { DailyLineup, LineupItem, LineupSessionType } from "@sentence-bank/types";
+import type { DailyLineup, LearningArea, LineupItem, LineupSessionType } from "@sentence-bank/types";
+
+import { newId } from "@/lib/id";
 
 /**
  * Pure helpers for the day's lineup — the ordered, locked-in practice sequence built on the Start
@@ -47,6 +49,37 @@ export function suggestionToLineupItem(suggestion: StartSuggestion): LineupItem 
     search: suggestion.search,
     resourceId: suggestion.resourceId,
     sectionId: suggestion.sectionId,
+    done: false,
+  };
+}
+
+/** Fields a learner supplies when hand-building a lineup item (everything the ranker would otherwise fill). */
+export interface CustomLineupItemFields {
+  title: string;
+  description: string | null;
+  area: LearningArea | null;
+  to: string;
+  search?: Record<string, string>;
+  resourceId?: string;
+  sectionId?: string;
+}
+
+/**
+ * Build a learner-authored lineup entry. Unlike {@link suggestionToLineupItem}, there's no ranker
+ * suggestion to snapshot, so the id is minted fresh (`custom-<uuid>`) — never a `resource-`/`section-`
+ * id that could collide with a reroll suggestion's dedupe.
+ */
+export function customLineupItem(fields: CustomLineupItemFields): LineupItem {
+  return {
+    id: `custom-${newId()}`,
+    kind: "custom",
+    area: fields.area,
+    title: fields.title,
+    description: fields.description,
+    to: fields.to,
+    search: fields.search,
+    resourceId: fields.resourceId,
+    sectionId: fields.sectionId,
     done: false,
   };
 }

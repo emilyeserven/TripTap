@@ -24,8 +24,11 @@ export const LINEUP_SESSION_TYPES = [
 /** One excludable activity kind from {@link LINEUP_SESSION_TYPES}. */
 export type LineupSessionType = (typeof LINEUP_SESSION_TYPES)[number];
 
-/** The kinds of Start Something suggestion (shared so lineup snapshots can't drift). */
-export type StartSuggestionKind = "due-sheet" | "area" | "starred-grammar" | "goal";
+/**
+ * The kinds of Start Something suggestion (shared so lineup snapshots can't drift). `"custom"` is only
+ * ever a lineup item — a learner-authored entry, never produced by the ranker.
+ */
+export type StartSuggestionKind = "due-sheet" | "area" | "starred-grammar" | "goal" | "custom";
 
 /** Which item properties are excluded from suggestions/lineup-building for the day. */
 export interface LineupExclusions {
