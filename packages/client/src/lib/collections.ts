@@ -1,3 +1,4 @@
+import type { FilterOption } from "./answer-sheets";
 import type {
   BookmarkResource,
   ComplexityScale,
@@ -13,13 +14,12 @@ import type {
 
 import { DRILL_TAGS, LEARNING_AREAS, MATERIAL_TYPES, THEORY_TAGS } from "@sentence-bank/types";
 
-/** Sentinel for the "no website filter" option (mirrors `lib/answer-sheets.ts`'s `ALL_FILTER`). */
-export const ALL_FILTER = "all";
+import { ALL_FILTER } from "./answer-sheets";
 
-export interface FilterOption {
-  value: string;
-  label: string;
-}
+// The filter sentinel and option shape are shared with the answer-sheet filters; re-export the
+// canonical definitions from there rather than declaring a second copy.
+export { ALL_FILTER };
+export type { FilterOption };
 
 /** The website filter's key for a resource (its site name, falling back to domain); "" when unknown. */
 function websiteKey(r: BookmarkResource): string {
