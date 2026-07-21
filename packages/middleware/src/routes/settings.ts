@@ -359,6 +359,7 @@ const updateXpSettingsBody = {
         answerEntryList: xpRateValueSchema,
         answerEntryGrid: xpRateValueSchema,
         listeningEntry: xpRateValueSchema,
+        listeningPassiveMinute: xpRateValueSchema,
         shadowingLoop: xpRateValueSchema,
         drillQuestion: xpRateValueSchema,
         lessonLine: xpRateValueSchema,

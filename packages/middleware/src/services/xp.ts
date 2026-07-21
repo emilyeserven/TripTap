@@ -197,19 +197,29 @@ export function bookExercisesXp(
 
 interface ListeningXpRow {
   entries: ListeningEntry[] | null;
+  passive: boolean;
+  durationMinutes: number;
   createdAt: Date;
 }
 
-/** 1xp per typed entry → Listening. */
+/**
+ * Listening XP → Listening. A passive session (just listening, no notes) earns per minute of its
+ * duration; a normal session earns per typed note. A session is one or the other.
+ */
 export function listeningXp(rows: ListeningXpRow[], rates: XpRates = DEFAULT_XP_RATES): XpGrant[] {
-  return rows.flatMap(row => (row.entries?.length
-    ? [{
-      area: "Listening" as const,
-      feature: "listening" as const,
-      xp: row.entries.length * rates.listeningEntry,
-      at: row.createdAt,
-    }]
-    : []));
+  return rows.flatMap((row) => {
+    const xp = row.passive
+      ? row.durationMinutes * rates.listeningPassiveMinute
+      : (row.entries?.length ?? 0) * rates.listeningEntry;
+    return xp > 0
+      ? [{
+        area: "Listening" as const,
+        feature: "listening" as const,
+        xp,
+        at: row.createdAt,
+      }]
+      : [];
+  });
 }
 
 interface ShadowingXpRow {
@@ -417,6 +427,8 @@ export async function getXpSummary(days: number, tzOffsetMinutes = 0): Promise<X
     }).from(answerSheets),
     db.select({
       entries: listeningSessions.entries,
+      passive: listeningSessions.passive,
+      durationMinutes: listeningSessions.durationMinutes,
       createdAt: listeningSessions.createdAt,
     }).from(listeningSessions),
     db.select({
