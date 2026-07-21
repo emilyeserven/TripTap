@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { WordCountDialog } from "@/components/WordCountDialog";
 import { useXpSettings } from "@/hooks/useSettings";
 import {
   useCreateTheorySession,
@@ -244,15 +245,29 @@ export function TheorySessionForm({
             "
           >
             <Label htmlFor="theory-words">Word count</Label>
-            <Input
-              id="theory-words"
-              type="number"
-              inputMode="numeric"
-              min={0}
-              step={1}
-              value={wordCount}
-              onChange={e => setWordCount(e.target.value)}
-            />
+            <div className="flex items-center gap-2">
+              <Input
+                id="theory-words"
+                type="number"
+                inputMode="numeric"
+                min={0}
+                step={1}
+                value={wordCount}
+                onChange={e => setWordCount(e.target.value)}
+              />
+              <WordCountDialog
+                onCount={count => setWordCount(String(count))}
+                trigger={(
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                  >
+                    Paste to count
+                  </Button>
+                )}
+              />
+            </div>
           </div>
         )}
 
