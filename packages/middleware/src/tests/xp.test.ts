@@ -243,11 +243,26 @@ test("listening, shadowing, and drill XP use their per-unit rates", () => {
           source: "video",
         },
       ],
+      passive: false,
+      durationMinutes: 0,
       createdAt: RECENT,
     },
   ]);
   assert.equal(listening[0].xp, 2);
   assert.equal(listening[0].area, "Listening");
+
+  // A passive session scores by the minute (0.5 each), ignoring notes.
+  const passive = listeningXp([
+    {
+      entries: null,
+      passive: true,
+      durationMinutes: 45,
+      createdAt: RECENT,
+    },
+  ]);
+  assert.equal(passive[0].xp, 22.5);
+  assert.equal(passive[0].area, "Listening");
+  assert.equal(passive[0].feature, "listening");
 
   const shadowing = shadowingXp([{
     completedLoops: 8,

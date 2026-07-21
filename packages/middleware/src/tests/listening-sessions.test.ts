@@ -102,6 +102,39 @@ test("POST /api/listening-sessions accepts a valid payload with an entry and a t
   await app.close();
 });
 
+test("POST /api/listening-sessions accepts a passive session with a duration", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/listening-sessions",
+    payload: {
+      title: "Podcast on the commute",
+      language: "Japanese",
+      passive: true,
+      durationMinutes: 45,
+    },
+  });
+  // Valid payload — 201 with a DB, or a 5xx without one, but never a 400.
+  assert.notEqual(res.statusCode, 400);
+  await app.close();
+});
+
+test("POST /api/listening-sessions rejects a negative duration", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/listening-sessions",
+    payload: {
+      title: "Bad",
+      language: "Japanese",
+      passive: true,
+      durationMinutes: -5,
+    },
+  });
+  assert.equal(res.statusCode, 400);
+  await app.close();
+});
+
 test("POST /api/listening-sessions accepts a kana entry carrying English context", async () => {
   const app = await buildApp();
   const res = await app.inject({

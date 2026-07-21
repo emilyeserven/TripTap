@@ -7,6 +7,7 @@ import { termCategory } from "../lib/terms";
 import { BookmarkPicker } from "@/components/BookmarkPicker";
 import { TermPicker } from "@/components/TermPicker";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -42,6 +43,8 @@ export function ListeningSessionForm({
   const [bookmarkTitle, setBookmarkTitle] = useState(session?.bookmarkTitle ?? initialBookmark?.title ?? null);
   const [bookmarkUrl, setBookmarkUrl] = useState(session?.bookmarkUrl ?? initialBookmark?.url ?? null);
   const [section, setSection] = useState<BookmarkSectionRef | null>(session?.section ?? null);
+  const [passive, setPassive] = useState(session?.passive ?? false);
+  const [durationMinutes, setDurationMinutes] = useState(String(session?.durationMinutes ?? 0));
 
   const initialTerms = session?.terms ?? [];
   const [vocabTerms, setVocabTerms] = useState<SentenceTermRef[]>(
@@ -65,6 +68,8 @@ export function ListeningSessionForm({
       bookmarkTitle,
       bookmarkUrl,
       section,
+      passive,
+      durationMinutes: passive ? Math.max(0, Math.trunc(Number(durationMinutes) || 0)) : 0,
       terms: terms.length > 0 ? terms : null,
       // Preserve any notes already captured when editing metadata.
       entries: session?.entries ?? null,
@@ -135,6 +140,41 @@ export function ListeningSessionForm({
           value={language}
           onChange={e => setLanguage(e.target.value)}
         />
+      </div>
+
+      <div className="space-y-2 rounded-md border p-3">
+        <label className="flex items-start gap-2">
+          <Checkbox
+            checked={passive}
+            onCheckedChange={next => setPassive(next === true)}
+            aria-label="Passive listening session"
+          />
+          <span className="space-y-0.5">
+            <span className="block text-sm font-medium">Passive listening</span>
+            <span className="block text-xs text-muted-foreground">
+              Just listening, no note-taking. Earns XP by the minute instead of per note.
+            </span>
+          </span>
+        </label>
+        {passive && (
+          <div
+            className="
+              space-y-1.5 pl-6
+              sm:max-w-xs
+            "
+          >
+            <Label htmlFor="ls-minutes">Minutes listened</Label>
+            <Input
+              id="ls-minutes"
+              type="number"
+              inputMode="numeric"
+              min={0}
+              step={1}
+              value={durationMinutes}
+              onChange={e => setDurationMinutes(e.target.value)}
+            />
+          </div>
+        )}
       </div>
 
       <div

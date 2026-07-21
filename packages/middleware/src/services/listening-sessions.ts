@@ -19,6 +19,8 @@ function toListeningSession(row: ListeningSessionRow): ListeningSession {
     bookmarkUrl: row.bookmarkUrl,
     section: row.section ?? null,
     entries: row.entries ?? null,
+    passive: row.passive,
+    durationMinutes: row.durationMinutes,
     terms: row.terms ?? null,
     createdAt:
       row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
@@ -38,6 +40,8 @@ function toInsert(input: CreateListeningSessionInput) {
     bookmarkUrl: input.bookmarkUrl ?? null,
     section: input.section ?? null,
     entries: input.entries ?? null,
+    passive: input.passive ?? false,
+    durationMinutes: input.durationMinutes ?? 0,
     terms: input.terms ?? null,
   };
 }

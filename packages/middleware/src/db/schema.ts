@@ -398,6 +398,9 @@ export const listeningSessions = pgTable("listening_sessions", {
   // A specific section of the linked bookmark (carries the timestamp so the player can scope to it).
   section: jsonb("section").$type<BookmarkSectionRef>(),
   entries: jsonb("entries").$type<ListeningEntry[]>(),
+  // Passive listening (no note-taking): XP is earned per minute of `duration_minutes` instead of per note.
+  passive: boolean("passive").notNull().default(false),
+  durationMinutes: integer("duration_minutes").notNull().default(0),
   terms: jsonb("terms").$type<SentenceTermRef[]>(),
   createdAt: timestamp("created_at", {
     withTimezone: true,

@@ -50,6 +50,13 @@ export interface ListeningSession {
   section: BookmarkSectionRef | null;
   /** The timestamped notes taken during the session; null if none. */
   entries: ListeningEntry[] | null;
+  /**
+   * Passive listening: the learner just listened (no note-taking) for {@link durationMinutes} minutes.
+   * A passive session earns XP by the minute; a normal (active) session earns XP per timestamped note.
+   */
+  passive: boolean;
+  /** Minutes listened, for a passive session's per-minute XP. 0 for active sessions. */
+  durationMinutes: number;
   /** Borrowed bookmark terms tagging this session; null if none. */
   terms: SentenceTermRef[] | null;
   /** ISO-8601 timestamp of when the session was created. */
@@ -68,6 +75,8 @@ export interface CreateListeningSessionInput {
   bookmarkUrl?: string | null;
   section?: BookmarkSectionRef | null;
   entries?: ListeningEntry[] | null;
+  passive?: boolean;
+  durationMinutes?: number;
   terms?: SentenceTermRef[] | null;
 }
 
