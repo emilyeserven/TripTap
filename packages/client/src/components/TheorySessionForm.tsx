@@ -1,4 +1,5 @@
 import type {
+  LearningArea,
   TheoryDensity,
   TheoryEntryMode,
   TheorySession,
@@ -9,6 +10,7 @@ import { useState } from "react";
 
 import { DEFAULT_XP_RATES } from "@sentence-bank/types";
 
+import { LearningAreaSelect } from "@/components/LearningAreaSelect";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -100,6 +102,9 @@ export function TheorySessionForm({
   const [wordCount, setWordCount] = useState(String(session?.wordCount ?? 0));
   const [notesCount, setNotesCount] = useState(String(session?.notesCount ?? 0));
   const [notes, setNotes] = useState(session?.notes ?? "");
+  const [learningArea, setLearningArea] = useState<LearningArea | null>(
+    session?.learningArea ?? null,
+  );
 
   const pending = create.isPending || update.isPending;
   const canSubmit = date.trim().length > 0 && !pending;
@@ -131,6 +136,7 @@ export function TheorySessionForm({
       wordCount: entryMode === "words" ? wordCountNum : null,
       notesCount: notesCountNum,
       notes: notes.trim() || null,
+      learningArea,
     };
     const saved = editing
       ? await update.mutateAsync({
@@ -176,9 +182,20 @@ export function TheorySessionForm({
       </div>
 
       <div className="space-y-1.5">
+        <Label>Learning area (optional)</Label>
+        <p className="text-xs text-muted-foreground">
+          Where this session&apos;s XP counts. Unset counts toward Grammar.
+        </p>
+        <LearningAreaSelect
+          value={learningArea}
+          onChange={setLearningArea}
+        />
+      </div>
+
+      <div className="space-y-1.5">
         <Label>How to count this</Label>
         <p className="text-xs text-muted-foreground">
-          Earn Grammar XP by pages studied (weighted by how dense they are) or by a word count.
+          Earn XP by pages studied (weighted by how dense they are) or by a word count.
         </p>
         <Tabs
           value={entryMode}
@@ -308,7 +325,10 @@ export function TheorySessionForm({
         {" "}
         <span className="font-medium text-foreground tabular-nums">{formatXp(xpPreview)} XP</span>
         {" "}
-        toward Grammar.
+        toward
+        {" "}
+        {learningArea ?? "Grammar"}
+        .
       </p>
 
       <div className="flex items-center gap-2">

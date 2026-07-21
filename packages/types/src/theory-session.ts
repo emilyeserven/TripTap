@@ -2,11 +2,13 @@
  * Shared "Theory study" domain types.
  *
  * A theory session logs time spent learning grammar/theory (a textbook chapter, an explainer video,
- * a write-up) that doesn't fit the drill/reading/listening slices. It earns Grammar XP either by the
- * number of pages covered (weighted by how dense the material is) or by a self-reported word count,
- * plus a self-reported count of "notes" taken (each worth a small amount of XP) and an optional
- * freeform note. Consumed by both the Fastify API and the React client.
+ * a write-up) that doesn't fit the drill/reading/listening slices. It earns XP — toward a chosen
+ * learning area, defaulting to Grammar — either by the number of pages covered (weighted by how dense
+ * the material is) or by a self-reported word count, plus a self-reported count of "notes" taken (each
+ * worth a small amount of XP) and an optional freeform note. Consumed by the Fastify API and the client.
  */
+
+import type { LearningArea } from "./question-sheet.js";
 
 /** How a theory session's core XP is measured: by pages read, or by a word count. */
 export type TheoryEntryMode = "pages" | "words";
@@ -33,6 +35,8 @@ export interface TheorySession {
   notesCount: number;
   /** Optional freeform notes about the session; null when none. Not XP-bearing. */
   notes: string | null;
+  /** The learning area this session's XP counts toward; null falls back to Grammar. */
+  learningArea: LearningArea | null;
   /** ISO-8601 timestamp of when the session was added. */
   createdAt: string;
   /** ISO-8601 timestamp of the last update. */
@@ -49,6 +53,7 @@ export interface CreateTheorySessionInput {
   wordCount?: number | null;
   notesCount?: number;
   notes?: string | null;
+  learningArea?: LearningArea | null;
 }
 
 /** Payload for partially updating a theory session. */

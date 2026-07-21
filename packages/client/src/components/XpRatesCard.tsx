@@ -36,8 +36,8 @@ const RATE_LABELS: Record<XpRateKey, string> = {
 
 /**
  * Which learning area each rate feeds, so the card can group its inputs by area. Keys omitted here
- * (book-exercise and drill rates) split their XP across a record's areas, so they don't belong to one
- * area — they're rendered under a "Varies" subsection instead.
+ * (book-exercise, drill, and theory-study rates) count toward whichever area the individual record
+ * chooses, so they don't belong to one area — they're rendered under a "Varies" subsection instead.
  */
 const RATE_AREAS: Partial<Record<XpRateKey, LearningArea>> = {
   readingTranslatedSentence: "Reading",
@@ -49,11 +49,6 @@ const RATE_AREAS: Partial<Record<XpRateKey, LearningArea>> = {
   lessonLine: "Listening",
   shadowingLoop: "Speaking",
   lessonWordNote: "Vocabulary",
-  theoryStudyPageDense: "Grammar",
-  theoryStudyPageMedium: "Grammar",
-  theoryStudyPageLight: "Grammar",
-  theoryStudyPer250Words: "Grammar",
-  theoryStudyNote: "Grammar",
 };
 
 /**

@@ -1,0 +1,1 @@
+ALTER TABLE "theory_sessions" ADD COLUMN "learning_area" text;

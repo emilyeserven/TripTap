@@ -3,6 +3,7 @@ import type {
   CreateTheorySessionInput,
   UpdateTheorySessionInput,
 } from "@sentence-bank/types";
+import { LEARNING_AREAS } from "@sentence-bank/types";
 import {
   createTheorySession,
   deleteTheorySession,
@@ -56,6 +57,10 @@ const createSessionBody = {
     },
     notes: {
       type: ["string", "null"],
+    },
+    learningArea: {
+      type: ["string", "null"],
+      enum: [...LEARNING_AREAS, null],
     },
   },
 } as const;

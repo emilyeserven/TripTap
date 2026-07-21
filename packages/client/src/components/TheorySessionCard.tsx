@@ -50,7 +50,7 @@ export function TheorySessionCard({
               </Badge>
             )
             : null}
-          <Badge variant="outline">Grammar</Badge>
+          <Badge variant="outline">{session.learningArea ?? "Grammar"}</Badge>
         </div>
       </CardContent>
     </Card>

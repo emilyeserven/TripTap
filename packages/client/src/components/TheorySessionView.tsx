@@ -19,7 +19,7 @@ export function TheorySessionView({
           "
         >
           <span>{session.date}</span>
-          <Badge variant="outline">Grammar</Badge>
+          <Badge variant="outline">{session.learningArea ?? "Grammar"}</Badge>
         </div>
       </div>
 

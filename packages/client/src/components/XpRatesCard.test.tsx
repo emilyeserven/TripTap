@@ -20,21 +20,24 @@ describe("XpRatesCard", () => {
   it("groups the rate inputs by learning area, with a Varies section", async () => {
     render(<XpRatesCard />);
 
-    // Each learning area that owns a rate gets its own subsection heading.
-    for (const area of ["Reading", "Writing", "Listening", "Speaking", "Grammar", "Vocabulary"]) {
+    // Each learning area that owns a dedicated rate gets its own subsection heading.
+    for (const area of ["Reading", "Writing", "Listening", "Speaking", "Vocabulary"]) {
       expect(await screen.findByRole("heading", {
         name: area,
       })).toBeInTheDocument();
     }
 
-    // The book-exercise and drill rates split across a record's areas, so they live under "Varies".
+    // No rate feeds Grammar exclusively anymore (drills/theory choose their area), so it has no heading.
+    expect(screen.queryByRole("heading", {
+      name: "Grammar",
+    })).not.toBeInTheDocument();
+
+    // The book-exercise, drill, and theory rates count toward a per-record area, so they live under "Varies".
     expect(screen.getByRole("heading", {
       name: "Varies",
     })).toBeInTheDocument();
     expect(screen.getByText("Book exercises — question sheet created")).toBeInTheDocument();
     expect(screen.getByText("Drills — question")).toBeInTheDocument();
-
-    // A theory-study rate is grouped under Grammar (its label renders as an input field).
     expect(screen.getByText("Theory study — dense page")).toBeInTheDocument();
   });
 });

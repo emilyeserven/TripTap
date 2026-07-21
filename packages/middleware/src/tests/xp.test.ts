@@ -477,7 +477,7 @@ test("ceilToQuarter rounds up to the nearest 0.25", () => {
   assert.equal(ceilToQuarter(3.0001), 3.25);
 });
 
-test("theoryStudyXp scores pages by density → Grammar", () => {
+test("theoryStudyXp scores pages by density → the chosen area, defaulting to Grammar", () => {
   const row = {
     id: "t1",
     title: "Theory 1",
@@ -485,6 +485,7 @@ test("theoryStudyXp scores pages by density → Grammar", () => {
     entryMode: "pages" as const,
     wordCount: null,
     notesCount: 0,
+    learningArea: null,
   };
   const dense = theoryStudyXp([{
     ...row,
@@ -492,6 +493,7 @@ test("theoryStudyXp scores pages by density → Grammar", () => {
     density: "dense",
   }]);
   assert.equal(dense[0].xp, 6);
+  // No area chosen falls back to Grammar.
   assert.equal(dense[0].area, "Grammar");
   assert.equal(dense[0].feature, "theoryStudy");
   assert.equal(dense[0].dateOnly, "2026-07-19");
@@ -511,6 +513,13 @@ test("theoryStudyXp scores pages by density → Grammar", () => {
     pages: 2,
     density: null,
   }])[0].xp, 2);
+  // A chosen learning area is honored.
+  assert.equal(theoryStudyXp([{
+    ...row,
+    pages: 3,
+    density: "dense",
+    learningArea: "Reading",
+  }])[0].area, "Reading");
 });
 
 test("theoryStudyXp scores words at ⌈words/250⌉ rounded up to 0.25, plus notes", () => {
@@ -522,6 +531,7 @@ test("theoryStudyXp scores words at ⌈words/250⌉ rounded up to 0.25, plus not
     pages: null,
     density: null,
     notesCount: 0,
+    learningArea: null,
   };
   assert.equal(theoryStudyXp([{
     ...base,
