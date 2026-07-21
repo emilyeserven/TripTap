@@ -137,6 +137,13 @@ const createListeningSessionBody = {
     },
     section: bookmarkSectionRefSchema,
     entries: entriesSchema,
+    passive: {
+      type: "boolean",
+    },
+    durationMinutes: {
+      type: "integer",
+      minimum: 0,
+    },
     terms: termsSchema,
   },
 } as const;

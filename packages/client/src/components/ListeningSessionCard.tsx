@@ -36,7 +36,14 @@ export function ListeningSessionCard({
           <p>{session.language}</p>
           {session.bookmarkTitle && <p>Bookmark: {session.bookmarkTitle}</p>}
           {session.section && <p>Section: {session.section.label}</p>}
-          <p>{noteCount} {noteCount === 1 ? "note" : "notes"}</p>
+          {session.passive
+            ? (
+              <p>
+                Passive · {session.durationMinutes}{" "}
+                {session.durationMinutes === 1 ? "minute" : "minutes"}
+              </p>
+            )
+            : <p>{noteCount} {noteCount === 1 ? "note" : "notes"}</p>}
         </CardContent>
       </Card>
     </Link>
