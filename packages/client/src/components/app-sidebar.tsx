@@ -62,6 +62,9 @@ import {
   SidebarMenuSubItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import { useLearnerProfile } from "@/hooks/useSettings";
+import { useXpSummary } from "@/hooks/useXp";
+import { cn } from "@/lib/utils";
 
 /** { Resources, Lessons, AI Lessons, Captures, … } — source material to mine from. */
 const collectionsItems = [
@@ -414,6 +417,16 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
     select: state => state.location.pathname,
   });
 
+  // Drive the Start Something button as a daily-XP progress meter: fill = today's XP toward the goal,
+  // and a glow once the goal is met. Shares the Start page's cached queries, so no extra request.
+  const summary = useXpSummary();
+  const profile = useLearnerProfile();
+  const todayXp = summary.data?.today.totalXp ?? 0;
+  const dailyGoal = profile.data?.dailyXpGoal ?? null;
+  const hasGoal = dailyGoal !== null && dailyGoal > 0;
+  const fillPercent = hasGoal ? Math.min(100, (todayXp / dailyGoal) * 100) : 100;
+  const goalMet = hasGoal && todayXp >= dailyGoal;
+
   return (
     <Sidebar
       collapsible="icon"
@@ -455,17 +468,35 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                 asChild
                 isActive={isItemActive(pathname, "/start")}
                 tooltip="Start Something"
-                className="
-                  bg-primary text-primary-foreground
-                  hover:bg-primary/90 hover:text-primary-foreground
-                  active:bg-primary/90 active:text-primary-foreground
-                  data-[active=true]:bg-primary/90
-                  data-[active=true]:text-primary-foreground
-                "
+                className={cn(
+                  `
+                    relative overflow-hidden border border-primary/60
+                    bg-primary/10 font-medium
+                    hover:bg-primary/10
+                  `,
+                  fillPercent >= 100
+                    ? "text-primary-foreground"
+                    : "text-foreground",
+                  goalMet && `
+                    animate-pulse border-primary shadow-[0_0_12px_2px] ring-1
+                    shadow-primary/50 ring-primary
+                  `,
+                )}
               >
                 <Link to="/start">
-                  <SparklesIcon />
-                  <span>Start Something</span>
+                  {/* Fill layer: today's XP as a share of the daily goal, behind the label. */}
+                  <span
+                    aria-hidden
+                    className="
+                      absolute inset-y-0 left-0 z-0 bg-primary
+                      transition-[width] duration-500
+                    "
+                    style={{
+                      width: `${fillPercent}%`,
+                    }}
+                  />
+                  <SparklesIcon className="relative z-10" />
+                  <span className="relative z-10">Start Something</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
