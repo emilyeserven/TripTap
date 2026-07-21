@@ -47,11 +47,6 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card";
-import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
@@ -67,7 +62,6 @@ import {
   SidebarMenuSubItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { cn } from "@/lib/utils";
 
 /** { Resources, Lessons, AI Lessons, Captures, … } — source material to mine from. */
 const collectionsItems = [
@@ -245,14 +239,8 @@ const actionItems = [
   },
 ] as const;
 
-/** Primary "start a task" entry points, revealed on hover under the "Start Something" trigger. */
+/** Primary "start a task" entry points, listed in the "Action" section under the Start Something link. */
 const startItems = [
-  {
-    title: "Start page",
-    to: "/start",
-    icon: SparklesIcon,
-    emphasis: true,
-  },
   {
     title: "Capture",
     to: "/capture",
@@ -459,80 +447,45 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
 
       <SidebarContent>
-        {/* Primary action — the "start a task" entry points reveal on hover. */}
+        {/* Primary action — the Start Something page is its own top-level link. */}
         <SidebarGroup>
           <SidebarMenu>
             <SidebarMenuItem>
-              <HoverCard
-                openDelay={100}
-                closeDelay={150}
+              <SidebarMenuButton
+                asChild
+                isActive={isItemActive(pathname, "/start")}
+                tooltip="Start Something"
+                className="
+                  bg-primary text-primary-foreground
+                  hover:bg-primary/90 hover:text-primary-foreground
+                  active:bg-primary/90 active:text-primary-foreground
+                  data-[active=true]:bg-primary/90
+                  data-[active=true]:text-primary-foreground
+                "
               >
-                <HoverCardTrigger asChild>
-                  <SidebarMenuButton
-                    asChild
-                    tooltip="Start Something"
-                    className="
-                      bg-primary text-primary-foreground
-                      hover:bg-primary/90 hover:text-primary-foreground
-                      active:bg-primary/90 active:text-primary-foreground
-                      data-[state=open]:bg-primary/90
-                      data-[state=open]:text-primary-foreground
-                    "
-                  >
-                    <Link to="/start">
-                      <SparklesIcon />
-                      <span>Start Something</span>
-                      <ChevronRightIcon className="ml-auto" />
-                    </Link>
-                  </SidebarMenuButton>
-                </HoverCardTrigger>
-                <HoverCardContent
-                  side="right"
-                  align="start"
-                  className="w-56 p-2"
-                >
-                  <div className="flex flex-col gap-1">
-                    {startItems.map(item => (
-                      <Link
-                        key={item.to}
-                        to={item.to}
-                        className={cn(
-                          `
-                            flex items-center gap-2 rounded-md p-2 text-sm
-                            outline-hidden transition-colors
-                            [&>svg]:size-4 [&>svg]:shrink-0
-                          `,
-                          "emphasis" in item && item.emphasis
-                            ? `
-                              bg-primary text-primary-foreground
-                              hover:bg-primary/90
-                            `
-                            : cn(
-                              `
-                                text-sidebar-foreground
-                                hover:bg-sidebar-accent
-                                hover:text-sidebar-accent-foreground
-                              `,
-                              isItemActive(pathname, item.to)
-                              && `
-                                bg-sidebar-accent font-medium
-                                text-sidebar-accent-foreground
-                              `,
-                            ),
-                        )}
-                      >
-                        <item.icon />
-                        <span>{item.title}</span>
-                      </Link>
-                    ))}
-                  </div>
-                </HoverCardContent>
-              </HoverCard>
+                <Link to="/start">
+                  <SparklesIcon />
+                  <span>Start Something</span>
+                </Link>
+              </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
 
+        {/* The "start a task" entry points, directly below the Start Something link. */}
         <NavSection label="Action">
+          <SidebarMenu>
+            {startItems.map(item => (
+              <NavItem
+                key={item.title}
+                item={item}
+                pathname={pathname}
+              />
+            ))}
+          </SidebarMenu>
+        </NavSection>
+
+        <NavSection label="Input & Output">
           <SidebarMenu>
             {actionItems.map(item =>
               "children" in item
