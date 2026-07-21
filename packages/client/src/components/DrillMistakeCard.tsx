@@ -26,6 +26,8 @@ export function DrillMistakeCard({
   categories: DrillReasonCategory[];
 }) {
   const exampleQuery = mistake.question ?? mistake.correctAnswer ?? mistake.prompt;
+  // An empty answer means the learner skipped/blanked the question rather than answering wrong.
+  const answer = mistake.prompt.trim();
   const recurring = useRecurringDrillQuestions();
   const key = normalizeQuestion(mistake.question);
   const recurrence = key ? recurring.get(key) : undefined;
@@ -52,14 +54,22 @@ export function DrillMistakeCard({
             </p>
           )
           : null}
-        <p
-          className={mistake.question
-            ? "text-sm text-muted-foreground"
-            : "font-medium"}
-        >
-          {mistake.question ? "You put: " : null}
-          <span className={mistake.question ? "text-foreground" : undefined}>{mistake.prompt}</span>
-        </p>
+        {answer
+          ? (
+            <p
+              className={mistake.question
+                ? "text-sm text-muted-foreground"
+                : "font-medium"}
+            >
+              {mistake.question ? "You put: " : null}
+              <span className={mistake.question ? "text-foreground" : undefined}>{answer}</span>
+            </p>
+          )
+          : (
+            <p className="text-sm text-muted-foreground italic">
+              {mistake.question ? "You skipped this one." : "Skipped — no answer given."}
+            </p>
+          )}
         {mistake.correctAnswer
           ? (
             <p className="text-sm text-muted-foreground">
