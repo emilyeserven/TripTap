@@ -94,9 +94,8 @@ export interface XpRecentSummary {
 /** XP earned so far in the caller's local calendar day (per the `tzOffsetMinutes` query param). */
 export interface XpTodaySummary {
   totalXp: number;
-  /** Per-area today totals; areas with no XP today are omitted. */
-  areas: { area: LearningArea;
-    xp: number; }[];
+  /** Per-area today totals with a per-feature breakdown; areas with no XP today are omitted. */
+  areas: XpAreaSummary[];
 }
 
 /** The response of `GET /api/xp/summary`. `areas` always holds all six areas, zero-filled. */
