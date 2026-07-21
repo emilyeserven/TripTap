@@ -19,6 +19,23 @@ import type {
 
 import { BASE, request } from "./request";
 
+/**
+ * The shared `getVocab`/`setVocab` endpoints for a resource that links vocab via
+ * `/<resource>/:id/vocab` (sentences and practice sentences expose the identical pair).
+ */
+function vocabEndpoints(resource: string) {
+  return {
+    getVocab: (id: string) => request<Vocab[]>(`/${resource}/${id}/vocab`),
+    setVocab: (id: string, vocabIds: string[]) =>
+      request<Vocab[]>(`/${resource}/${id}/vocab`, {
+        method: "PUT",
+        body: JSON.stringify({
+          vocabIds,
+        }),
+      }),
+  };
+}
+
 export const sentencesApi = {
   list: () => request<Sentence[]>("/sentences"),
   create: (input: CreateSentenceInput) =>
@@ -41,14 +58,7 @@ export const sentencesApi = {
   remove: (id: string) => request<undefined>(`/sentences/${id}`, {
     method: "DELETE",
   }),
-  getVocab: (id: string) => request<Vocab[]>(`/sentences/${id}/vocab`),
-  setVocab: (id: string, vocabIds: string[]) =>
-    request<Vocab[]>(`/sentences/${id}/vocab`, {
-      method: "PUT",
-      body: JSON.stringify({
-        vocabIds,
-      }),
-    }),
+  ...vocabEndpoints("sentences"),
   backfillFurigana: () =>
     request<{ updated: number;
       errors: number; }>("/sentences/furigana/backfill", {
@@ -86,14 +96,7 @@ export const practiceSentencesApi = {
   remove: (id: string) => request<undefined>(`/practice-sentences/${id}`, {
     method: "DELETE",
   }),
-  getVocab: (id: string) => request<Vocab[]>(`/practice-sentences/${id}/vocab`),
-  setVocab: (id: string, vocabIds: string[]) =>
-    request<Vocab[]>(`/practice-sentences/${id}/vocab`, {
-      method: "PUT",
-      body: JSON.stringify({
-        vocabIds,
-      }),
-    }),
+  ...vocabEndpoints("practice-sentences"),
 };
 
 export const mySentencesApi = {

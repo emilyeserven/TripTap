@@ -17,7 +17,7 @@ import type {
   MigakuReconcileResult,
 } from "@sentence-bank/types";
 
-import { BASE, request } from "./request";
+import { BASE, request, uploadFile } from "./request";
 
 /** Patchable capture fields (mirror of the middleware's `UpdateCaptureInput`). */
 export interface UpdateCaptureInput {
@@ -73,21 +73,8 @@ export const capturesApi = {
 };
 
 export const ocrApi = {
-  // Uploads a raw image as multipart/form-data — it deliberately bypasses `request()`, which
-  // hard-codes a JSON content type; the browser sets the multipart boundary itself.
-  recognize: async (file: File): Promise<OcrResult> => {
-    const form = new FormData();
-    form.append("file", file);
-    const res = await fetch(`${BASE}/ocr`, {
-      method: "POST",
-      body: form,
-    });
-    if (!res.ok) {
-      const body = (await res.json().catch(() => ({}))) as { message?: string };
-      throw new Error(body.message ?? `Request failed with ${res.status}`);
-    }
-    return (await res.json()) as OcrResult;
-  },
+  // Uploads a raw image as multipart/form-data (see `uploadFile`).
+  recognize: (file: File): Promise<OcrResult> => uploadFile<OcrResult>("/ocr", file),
 };
 
 export const parseTemplatesApi = {
@@ -125,18 +112,7 @@ export const migakuImportsApi = {
   /** Absolute path to a candidate's previewed audio/image. */
   mediaUrl: (id: string, candidateId: string, which: "audio" | "image") =>
     `${BASE}/migaku-imports/${id}/candidates/${candidateId}/${which}`,
-  // Multipart upload of the raw `.apkg`; bypasses `request()` so the browser sets the boundary.
-  upload: async (file: File): Promise<MigakuImportDetail> => {
-    const form = new FormData();
-    form.append("file", file);
-    const res = await fetch(`${BASE}/migaku-imports`, {
-      method: "POST",
-      body: form,
-    });
-    if (!res.ok) {
-      const body = (await res.json().catch(() => ({}))) as { message?: string };
-      throw new Error(body.message ?? `Request failed with ${res.status}`);
-    }
-    return (await res.json()) as MigakuImportDetail;
-  },
+  // Multipart upload of the raw `.apkg` (see `uploadFile`).
+  upload: (file: File): Promise<MigakuImportDetail> =>
+    uploadFile<MigakuImportDetail>("/migaku-imports", file),
 };
