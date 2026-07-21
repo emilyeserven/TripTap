@@ -15,6 +15,9 @@ import type {
   DrillReasonCategory,
   CreateDrillReasonCategoryInput,
   UpdateDrillReasonCategoryInput,
+  TheorySession,
+  CreateTheorySessionInput,
+  UpdateTheorySessionInput,
   XpSummary,
 } from "@sentence-bank/types";
 
@@ -119,6 +122,24 @@ export const drillSessionsApi = {
       body: JSON.stringify(input),
     }),
   remove: (id: string) => request<undefined>(`/drill-sessions/${id}`, {
+    method: "DELETE",
+  }),
+};
+
+export const theorySessionsApi = {
+  list: () => request<TheorySession[]>("/theory-sessions"),
+  get: (id: string) => request<TheorySession>(`/theory-sessions/${id}`),
+  create: (input: CreateTheorySessionInput) =>
+    request<TheorySession>("/theory-sessions", {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+  update: (id: string, input: UpdateTheorySessionInput) =>
+    request<TheorySession>(`/theory-sessions/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    }),
+  remove: (id: string) => request<undefined>(`/theory-sessions/${id}`, {
     method: "DELETE",
   }),
 };

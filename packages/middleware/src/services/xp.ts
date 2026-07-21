@@ -6,6 +6,8 @@ import type {
   ListeningEntry,
   QuestionSheetLayout,
   ReadingLine,
+  TheoryDensity,
+  TheoryEntryMode,
   WordNote,
   WritingCorrection,
   XpAreaSummary,
@@ -24,6 +26,7 @@ import {
   questionSheets,
   readingSessions,
   shadowingSessions,
+  theorySessions,
   writings,
 } from "@/db/schema";
 import { getXpRates } from "@/services/settings";
@@ -301,6 +304,53 @@ export function lessonXp(rows: LessonXpRow[], rates: XpRates = DEFAULT_XP_RATES)
   });
 }
 
+interface TheoryStudyXpRow {
+  date: string;
+  entryMode: TheoryEntryMode;
+  pages: number | null;
+  density: TheoryDensity | null;
+  wordCount: number | null;
+  notesCount: number;
+}
+
+/** Round `x` up to the nearest 0.25 (794/250 = 3.176 → 3.25). */
+export function ceilToQuarter(x: number): number {
+  return Math.ceil(x * 4) / 4;
+}
+
+/**
+ * Theory study XP → Grammar. In "pages" mode, pages × the density's per-page rate; in "words" mode,
+ * the word count over 250 (rounded up to the nearest quarter) at the per-250-words rate. Either way,
+ * plus a flat rate per self-reported note. Density defaults to medium when unset.
+ */
+export function theoryStudyXp(rows: TheoryStudyXpRow[], rates: XpRates = DEFAULT_XP_RATES): XpGrant[] {
+  const densityRate = (density: TheoryDensity | null): number => {
+    switch (density) {
+      case "dense":
+        return rates.theoryStudyPageDense;
+      case "light":
+        return rates.theoryStudyPageLight;
+      default:
+        return rates.theoryStudyPageMedium;
+    }
+  };
+  return rows.flatMap((row) => {
+    const base = row.entryMode === "pages"
+      ? (row.pages ?? 0) * densityRate(row.density)
+      : ceilToQuarter((row.wordCount ?? 0) / 250 * rates.theoryStudyPer250Words);
+    const xp = base + (row.notesCount ?? 0) * rates.theoryStudyNote;
+    return xp > 0
+      ? [{
+        area: "Grammar" as const,
+        feature: "theoryStudy" as const,
+        xp,
+        at: new Date(row.date),
+        dateOnly: row.date,
+      }]
+      : [];
+  });
+}
+
 /** Round away float noise from fractional rates (0.25/0.5) without hiding quarter points. */
 function roundXp(xp: number): number {
   return Math.round(xp * 100) / 100;
@@ -403,6 +453,7 @@ export async function getXpSummary(days: number, tzOffsetMinutes = 0): Promise<X
     shadowingRows,
     drillRows,
     lessonRows,
+    theoryRows,
   ] = await Promise.all([
     getXpRates(),
     db.select({
@@ -457,6 +508,14 @@ export async function getXpSummary(days: number, tzOffsetMinutes = 0): Promise<X
       listeningNotes: lessons.listeningNotes,
       wordNotes: lessons.wordNotes,
     }).from(lessons),
+    db.select({
+      date: theorySessions.date,
+      entryMode: theorySessions.entryMode,
+      pages: theorySessions.pages,
+      density: theorySessions.density,
+      wordCount: theorySessions.wordCount,
+      notesCount: theorySessions.notesCount,
+    }).from(theorySessions),
   ]);
 
   const grants = [
@@ -467,6 +526,7 @@ export async function getXpSummary(days: number, tzOffsetMinutes = 0): Promise<X
     ...shadowingXp(shadowingRows, rates),
     ...drillXp(drillRows, rates),
     ...lessonXp(lessonRows, rates),
+    ...theoryStudyXp(theoryRows, rates),
   ];
   return summarizeGrants(grants, days, new Date(), tzOffsetMinutes);
 }

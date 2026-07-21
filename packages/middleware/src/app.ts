@@ -27,6 +27,7 @@ import { sentenceRoutes } from "@/routes/sentences";
 import { settingsRoutes } from "@/routes/settings";
 import { shadowingSessionsRoutes } from "@/routes/shadowing-sessions";
 import { sourceRoutes } from "@/routes/sources";
+import { theorySessionRoutes } from "@/routes/theory-sessions";
 import { tutorRoutes } from "@/routes/tutors";
 import { vocabRoutes } from "@/routes/vocab";
 import { writingRoutes } from "@/routes/writings";
@@ -128,6 +129,10 @@ export async function buildApp(): Promise<FastifyInstance> {
           description: "Drill Buddy — the reusable mistake-reason taxonomy",
         },
         {
+          name: "theory-sessions",
+          description: "Theory study sessions — pages/word-count study earning Grammar XP",
+        },
+        {
           name: "health",
           description: "Service health",
         },
@@ -202,6 +207,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(lessonRoutes);
   await app.register(drillReasonCategoryRoutes);
   await app.register(drillSessionRoutes);
+  await app.register(theorySessionRoutes);
   await app.register(sourceRoutes);
   await app.register(vocabRoutes);
   await app.register(captureRoutes);

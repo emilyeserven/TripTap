@@ -27,6 +27,11 @@ const RATE_LABELS: Record<XpRateKey, string> = {
   drillQuestion: "Drills — question",
   lessonLine: "Lessons — line",
   lessonWordNote: "Lessons — word fully filled out",
+  theoryStudyPageDense: "Theory study — dense page",
+  theoryStudyPageMedium: "Theory study — medium page",
+  theoryStudyPageLight: "Theory study — light page",
+  theoryStudyPer250Words: "Theory study — per 250 words",
+  theoryStudyNote: "Theory study — note",
 };
 
 /**

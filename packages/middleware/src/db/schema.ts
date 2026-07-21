@@ -28,6 +28,8 @@ import type {
   ShadowingSegment,
   SourceGrammar,
   SourceVocab,
+  TheoryDensity,
+  TheoryEntryMode,
   WordNote,
   WritingCorrection,
 } from "@sentence-bank/types";
@@ -630,6 +632,37 @@ export const drillSessions = pgTable("drill_sessions", {
 
 export type DrillSessionRow = typeof drillSessions.$inferSelect;
 export type NewDrillSessionRow = typeof drillSessions.$inferInsert;
+
+/**
+ * `theory_sessions` — a logged "we learned more theory" study session, earning Grammar XP. XP comes
+ * either from `pages` weighted by `density` ("pages" mode) or from a self-reported `word_count`
+ * ("words" mode), plus `notes_count` self-reported notes (a little XP each). `notes` is an optional
+ * freeform reflection and is not XP-bearing. Standalone — not linked to lessons or tutors.
+ */
+export const theorySessions = pgTable("theory_sessions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  date: date("date", {
+    mode: "string",
+  }).notNull(),
+  title: text("title"),
+  // Whether XP is counted from pages+density or from word_count.
+  entryMode: text("entry_mode").$type<TheoryEntryMode>().notNull().default("pages"),
+  pages: integer("pages"),
+  density: text("density").$type<TheoryDensity>(),
+  wordCount: integer("word_count"),
+  // Self-reported count of notes taken (XP-bearing).
+  notesCount: integer("notes_count").notNull().default(0),
+  notes: text("notes"),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+});
+
+export type TheorySessionRow = typeof theorySessions.$inferSelect;
+export type NewTheorySessionRow = typeof theorySessions.$inferInsert;
 
 /**
  * `writing_prompts` — reusable prompts the learner saves to spark a free-write. Each has an optional

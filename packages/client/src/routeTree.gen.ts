@@ -23,6 +23,7 @@ import { Route as AnkiRouteImport } from './routes/anki'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as WritingPromptsIndexRouteImport } from './routes/writing-prompts.index'
 import { Route as TutorsIndexRouteImport } from './routes/tutors.index'
+import { Route as TheorySessionsIndexRouteImport } from './routes/theory-sessions.index'
 import { Route as SpeakingListeningIndexRouteImport } from './routes/speaking-listening.index'
 import { Route as SourcesIndexRouteImport } from './routes/sources.index'
 import { Route as ShadowingIndexRouteImport } from './routes/shadowing.index'
@@ -46,6 +47,8 @@ import { Route as AiLessonsIndexRouteImport } from './routes/ai-lessons.index'
 import { Route as WritingPromptsIdRouteImport } from './routes/writing-prompts.$id'
 import { Route as TutorsNewRouteImport } from './routes/tutors.new'
 import { Route as TutorsIdRouteImport } from './routes/tutors.$id'
+import { Route as TheorySessionsNewRouteImport } from './routes/theory-sessions.new'
+import { Route as TheorySessionsIdRouteImport } from './routes/theory-sessions.$id'
 import { Route as SourcesIdRouteImport } from './routes/sources.$id'
 import { Route as ShadowingNewRouteImport } from './routes/shadowing.new'
 import { Route as ShadowingIdRouteImport } from './routes/shadowing.$id'
@@ -75,6 +78,7 @@ import { Route as AnswerSheetsIdRouteImport } from './routes/answer-sheets.$id'
 import { Route as AiLessonsNewRouteImport } from './routes/ai-lessons.new'
 import { Route as AiLessonsSlugRouteImport } from './routes/ai-lessons.$slug'
 import { Route as TutorsIdIndexRouteImport } from './routes/tutors.$id.index'
+import { Route as TheorySessionsIdIndexRouteImport } from './routes/theory-sessions.$id.index'
 import { Route as ShadowingIdIndexRouteImport } from './routes/shadowing.$id.index'
 import { Route as ReadingSessionsIdIndexRouteImport } from './routes/reading-sessions.$id.index'
 import { Route as QuestionSheetsIdIndexRouteImport } from './routes/question-sheets.$id.index'
@@ -86,6 +90,7 @@ import { Route as GrammarNotesIdIndexRouteImport } from './routes/grammar-notes.
 import { Route as DrillSessionsIdIndexRouteImport } from './routes/drill-sessions.$id.index'
 import { Route as AnswerSheetsIdIndexRouteImport } from './routes/answer-sheets.$id.index'
 import { Route as TutorsIdEditRouteImport } from './routes/tutors.$id.edit'
+import { Route as TheorySessionsIdEditRouteImport } from './routes/theory-sessions.$id.edit'
 import { Route as ShadowingIdEditRouteImport } from './routes/shadowing.$id.edit'
 import { Route as ReadingSessionsIdEditRouteImport } from './routes/reading-sessions.$id.edit'
 import { Route as QuestionSheetsIdEditRouteImport } from './routes/question-sheets.$id.edit'
@@ -165,6 +170,11 @@ const WritingPromptsIndexRoute = WritingPromptsIndexRouteImport.update({
 const TutorsIndexRoute = TutorsIndexRouteImport.update({
   id: '/tutors/',
   path: '/tutors/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TheorySessionsIndexRoute = TheorySessionsIndexRouteImport.update({
+  id: '/theory-sessions/',
+  path: '/theory-sessions/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SpeakingListeningIndexRoute = SpeakingListeningIndexRouteImport.update({
@@ -280,6 +290,16 @@ const TutorsNewRoute = TutorsNewRouteImport.update({
 const TutorsIdRoute = TutorsIdRouteImport.update({
   id: '/tutors/$id',
   path: '/tutors/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TheorySessionsNewRoute = TheorySessionsNewRouteImport.update({
+  id: '/theory-sessions/new',
+  path: '/theory-sessions/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TheorySessionsIdRoute = TheorySessionsIdRouteImport.update({
+  id: '/theory-sessions/$id',
+  path: '/theory-sessions/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SourcesIdRoute = SourcesIdRouteImport.update({
@@ -427,6 +447,11 @@ const TutorsIdIndexRoute = TutorsIdIndexRouteImport.update({
   path: '/',
   getParentRoute: () => TutorsIdRoute,
 } as any)
+const TheorySessionsIdIndexRoute = TheorySessionsIdIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => TheorySessionsIdRoute,
+} as any)
 const ShadowingIdIndexRoute = ShadowingIdIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -482,6 +507,11 @@ const TutorsIdEditRoute = TutorsIdEditRouteImport.update({
   id: '/edit',
   path: '/edit',
   getParentRoute: () => TutorsIdRoute,
+} as any)
+const TheorySessionsIdEditRoute = TheorySessionsIdEditRouteImport.update({
+  id: '/edit',
+  path: '/edit',
+  getParentRoute: () => TheorySessionsIdRoute,
 } as any)
 const ShadowingIdEditRoute = ShadowingIdEditRouteImport.update({
   id: '/edit',
@@ -575,6 +605,8 @@ export interface FileRoutesByFullPath {
   '/shadowing/$id': typeof ShadowingIdRouteWithChildren
   '/shadowing/new': typeof ShadowingNewRoute
   '/sources/$id': typeof SourcesIdRoute
+  '/theory-sessions/$id': typeof TheorySessionsIdRouteWithChildren
+  '/theory-sessions/new': typeof TheorySessionsNewRoute
   '/tutors/$id': typeof TutorsIdRouteWithChildren
   '/tutors/new': typeof TutorsNewRoute
   '/writing-prompts/$id': typeof WritingPromptsIdRoute
@@ -598,6 +630,7 @@ export interface FileRoutesByFullPath {
   '/shadowing/': typeof ShadowingIndexRoute
   '/sources/': typeof SourcesIndexRoute
   '/speaking-listening/': typeof SpeakingListeningIndexRoute
+  '/theory-sessions/': typeof TheorySessionsIndexRoute
   '/tutors/': typeof TutorsIndexRoute
   '/writing-prompts/': typeof WritingPromptsIndexRoute
   '/answer-sheets/$id/edit': typeof AnswerSheetsIdEditRoute
@@ -610,6 +643,7 @@ export interface FileRoutesByFullPath {
   '/question-sheets/$id/edit': typeof QuestionSheetsIdEditRoute
   '/reading-sessions/$id/edit': typeof ReadingSessionsIdEditRoute
   '/shadowing/$id/edit': typeof ShadowingIdEditRoute
+  '/theory-sessions/$id/edit': typeof TheorySessionsIdEditRoute
   '/tutors/$id/edit': typeof TutorsIdEditRoute
   '/answer-sheets/$id/': typeof AnswerSheetsIdIndexRoute
   '/drill-sessions/$id/': typeof DrillSessionsIdIndexRoute
@@ -621,6 +655,7 @@ export interface FileRoutesByFullPath {
   '/question-sheets/$id/': typeof QuestionSheetsIdIndexRoute
   '/reading-sessions/$id/': typeof ReadingSessionsIdIndexRoute
   '/shadowing/$id/': typeof ShadowingIdIndexRoute
+  '/theory-sessions/$id/': typeof TheorySessionsIdIndexRoute
   '/tutors/$id/': typeof TutorsIdIndexRoute
 }
 export interface FileRoutesByTo {
@@ -654,6 +689,7 @@ export interface FileRoutesByTo {
   '/reading-sessions/new': typeof ReadingSessionsNewRoute
   '/shadowing/new': typeof ShadowingNewRoute
   '/sources/$id': typeof SourcesIdRoute
+  '/theory-sessions/new': typeof TheorySessionsNewRoute
   '/tutors/new': typeof TutorsNewRoute
   '/writing-prompts/$id': typeof WritingPromptsIdRoute
   '/ai-lessons': typeof AiLessonsIndexRoute
@@ -676,6 +712,7 @@ export interface FileRoutesByTo {
   '/shadowing': typeof ShadowingIndexRoute
   '/sources': typeof SourcesIndexRoute
   '/speaking-listening': typeof SpeakingListeningIndexRoute
+  '/theory-sessions': typeof TheorySessionsIndexRoute
   '/tutors': typeof TutorsIndexRoute
   '/writing-prompts': typeof WritingPromptsIndexRoute
   '/answer-sheets/$id/edit': typeof AnswerSheetsIdEditRoute
@@ -688,6 +725,7 @@ export interface FileRoutesByTo {
   '/question-sheets/$id/edit': typeof QuestionSheetsIdEditRoute
   '/reading-sessions/$id/edit': typeof ReadingSessionsIdEditRoute
   '/shadowing/$id/edit': typeof ShadowingIdEditRoute
+  '/theory-sessions/$id/edit': typeof TheorySessionsIdEditRoute
   '/tutors/$id/edit': typeof TutorsIdEditRoute
   '/answer-sheets/$id': typeof AnswerSheetsIdIndexRoute
   '/drill-sessions/$id': typeof DrillSessionsIdIndexRoute
@@ -699,6 +737,7 @@ export interface FileRoutesByTo {
   '/question-sheets/$id': typeof QuestionSheetsIdIndexRoute
   '/reading-sessions/$id': typeof ReadingSessionsIdIndexRoute
   '/shadowing/$id': typeof ShadowingIdIndexRoute
+  '/theory-sessions/$id': typeof TheorySessionsIdIndexRoute
   '/tutors/$id': typeof TutorsIdIndexRoute
 }
 export interface FileRoutesById {
@@ -743,6 +782,8 @@ export interface FileRoutesById {
   '/shadowing/$id': typeof ShadowingIdRouteWithChildren
   '/shadowing/new': typeof ShadowingNewRoute
   '/sources/$id': typeof SourcesIdRoute
+  '/theory-sessions/$id': typeof TheorySessionsIdRouteWithChildren
+  '/theory-sessions/new': typeof TheorySessionsNewRoute
   '/tutors/$id': typeof TutorsIdRouteWithChildren
   '/tutors/new': typeof TutorsNewRoute
   '/writing-prompts/$id': typeof WritingPromptsIdRoute
@@ -766,6 +807,7 @@ export interface FileRoutesById {
   '/shadowing/': typeof ShadowingIndexRoute
   '/sources/': typeof SourcesIndexRoute
   '/speaking-listening/': typeof SpeakingListeningIndexRoute
+  '/theory-sessions/': typeof TheorySessionsIndexRoute
   '/tutors/': typeof TutorsIndexRoute
   '/writing-prompts/': typeof WritingPromptsIndexRoute
   '/answer-sheets/$id/edit': typeof AnswerSheetsIdEditRoute
@@ -778,6 +820,7 @@ export interface FileRoutesById {
   '/question-sheets/$id/edit': typeof QuestionSheetsIdEditRoute
   '/reading-sessions/$id/edit': typeof ReadingSessionsIdEditRoute
   '/shadowing/$id/edit': typeof ShadowingIdEditRoute
+  '/theory-sessions/$id/edit': typeof TheorySessionsIdEditRoute
   '/tutors/$id/edit': typeof TutorsIdEditRoute
   '/answer-sheets/$id/': typeof AnswerSheetsIdIndexRoute
   '/drill-sessions/$id/': typeof DrillSessionsIdIndexRoute
@@ -789,6 +832,7 @@ export interface FileRoutesById {
   '/question-sheets/$id/': typeof QuestionSheetsIdIndexRoute
   '/reading-sessions/$id/': typeof ReadingSessionsIdIndexRoute
   '/shadowing/$id/': typeof ShadowingIdIndexRoute
+  '/theory-sessions/$id/': typeof TheorySessionsIdIndexRoute
   '/tutors/$id/': typeof TutorsIdIndexRoute
 }
 export interface FileRouteTypes {
@@ -834,6 +878,8 @@ export interface FileRouteTypes {
     | '/shadowing/$id'
     | '/shadowing/new'
     | '/sources/$id'
+    | '/theory-sessions/$id'
+    | '/theory-sessions/new'
     | '/tutors/$id'
     | '/tutors/new'
     | '/writing-prompts/$id'
@@ -857,6 +903,7 @@ export interface FileRouteTypes {
     | '/shadowing/'
     | '/sources/'
     | '/speaking-listening/'
+    | '/theory-sessions/'
     | '/tutors/'
     | '/writing-prompts/'
     | '/answer-sheets/$id/edit'
@@ -869,6 +916,7 @@ export interface FileRouteTypes {
     | '/question-sheets/$id/edit'
     | '/reading-sessions/$id/edit'
     | '/shadowing/$id/edit'
+    | '/theory-sessions/$id/edit'
     | '/tutors/$id/edit'
     | '/answer-sheets/$id/'
     | '/drill-sessions/$id/'
@@ -880,6 +928,7 @@ export interface FileRouteTypes {
     | '/question-sheets/$id/'
     | '/reading-sessions/$id/'
     | '/shadowing/$id/'
+    | '/theory-sessions/$id/'
     | '/tutors/$id/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -913,6 +962,7 @@ export interface FileRouteTypes {
     | '/reading-sessions/new'
     | '/shadowing/new'
     | '/sources/$id'
+    | '/theory-sessions/new'
     | '/tutors/new'
     | '/writing-prompts/$id'
     | '/ai-lessons'
@@ -935,6 +985,7 @@ export interface FileRouteTypes {
     | '/shadowing'
     | '/sources'
     | '/speaking-listening'
+    | '/theory-sessions'
     | '/tutors'
     | '/writing-prompts'
     | '/answer-sheets/$id/edit'
@@ -947,6 +998,7 @@ export interface FileRouteTypes {
     | '/question-sheets/$id/edit'
     | '/reading-sessions/$id/edit'
     | '/shadowing/$id/edit'
+    | '/theory-sessions/$id/edit'
     | '/tutors/$id/edit'
     | '/answer-sheets/$id'
     | '/drill-sessions/$id'
@@ -958,6 +1010,7 @@ export interface FileRouteTypes {
     | '/question-sheets/$id'
     | '/reading-sessions/$id'
     | '/shadowing/$id'
+    | '/theory-sessions/$id'
     | '/tutors/$id'
   id:
     | '__root__'
@@ -1001,6 +1054,8 @@ export interface FileRouteTypes {
     | '/shadowing/$id'
     | '/shadowing/new'
     | '/sources/$id'
+    | '/theory-sessions/$id'
+    | '/theory-sessions/new'
     | '/tutors/$id'
     | '/tutors/new'
     | '/writing-prompts/$id'
@@ -1024,6 +1079,7 @@ export interface FileRouteTypes {
     | '/shadowing/'
     | '/sources/'
     | '/speaking-listening/'
+    | '/theory-sessions/'
     | '/tutors/'
     | '/writing-prompts/'
     | '/answer-sheets/$id/edit'
@@ -1036,6 +1092,7 @@ export interface FileRouteTypes {
     | '/question-sheets/$id/edit'
     | '/reading-sessions/$id/edit'
     | '/shadowing/$id/edit'
+    | '/theory-sessions/$id/edit'
     | '/tutors/$id/edit'
     | '/answer-sheets/$id/'
     | '/drill-sessions/$id/'
@@ -1047,6 +1104,7 @@ export interface FileRouteTypes {
     | '/question-sheets/$id/'
     | '/reading-sessions/$id/'
     | '/shadowing/$id/'
+    | '/theory-sessions/$id/'
     | '/tutors/$id/'
   fileRoutesById: FileRoutesById
 }
@@ -1091,6 +1149,8 @@ export interface RootRouteChildren {
   ShadowingIdRoute: typeof ShadowingIdRouteWithChildren
   ShadowingNewRoute: typeof ShadowingNewRoute
   SourcesIdRoute: typeof SourcesIdRoute
+  TheorySessionsIdRoute: typeof TheorySessionsIdRouteWithChildren
+  TheorySessionsNewRoute: typeof TheorySessionsNewRoute
   TutorsIdRoute: typeof TutorsIdRouteWithChildren
   TutorsNewRoute: typeof TutorsNewRoute
   WritingPromptsIdRoute: typeof WritingPromptsIdRoute
@@ -1114,6 +1174,7 @@ export interface RootRouteChildren {
   ShadowingIndexRoute: typeof ShadowingIndexRoute
   SourcesIndexRoute: typeof SourcesIndexRoute
   SpeakingListeningIndexRoute: typeof SpeakingListeningIndexRoute
+  TheorySessionsIndexRoute: typeof TheorySessionsIndexRoute
   TutorsIndexRoute: typeof TutorsIndexRoute
   WritingPromptsIndexRoute: typeof WritingPromptsIndexRoute
 }
@@ -1216,6 +1277,13 @@ declare module '@tanstack/react-router' {
       path: '/tutors'
       fullPath: '/tutors/'
       preLoaderRoute: typeof TutorsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/theory-sessions/': {
+      id: '/theory-sessions/'
+      path: '/theory-sessions'
+      fullPath: '/theory-sessions/'
+      preLoaderRoute: typeof TheorySessionsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/speaking-listening/': {
@@ -1377,6 +1445,20 @@ declare module '@tanstack/react-router' {
       path: '/tutors/$id'
       fullPath: '/tutors/$id'
       preLoaderRoute: typeof TutorsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/theory-sessions/new': {
+      id: '/theory-sessions/new'
+      path: '/theory-sessions/new'
+      fullPath: '/theory-sessions/new'
+      preLoaderRoute: typeof TheorySessionsNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/theory-sessions/$id': {
+      id: '/theory-sessions/$id'
+      path: '/theory-sessions/$id'
+      fullPath: '/theory-sessions/$id'
+      preLoaderRoute: typeof TheorySessionsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sources/$id': {
@@ -1582,6 +1664,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TutorsIdIndexRouteImport
       parentRoute: typeof TutorsIdRoute
     }
+    '/theory-sessions/$id/': {
+      id: '/theory-sessions/$id/'
+      path: '/'
+      fullPath: '/theory-sessions/$id/'
+      preLoaderRoute: typeof TheorySessionsIdIndexRouteImport
+      parentRoute: typeof TheorySessionsIdRoute
+    }
     '/shadowing/$id/': {
       id: '/shadowing/$id/'
       path: '/'
@@ -1658,6 +1747,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/tutors/$id/edit'
       preLoaderRoute: typeof TutorsIdEditRouteImport
       parentRoute: typeof TutorsIdRoute
+    }
+    '/theory-sessions/$id/edit': {
+      id: '/theory-sessions/$id/edit'
+      path: '/edit'
+      fullPath: '/theory-sessions/$id/edit'
+      preLoaderRoute: typeof TheorySessionsIdEditRouteImport
+      parentRoute: typeof TheorySessionsIdRoute
     }
     '/shadowing/$id/edit': {
       id: '/shadowing/$id/edit'
@@ -1869,6 +1965,19 @@ const ShadowingIdRouteWithChildren = ShadowingIdRoute._addFileChildren(
   ShadowingIdRouteChildren,
 )
 
+interface TheorySessionsIdRouteChildren {
+  TheorySessionsIdEditRoute: typeof TheorySessionsIdEditRoute
+  TheorySessionsIdIndexRoute: typeof TheorySessionsIdIndexRoute
+}
+
+const TheorySessionsIdRouteChildren: TheorySessionsIdRouteChildren = {
+  TheorySessionsIdEditRoute: TheorySessionsIdEditRoute,
+  TheorySessionsIdIndexRoute: TheorySessionsIdIndexRoute,
+}
+
+const TheorySessionsIdRouteWithChildren =
+  TheorySessionsIdRoute._addFileChildren(TheorySessionsIdRouteChildren)
+
 interface TutorsIdRouteChildren {
   TutorsIdEditRoute: typeof TutorsIdEditRoute
   TutorsIdIndexRoute: typeof TutorsIdIndexRoute
@@ -1924,6 +2033,8 @@ const rootRouteChildren: RootRouteChildren = {
   ShadowingIdRoute: ShadowingIdRouteWithChildren,
   ShadowingNewRoute: ShadowingNewRoute,
   SourcesIdRoute: SourcesIdRoute,
+  TheorySessionsIdRoute: TheorySessionsIdRouteWithChildren,
+  TheorySessionsNewRoute: TheorySessionsNewRoute,
   TutorsIdRoute: TutorsIdRouteWithChildren,
   TutorsNewRoute: TutorsNewRoute,
   WritingPromptsIdRoute: WritingPromptsIdRoute,
@@ -1947,6 +2058,7 @@ const rootRouteChildren: RootRouteChildren = {
   ShadowingIndexRoute: ShadowingIndexRoute,
   SourcesIndexRoute: SourcesIndexRoute,
   SpeakingListeningIndexRoute: SpeakingListeningIndexRoute,
+  TheorySessionsIndexRoute: TheorySessionsIndexRoute,
   TutorsIndexRoute: TutorsIndexRoute,
   WritingPromptsIndexRoute: WritingPromptsIndexRoute,
 }

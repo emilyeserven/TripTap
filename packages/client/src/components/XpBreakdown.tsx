@@ -11,6 +11,7 @@ const FEATURE_LABELS: Record<XpFeature, string> = {
   shadowing: "Shadowing",
   drills: "Drills",
   lessons: "Lessons",
+  theoryStudy: "Theory study",
 };
 
 /**
