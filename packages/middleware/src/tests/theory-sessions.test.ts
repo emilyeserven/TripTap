@@ -60,6 +60,39 @@ test("POST /api/theory-sessions rejects an unknown density", async () => {
   await app.close();
 });
 
+test("POST /api/theory-sessions rejects an unknown learning area", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/theory-sessions",
+    payload: {
+      date: "2026-07-20",
+      entryMode: "pages",
+      pages: 3,
+      learningArea: "Cooking",
+    },
+  });
+  assert.equal(res.statusCode, 400);
+  await app.close();
+});
+
+test("POST /api/theory-sessions accepts a chosen learning area", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/theory-sessions",
+    payload: {
+      date: "2026-07-20",
+      entryMode: "pages",
+      pages: 3,
+      density: "medium",
+      learningArea: "Reading",
+    },
+  });
+  assert.notEqual(res.statusCode, 400);
+  await app.close();
+});
+
 test("POST /api/theory-sessions rejects negative pages", async () => {
   const app = await buildApp();
   const res = await app.inject({

@@ -398,6 +398,7 @@ interface TheoryStudyXpRow {
   density: TheoryDensity | null;
   wordCount: number | null;
   notesCount: number;
+  learningArea: LearningArea | null;
 }
 
 /** Round `x` up to the nearest 0.25 (794/250 = 3.176 → 3.25). */
@@ -406,9 +407,10 @@ export function ceilToQuarter(x: number): number {
 }
 
 /**
- * Theory study XP → Grammar. In "pages" mode, pages × the density's per-page rate; in "words" mode,
- * the word count over 250 (rounded up to the nearest quarter) at the per-250-words rate. Either way,
- * plus a flat rate per self-reported note. Density defaults to medium when unset.
+ * Theory study XP → the session's chosen area, defaulting to Grammar. In "pages" mode, pages × the
+ * density's per-page rate; in "words" mode, the word count over 250 (rounded up to the nearest
+ * quarter) at the per-250-words rate. Either way, plus a flat rate per self-reported note. Density
+ * defaults to medium when unset.
  */
 export function theoryStudyXp(rows: TheoryStudyXpRow[], rates: XpRates = DEFAULT_XP_RATES): XpGrant[] {
   const densityRate = (density: TheoryDensity | null): number => {
@@ -428,7 +430,7 @@ export function theoryStudyXp(rows: TheoryStudyXpRow[], rates: XpRates = DEFAULT
     const xp = base + (row.notesCount ?? 0) * rates.theoryStudyNote;
     return xp > 0
       ? [{
-        area: "Grammar" as const,
+        area: row.learningArea ?? ("Grammar" as const),
         feature: "theoryStudy" as const,
         xp,
         at: new Date(row.date),
@@ -639,6 +641,7 @@ export async function loadXpGrants(): Promise<XpGrant[]> {
       density: theorySessions.density,
       wordCount: theorySessions.wordCount,
       notesCount: theorySessions.notesCount,
+      learningArea: theorySessions.learningArea,
     }).from(theorySessions),
   ]);
 

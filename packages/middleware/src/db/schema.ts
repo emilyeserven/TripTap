@@ -653,6 +653,8 @@ export const theorySessions = pgTable("theory_sessions", {
   // Self-reported count of notes taken (XP-bearing).
   notesCount: integer("notes_count").notNull().default(0),
   notes: text("notes"),
+  // The LearningArea this session's XP counts toward; null falls back to Grammar.
+  learningArea: text("learning_area").$type<LearningArea>(),
   createdAt: timestamp("created_at", {
     withTimezone: true,
   }).notNull().defaultNow(),

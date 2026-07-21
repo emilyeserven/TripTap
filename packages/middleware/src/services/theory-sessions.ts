@@ -19,6 +19,7 @@ function toTheorySession(row: TheorySessionRow): TheorySession {
     wordCount: row.wordCount ?? null,
     notesCount: row.notesCount,
     notes: row.notes ?? null,
+    learningArea: row.learningArea ?? null,
     createdAt:
       row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
     updatedAt:
@@ -37,6 +38,7 @@ function toInsert(input: CreateTheorySessionInput) {
     wordCount: input.wordCount ?? null,
     notesCount: input.notesCount ?? 0,
     notes: input.notes ?? null,
+    learningArea: input.learningArea ?? null,
   };
 }
 
