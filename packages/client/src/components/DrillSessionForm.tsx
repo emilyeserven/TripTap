@@ -17,7 +17,9 @@ function todayIso(): string {
 
 /**
  * Create/edit form for a drill session. One component powers both the new and edit pages — pass a
- * `session` to edit an existing one. Mistake rows without a filled `prompt` are dropped on save.
+ * `session` to edit an existing one. A mistake row is kept on save when it has any content (question,
+ * answer, correct answer, reflection, or a reason); an empty "what you got wrong" just means the
+ * answer was skipped. Only fully-blank rows are dropped.
  */
 export function DrillSessionForm({
   session,
@@ -45,13 +47,15 @@ export function DrillSessionForm({
   const submit = async () => {
     if (!canSubmit) return;
     const cleaned = mistakes
-      .filter(m => m.prompt.trim().length > 0)
       .map(m => ({
         ...m,
+        question: m.question?.trim() || null,
         prompt: m.prompt.trim(),
         correctAnswer: m.correctAnswer?.trim() || null,
         reflection: m.reflection?.trim() || null,
-      }));
+      }))
+      // Keep a row with any real content; an empty `prompt` just records a skipped answer.
+      .filter(m => m.question || m.prompt || m.correctAnswer || m.reflection || m.reasons.length > 0);
     const input = {
       date,
       title: title.trim() || null,
