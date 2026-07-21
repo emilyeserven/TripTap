@@ -21,13 +21,37 @@ function labelAnchor(angle: number): "start" | "middle" | "end" {
 }
 
 /**
+ * The clockwise-from-top axis order for the radar chart (index 0 = top). Deliberately separate from
+ * the global `LEARNING_AREAS` enum so the chart can present the areas in its own reading order without
+ * disturbing area ordering anywhere else. Any area not listed here sorts to the end, in its incoming
+ * order.
+ */
+const RADAR_AREA_ORDER: LearningArea[] = [
+  "Grammar",
+  "Listening",
+  "Speaking",
+  "Writing",
+  "Reading",
+  "Vocabulary",
+];
+
+/** Reorder the incoming areas by {@link RADAR_AREA_ORDER}; unlisted areas keep their relative order at the end. */
+function orderForRadar(areas: XpAreaSummary[]): XpAreaSummary[] {
+  const rank = (area: LearningArea) => {
+    const i = RADAR_AREA_ORDER.indexOf(area);
+    return i === -1 ? RADAR_AREA_ORDER.length : i;
+  };
+  return [...areas].sort((a, b) => rank(a.area) - rank(b.area));
+}
+
+/**
  * A spider/radar chart of XP per learning area — one axis per area. The filled polygon is all-time
  * XP; an overlaid accent polygon is today's XP (always inside all-time, so it reads as "how much of
  * each area is from today"). Two series get a legend and distinct hue + fill so identity is never
  * color-alone. Hand-rolled SVG on the app's theme tokens (no chart library, matching `DrillStats`).
  */
 export function XpRadarChart({
-  areas,
+  areas: incomingAreas,
   todayAreas = [],
   size = 300,
 }: {
@@ -37,6 +61,8 @@ export function XpRadarChart({
     xp: number; }[];
   size?: number;
 }) {
+  // Present the axes in the chart's own reading order; today values follow via the per-axis lookup.
+  const areas = orderForRadar(incomingAreas);
   const center = size / 2;
   const labelGap = 18;
   const padding = 44;
