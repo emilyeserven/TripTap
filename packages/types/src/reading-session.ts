@@ -8,6 +8,8 @@
  * both the Fastify API and the React client.
  */
 
+import type { BookmarkSectionRef } from "./index.js";
+
 /** How the learner recorded meaning for the whole session. */
 export type ReadingTranslationMode = "freeform" | "line-by-line";
 
@@ -70,6 +72,12 @@ export interface ReadingSession {
   lines: ReadingLine[] | null;
   /** Words the learner was shaky on / didn't know, with flashcard markers; null if none. */
   wordNotes: WordNote[] | null;
+  /** The bookmark resource this reading was based on, if any (denormalized for display). */
+  bookmarkId: string | null;
+  bookmarkTitle: string | null;
+  bookmarkUrl: string | null;
+  /** A specific section of the linked bookmark, when the reading targeted one; else null. */
+  section: BookmarkSectionRef | null;
   /** ISO-8601 timestamp of when the session was created. */
   createdAt: string;
   /** ISO-8601 timestamp of the last update. */
@@ -90,6 +98,10 @@ export interface CreateReadingSessionInput {
   summary?: string | null;
   lines?: ReadingLine[] | null;
   wordNotes?: WordNote[] | null;
+  bookmarkId?: string | null;
+  bookmarkTitle?: string | null;
+  bookmarkUrl?: string | null;
+  section?: BookmarkSectionRef | null;
 }
 
 /** Payload for partially updating a reading session. */

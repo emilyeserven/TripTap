@@ -1,6 +1,7 @@
 import type { ReadingSession } from "@sentence-bank/types";
 
 import { Link } from "@tanstack/react-router";
+import { ExternalLink } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { useSources } from "@/hooks/useSources";
@@ -69,6 +70,30 @@ export function ReadingSessionView({
             : null}
           {session.page ? <span>· {session.page}</span> : null}
         </div>
+        {session.bookmarkId && session.bookmarkTitle && (
+          <p className="text-sm text-muted-foreground">
+            From resource:
+            {" "}
+            <span className="font-medium text-foreground">{session.bookmarkTitle}</span>
+            {session.section && (
+              <span> · {session.section.label}</span>
+            )}
+            {session.bookmarkUrl && (
+              <a
+                href={session.bookmarkUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="
+                  ml-2 inline-flex items-center gap-1 text-primary
+                  hover:underline
+                "
+              >
+                open
+                <ExternalLink className="size-3" />
+              </a>
+            )}
+          </p>
+        )}
       </div>
 
       <Field
