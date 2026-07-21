@@ -61,6 +61,28 @@ describe("XpRadarChart", () => {
     render(<XpRadarChart areas={areas} />);
     expect(screen.getByRole("img")).toHaveAccessibleName(/Today: none/);
   });
+
+  it("adds a yesterday series and reports the shared daily scale", () => {
+    render(
+      <XpRadarChart
+        areas={areas}
+        todayAreas={[{
+          area: "Reading",
+          xp: 3,
+        }]}
+        yesterdayAreas={[{
+          area: "Grammar",
+          xp: 4,
+        }]}
+        dailyXpGoal={20}
+      />,
+    );
+    expect(screen.getByText("Yesterday")).toBeInTheDocument();
+    const svg = screen.getByRole("img");
+    expect(svg).toHaveAccessibleName(/Yesterday: Grammar 4/);
+    // Goal is 20 and the peak day-area (4) is under it, so the daily scale stays at the goal.
+    expect(svg).toHaveAccessibleName(/daily max of 20 xp/);
+  });
 });
 
 describe("formatXp", () => {

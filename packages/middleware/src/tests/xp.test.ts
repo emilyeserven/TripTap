@@ -697,6 +697,24 @@ test("summarizeGrants counts today against the caller's local calendar day", () 
       },
     },
   ]);
+  // The two yesterday-dated grants land in the `yesterday` bucket, same per-area shape as today.
+  assert.equal(summary.yesterday.totalXp, 2.5);
+  assert.deepEqual(summary.yesterday.areas, [
+    {
+      area: "Reading",
+      xp: 2,
+      byFeature: {
+        reading: 2,
+      },
+    },
+    {
+      area: "Grammar",
+      xp: 0.5,
+      byFeature: {
+        drills: 0.5,
+      },
+    },
+  ]);
 });
 
 test("summarizeGrants treats today as the UTC day when no offset is given", () => {

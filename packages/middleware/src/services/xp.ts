@@ -491,8 +491,16 @@ export function summarizeGrants(
       byFeature: {},
     }]),
   );
+  const yesterdayAreas = new Map<LearningArea, XpAreaSummary>(
+    LEARNING_AREAS.map(area => [area, {
+      area,
+      xp: 0,
+      byFeature: {},
+    }]),
+  );
   const cutoff = now.getTime() - days * 24 * 60 * 60 * 1000;
   const today = localDateString(now, tzOffsetMinutes);
+  const yesterday = localDateString(new Date(now.getTime() - 24 * 60 * 60 * 1000), tzOffsetMinutes);
 
   for (const grant of grants) {
     const area = areas.get(grant.area);
@@ -512,6 +520,14 @@ export function summarizeGrants(
         todayArea.byFeature[grant.feature] = (todayArea.byFeature[grant.feature] ?? 0) + grant.xp;
       }
     }
+    else if (grantDay === yesterday) {
+      const yesterdayArea = yesterdayAreas.get(grant.area);
+      if (yesterdayArea) {
+        yesterdayArea.xp += grant.xp;
+        yesterdayArea.byFeature[grant.feature]
+          = (yesterdayArea.byFeature[grant.feature] ?? 0) + grant.xp;
+      }
+    }
   }
 
   const summaries = [...areas.values()].map(area => ({
@@ -527,15 +543,19 @@ export function summarizeGrants(
       area,
       xp: roundXp(recentAreas.get(area) ?? 0),
     }));
-  const todayByArea = [...todayAreas.values()]
-    .filter(area => area.xp > 0)
-    .map(area => ({
-      area: area.area,
-      xp: roundXp(area.xp),
-      byFeature: Object.fromEntries(
-        Object.entries(area.byFeature).map(([feature, xp]) => [feature, roundXp(xp)]),
-      ) as XpAreaSummary["byFeature"],
-    }));
+  // Collapse a per-area day bucket to the sparse, rounded shape the wire type uses (areas with no XP dropped).
+  const toDayAreas = (bucket: Map<LearningArea, XpAreaSummary>) =>
+    [...bucket.values()]
+      .filter(area => area.xp > 0)
+      .map(area => ({
+        area: area.area,
+        xp: roundXp(area.xp),
+        byFeature: Object.fromEntries(
+          Object.entries(area.byFeature).map(([feature, xp]) => [feature, roundXp(xp)]),
+        ) as XpAreaSummary["byFeature"],
+      }));
+  const todayByArea = toDayAreas(todayAreas);
+  const yesterdayByArea = toDayAreas(yesterdayAreas);
 
   return {
     totalXp: roundXp(summaries.reduce((sum, area) => sum + area.xp, 0)),
@@ -548,6 +568,10 @@ export function summarizeGrants(
     today: {
       totalXp: roundXp(todayByArea.reduce((sum, area) => sum + area.xp, 0)),
       areas: todayByArea,
+    },
+    yesterday: {
+      totalXp: roundXp(yesterdayByArea.reduce((sum, area) => sum + area.xp, 0)),
+      areas: yesterdayByArea,
     },
   };
 }

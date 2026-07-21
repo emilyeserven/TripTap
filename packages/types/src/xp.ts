@@ -92,10 +92,13 @@ export interface XpRecentSummary {
     xp: number; }[];
 }
 
-/** XP earned so far in the caller's local calendar day (per the `tzOffsetMinutes` query param). */
+/**
+ * XP earned within a single local calendar day (per the `tzOffsetMinutes` query param). Used for both
+ * "today" and "yesterday".
+ */
 export interface XpTodaySummary {
   totalXp: number;
-  /** Per-area today totals with a per-feature breakdown; areas with no XP today are omitted. */
+  /** Per-area day totals with a per-feature breakdown; areas with no XP that day are omitted. */
   areas: XpAreaSummary[];
 }
 
@@ -105,4 +108,6 @@ export interface XpSummary {
   areas: XpAreaSummary[];
   recent: XpRecentSummary;
   today: XpTodaySummary;
+  /** Per-area XP earned during the caller's previous local calendar day. */
+  yesterday: XpTodaySummary;
 }
