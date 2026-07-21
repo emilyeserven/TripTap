@@ -4,7 +4,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatXp } from "@/lib/xp";
 
 /** Which slice of the summary the breakdown shows. */
-export type XpBreakdownView = "all-time" | "today";
+export type XpBreakdownView = "all-time" | "today" | "yesterday";
 
 /** Reader-facing names for the XP feature buckets. */
 const FEATURE_LABELS: Record<XpFeature, string> = {
@@ -75,8 +75,17 @@ export function XpBreakdown({
   view: XpBreakdownView;
   onViewChange: (view: XpBreakdownView) => void;
 }) {
-  const areas = view === "today" ? summary.today.areas : summary.areas;
+  const areas = view === "today"
+    ? summary.today.areas
+    : view === "yesterday"
+      ? summary.yesterday.areas
+      : summary.areas;
   const max = Math.max(1, ...areas.map(a => a.xp));
+  const emptyMessage = view === "today"
+    ? "No XP yet today — log some practice and it’ll show up here."
+    : view === "yesterday"
+      ? "No XP recorded yesterday."
+      : "No XP yet — log some practice and it’ll show up here.";
   return (
     <div className="space-y-4">
       <Tabs
@@ -85,6 +94,7 @@ export function XpBreakdown({
       >
         <TabsList>
           <TabsTrigger value="today">Today</TabsTrigger>
+          <TabsTrigger value="yesterday">Yesterday</TabsTrigger>
           <TabsTrigger value="all-time">All-time</TabsTrigger>
         </TabsList>
       </Tabs>
@@ -92,7 +102,7 @@ export function XpBreakdown({
       {areas.length === 0
         ? (
           <p className="text-sm text-muted-foreground">
-            No XP yet today — log some practice and it’ll show up here.
+            {emptyMessage}
           </p>
         )
         : (
