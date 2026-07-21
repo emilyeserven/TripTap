@@ -415,7 +415,8 @@ function parseStringRecord(value: unknown): Record<string, string> | undefined {
   return entries.length > 0 ? Object.fromEntries(entries) : undefined;
 }
 
-const SUGGESTION_KINDS = ["due-sheet", "area", "starred-grammar", "goal"] as const;
+// Keep in sync with StartSuggestionKind; "custom" is a learner-authored lineup item.
+const SUGGESTION_KINDS = ["due-sheet", "area", "starred-grammar", "goal", "custom"] as const;
 
 /**
  * Parse the stored lineup, tolerating absent/corrupt values: malformed items are dropped, exclusion
