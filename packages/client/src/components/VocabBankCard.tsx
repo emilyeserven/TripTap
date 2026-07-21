@@ -3,6 +3,7 @@ import type { Vocab } from "@sentence-bank/types";
 import { Link } from "@tanstack/react-router";
 import { Camera } from "lucide-react";
 
+import { AddToBasketButton } from "@/components/AddToBasketButton";
 import { Card, CardContent } from "@/components/ui/card";
 import { VocabBankCardMedia } from "@/components/VocabBankCardMedia";
 
@@ -30,20 +31,31 @@ export function VocabBankCard({
           <div className="min-w-0 flex-1 space-y-1">
             <div className="flex items-start justify-between gap-2">
               <p className="text-lg font-semibold">{v.term}</p>
-              {onDelete
-                ? (
-                  <button
-                    type="button"
-                    onClick={() => onDelete(v.id)}
-                    className="
-                      text-xs text-destructive
-                      hover:underline
-                    "
-                  >
-                    Delete
-                  </button>
-                )
-                : null}
+              <div className="flex shrink-0 items-center gap-2">
+                <AddToBasketButton
+                  item={{
+                    kind: "vocab",
+                    id: v.id,
+                    term: v.term,
+                    reading: v.reading,
+                    meaning: v.meaning,
+                  }}
+                />
+                {onDelete
+                  ? (
+                    <button
+                      type="button"
+                      onClick={() => onDelete(v.id)}
+                      className="
+                        text-xs text-destructive
+                        hover:underline
+                      "
+                    >
+                      Delete
+                    </button>
+                  )
+                  : null}
+              </div>
             </div>
             {v.reading ? <p className="text-sm text-muted-foreground">{v.reading}</p> : null}
             {v.meaning ? <p className="text-sm">{v.meaning}</p> : null}

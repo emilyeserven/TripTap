@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { ChevronDown, ExternalLink, Layers, ScrollText, Volume2 } from "lucide-react";
 
+import { AddToBasketButton } from "../AddToBasketButton";
 import { AiLessonBadge } from "./AiLessonBadge";
 import { Furi } from "./Furi";
 import { GrammarTagsEditor } from "./GrammarTagsEditor";
@@ -54,6 +55,15 @@ export function SourceCard({
                 <ExternalLink className="size-3" />
               </a>
             )}
+            <AddToBasketButton
+              item={{
+                kind: "sentence",
+                id: s.id,
+                text: s.jp,
+                translation: s.en,
+                reading: null,
+              }}
+            />
           </div>
         </div>
       </CardHeader>

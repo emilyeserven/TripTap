@@ -7,6 +7,7 @@ import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { ChevronRight, Volume2 } from "lucide-react";
 
+import { AddToBasketButton } from "../AddToBasketButton";
 import { AiLessonBadge } from "./AiLessonBadge";
 import { GrammarTagsEditor } from "./GrammarTagsEditor";
 import { speak } from "./speak";
@@ -44,19 +45,32 @@ export function GrammarItemRow({
 
   return (
     <AccordionItem value={g.id}>
-      <AccordionTrigger>
-        <span className="flex flex-1 flex-col items-start gap-0.5 text-left">
-          <span className="text-base font-medium">{g.pat}</span>
-          <span className="text-sm text-muted-foreground">{g.gloss}</span>
-        </span>
-        {aiLesson
-          ? (
-            <span className="mr-2">
-              <AiLessonBadge {...aiLesson} />
-            </span>
-          )
-          : null}
-      </AccordionTrigger>
+      {/* Basket button sits beside the trigger (not inside it — nested buttons are invalid). */}
+      <div className="flex items-center gap-1">
+        <AccordionTrigger className="flex-1">
+          <span className="flex flex-1 flex-col items-start gap-0.5 text-left">
+            <span className="text-base font-medium">{g.pat}</span>
+            <span className="text-sm text-muted-foreground">{g.gloss}</span>
+          </span>
+          {aiLesson
+            ? (
+              <span className="mr-2">
+                <AiLessonBadge {...aiLesson} />
+              </span>
+            )
+            : null}
+        </AccordionTrigger>
+        <AddToBasketButton
+          item={{
+            kind: "grammar",
+            id: g.id,
+            pattern: g.pat,
+            gloss: g.gloss,
+            note: g.note,
+            examples: g.ex,
+          }}
+        />
+      </div>
       <AccordionContent className="space-y-4">
         <p className="text-sm/relaxed">{g.note}</p>
 
