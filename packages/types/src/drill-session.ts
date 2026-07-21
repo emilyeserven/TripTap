@@ -87,8 +87,8 @@ export interface DrillSession {
   title: string | null;
   notes: string | null;
   mistakes: DrillMistake[] | null;
-  /** Number of drill rounds completed this session (XP: 0.25 each). */
-  rounds: number;
+  /** Number of questions attempted this session (XP: 0.25 each). */
+  questions: number;
   /** The learning area this session's XP counts toward; null falls back to Grammar. */
   learningArea: LearningArea | null;
   /** ISO-8601 timestamp of when the session was added. */
@@ -103,7 +103,7 @@ export interface CreateDrillSessionInput {
   title?: string | null;
   notes?: string | null;
   mistakes?: DrillMistake[] | null;
-  rounds?: number;
+  questions?: number;
   learningArea?: LearningArea | null;
 }
 

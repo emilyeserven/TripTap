@@ -1,7 +1,7 @@
 import type { DrillSession } from "@sentence-bank/types";
 
 import { DrillMistakeCard } from "@/components/DrillMistakeCard";
-import { DrillRoundsCounter } from "@/components/DrillRoundsCounter";
+import { DrillQuestionsCounter } from "@/components/DrillQuestionsCounter";
 import { Badge } from "@/components/ui/badge";
 import { useDrillReasonCategories } from "@/hooks/useDrillReasonCategories";
 
@@ -33,7 +33,7 @@ export function DrillSessionView({
         {session.notes
           ? <p className="text-sm whitespace-pre-wrap">{session.notes}</p>
           : null}
-        <DrillRoundsCounter session={session} />
+        <DrillQuestionsCounter session={session} />
       </div>
 
       {mistakes.length === 0

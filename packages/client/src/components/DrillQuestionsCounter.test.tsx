@@ -3,7 +3,7 @@ import type { DrillSession } from "@sentence-bank/types";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { DrillRoundsCounter } from "./DrillRoundsCounter";
+import { DrillQuestionsCounter } from "./DrillQuestionsCounter";
 
 const mutate = vi.fn();
 
@@ -21,7 +21,7 @@ function session(over: Partial<DrillSession>): DrillSession {
     title: null,
     notes: null,
     mistakes: null,
-    rounds: 0,
+    questions: 0,
     learningArea: null,
     createdAt: "2026-07-20T00:00:00Z",
     updatedAt: "2026-07-20T00:00:00Z",
@@ -29,62 +29,62 @@ function session(over: Partial<DrillSession>): DrillSession {
   };
 }
 
-describe("DrillRoundsCounter", () => {
+describe("DrillQuestionsCounter", () => {
   beforeEach(() => {
     mutate.mockClear();
   });
 
-  it("PATCHes the incremented count when adding a round", () => {
+  it("PATCHes the incremented count when adding a question", () => {
     render(
-      <DrillRoundsCounter
+      <DrillQuestionsCounter
         session={session({
-          rounds: 3,
+          questions: 3,
         })}
       />,
     );
     fireEvent.click(screen.getByRole("button", {
-      name: "Add a round",
+      name: "Add a question",
     }));
     expect(mutate).toHaveBeenCalledWith({
       id: "ds-1",
       input: {
-        rounds: 4,
+        questions: 4,
       },
     });
   });
 
-  it("PATCHes the decremented count when removing a round", () => {
+  it("PATCHes the decremented count when removing a question", () => {
     render(
-      <DrillRoundsCounter
+      <DrillQuestionsCounter
         session={session({
-          rounds: 3,
+          questions: 3,
         })}
       />,
     );
     fireEvent.click(screen.getByRole("button", {
-      name: "Remove a round",
+      name: "Remove a question",
     }));
     expect(mutate).toHaveBeenCalledWith({
       id: "ds-1",
       input: {
-        rounds: 2,
+        questions: 2,
       },
     });
   });
 
   it("disables removing below zero", () => {
     render(
-      <DrillRoundsCounter
+      <DrillQuestionsCounter
         session={session({
-          rounds: 0,
+          questions: 0,
         })}
       />,
     );
     expect(screen.getByRole("button", {
-      name: "Remove a round",
+      name: "Remove a question",
     })).toBeDisabled();
     fireEvent.click(screen.getByRole("button", {
-      name: "Remove a round",
+      name: "Remove a question",
     }));
     expect(mutate).not.toHaveBeenCalled();
   });

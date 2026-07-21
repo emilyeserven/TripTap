@@ -360,7 +360,7 @@ const updateXpSettingsBody = {
         answerEntryGrid: xpRateValueSchema,
         listeningEntry: xpRateValueSchema,
         shadowingLoop: xpRateValueSchema,
-        drillRound: xpRateValueSchema,
+        drillQuestion: xpRateValueSchema,
         lessonLine: xpRateValueSchema,
         lessonWordNote: xpRateValueSchema,
       },

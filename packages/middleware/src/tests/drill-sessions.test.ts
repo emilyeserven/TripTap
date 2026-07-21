@@ -17,14 +17,14 @@ test("POST /api/drill-sessions rejects a payload missing date", async () => {
   await app.close();
 });
 
-test("POST /api/drill-sessions rejects negative rounds", async () => {
+test("POST /api/drill-sessions rejects a negative question count", async () => {
   const app = await buildApp();
   const res = await app.inject({
     method: "POST",
     url: "/api/drill-sessions",
     payload: {
       date: "2026-07-20",
-      rounds: -1,
+      questions: -1,
     },
   });
   assert.equal(res.statusCode, 400);
@@ -45,14 +45,14 @@ test("POST /api/drill-sessions rejects an unknown learning area", async () => {
   await app.close();
 });
 
-test("POST /api/drill-sessions accepts rounds and a valid learning area", async () => {
+test("POST /api/drill-sessions accepts a question count and a valid learning area", async () => {
   const app = await buildApp();
   const res = await app.inject({
     method: "POST",
     url: "/api/drill-sessions",
     payload: {
       date: "2026-07-20",
-      rounds: 12,
+      questions: 12,
       learningArea: "Vocabulary",
     },
   });

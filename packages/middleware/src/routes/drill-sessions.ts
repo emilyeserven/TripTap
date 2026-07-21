@@ -84,7 +84,7 @@ const createSessionBody = {
       type: ["string", "null"],
     },
     mistakes: mistakesSchema,
-    rounds: {
+    questions: {
       type: "integer",
       minimum: 0,
     },

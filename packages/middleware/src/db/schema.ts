@@ -597,8 +597,8 @@ export const drillSessions = pgTable("drill_sessions", {
   title: text("title"),
   notes: text("notes"),
   mistakes: jsonb("mistakes").$type<DrillMistake[]>(),
-  // Rounds completed this session (XP: 0.25 each); tracked manually via the session-view counter.
-  rounds: integer("rounds").notNull().default(0),
+  // Questions attempted this session (XP: 0.25 each); editable on the Edit page and the session-view counter.
+  questions: integer("questions").notNull().default(0),
   // The LearningArea this session's XP counts toward; null falls back to Grammar.
   learningArea: text("learning_area").$type<LearningArea>(),
   createdAt: timestamp("created_at", {

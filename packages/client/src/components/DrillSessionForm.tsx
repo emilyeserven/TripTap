@@ -34,6 +34,7 @@ export function DrillSessionForm({
   const [title, setTitle] = useState(session?.title ?? "");
   const [notes, setNotes] = useState(session?.notes ?? "");
   const [mistakes, setMistakes] = useState<DrillMistake[]>(session?.mistakes ?? []);
+  const [questions, setQuestions] = useState(String(session?.questions ?? 0));
   const [learningArea, setLearningArea] = useState<LearningArea | null>(
     session?.learningArea ?? null,
   );
@@ -56,6 +57,7 @@ export function DrillSessionForm({
       title: title.trim() || null,
       notes: notes.trim() || null,
       mistakes: cleaned.length > 0 ? cleaned : null,
+      questions: Math.max(0, Math.trunc(Number(questions) || 0)),
       learningArea,
     };
     const saved = editing
@@ -109,6 +111,23 @@ export function DrillSessionForm({
         <LearningAreaSelect
           value={learningArea}
           onChange={setLearningArea}
+        />
+      </div>
+
+      <div className="space-y-1.5">
+        <Label htmlFor="drill-questions">Questions attempted</Label>
+        <p className="text-xs text-muted-foreground">
+          How many questions you drilled this session. Earns 0.25 XP each.
+        </p>
+        <Input
+          id="drill-questions"
+          type="number"
+          inputMode="numeric"
+          min={0}
+          step={1}
+          className="w-32"
+          value={questions}
+          onChange={e => setQuestions(e.target.value)}
         />
       </div>
 

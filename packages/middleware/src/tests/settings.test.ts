@@ -159,7 +159,7 @@ test("PATCH /api/settings/xp accepts overrides and a full reset", async () => {
     payload: {
       rates: {
         readingTranslatedSentence: 3,
-        drillRound: null,
+        drillQuestion: null,
       },
     },
   });

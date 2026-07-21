@@ -330,6 +330,13 @@
       "when": 1784580071833,
       "tag": "0046_odd_whirlwind",
       "breakpoints": true
+    },
+    {
+      "idx": 47,
+      "version": "7",
+      "when": 1784580071834,
+      "tag": "0047_drill_questions",
+      "breakpoints": true
     }
   ]
 }
