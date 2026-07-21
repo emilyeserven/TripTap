@@ -3,6 +3,7 @@ import type {
   BookmarksSettings,
   BookmarksSource,
   DailyLineup,
+  DeferredLineupItem,
   DictionaryProvider,
   DictionarySettings,
   DrillTag,
@@ -389,10 +390,11 @@ export async function updateLearnerProfile(
   return getLearnerProfile();
 }
 
-/** Settings keys for the Start Something page: local resource favorites and the daily lineup. */
+/** Settings keys for the Start Something page: local resource favorites, the daily lineup, deferrals. */
 const START_KEYS = {
   favoriteResourceIds: "start.favoriteResourceIds",
   lineup: "start.lineup",
+  deferred: "start.deferred",
 } as const;
 
 /** Parse the stored favorite ids: a JSON array of strings, corrupt → empty. */
@@ -423,6 +425,54 @@ const SUGGESTION_KINDS = ["due-sheet", "area", "starred-grammar", "goal", "custo
  * arrays are filtered to known values (media types are free-form upstream names), and anything
  * without a valid date is treated as unset. Staleness (date ≠ today) is a client concern.
  */
+/** True for a well-formed lineup item object (before mapping). */
+function isLineupItemShape(item: unknown): item is Record<string, unknown> {
+  return Boolean(item)
+    && typeof item === "object"
+    && typeof (item as Record<string, unknown>).id === "string"
+    && typeof (item as Record<string, unknown>).title === "string"
+    && typeof (item as Record<string, unknown>).to === "string"
+    && (SUGGESTION_KINDS as readonly string[]).includes((item as Record<string, unknown>).kind as string);
+}
+
+/** Map a validated raw item object to a {@link LineupItem}, coercing/defaulting defensively. */
+function mapLineupItem(item: Record<string, unknown>): LineupItem {
+  return {
+    id: item.id as string,
+    kind: item.kind as StartSuggestionKind,
+    area: (LEARNING_AREAS as readonly string[]).includes(item.area as string)
+      ? item.area as LearningArea
+      : null,
+    title: item.title as string,
+    description: typeof item.description === "string" ? item.description : null,
+    to: item.to as string,
+    params: parseStringRecord(item.params),
+    search: parseStringRecord(item.search),
+    resourceId: typeof item.resourceId === "string" ? item.resourceId : undefined,
+    sectionId: typeof item.sectionId === "string" ? item.sectionId : undefined,
+    done: item.done === true,
+  };
+}
+
+/** Parse the stored deferred/carried-over items, dropping any without a valid `deferredTo` date. */
+export function parseDeferredItems(raw: string | null): DeferredLineupItem[] {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter(isLineupItemShape)
+      .filter(item => typeof item.deferredTo === "string" && /^\d{4}-\d{2}-\d{2}$/.test(item.deferredTo))
+      .map(item => ({
+        ...mapLineupItem(item),
+        deferredTo: item.deferredTo as string,
+      }));
+  }
+  catch {
+    return [];
+  }
+}
+
 export function parseDailyLineup(raw: string | null): DailyLineup | null {
   if (!raw) return null;
   try {
@@ -430,28 +480,7 @@ export function parseDailyLineup(raw: string | null): DailyLineup | null {
     if (!parsed || typeof parsed !== "object") return null;
     if (typeof parsed.date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(parsed.date)) return null;
     const items = Array.isArray(parsed.items)
-      ? parsed.items
-        .filter((item): item is Record<string, unknown> => Boolean(item) && typeof item === "object")
-        .filter(item =>
-          typeof item.id === "string"
-          && typeof item.title === "string"
-          && typeof item.to === "string"
-          && (SUGGESTION_KINDS as readonly string[]).includes(item.kind as string))
-        .map((item): LineupItem => ({
-          id: item.id as string,
-          kind: item.kind as StartSuggestionKind,
-          area: (LEARNING_AREAS as readonly string[]).includes(item.area as string)
-            ? item.area as LearningArea
-            : null,
-          title: item.title as string,
-          description: typeof item.description === "string" ? item.description : null,
-          to: item.to as string,
-          params: parseStringRecord(item.params),
-          search: parseStringRecord(item.search),
-          resourceId: typeof item.resourceId === "string" ? item.resourceId : undefined,
-          sectionId: typeof item.sectionId === "string" ? item.sectionId : undefined,
-          done: item.done === true,
-        }))
+      ? parsed.items.filter(isLineupItemShape).map(mapLineupItem)
       : [];
     const exclusions = (parsed.exclusions ?? {}) as Record<string, unknown>;
     return {
@@ -485,6 +514,7 @@ export async function getStartSettings(): Promise<StartSettings> {
   return {
     favoriteResourceIds: parseFavoriteResourceIds(stored[START_KEYS.favoriteResourceIds] ?? null),
     lineup: parseDailyLineup(stored[START_KEYS.lineup] ?? null),
+    deferred: parseDeferredItems(stored[START_KEYS.deferred] ?? null),
   };
 }
 
@@ -500,6 +530,10 @@ export async function updateStartSettings(input: UpdateStartSettingsInput): Prom
   }
   if (input.lineup !== undefined) {
     await setSetting(START_KEYS.lineup, input.lineup ? JSON.stringify(input.lineup) : null);
+  }
+  if (input.deferred !== undefined) {
+    const items = input.deferred ?? [];
+    await setSetting(START_KEYS.deferred, items.length > 0 ? JSON.stringify(items) : null);
   }
   return getStartSettings();
 }

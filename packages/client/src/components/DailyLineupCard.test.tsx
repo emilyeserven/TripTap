@@ -59,10 +59,9 @@ function renderCard(overrides: Partial<React.ComponentProps<typeof DailyLineupCa
   render(
     <DailyLineupCard
       lineup={lineup()}
-      mediaTypeOptions={[]}
-      complexityScale={null}
       resources={[]}
       sectionsByResource={{}}
+      onDefer={vi.fn()}
       {...overrides}
       onChange={onChange}
     />,

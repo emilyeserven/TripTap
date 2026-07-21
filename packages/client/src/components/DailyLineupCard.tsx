@@ -2,7 +2,6 @@ import type {
   BookmarkResource,
   BookmarkSectionMatch,
   BookmarkSectionRef,
-  ComplexityScale,
   DailyLineup,
   LearningArea,
   LineupItem,
@@ -12,20 +11,14 @@ import type * as React from "react";
 import { useState } from "react";
 
 import { Link } from "@tanstack/react-router";
-import { ArrowDown, ArrowUp, ListChecksIcon, Pencil, Plus, X } from "lucide-react";
+import { ArrowDown, ArrowUp, CalendarArrowUp, ListChecksIcon, Pencil, Plus, X } from "lucide-react";
 
 import { BookmarkPicker } from "@/components/BookmarkPicker";
 import { LearningAreaBadges } from "@/components/LearningAreaBadges";
 import { LearningAreaSelect } from "@/components/LearningAreaSelect";
-import { LineupExclusionsEditor } from "@/components/LineupExclusionsEditor";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
 import { Combobox } from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -302,20 +295,19 @@ function AddCustomItem({
  */
 export function DailyLineupCard({
   lineup,
-  mediaTypeOptions,
-  complexityScale,
   resources,
   sectionsByResource,
   onChange,
+  onDefer,
 }: {
   lineup: DailyLineup;
-  mediaTypeOptions: string[];
-  complexityScale: ComplexityScale | null;
   /** Every resource, for the per-item "change resource" picker. */
   resources: BookmarkResource[];
   /** Each resource's sections (by bookmark id), for the per-item "swap section" picker. */
   sectionsByResource: Record<string, BookmarkSectionMatch[]>;
   onChange: (next: DailyLineup) => void;
+  /** Move an item out of today and onto tomorrow's carried-over list. */
+  onDefer: (item: LineupItem) => void;
 }) {
   const doneCount = lineup.items.filter(item => item.done).length;
 
@@ -429,6 +421,16 @@ export function DailyLineupCard({
                     type="button"
                     size="sm"
                     variant="ghost"
+                    aria-label={`Defer "${item.title}" to tomorrow`}
+                    title="Defer to tomorrow"
+                    onClick={() => onDefer(item)}
+                  >
+                    <CalendarArrowUp className="size-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
                     aria-label={`Remove "${item.title}" from the lineup`}
                     onClick={() => onChange({
                       ...lineup,
@@ -448,29 +450,6 @@ export function DailyLineupCard({
             items: [...lineup.items, item],
           })}
         />
-
-        <Collapsible>
-          <CollapsibleTrigger asChild>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-            >
-              Filter today&apos;s suggestions…
-            </Button>
-          </CollapsibleTrigger>
-          <CollapsibleContent className="pt-3">
-            <LineupExclusionsEditor
-              exclusions={lineup.exclusions}
-              mediaTypeOptions={mediaTypeOptions}
-              complexityScale={complexityScale}
-              onChange={exclusions => onChange({
-                ...lineup,
-                exclusions,
-              })}
-            />
-          </CollapsibleContent>
-        </Collapsible>
       </CardContent>
     </Card>
   );
