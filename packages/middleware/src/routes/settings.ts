@@ -255,7 +255,8 @@ const lineupItemSchema = {
     },
     kind: {
       type: "string",
-      enum: ["due-sheet", "area", "starred-grammar", "goal"],
+      // Keep in sync with StartSuggestionKind; "custom" is a learner-authored lineup item.
+      enum: ["due-sheet", "area", "starred-grammar", "goal", "custom"],
     },
     area: {
       type: ["string", "null"],

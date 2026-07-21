@@ -361,6 +361,38 @@ test("PATCH /api/settings/start accepts favorites and a full valid lineup", asyn
   await app.close();
 });
 
+test("PATCH /api/settings/start accepts a learner-authored custom item", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "PATCH",
+    url: "/api/settings/start",
+    payload: {
+      lineup: {
+        date: "2026-07-20",
+        items: [
+          {
+            id: "custom-abc",
+            kind: "custom",
+            area: null,
+            title: "Review yesterday's mistakes",
+            description: null,
+            to: "/reading-sessions/new",
+            done: false,
+          },
+        ],
+        exclusions: {
+          mediaTypes: [],
+          sessionTypes: [],
+          learningAreas: [],
+        },
+      },
+    },
+  });
+  // The "custom" kind must validate — a title-only custom item was previously rejected (400).
+  assert.notEqual(res.statusCode, 400);
+  await app.close();
+});
+
 test("parseDailyLineup drops malformed items and unknown exclusion values", () => {
   const parsed = parseDailyLineup(JSON.stringify({
     date: "2026-07-20",
@@ -372,6 +404,14 @@ test("parseDailyLineup drops malformed items and unknown exclusion values", () =
         title: "Fine",
         to: "/practice",
         done: "yes",
+      },
+      {
+        id: "custom-ok",
+        kind: "custom",
+        area: null,
+        title: "My own item",
+        to: "/reading-sessions/new",
+        done: true,
       },
       {
         kind: "area",
@@ -387,8 +427,11 @@ test("parseDailyLineup drops malformed items and unknown exclusion values", () =
       complexityMax: "nope",
     },
   }));
-  assert.equal(parsed?.items.length, 1);
+  // The valid "area" and learner-authored "custom" items are kept; the id-less one is dropped.
+  assert.equal(parsed?.items.length, 2);
   assert.equal(parsed?.items[0].id, "ok");
+  assert.equal(parsed?.items[1].kind, "custom");
+  assert.equal(parsed?.items[1].id, "custom-ok");
   // Unknown area coerces to null; a non-boolean done coerces to false.
   assert.equal(parsed?.items[0].area, null);
   assert.equal(parsed?.items[0].done, false);
