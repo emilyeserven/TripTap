@@ -469,10 +469,13 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                 isActive={isItemActive(pathname, "/start")}
                 tooltip="Start Something"
                 className={cn(
+                  // Solid primary with its own foreground — the readable pairing in both themes.
+                  // Progress rides as a slim bar along the bottom edge, clear of the label so the
+                  // text contrast never depends on the fill width.
                   `
-                    relative overflow-hidden border border-primary/60
-                    bg-primary/10 font-medium text-foreground
-                    hover:bg-primary/10 hover:text-foreground
+                    relative overflow-hidden border border-primary/60 bg-primary
+                    font-medium text-primary-foreground
+                    hover:bg-primary hover:text-primary-foreground
                   `,
                   goalMet && `
                     animate-pulse border-primary shadow-[0_0_12px_2px] ring-1
@@ -481,19 +484,26 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                 )}
               >
                 <Link to="/start">
-                  {/* Fill layer: today's XP as a share of the daily goal, behind the label. */}
+                  <SparklesIcon className="relative z-10" />
+                  <span className="relative z-10">Start Something</span>
+                  {/* Progress bar: today's XP toward the daily goal, along the bottom edge. */}
                   <span
                     aria-hidden
                     className="
-                      absolute inset-y-0 left-0 z-0 bg-primary
+                      absolute inset-x-0 bottom-0 z-0 h-1.5
+                      bg-primary-foreground/25
+                    "
+                  />
+                  <span
+                    aria-hidden
+                    className="
+                      absolute bottom-0 left-0 z-0 h-1.5 bg-primary-foreground
                       transition-[width] duration-500
                     "
                     style={{
                       width: `${fillPercent}%`,
                     }}
                   />
-                  <SparklesIcon className="relative z-10" />
-                  <span className="relative z-10">Start Something</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
