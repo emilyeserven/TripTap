@@ -435,7 +435,7 @@ function areaReason(input: StartRecommendationInput, area: LearningArea, isLowes
 }
 
 /** The session route + verb for consuming a resource in a given area (defaults to reading it). */
-function sessionLinkFor(area: LearningArea | null): { to: string;
+export function sessionLinkFor(area: LearningArea | null): { to: string;
   verb: string; } {
   switch (area) {
     case "Speaking": return {
@@ -458,7 +458,7 @@ function sessionLinkFor(area: LearningArea | null): { to: string;
 }
 
 /** Link search params prefilling the session form for `to` from a bookmark. */
-function sessionSearch(
+export function sessionSearch(
   to: string,
   bookmarkId: string,
   bookmarkTitle: string,

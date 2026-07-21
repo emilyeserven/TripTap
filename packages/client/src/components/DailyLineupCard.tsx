@@ -1,8 +1,10 @@
 import type {
   BookmarkResource,
   BookmarkSectionMatch,
+  BookmarkSectionRef,
   ComplexityScale,
   DailyLineup,
+  LearningArea,
   LineupItem,
 } from "@sentence-bank/types";
 import type * as React from "react";
@@ -10,9 +12,11 @@ import type * as React from "react";
 import { useState } from "react";
 
 import { Link } from "@tanstack/react-router";
-import { ArrowDown, ArrowUp, ListChecksIcon, Pencil, X } from "lucide-react";
+import { ArrowDown, ArrowUp, ListChecksIcon, Pencil, Plus, X } from "lucide-react";
 
+import { BookmarkPicker } from "@/components/BookmarkPicker";
 import { LearningAreaBadges } from "@/components/LearningAreaBadges";
+import { LearningAreaSelect } from "@/components/LearningAreaSelect";
 import { LineupExclusionsEditor } from "@/components/LineupExclusionsEditor";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,8 +30,9 @@ import { Combobox } from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { moveItem, removeItem, renameItem, toggleItemDone } from "@/lib/daily-lineup";
-import { retargetLineupItem } from "@/lib/start-recommendations";
+import { Textarea } from "@/components/ui/textarea";
+import { customLineupItem, moveItem, removeItem, renameItem, toggleItemDone } from "@/lib/daily-lineup";
+import { retargetLineupItem, sessionLinkFor, sessionSearch } from "@/lib/start-recommendations";
 
 /** Route a lineup item's snapshotted link data into a typed `Link` (same cast as suggestions). */
 function itemLinkProps(item: LineupItem): React.ComponentProps<typeof Link> {
@@ -151,6 +156,140 @@ function LineupItemEditor({
             )}
           </>
         )}
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+/**
+ * "Add a custom item" popover — a learner hand-builds a lineup entry. The chosen learning area sets
+ * the link target (via {@link sessionLinkFor}); an optional resource/section fills the link's search
+ * params and auto-suggests the title (still overridable). Emits a finished {@link LineupItem}.
+ */
+function AddCustomItem({
+  onAdd,
+}: {
+  onAdd: (item: LineupItem) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [area, setArea] = useState<LearningArea | null>(null);
+  const [bookmarkId, setBookmarkId] = useState<string | null>(null);
+  const [bookmarkTitle, setBookmarkTitle] = useState<string | null>(null);
+  const [bookmarkUrl, setBookmarkUrl] = useState<string | null>(null);
+  const [section, setSection] = useState<BookmarkSectionRef | null>(null);
+
+  const reset = () => {
+    setTitle("");
+    setDescription("");
+    setArea(null);
+    setBookmarkId(null);
+    setBookmarkTitle(null);
+    setBookmarkUrl(null);
+    setSection(null);
+  };
+
+  const {
+    to, verb,
+  } = sessionLinkFor(area);
+  // A resource (and section) suggests a title; a typed title always wins.
+  const suggestedTitle = bookmarkTitle
+    ? section
+      ? `${verb} "${section.label}" of ${bookmarkTitle}`
+      : `${verb} a bit of ${bookmarkTitle}`
+    : "";
+  const effectiveTitle = title.trim() || suggestedTitle;
+  const canSubmit = effectiveTitle.length > 0;
+
+  const submit = () => {
+    if (!canSubmit) return;
+    onAdd(customLineupItem({
+      title: effectiveTitle,
+      description: description.trim() || null,
+      area,
+      to,
+      search: bookmarkId
+        ? sessionSearch(to, bookmarkId, bookmarkTitle ?? "", bookmarkUrl)
+        : undefined,
+      resourceId: bookmarkId ?? undefined,
+      sectionId: section?.id,
+    }));
+    reset();
+    setOpen(false);
+  };
+
+  return (
+    <Popover
+      open={open}
+      onOpenChange={(next) => {
+        setOpen(next);
+        if (!next) reset();
+      }}
+    >
+      <PopoverTrigger asChild>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+        >
+          <Plus className="size-4" />
+          Add a custom item
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent
+        align="start"
+        className="w-80 space-y-3"
+      >
+        <div className="space-y-1.5">
+          <Label htmlFor="custom-item-title">Title</Label>
+          <Input
+            id="custom-item-title"
+            value={title}
+            onChange={e => setTitle(e.target.value)}
+            placeholder={suggestedTitle || "e.g. Review yesterday's mistakes"}
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="custom-item-description">Description (optional)</Label>
+          <Textarea
+            id="custom-item-description"
+            value={description}
+            onChange={e => setDescription(e.target.value)}
+            rows={2}
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label>Learning area (optional)</Label>
+          <p className="text-xs text-muted-foreground">Sets where the item links.</p>
+          <LearningAreaSelect
+            value={area}
+            onChange={setArea}
+          />
+        </div>
+        <BookmarkPicker
+          selectedBookmarkId={bookmarkId}
+          selectedBookmarkTitle={bookmarkTitle}
+          label="Resource (optional)"
+          onPick={(record) => {
+            setBookmarkId(record?.id ?? null);
+            setBookmarkTitle(record?.title ?? null);
+            setBookmarkUrl(record?.url ?? null);
+            setSection(null);
+          }}
+          enableSections
+          selectedSection={section}
+          onPickSection={setSection}
+        />
+        <Button
+          type="button"
+          size="sm"
+          className="w-full"
+          disabled={!canSubmit}
+          onClick={submit}
+        >
+          Add to lineup
+        </Button>
       </PopoverContent>
     </Popover>
   );
@@ -302,6 +441,13 @@ export function DailyLineupCard({
               ))}
             </ol>
           )}
+
+        <AddCustomItem
+          onAdd={item => onChange({
+            ...lineup,
+            items: [...lineup.items, item],
+          })}
+        />
 
         <Collapsible>
           <CollapsibleTrigger asChild>
