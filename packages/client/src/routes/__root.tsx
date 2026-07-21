@@ -7,6 +7,7 @@ import { Outlet, createRootRouteWithContext } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 
 import { AppSidebar } from "@/components/app-sidebar";
+import { Basket } from "@/components/Basket";
 import { DisplayOptions } from "@/components/DisplayOptions";
 import { RefreshButton } from "@/components/RefreshButton";
 import { SlideMode } from "@/components/SlideMode";
@@ -91,6 +92,7 @@ function RootComponent() {
         </div>
       </SidebarInset>
       <SlideMode />
+      <Basket />
       <Toaster />
       {import.meta.env.DEV ? <TanStackRouterDevtools /> : null}
     </SidebarProvider>

@@ -2,6 +2,7 @@ import type { Sentence } from "@sentence-bank/types";
 
 import { Volume2 } from "lucide-react";
 
+import { AddToBasketButton } from "./AddToBasketButton";
 import { speak } from "./ai-lesson/speak";
 import { SentenceCardMedia } from "./SentenceCardMedia";
 import { SentenceCardMeta } from "./SentenceCardMeta";
@@ -56,40 +57,45 @@ export function SentenceCard({
                   />
                 </p>
               </div>
-              {onEdit || (onDelete && !hasMedia)
-                ? (
-                  <div className="flex shrink-0 items-center gap-3">
-                    {onEdit
-                      ? (
-                        <button
-                          type="button"
-                          onClick={() => onEdit(sentence)}
-                          className="
-                            text-sm text-muted-foreground
-                            hover:underline
-                          "
-                        >
-                          Edit
-                        </button>
-                      )
-                      : null}
-                    {onDelete && !hasMedia
-                      ? (
-                        <button
-                          type="button"
-                          onClick={() => onDelete(sentence.id)}
-                          className="
-                            text-sm text-destructive
-                            hover:underline
-                          "
-                        >
-                          Delete
-                        </button>
-                      )
-                      : null}
-                  </div>
-                )
-                : null}
+              <div className="flex shrink-0 items-center gap-3">
+                <AddToBasketButton
+                  item={{
+                    kind: "sentence",
+                    id: sentence.id,
+                    text: sentence.text,
+                    translation: sentence.translation,
+                    reading: sentence.reading,
+                  }}
+                />
+                {onEdit
+                  ? (
+                    <button
+                      type="button"
+                      onClick={() => onEdit(sentence)}
+                      className="
+                        text-sm text-muted-foreground
+                        hover:underline
+                      "
+                    >
+                      Edit
+                    </button>
+                  )
+                  : null}
+                {onDelete && !hasMedia
+                  ? (
+                    <button
+                      type="button"
+                      onClick={() => onDelete(sentence.id)}
+                      className="
+                        text-sm text-destructive
+                        hover:underline
+                      "
+                    >
+                      Delete
+                    </button>
+                  )
+                  : null}
+              </div>
             </div>
 
             <SentenceTranslationReveal

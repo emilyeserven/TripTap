@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { Volume2 } from "lucide-react";
 
+import { AddToBasketButton } from "../AddToBasketButton";
 import { AiLessonBadge } from "./AiLessonBadge";
 import { Furi } from "./Furi";
 import { LevelBadge } from "./LevelBadge";
@@ -36,7 +37,17 @@ export function VocabCard({
   const [flipped, setFlipped] = useState(false);
 
   return (
-    <Card className="gap-0 overflow-hidden py-0">
+    <Card className="relative gap-0 overflow-hidden py-0">
+      <AddToBasketButton
+        className="absolute top-1 right-1 z-10"
+        item={{
+          kind: "vocab",
+          id: v.id,
+          term: v.jp,
+          reading: v.yomi,
+          meaning: v.en,
+        }}
+      />
       <CardContent
         role="button"
         tabIndex={0}
