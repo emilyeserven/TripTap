@@ -3,11 +3,9 @@ import type { DrillMistake, DrillReasonCategory } from "@sentence-bank/types";
 import { TriangleAlert } from "lucide-react";
 
 import { AddSentenceFromMistakeDialog } from "@/components/AddSentenceFromMistakeDialog";
-import { RenshuuExamplePicker } from "@/components/RenshuuExamplePicker";
-import { TatoebaExamplePicker } from "@/components/TatoebaExamplePicker";
+import { ExampleLookupTabs } from "@/components/ExampleLookupTabs";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useRecurringDrillQuestions } from "@/hooks/useRecurringDrillQuestions";
 import { resolveReasonRef } from "@/lib/drill-reasons";
 import { normalizeQuestion, RECURRENCE_MIN_SESSIONS } from "@/lib/drill-recurring";
@@ -96,18 +94,7 @@ export function DrillMistakeCard({
         {mistake.reflection
           ? <p className="text-sm whitespace-pre-wrap italic">{mistake.reflection}</p>
           : null}
-        <Tabs defaultValue="tatoeba">
-          <TabsList>
-            <TabsTrigger value="tatoeba">Tatoeba</TabsTrigger>
-            <TabsTrigger value="renshuu">Renshuu</TabsTrigger>
-          </TabsList>
-          <TabsContent value="tatoeba">
-            <TatoebaExamplePicker defaultQuery={exampleQuery} />
-          </TabsContent>
-          <TabsContent value="renshuu">
-            <RenshuuExamplePicker defaultQuery={exampleQuery} />
-          </TabsContent>
-        </Tabs>
+        <ExampleLookupTabs defaultQuery={exampleQuery} />
         <div className="pt-1">
           <AddSentenceFromMistakeDialog mistake={mistake} />
         </div>
