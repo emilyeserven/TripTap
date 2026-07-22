@@ -1,11 +1,20 @@
-import type { DrillSession } from "@sentence-bank/types";
+import type { DrillMistakeReasonRef, DrillSession } from "@sentence-bank/types";
+
+import { useMemo, useState } from "react";
 
 import { ExternalLink } from "lucide-react";
 
 import { DrillMistakeCard } from "@/components/DrillMistakeCard";
 import { DrillQuestionsCounter } from "@/components/DrillQuestionsCounter";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { useDrillReasonCategories } from "@/hooks/useDrillReasonCategories";
+import { resolveReasonRef } from "@/lib/drill-reasons";
+
+/** A stable key for one reason reference, at whatever depth it names. */
+function reasonKey(ref: DrillMistakeReasonRef): string {
+  return `${ref.categoryId}:${ref.subcategoryId ?? ""}:${ref.reasonId ?? ""}`;
+}
 
 /** Read-only view of a drill session: its date/title/notes and each logged mistake with its reasons. */
 export function DrillSessionView({
@@ -14,8 +23,37 @@ export function DrillSessionView({
   session: DrillSession;
 }) {
   const categoriesQuery = useDrillReasonCategories();
-  const categories = categoriesQuery.data ?? [];
-  const mistakes = session.mistakes ?? [];
+  const categories = useMemo(() => categoriesQuery.data ?? [], [categoriesQuery.data]);
+  const mistakes = useMemo(() => session.mistakes ?? [], [session.mistakes]);
+  const [selectedReasons, setSelectedReasons] = useState<Set<string>>(new Set());
+
+  // The distinct reasons tagged across this session's mistakes, for the filter chips.
+  const reasonOptions = useMemo(() => {
+    const byKey = new Map<string, string>();
+    for (const m of mistakes) {
+      for (const ref of m.reasons) {
+        const key = reasonKey(ref);
+        if (!byKey.has(key)) byKey.set(key, resolveReasonRef(categories, ref).label);
+      }
+    }
+    return [...byKey.entries()].map(([key, label]) => ({
+      key,
+      label,
+    }));
+  }, [mistakes, categories]);
+
+  const toggleReason = (key: string) => setSelectedReasons((prev) => {
+    const next = new Set(prev);
+    if (next.has(key)) next.delete(key);
+    else next.add(key);
+    return next;
+  });
+
+  // Filter to mistakes tagged with any selected reason — so the learner can zero in on, say, the
+  // words they completely forgot. No selection shows everything.
+  const visibleMistakes = selectedReasons.size === 0
+    ? mistakes
+    : mistakes.filter(m => m.reasons.some(ref => selectedReasons.has(reasonKey(ref))));
 
   return (
     <div className="space-y-6">
@@ -62,20 +100,55 @@ export function DrillSessionView({
         <DrillQuestionsCounter session={session} />
       </div>
 
+      {reasonOptions.length > 0 && (
+        <div className="space-y-1.5">
+          <p className="text-xs text-muted-foreground">Filter by reason</p>
+          <div className="flex flex-wrap items-center gap-1.5">
+            {reasonOptions.map((option) => {
+              const active = selectedReasons.has(option.key);
+              return (
+                <Button
+                  key={option.key}
+                  type="button"
+                  size="sm"
+                  variant={active ? "default" : "outline"}
+                  aria-pressed={active}
+                  onClick={() => toggleReason(option.key)}
+                >
+                  {option.label}
+                </Button>
+              );
+            })}
+            {selectedReasons.size > 0 && (
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                onClick={() => setSelectedReasons(new Set())}
+              >
+                Clear
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
+
       {mistakes.length === 0
         ? <p className="text-sm text-muted-foreground">No mistakes logged in this session.</p>
-        : (
-          <ul className="space-y-3">
-            {mistakes.map(m => (
-              <li key={m.id}>
-                <DrillMistakeCard
-                  mistake={m}
-                  categories={categories}
-                />
-              </li>
-            ))}
-          </ul>
-        )}
+        : visibleMistakes.length === 0
+          ? <p className="text-sm text-muted-foreground">No mistakes match the selected reasons.</p>
+          : (
+            <ul className="space-y-3">
+              {visibleMistakes.map(m => (
+                <li key={m.id}>
+                  <DrillMistakeCard
+                    mistake={m}
+                    categories={categories}
+                  />
+                </li>
+              ))}
+            </ul>
+          )}
     </div>
   );
 }
