@@ -396,6 +396,7 @@ const updateXpSettingsBody = {
         drillMistakeCorrected: xpRateValueSchema,
         lessonLine: xpRateValueSchema,
         lessonWordNote: xpRateValueSchema,
+        lessonMinute: xpRateValueSchema,
         theoryStudyPageDense: xpRateValueSchema,
         theoryStudyPageMedium: xpRateValueSchema,
         theoryStudyPageLight: xpRateValueSchema,

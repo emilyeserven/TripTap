@@ -47,6 +47,7 @@ export const DEFAULT_XP_RATES = {
   drillMistakeCorrected: 0.1,
   lessonLine: 1,
   lessonWordNote: 0.5,
+  lessonMinute: 0.25,
   theoryStudyPageDense: 2,
   theoryStudyPageMedium: 1,
   theoryStudyPageLight: 0.5,

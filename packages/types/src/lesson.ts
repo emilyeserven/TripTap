@@ -63,6 +63,8 @@ export interface Lesson {
   wordNotes: LessonWordNote[] | null;
   /** Ids of answer sheets worked through in this lesson; null if none. */
   answerSheetIds: string[] | null;
+  /** How long the tutoring session ran, in minutes; earns per-minute XP across several areas. 0 when unset. */
+  durationMinutes: number;
   /** ISO-8601 timestamp of when the lesson was created. */
   createdAt: string;
   /** ISO-8601 timestamp of the last update. */
@@ -79,6 +81,7 @@ export interface CreateLessonInput {
   listeningNotes?: LessonListeningNote[] | null;
   wordNotes?: LessonWordNote[] | null;
   answerSheetIds?: string[] | null;
+  durationMinutes?: number;
 }
 
 /** Payload for partially updating a lesson. */

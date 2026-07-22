@@ -422,6 +422,7 @@ test("lessonXp splits lines to Listening and filled word notes to Vocabulary", (
           flashcard: false,
         },
       ],
+      durationMinutes: 0,
       createdAt: RECENT,
     } as never,
   ]);
@@ -429,6 +430,25 @@ test("lessonXp splits lines to Listening and filled word notes to Vocabulary", (
   const vocab = grants.find(g => g.area === "Vocabulary");
   assert.equal(listening?.xp, 2);
   assert.equal(vocab?.xp, 0.5);
+});
+
+test("lessonXp awards per-minute XP to Speaking, Listening, and Grammar", () => {
+  const grants = lessonXp([
+    {
+      id: "l1",
+      title: "Tutoring",
+      date: "2026-07-19",
+      listeningNotes: null,
+      wordNotes: null,
+      durationMinutes: 60,
+    },
+  ]);
+  // 60 minutes × 0.25 = 15 XP toward each of the three areas.
+  for (const area of ["Speaking", "Listening", "Grammar"] as const) {
+    assert.equal(grants.find(g => g.area === area)?.xp, 15);
+  }
+  // No Vocabulary grant when there are no filled word notes.
+  assert.equal(grants.find(g => g.area === "Vocabulary"), undefined);
 });
 
 test("isFilledWordNote requires word, reading, and meaning", () => {

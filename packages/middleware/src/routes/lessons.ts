@@ -119,6 +119,10 @@ const createLessonBody = {
     listeningNotes: listeningNotesSchema,
     wordNotes: wordNotesSchema,
     answerSheetIds: answerSheetIdsSchema,
+    durationMinutes: {
+      type: "integer",
+      minimum: 0,
+    },
   },
 } as const;
 
