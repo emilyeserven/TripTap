@@ -2,6 +2,7 @@ import type {
   AnswerSheetEntry,
   DrillMistake,
   DrillType,
+  LearnerGoal,
   LearningArea,
   LessonListeningNote,
   LessonWordNote,
@@ -31,7 +32,7 @@ import {
   theorySessions,
   writings,
 } from "@/db/schema";
-import { getXpRates } from "@/services/settings";
+import { getLearnerProfile, getXpRates } from "@/services/settings";
 
 /**
  * XP is *derived*: every function here recounts the learner's persisted content instead of reading a
@@ -60,6 +61,33 @@ export interface XpGrant {
   title?: string | null;
   to?: string;
   params?: Record<string, string>;
+  /**
+   * The extra XP this grant earned for aligning with a learner goal (the +0.25x portion, already
+   * folded into `xp`). Absent/0 when the grant's area isn't targeted by any goal.
+   */
+  goalBonusXp?: number;
+}
+
+/** The extra multiplier XP earns when its area is targeted by one of the learner's goals. */
+export const GOAL_ALIGNMENT_BONUS = 0.25;
+
+/**
+ * Reward grants whose learning area is targeted by a learner goal: their XP is scaled by
+ * `1 + GOAL_ALIGNMENT_BONUS`, with the added portion recorded in `goalBonusXp` so the breakdown and
+ * activity log can highlight it. Grants in un-targeted areas pass through unchanged, and with no goals
+ * the whole list is returned untouched.
+ */
+export function applyGoalBonus(grants: XpGrant[], goals: LearnerGoal[]): XpGrant[] {
+  const goalAreas = new Set<LearningArea>(goals.flatMap(goal => goal.learningAreas));
+  if (goalAreas.size === 0) return grants;
+  return grants.map((grant) => {
+    if (!goalAreas.has(grant.area) || grant.xp <= 0) return grant;
+    return {
+      ...grant,
+      xp: grant.xp * (1 + GOAL_ALIGNMENT_BONUS),
+      goalBonusXp: grant.xp * GOAL_ALIGNMENT_BONUS,
+    };
+  });
 }
 
 /** Count the sentences in a free-text block: split on Japanese/latin terminators and newlines. */
@@ -515,6 +543,7 @@ export function summarizeGrants(
       area,
       xp: 0,
       byFeature: {},
+      goalBonusXp: 0,
     }]),
   );
   const recentAreas = new Map<LearningArea, number>();
@@ -523,6 +552,7 @@ export function summarizeGrants(
       area,
       xp: 0,
       byFeature: {},
+      goalBonusXp: 0,
     }]),
   );
   const yesterdayAreas = new Map<LearningArea, XpAreaSummary>(
@@ -530,6 +560,7 @@ export function summarizeGrants(
       area,
       xp: 0,
       byFeature: {},
+      goalBonusXp: 0,
     }]),
   );
   const cutoff = now.getTime() - days * 24 * 60 * 60 * 1000;
@@ -539,8 +570,10 @@ export function summarizeGrants(
   for (const grant of grants) {
     const area = areas.get(grant.area);
     if (!area) continue;
+    const bonus = grant.goalBonusXp ?? 0;
     area.xp += grant.xp;
     area.byFeature[grant.feature] = (area.byFeature[grant.feature] ?? 0) + grant.xp;
+    area.goalBonusXp = (area.goalBonusXp ?? 0) + bonus;
     if (grant.at.getTime() >= cutoff) {
       recentAreas.set(grant.area, (recentAreas.get(grant.area) ?? 0) + grant.xp);
     }
@@ -552,6 +585,7 @@ export function summarizeGrants(
       if (todayArea) {
         todayArea.xp += grant.xp;
         todayArea.byFeature[grant.feature] = (todayArea.byFeature[grant.feature] ?? 0) + grant.xp;
+        todayArea.goalBonusXp = (todayArea.goalBonusXp ?? 0) + bonus;
       }
     }
     else if (grantDay === yesterday) {
@@ -560,17 +594,31 @@ export function summarizeGrants(
         yesterdayArea.xp += grant.xp;
         yesterdayArea.byFeature[grant.feature]
           = (yesterdayArea.byFeature[grant.feature] ?? 0) + grant.xp;
+        yesterdayArea.goalBonusXp = (yesterdayArea.goalBonusXp ?? 0) + bonus;
       }
     }
   }
 
-  const summaries = [...areas.values()].map(area => ({
-    area: area.area,
-    xp: roundXp(area.xp),
-    byFeature: Object.fromEntries(
-      Object.entries(area.byFeature).map(([feature, xp]) => [feature, roundXp(xp)]),
-    ) as XpAreaSummary["byFeature"],
-  }));
+  // The rounded goal-alignment bonus for an area, or undefined when it earned none (keeps payloads lean).
+  const bonusOf = (area: XpAreaSummary) => {
+    const rounded = roundXp(area.goalBonusXp ?? 0);
+    return rounded > 0 ? rounded : undefined;
+  };
+  const summaries = [...areas.values()].map((area) => {
+    const goalBonusXp = bonusOf(area);
+    return {
+      area: area.area,
+      xp: roundXp(area.xp),
+      byFeature: Object.fromEntries(
+        Object.entries(area.byFeature).map(([feature, xp]) => [feature, roundXp(xp)]),
+      ) as XpAreaSummary["byFeature"],
+      ...(goalBonusXp !== undefined
+        ? {
+          goalBonusXp,
+        }
+        : {}),
+    };
+  });
   const recent = LEARNING_AREAS
     .filter(area => (recentAreas.get(area) ?? 0) > 0)
     .map(area => ({
@@ -581,18 +629,34 @@ export function summarizeGrants(
   const toDayAreas = (bucket: Map<LearningArea, XpAreaSummary>) =>
     [...bucket.values()]
       .filter(area => area.xp > 0)
-      .map(area => ({
-        area: area.area,
-        xp: roundXp(area.xp),
-        byFeature: Object.fromEntries(
-          Object.entries(area.byFeature).map(([feature, xp]) => [feature, roundXp(xp)]),
-        ) as XpAreaSummary["byFeature"],
-      }));
+      .map((area) => {
+        const goalBonusXp = bonusOf(area);
+        return {
+          area: area.area,
+          xp: roundXp(area.xp),
+          byFeature: Object.fromEntries(
+            Object.entries(area.byFeature).map(([feature, xp]) => [feature, roundXp(xp)]),
+          ) as XpAreaSummary["byFeature"],
+          ...(goalBonusXp !== undefined
+            ? {
+              goalBonusXp,
+            }
+            : {}),
+        };
+      });
   const todayByArea = toDayAreas(todayAreas);
   const yesterdayByArea = toDayAreas(yesterdayAreas);
 
+  const goalBonusTotal = roundXp(
+    [...areas.values()].reduce((sum, area) => sum + (area.goalBonusXp ?? 0), 0),
+  );
   return {
     totalXp: roundXp(summaries.reduce((sum, area) => sum + area.xp, 0)),
+    ...(goalBonusTotal > 0
+      ? {
+        goalBonusXp: goalBonusTotal,
+      }
+      : {}),
     areas: summaries,
     recent: {
       days,
@@ -619,6 +683,7 @@ export function summarizeGrants(
 export async function loadXpGrants(): Promise<XpGrant[]> {
   const [
     rates,
+    profile,
     readingRows,
     writingRows,
     mySentenceRows,
@@ -631,6 +696,7 @@ export async function loadXpGrants(): Promise<XpGrant[]> {
     theoryRows,
   ] = await Promise.all([
     getXpRates(),
+    getLearnerProfile(),
     db.select({
       id: readingSessions.id,
       title: readingSessions.title,
@@ -714,7 +780,7 @@ export async function loadXpGrants(): Promise<XpGrant[]> {
     }).from(theorySessions),
   ]);
 
-  return [
+  const grants = [
     ...readingXp(readingRows, rates),
     ...writingXp(writingRows, mySentenceRows, rates),
     ...bookExercisesXp(sheetRows as QuestionSheetXpRow[], answerRows, rates),
@@ -724,6 +790,7 @@ export async function loadXpGrants(): Promise<XpGrant[]> {
     ...lessonXp(lessonRows, rates),
     ...theoryStudyXp(theoryRows, rates),
   ];
+  return applyGoalBonus(grants, profile.goals);
 }
 
 /**

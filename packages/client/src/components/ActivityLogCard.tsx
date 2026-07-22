@@ -1,7 +1,9 @@
 import type { ActivityDay, ActivityItem, XpFeature } from "@sentence-bank/types";
 
 import { Link } from "@tanstack/react-router";
+import { Target } from "lucide-react";
 
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useActivity } from "@/hooks/useActivity";
 import { formatXp } from "@/lib/xp";
@@ -53,7 +55,26 @@ function ActivityDayTable({
     <div className="space-y-2">
       <div className="flex items-center justify-between gap-2">
         <h3 className="text-sm font-semibold">{day.date}</h3>
-        <span className="text-sm text-muted-foreground tabular-nums">
+        <span
+          className="
+            flex items-center gap-2 text-sm text-muted-foreground tabular-nums
+          "
+        >
+          {day.goalBonusXp
+            ? (
+              <Badge
+                variant="secondary"
+                className="gap-1 text-[10px] font-medium"
+                title="Includes a goal-alignment bonus"
+              >
+                <Target className="size-3" />
+                +
+                {formatXp(day.goalBonusXp)}
+                {" "}
+                goal
+              </Badge>
+            )
+            : null}
           {formatXp(day.totalXp)} xp
         </span>
       </div>
@@ -76,7 +97,24 @@ function ActivityDayTable({
                   {TYPE_LABELS[item.type]}
                 </td>
                 <td className="px-3 py-2">
-                  <ItemTitle item={item} />
+                  <span className="flex flex-wrap items-center gap-2">
+                    <ItemTitle item={item} />
+                    {item.goalBonusXp
+                      ? (
+                        <Badge
+                          variant="secondary"
+                          className="gap-1 text-[10px] font-medium"
+                          title="Includes a goal-alignment bonus"
+                        >
+                          <Target className="size-3" />
+                          +
+                          {formatXp(item.goalBonusXp)}
+                          {" "}
+                          goal
+                        </Badge>
+                      )
+                      : null}
+                  </span>
                 </td>
                 <td
                   className="

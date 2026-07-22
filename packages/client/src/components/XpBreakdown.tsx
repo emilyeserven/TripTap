@@ -1,5 +1,8 @@
 import type { XpAreaSummary, XpFeature, XpSummary } from "@sentence-bank/types";
 
+import { Target } from "lucide-react";
+
+import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatXp } from "@/lib/xp";
 
@@ -31,7 +34,24 @@ function AreaRow({
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between gap-2 text-sm">
-        <span>{area.area}</span>
+        <span className="flex items-center gap-1.5">
+          {area.area}
+          {area.goalBonusXp
+            ? (
+              <Badge
+                variant="secondary"
+                className="gap-1 text-[10px] font-medium"
+                title="Includes a goal-alignment bonus"
+              >
+                <Target className="size-3" />
+                +
+                {formatXp(area.goalBonusXp)}
+                {" "}
+                goal
+              </Badge>
+            )
+            : null}
+        </span>
         <span className="shrink-0 text-muted-foreground tabular-nums">
           {formatXp(area.xp)} xp
         </span>

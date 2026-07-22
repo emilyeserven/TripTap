@@ -19,6 +19,8 @@ export interface ActivityItem {
   title: string | null;
   /** XP earned by this item on this day (grants from the same source on the day are summed). */
   xp: number;
+  /** How much of `xp` is the goal-alignment bonus (aligned with a learner goal); omitted when 0. */
+  goalBonusXp?: number;
   /** Router link target for the source, when it has an addressable page. */
   to?: string;
   /** Router link params for {@link to}. */
@@ -31,6 +33,8 @@ export interface ActivityDay {
   date: string;
   /** Total XP earned across the day's items. */
   totalXp: number;
+  /** How much of `totalXp` is the goal-alignment bonus; omitted when 0. */
+  goalBonusXp?: number;
   /** The individual pieces of work, highest-XP first. */
   items: ActivityItem[];
 }

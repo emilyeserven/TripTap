@@ -28,9 +28,11 @@ export function groupActivityByDay(grants: XpGrant[], tzOffsetMinutes = 0): Acti
       byDay.set(day, items);
     }
     const key = grant.sourceId ?? `anon:${anon++}`;
+    const bonus = grant.goalBonusXp ?? 0;
     const existing = items.get(key);
     if (existing) {
       existing.xp += grant.xp;
+      if (bonus > 0) existing.goalBonusXp = (existing.goalBonusXp ?? 0) + bonus;
     }
     else {
       items.set(key, {
@@ -40,6 +42,11 @@ export function groupActivityByDay(grants: XpGrant[], tzOffsetMinutes = 0): Acti
         xp: grant.xp,
         to: grant.to,
         params: grant.params,
+        ...(bonus > 0
+          ? {
+            goalBonusXp: bonus,
+          }
+          : {}),
       });
     }
   }
@@ -48,14 +55,28 @@ export function groupActivityByDay(grants: XpGrant[], tzOffsetMinutes = 0): Acti
     .sort(([a], [b]) => (a < b ? 1 : a > b ? -1 : 0))
     .map(([date, items]) => {
       const list = [...items.values()]
-        .map(item => ({
-          ...item,
-          xp: roundXp(item.xp),
-        }))
+        .map((item) => {
+          const goalBonusXp = item.goalBonusXp ? roundXp(item.goalBonusXp) : undefined;
+          return {
+            ...item,
+            xp: roundXp(item.xp),
+            ...(goalBonusXp !== undefined
+              ? {
+                goalBonusXp,
+              }
+              : {}),
+          };
+        })
         .sort((a, b) => b.xp - a.xp);
+      const dayBonus = roundXp(list.reduce((sum, item) => sum + (item.goalBonusXp ?? 0), 0));
       return {
         date,
         totalXp: roundXp(list.reduce((sum, item) => sum + item.xp, 0)),
+        ...(dayBonus > 0
+          ? {
+            goalBonusXp: dayBonus,
+          }
+          : {}),
         items: list,
       };
     });
