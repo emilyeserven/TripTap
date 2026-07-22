@@ -7,6 +7,7 @@ import { CollapsibleSection } from "@/components/CollapsibleSection";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { WordExampleLookup } from "@/components/WordExampleLookup";
 import { WordLookup } from "@/components/WordLookup";
 import { WordNoteControls } from "@/components/WordNoteControls";
 import { newId } from "@/lib/id";
@@ -105,6 +106,7 @@ export function LessonWordNotes({
                         meaning: entry.meanings.slice(0, 3).join("; "),
                       })}
                     />
+                    <WordExampleLookup word={w.word ?? ""} />
                   </div>
                   <Input
                     value={w.reading ?? ""}
