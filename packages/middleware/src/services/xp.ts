@@ -371,9 +371,16 @@ interface LessonXpRow {
   date: string;
   listeningNotes: LessonListeningNote[] | null;
   wordNotes: LessonWordNote[] | null;
+  durationMinutes: number;
 }
 
-/** 1xp per line → Listening; 0.5xp per fully-filled word note → Vocabulary. */
+/** Areas a tutoring session's minutes count toward — each earns the per-minute rate independently. */
+const LESSON_MINUTE_AREAS = ["Speaking", "Listening", "Grammar"] as const;
+
+/**
+ * 1xp per line → Listening; 0.5xp per fully-filled word note → Vocabulary; plus the session's minutes
+ * earn `lessonMinute` xp each toward every {@link LESSON_MINUTE_AREAS} area (Speaking/Listening/Grammar).
+ */
 export function lessonXp(rows: LessonXpRow[], rates: XpRates = DEFAULT_XP_RATES): XpGrant[] {
   return rows.flatMap((row) => {
     const at = new Date(row.date);
@@ -407,6 +414,18 @@ export function lessonXp(rows: LessonXpRow[], rates: XpRates = DEFAULT_XP_RATES)
         dateOnly: row.date,
         ...meta,
       });
+    }
+    if (row.durationMinutes > 0) {
+      for (const area of LESSON_MINUTE_AREAS) {
+        grants.push({
+          area,
+          feature: "lessons",
+          xp: row.durationMinutes * rates.lessonMinute,
+          at,
+          dateOnly: row.date,
+          ...meta,
+        });
+      }
     }
     return grants;
   });
@@ -680,6 +699,7 @@ export async function loadXpGrants(): Promise<XpGrant[]> {
       date: lessons.date,
       listeningNotes: lessons.listeningNotes,
       wordNotes: lessons.wordNotes,
+      durationMinutes: lessons.durationMinutes,
     }).from(lessons),
     db.select({
       id: theorySessions.id,

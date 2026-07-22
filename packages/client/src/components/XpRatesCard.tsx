@@ -30,6 +30,7 @@ const RATE_LABELS: Record<XpRateKey, string> = {
   drillMistakeCorrected: "Drills — corrected mistake regain",
   lessonLine: "Lessons — line",
   lessonWordNote: "Lessons — word fully filled out",
+  lessonMinute: "Lessons — minute (per area)",
   theoryStudyPageDense: "Theory study — dense page",
   theoryStudyPageMedium: "Theory study — medium page",
   theoryStudyPageLight: "Theory study — light page",

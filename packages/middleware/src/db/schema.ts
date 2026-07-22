@@ -577,6 +577,8 @@ export const lessons = pgTable("lessons", {
   listeningNotes: jsonb("listening_notes").$type<LessonListeningNote[]>(),
   wordNotes: jsonb("word_notes").$type<LessonWordNote[]>(),
   answerSheetIds: jsonb("answer_sheet_ids").$type<string[]>(),
+  // Tutoring-session length in minutes; earns per-minute XP across Speaking/Listening/Grammar.
+  durationMinutes: integer("duration_minutes").notNull().default(0),
   createdAt: timestamp("created_at", {
     withTimezone: true,
   }).notNull().defaultNow(),

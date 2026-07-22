@@ -19,6 +19,7 @@ function toLesson(row: LessonRow): Lesson {
     listeningNotes: row.listeningNotes ?? null,
     wordNotes: row.wordNotes ?? null,
     answerSheetIds: row.answerSheetIds ?? null,
+    durationMinutes: row.durationMinutes,
     createdAt:
       row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
     updatedAt:
@@ -37,6 +38,7 @@ function toInsert(input: CreateLessonInput) {
     listeningNotes: input.listeningNotes ?? null,
     wordNotes: input.wordNotes ?? null,
     answerSheetIds: input.answerSheetIds ?? null,
+    durationMinutes: input.durationMinutes ?? 0,
   };
 }
 

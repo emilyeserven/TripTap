@@ -50,6 +50,7 @@ export function LessonForm({
   const [notes, setNotes] = useState(lesson.notes ?? "");
   const [wordNotes, setWordNotes] = useState<LessonWordNote[]>(lesson.wordNotes ?? []);
   const [answerSheetIds, setAnswerSheetIds] = useState<string[]>(lesson.answerSheetIds ?? []);
+  const [durationMinutes, setDurationMinutes] = useState(String(lesson.durationMinutes ?? 0));
 
   const input = useMemo(() => {
     const cleanWords = wordNotes
@@ -69,8 +70,9 @@ export function LessonForm({
       notes: notes.trim() || null,
       wordNotes: cleanWords.length > 0 ? cleanWords : null,
       answerSheetIds: answerSheetIds.length > 0 ? answerSheetIds : null,
+      durationMinutes: Math.max(0, Math.trunc(Number(durationMinutes) || 0)),
     };
-  }, [title, date, language, tutorId, notes, wordNotes, answerSheetIds]);
+  }, [title, date, language, tutorId, notes, wordNotes, answerSheetIds, durationMinutes]);
 
   const {
     status, flush,
@@ -191,6 +193,24 @@ export function LessonForm({
         <TutorPicker
           value={tutorId}
           onChange={setTutorId}
+        />
+      </div>
+
+      <div className="space-y-1.5">
+        <Label htmlFor="lesson-duration">Session length (minutes)</Label>
+        <p className="text-xs text-muted-foreground">
+          Earns 0.25 XP per minute toward each of Speaking, Listening, and Grammar.
+        </p>
+        <Input
+          id="lesson-duration"
+          type="number"
+          inputMode="numeric"
+          min={0}
+          step={1}
+          className="w-32"
+          value={durationMinutes}
+          onChange={e => setDurationMinutes(e.target.value)}
+          onBlur={flush}
         />
       </div>
 
