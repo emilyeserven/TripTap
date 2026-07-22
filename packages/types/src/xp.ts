@@ -84,6 +84,8 @@ export interface XpAreaSummary {
   xp: number;
   /** XP per contributing feature; features with no XP are omitted. */
   byFeature: Partial<Record<XpFeature, number>>;
+  /** How much of `xp` is the goal-alignment bonus (this area is targeted by a goal); omitted when 0. */
+  goalBonusXp?: number;
 }
 
 /** XP earned within the recent window, per area. */
@@ -108,6 +110,8 @@ export interface XpTodaySummary {
 /** The response of `GET /api/xp/summary`. `areas` always holds all six areas, zero-filled. */
 export interface XpSummary {
   totalXp: number;
+  /** How much of the all-time total is the goal-alignment bonus; omitted when 0. */
+  goalBonusXp?: number;
   areas: XpAreaSummary[];
   recent: XpRecentSummary;
   today: XpTodaySummary;

@@ -4,6 +4,7 @@ import { DEFAULT_XP_RATES } from "@sentence-bank/types";
 import { buildApp } from "@/app";
 import { parseXpRateOverrides } from "@/services/settings";
 import {
+  applyGoalBonus,
   bookExercisesXp,
   ceilToQuarter,
   countSentences,
@@ -16,6 +17,7 @@ import {
   summarizeGrants,
   theoryStudyXp,
   writingXp,
+  type XpGrant,
 } from "@/services/xp";
 
 const NOW = new Date("2026-07-20T12:00:00Z");
@@ -830,4 +832,68 @@ test("GET /api/xp/summary rejects an out-of-range timezone offset", async () => 
   });
   assert.equal(res.statusCode, 400);
   await app.close();
+});
+
+test("applyGoalBonus scales grants whose area a goal targets and records the bonus", () => {
+  const grants: XpGrant[] = [
+    {
+      area: "Reading",
+      feature: "reading",
+      xp: 4,
+      at: new Date("2026-07-19"),
+    },
+    {
+      area: "Writing",
+      feature: "writing",
+      xp: 2,
+      at: new Date("2026-07-19"),
+    },
+  ];
+  const goals = [{
+    id: "g1",
+    title: "Read more",
+    notes: null,
+    learningAreas: ["Reading" as const],
+    grammarTerms: [],
+    resourceTerms: [],
+  }];
+  const [reading, writing] = applyGoalBonus(grants, goals);
+  // Reading is targeted → ×1.25, with the 0.25× portion recorded.
+  assert.equal(reading.xp, 5);
+  assert.equal(reading.goalBonusXp, 1);
+  // Writing isn't targeted → unchanged, no bonus.
+  assert.equal(writing.xp, 2);
+  assert.equal(writing.goalBonusXp, undefined);
+});
+
+test("applyGoalBonus returns the list untouched when there are no goals", () => {
+  const grants: XpGrant[] = [{
+    area: "Reading",
+    feature: "reading",
+    xp: 4,
+    at: new Date("2026-07-19"),
+  }];
+  assert.equal(applyGoalBonus(grants, []), grants);
+});
+
+test("summarizeGrants surfaces the goal-alignment bonus per area and overall", () => {
+  const now = new Date("2026-07-20T12:00:00Z");
+  const summary = summarizeGrants(
+    [{
+      area: "Reading",
+      feature: "reading",
+      xp: 5,
+      goalBonusXp: 1,
+      at: new Date("2026-07-20"),
+      dateOnly: "2026-07-20",
+    }],
+    7,
+    now,
+    0,
+  );
+  assert.equal(summary.areas.find(a => a.area === "Reading")?.goalBonusXp, 1);
+  assert.equal(summary.goalBonusXp, 1);
+  assert.equal(summary.today.areas.find(a => a.area === "Reading")?.goalBonusXp, 1);
+  // Areas with no bonus omit the field entirely.
+  assert.equal(summary.areas.find(a => a.area === "Writing")?.goalBonusXp, undefined);
 });
