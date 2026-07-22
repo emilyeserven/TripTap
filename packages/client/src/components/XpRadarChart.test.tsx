@@ -74,13 +74,13 @@ describe("XpRadarChart", () => {
           area: "Grammar",
           xp: 4,
         }]}
-        dailyXpGoal={20}
+        dailyXpGoal={30}
       />,
     );
     expect(screen.getByText("Yesterday")).toBeInTheDocument();
     const svg = screen.getByRole("img");
     expect(svg).toHaveAccessibleName(/Yesterday: Grammar 4/);
-    // Goal is 20 and the peak day-area (4) is under it, so the daily scale stays at the goal.
+    // The daily scale starts at two-thirds of the goal (30 → 20); the peak day-area (4) is under it.
     expect(svg).toHaveAccessibleName(/daily max of 20 xp/);
   });
 });

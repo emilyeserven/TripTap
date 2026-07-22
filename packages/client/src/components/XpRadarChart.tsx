@@ -75,7 +75,7 @@ export function XpRadarChart({
   const labelGap = 18;
   const padding = 44;
   const radius = center - padding;
-  // All-time scales to its own max; today & yesterday share a daily scale anchored on the daily goal.
+  // All-time scales to its own max; today & yesterday share a daily scale starting at ⅔ of the goal.
   const allTimeMax = Math.max(1, ...areas.map(a => a.xp));
   const todayByArea = new Map(todayAreas.map(a => [a.area, a.xp]));
   const yesterdayByArea = new Map(yesterdayAreas.map(a => [a.area, a.xp]));
@@ -269,7 +269,6 @@ export function XpRadarChart({
         <span className="tabular-nums">{formatXp(dailyMax)}</span>
         {" "}
         xp
-        {dailyXpGoal && dailyXpGoal > 0 ? " (daily goal)" : ""}
       </p>
     </div>
   );
