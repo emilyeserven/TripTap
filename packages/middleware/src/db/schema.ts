@@ -339,11 +339,15 @@ export const questionSheets = pgTable("question_sheets", {
   bookmarkId: text("bookmark_id"),
   bookmarkTitle: text("bookmark_title"),
   bookmarkUrl: text("bookmark_url"),
-  // A specific section of the linked bookmark (a narrower reference than the whole bookmark).
-  section: jsonb("section").$type<BookmarkSectionRef>(),
+  // Specific sections of the linked bookmark (narrower references than the whole bookmark). Null until
+  // any. The column keeps its legacy singular name "section" but now holds an array (backfilled from the
+  // former single object by migration).
+  sections: jsonb("section").$type<BookmarkSectionRef[]>(),
   dueDate: timestamp("due_date", {
     withTimezone: true,
   }),
+  // The number the first list question is labelled with (default 1) — offsets positional slot numbering.
+  firstQuestionNumber: integer("first_question_number").notNull().default(1),
   learningAreas: jsonb("learning_areas").$type<LearningArea[]>(),
   // Grammar-channel bookmark tags this sheet drills (same SentenceTermRef shape as sentences.terms),
   // so tagged sheets surface on the Grammar page. Null until any are attached.

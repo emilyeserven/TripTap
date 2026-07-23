@@ -19,9 +19,12 @@ import { newSheetItemId } from "@/lib/question-sheet-parts";
 export function QuestionListEditor({
   questions,
   onChange,
+  firstNumber = 1,
 }: {
   questions: QuestionSheetQuestion[];
   onChange: (questions: QuestionSheetQuestion[]) => void;
+  /** The number the first question is labelled with, so labels match the sheet's offset. */
+  firstNumber?: number;
 }) {
   const [quickCount, setQuickCount] = useState("");
 
@@ -106,7 +109,7 @@ export function QuestionListEditor({
         >
           <div className="flex items-start gap-2">
             <div className="flex-1 space-y-1.5">
-              <Label htmlFor={`q-${q.id}`}>Question {index + 1}</Label>
+              <Label htmlFor={`q-${q.id}`}>Question {firstNumber + index}</Label>
               <Textarea
                 id={`q-${q.id}`}
                 value={q.prompt}

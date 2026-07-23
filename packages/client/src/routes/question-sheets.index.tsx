@@ -3,10 +3,11 @@ import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
 
-import { QuestionSheetCard } from "@/components/QuestionSheetCard";
+import { QuestionSheetResourceGroup } from "@/components/QuestionSheetResourceGroup";
 import { SheetFilters } from "@/components/SheetFilters";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useAllBookmarkSections, useBookmarkResources } from "@/hooks/useBookmarks";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useQuestionSheets } from "@/hooks/useQuestionSheets";
 import {
@@ -15,6 +16,7 @@ import {
   matchesResource,
   resourceFilterOptions,
 } from "@/lib/answer-sheets";
+import { buildTocIndex, groupSheetsByResource } from "@/lib/question-sheets";
 
 export const Route = createFileRoute("/question-sheets/")({
   component: QuestionSheetsPage,
@@ -29,6 +31,20 @@ function QuestionSheetsPage() {
   const [resource, setResource] = useState(ALL_FILTER);
   const [area, setArea] = useState(ALL_FILTER);
 
+  // Live resource metadata (current title, cover image, media type) keyed by bookmark id.
+  const {
+    data: resourceList,
+  } = useBookmarkResources();
+  const recordById = useMemo(
+    () => new Map((resourceList?.resources ?? []).map(r => [r.id, r] as const)),
+    [resourceList],
+  );
+  // Per-resource TOC order, so each group's sheets read in the book's reading order.
+  const {
+    data: allSections,
+  } = useAllBookmarkSections();
+  const tocIndex = useMemo(() => buildTocIndex(allSections ?? []), [allSections]);
+
   const resourceOptions = useMemo(() => resourceFilterOptions(sheets ?? []), [sheets]);
 
   const shown = useMemo(() => {
@@ -40,6 +56,8 @@ function QuestionSheetsPage() {
       return matchesResource(s, resource) && matchesLearningArea(s, area);
     });
   }, [sheets, search, resource, area]);
+
+  const groups = useMemo(() => groupSheetsByResource(shown, tocIndex), [shown, tocIndex]);
 
   const nothing = !isLoading && shown.length === 0;
 
@@ -87,19 +105,27 @@ function QuestionSheetsPage() {
         )
         : null}
 
-      <div
+      <ul
         className="
           grid gap-4
           sm:grid-cols-2
         "
       >
-        {shown.map(qs => (
-          <QuestionSheetCard
-            key={qs.id}
-            questionSheet={qs}
-          />
-        ))}
-      </div>
+        {groups.map((group) => {
+          const record = group.bookmarkId ? recordById.get(group.bookmarkId) : undefined;
+          return (
+            <QuestionSheetResourceGroup
+              key={group.bookmarkId ?? "__none__"}
+              bookmarkId={group.bookmarkId}
+              bookmarkTitle={record?.title ?? group.sheets[0]?.bookmarkTitle ?? null}
+              bookmarkUrl={record?.url ?? group.sheets[0]?.bookmarkUrl ?? null}
+              imageUrl={record?.imageUrl ?? null}
+              mediaType={record?.mediaType ?? null}
+              sheets={group.sheets}
+            />
+          );
+        })}
+      </ul>
     </section>
   );
 }

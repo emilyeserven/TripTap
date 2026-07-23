@@ -8,20 +8,28 @@ import type {
   SentenceTermRef,
 } from "@sentence-bank/types";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+
+import { Plus, X } from "lucide-react";
 
 import { BookmarkPicker } from "@/components/BookmarkPicker";
+import { BookmarkSectionSelect } from "@/components/BookmarkSectionSelect";
 import { LearningAreaMultiSelect } from "@/components/LearningAreaMultiSelect";
 import { QuestionGridEditor } from "@/components/QuestionGridEditor";
 import { QuestionListEditor } from "@/components/QuestionListEditor";
 import { TermPicker } from "@/components/TermPicker";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useBookmarkRecord } from "@/hooks/useBookmarks";
-import { useCreateQuestionSheet, useUpdateQuestionSheet } from "@/hooks/useQuestionSheets";
+import {
+  useCreateQuestionSheet,
+  useQuestionSheets,
+  useUpdateQuestionSheet,
+} from "@/hooks/useQuestionSheets";
 import { resolveSectionPage } from "@/lib/sections";
 
 /**
@@ -32,19 +40,32 @@ import { resolveSectionPage } from "@/lib/sections";
  */
 export function QuestionSheetForm({
   questionSheet,
+  initialResource,
   onSuccess,
 }: {
   questionSheet?: QuestionSheet;
+  /** Pre-fills the resource on a new sheet (e.g. "New sheet" from a resource block). Ignored in edit mode. */
+  initialResource?: { bookmarkId: string | null;
+    bookmarkTitle: string | null;
+    bookmarkUrl: string | null; };
   onSuccess?: (id: string) => void;
 }) {
   const create = useCreateQuestionSheet();
   const update = useUpdateQuestionSheet();
   const editing = questionSheet !== undefined;
 
-  const [bookmarkId, setBookmarkId] = useState(questionSheet?.bookmarkId ?? null);
-  const [bookmarkTitle, setBookmarkTitle] = useState(questionSheet?.bookmarkTitle ?? null);
-  const [bookmarkUrl, setBookmarkUrl] = useState(questionSheet?.bookmarkUrl ?? null);
-  const [section, setSection] = useState<BookmarkSectionRef | null>(questionSheet?.section ?? null);
+  const [bookmarkId, setBookmarkId] = useState(
+    questionSheet?.bookmarkId ?? initialResource?.bookmarkId ?? null,
+  );
+  const [bookmarkTitle, setBookmarkTitle] = useState(
+    questionSheet?.bookmarkTitle ?? initialResource?.bookmarkTitle ?? null,
+  );
+  const [bookmarkUrl, setBookmarkUrl] = useState(
+    questionSheet?.bookmarkUrl ?? initialResource?.bookmarkUrl ?? null,
+  );
+  const [sections, setSections] = useState<BookmarkSectionRef[]>(questionSheet?.sections ?? []);
+  // The candidate section in the cascading picker; committed to `sections` via "Add section".
+  const [pendingSection, setPendingSection] = useState<BookmarkSectionRef | null>(null);
   const [page, setPage] = useState(questionSheet?.page ?? "");
   // Like the title: in edit mode the saved page is left alone; in create mode a picked page-section
   // fills it until the user types their own page.
@@ -55,6 +76,9 @@ export function QuestionSheetForm({
   // bookmark/page until the user types into it directly.
   const [titleTouched, setTitleTouched] = useState(editing);
   const [notes, setNotes] = useState(questionSheet?.notes ?? "");
+  const [firstQuestionNumber, setFirstQuestionNumber] = useState(
+    String(questionSheet?.firstQuestionNumber ?? 1),
+  );
   const [learningAreas, setLearningAreas] = useState<LearningArea[]>(
     questionSheet?.learningAreas ?? [],
   );
@@ -78,12 +102,29 @@ export function QuestionSheetForm({
   // page, walking up to a paged parent when the section itself has none.
   const sectionTree = useBookmarkRecord(bookmarkId).data?.sectionTree ?? [];
 
-  // Picking a section pre-fills the page field (unless the user has typed their own page).
-  const handlePickSection = (ref: BookmarkSectionRef | null) => {
-    setSection(ref);
-    const derivedPage = resolveSectionPage(sectionTree, ref?.id ?? null);
+  // Sections of the picked resource that already have a question sheet (excluding this one when editing)
+  // plus the ones already attached here — so the section picker dims them and gaps are easy to spot.
+  const allSheets = useQuestionSheets().data;
+  const usedSectionIds = useMemo(() => {
+    if (!bookmarkId) return undefined;
+    const fromOthers = (allSheets ?? [])
+      .filter(s => s.bookmarkId === bookmarkId && s.id !== questionSheet?.id)
+      .flatMap(s => s.sections.map(sec => sec.id));
+    return new Set([...fromOthers, ...sections.map(s => s.id)]);
+  }, [allSheets, bookmarkId, questionSheet?.id, sections]);
+
+  // Commit the candidate section: add it (deduped) and pre-fill the page from it unless the user typed one.
+  const addPendingSection = () => {
+    if (!pendingSection || sections.some(s => s.id === pendingSection.id)) return;
+    setSections([...sections, pendingSection]);
+    const derivedPage = resolveSectionPage(sectionTree, pendingSection.id);
     if (derivedPage && !pageTouched) setPage(derivedPage);
+    setPendingSection(null);
   };
+  const removeSection = (id: string) => setSections(sections.filter(s => s.id !== id));
+
+  // The effective first-question number (≥ 1), shared by the submit payload and the editor labels.
+  const firstNumber = Math.max(1, Math.floor(Number(firstQuestionNumber)) || 1);
 
   const pending = create.isPending || update.isPending;
   const canSubmit = title.trim().length > 0 && !pending;
@@ -99,7 +140,8 @@ export function QuestionSheetForm({
       bookmarkId,
       bookmarkTitle,
       bookmarkUrl,
-      section,
+      sections,
+      firstQuestionNumber: firstNumber,
       dueDate: dueDate ? new Date(dueDate).toISOString() : null,
       learningAreas,
       grammarTerms,
@@ -144,9 +186,6 @@ export function QuestionSheetForm({
             setBookmarkTitle(record?.title ?? null);
             setBookmarkUrl(record?.url ?? null);
           }}
-          enableSections
-          selectedSection={section}
-          onPickSection={handlePickSection}
         />
         <div className="space-y-1.5">
           <Label htmlFor="qs-page">Page</Label>
@@ -172,6 +211,60 @@ export function QuestionSheetForm({
           />
         </div>
       </div>
+
+      {bookmarkId && sectionTree.length > 0
+        ? (
+          <div className="space-y-2">
+            <Label>Sections</Label>
+            <div className="flex flex-wrap items-end gap-2">
+              <BookmarkSectionSelect
+                nodes={sectionTree}
+                value={pendingSection?.id ?? ""}
+                onChange={setPendingSection}
+                usedSectionIds={usedSectionIds}
+                className="w-full max-w-sm"
+              />
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={addPendingSection}
+                disabled={!pendingSection}
+              >
+                <Plus className="size-4" />
+                Add section
+              </Button>
+            </div>
+            {sections.length > 0
+              ? (
+                <ul className="flex flex-wrap gap-2">
+                  {sections.map(s => (
+                    <li key={s.id}>
+                      <Badge
+                        variant="secondary"
+                        className="gap-1"
+                      >
+                        {s.label}
+                        <button
+                          type="button"
+                          aria-label={`Remove ${s.label}`}
+                          onClick={() => removeSection(s.id)}
+                          className="hover:text-destructive"
+                        >
+                          <X className="size-3" />
+                        </button>
+                      </Badge>
+                    </li>
+                  ))}
+                </ul>
+              )
+              : null}
+            <p className="text-xs text-muted-foreground">
+              Attach one or more sections of this resource (optional). Sections that already have a
+              sheet are dimmed.
+            </p>
+          </div>
+        )
+        : null}
 
       <div className="space-y-1.5">
         <Label htmlFor="qs-title">Title</Label>
@@ -204,7 +297,8 @@ export function QuestionSheetForm({
           onChange={setLearningAreas}
         />
         <p className="text-xs text-muted-foreground">
-          Tag the skills this sheet practises (optional). Answer sheets inherit these.
+          Tag the skills this sheet practises (optional). Answer sheets inherit these, and XP from
+          answering is split evenly across the areas you pick.
         </p>
       </div>
 
@@ -230,10 +324,28 @@ export function QuestionSheetForm({
 
       {layout === "list"
         ? (
-          <QuestionListEditor
-            questions={questions}
-            onChange={setQuestions}
-          />
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="qs-first-number">First question number</Label>
+              <Input
+                id="qs-first-number"
+                type="number"
+                min={1}
+                value={firstQuestionNumber}
+                onChange={e => setFirstQuestionNumber(e.target.value)}
+                className="w-24"
+              />
+              <p className="text-xs text-muted-foreground">
+                If this section starts partway through a worksheet (e.g. Question 8), set the starting
+                number — the slots number up from there.
+              </p>
+            </div>
+            <QuestionListEditor
+              questions={questions}
+              onChange={setQuestions}
+              firstNumber={firstNumber}
+            />
+          </div>
         )
         : (
           <QuestionGridEditor

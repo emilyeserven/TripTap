@@ -38,8 +38,9 @@ function listSheet(overrides: Partial<QuestionSheet> = {}): QuestionSheet {
     bookmarkId: null,
     bookmarkTitle: null,
     bookmarkUrl: null,
-    section: null,
+    sections: [],
     dueDate: "2026-07-31T00:00:00.000Z",
+    firstQuestionNumber: 1,
     learningAreas: [],
     grammarTerms: [],
     layout: "list",
@@ -338,6 +339,23 @@ describe("questionSheetSlots", () => {
       id: "q1",
       label: "Question 1",
     }]);
+  });
+
+  it("offsets positional labels by firstQuestionNumber", () => {
+    const slots = questionSheetSlots(listSheet({
+      firstQuestionNumber: 8,
+      questions: [
+        {
+          id: "q1",
+          prompt: "  ",
+        },
+        {
+          id: "q2",
+          prompt: "",
+        },
+      ],
+    }));
+    expect(slots.map(s => s.label)).toEqual(["Question 8", "Question 9"]);
   });
 
   it("makes one slot per flat part, labelled with the prompt and part label", () => {
