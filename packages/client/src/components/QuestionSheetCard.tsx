@@ -79,7 +79,13 @@ export function QuestionSheetCard({
               </Badge>
             )
             : null}
-          {qs.section ? <Badge variant="outline">§ {qs.section.label}</Badge> : null}
+          {qs.sections.map(s => (
+            <Badge
+              key={s.id}
+              variant="outline"
+            >§ {s.label}
+            </Badge>
+          ))}
           {qs.dueDate
             ? met
               ? (

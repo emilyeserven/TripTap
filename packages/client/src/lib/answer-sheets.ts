@@ -59,9 +59,12 @@ export function questionSheetSlots(qs: QuestionSheet): QuestionSheetSlot[] {
   }
 
   const slots: QuestionSheetSlot[] = [];
+  // Positional labels start at the sheet's configured first number (default 1), so a section that
+  // begins at "Question 8" numbers its blank slots 8, 9, 10…
+  const firstNumber = qs.firstQuestionNumber ?? 1;
   qs.questions.forEach((question, index) => {
     // Blank prompts (e.g. from the "quick fill" count shortcut) fall back to a positional label.
-    const base = question.prompt.trim() || `Question ${index + 1}`;
+    const base = question.prompt.trim() || `Question ${firstNumber + index}`;
     if (question.parts && question.parts.length > 0) {
       collectPartSlots(base, question.parts, slots);
     }

@@ -14,6 +14,10 @@ vi.mock("@/hooks/useQuestionSheets", () => ({
     mutateAsync: vi.fn(),
     isPending: false,
   }),
+  // Read to dim already-used sections in the picker; no sheets needed for these tests.
+  useQuestionSheets: () => ({
+    data: [],
+  }),
 }));
 // BookmarkPicker and TermPicker pull in bookmarks queries we don't care about here.
 vi.mock("@/components/BookmarkPicker", () => ({

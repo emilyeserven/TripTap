@@ -12,6 +12,8 @@ export interface ComboboxOption {
   label: string;
   /** Optional group heading. A header renders above the first option of each new section. */
   section?: string;
+  /** De-emphasize this option (dimmed) while keeping it selectable. */
+  muted?: boolean;
 }
 
 /** A non-selectable group heading shown above the first option of a section. */
@@ -130,6 +132,9 @@ export function Combobox({
                       hover:bg-accent
                     `,
                     o.value === value && "font-medium",
+                    o.muted && o.value !== value && `
+                      text-muted-foreground opacity-60
+                    `,
                   )}
                 >
                   <Check

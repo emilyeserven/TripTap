@@ -62,10 +62,15 @@ export interface QuestionSheet {
   bookmarkId: string | null;
   bookmarkTitle: string | null;
   bookmarkUrl: string | null;
-  /** The specific section of {@link bookmarkId} this sheet is drawn from (a narrower reference); null when none. */
-  section: BookmarkSectionRef | null;
+  /** The specific sections of {@link bookmarkId} this sheet is drawn from (narrower references); empty when none. */
+  sections: BookmarkSectionRef[];
   /** When this sheet should be answered by, if any. */
   dueDate: string | null;
+  /**
+   * The number the sheet's first list question is labelled with (default 1) — so a worksheet section
+   * that starts at "Question 8" numbers its slots 8, 9, 10… Positional labels add this to the index.
+   */
+  firstQuestionNumber: number;
   /** Skill areas this sheet exercises; empty when untagged. Answer sheets inherit these from here. */
   learningAreas: LearningArea[];
   /**
@@ -90,8 +95,9 @@ export interface CreateQuestionSheetInput {
   bookmarkId?: string | null;
   bookmarkTitle?: string | null;
   bookmarkUrl?: string | null;
-  section?: BookmarkSectionRef | null;
+  sections?: BookmarkSectionRef[] | null;
   dueDate?: string | null;
+  firstQuestionNumber?: number;
   learningAreas?: LearningArea[];
   grammarTerms?: SentenceTermRef[] | null;
   questions?: QuestionSheetQuestion[];

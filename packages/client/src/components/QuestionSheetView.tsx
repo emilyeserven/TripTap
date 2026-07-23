@@ -70,7 +70,13 @@ export function QuestionSheetView({
               </span>
             )
             : null}
-          {qs.section ? <Badge variant="outline">Section: {qs.section.label}</Badge> : null}
+          {qs.sections.map(s => (
+            <Badge
+              key={s.id}
+              variant="outline"
+            >Section: {s.label}
+            </Badge>
+          ))}
           {qs.dueDate
             ? met
               ? (
@@ -111,7 +117,9 @@ export function QuestionSheetView({
                 className="space-y-1"
               >
                 <p className="text-base">
-                  <span className="font-medium text-muted-foreground">{index + 1}. </span>
+                  <span className="font-medium text-muted-foreground">
+                    {(qs.firstQuestionNumber ?? 1) + index}.{" "}
+                  </span>
                   {q.prompt}
                 </p>
                 <PartList parts={q.parts ?? []} />

@@ -30,6 +30,7 @@ export function BookmarkSectionSelect({
   nodes,
   value,
   onChange,
+  usedSectionIds,
   ariaLabel = "Section",
   className = "w-full max-w-xs",
 }: {
@@ -37,6 +38,8 @@ export function BookmarkSectionSelect({
   /** The selected (deepest) section id, or "" for none. */
   value: string;
   onChange: (ref: BookmarkSectionRef | null) => void;
+  /** Section ids that already have a question sheet — de-emphasized (dimmed) but still selectable. */
+  usedSectionIds?: Set<string>;
   ariaLabel?: string;
   className?: string;
 }) {
@@ -109,6 +112,11 @@ export function BookmarkSectionSelect({
         const options = (childrenOf.get(level.parentId) ?? []).map(n => ({
           value: n.id,
           label: sectionNodeLabel(n),
+          ...(usedSectionIds?.has(n.id)
+            ? {
+              muted: true,
+            }
+            : {}),
         }));
         // The top level can clear back to the whole bookmark; deeper levels reset via a higher change.
         if (i === 0) options.unshift({
