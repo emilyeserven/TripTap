@@ -3,6 +3,8 @@ import type {
   BookmarksSettings,
   BookmarksSource,
   DailyLineup,
+  DailyTask,
+  DailyTaskDone,
   DeferredLineupItem,
   DictionaryProvider,
   DictionarySettings,
@@ -361,12 +363,28 @@ function parseDailyXpGoal(raw: string | null): number | null {
   return Number.isFinite(value) && value > 0 ? value : null;
 }
 
+/** Settings key holding the hour a new day starts for XP/activity counting. Not a secret. */
+const PROFILE_DAY_START_HOUR_KEY = "profile.dayStartHour";
+
+/** Parse the stored day-start hour: an integer clamped to 0–23, defaulting to 0 (midnight). */
+function parseDayStartHour(raw: string | null): number {
+  if (!raw) return 0;
+  const value = Math.floor(Number(raw));
+  if (!Number.isFinite(value)) return 0;
+  return Math.min(23, Math.max(0, value));
+}
+
 /** The learner profile stored in the DB (empty goals / no daily goal when unset). */
 export async function getLearnerProfile(): Promise<LearnerProfile> {
-  const stored = await getSettings([PROFILE_GOALS_KEY, PROFILE_DAILY_XP_GOAL_KEY]);
+  const stored = await getSettings([
+    PROFILE_GOALS_KEY,
+    PROFILE_DAILY_XP_GOAL_KEY,
+    PROFILE_DAY_START_HOUR_KEY,
+  ]);
   return {
     goals: parseLearnerGoals(stored[PROFILE_GOALS_KEY] ?? null),
     dailyXpGoal: parseDailyXpGoal(stored[PROFILE_DAILY_XP_GOAL_KEY] ?? null),
+    dayStartHour: parseDayStartHour(stored[PROFILE_DAY_START_HOUR_KEY] ?? null),
   };
 }
 
@@ -387,6 +405,11 @@ export async function updateLearnerProfile(
       input.dailyXpGoal && input.dailyXpGoal > 0 ? String(input.dailyXpGoal) : null,
     );
   }
+  if (input.dayStartHour !== undefined) {
+    // Clamp to 0–23; null or 0 (midnight, the default) clears the row.
+    const hour = input.dayStartHour == null ? 0 : Math.min(23, Math.max(0, Math.floor(input.dayStartHour)));
+    await setSetting(PROFILE_DAY_START_HOUR_KEY, hour > 0 ? String(hour) : null);
+  }
   return getLearnerProfile();
 }
 
@@ -395,6 +418,8 @@ const START_KEYS = {
   favoriteResourceIds: "start.favoriteResourceIds",
   lineup: "start.lineup",
   deferred: "start.deferred",
+  dailyTasks: "start.dailyTasks",
+  dailyTaskDone: "start.dailyTaskDone",
 } as const;
 
 /** Parse the stored favorite ids: a JSON array of strings, corrupt → empty. */
@@ -508,6 +533,49 @@ export function parseDailyLineup(raw: string | null): DailyLineup | null {
   }
 }
 
+/** Parse the stored recurring daily tasks, dropping any malformed entry. */
+export function parseDailyTasks(raw: string | null): DailyTask[] {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter((t): t is Record<string, unknown> => Boolean(t) && typeof t === "object")
+      .filter(t => typeof t.id === "string" && typeof t.resourceId === "string")
+      .map(t => ({
+        id: t.id as string,
+        resourceId: t.resourceId as string,
+        resourceTitle: typeof t.resourceTitle === "string" ? t.resourceTitle : "",
+        label: typeof t.label === "string" ? t.label : null,
+        area: (LEARNING_AREAS as readonly string[]).includes(t.area as string)
+          ? t.area as LearningArea
+          : null,
+      }));
+  }
+  catch {
+    return [];
+  }
+}
+
+/** Parse the stored per-day daily-task check-offs, requiring a valid date; corrupt → null. */
+export function parseDailyTaskDone(raw: string | null): DailyTaskDone | null {
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw) as Record<string, unknown>;
+    if (!parsed || typeof parsed !== "object") return null;
+    if (typeof parsed.date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(parsed.date)) return null;
+    return {
+      date: parsed.date,
+      doneIds: Array.isArray(parsed.doneIds)
+        ? parsed.doneIds.filter((id): id is string => typeof id === "string")
+        : [],
+    };
+  }
+  catch {
+    return null;
+  }
+}
+
 /** The Start Something settings stored in the DB. */
 export async function getStartSettings(): Promise<StartSettings> {
   const stored = await getSettings(Object.values(START_KEYS));
@@ -515,6 +583,8 @@ export async function getStartSettings(): Promise<StartSettings> {
     favoriteResourceIds: parseFavoriteResourceIds(stored[START_KEYS.favoriteResourceIds] ?? null),
     lineup: parseDailyLineup(stored[START_KEYS.lineup] ?? null),
     deferred: parseDeferredItems(stored[START_KEYS.deferred] ?? null),
+    dailyTasks: parseDailyTasks(stored[START_KEYS.dailyTasks] ?? null),
+    dailyTaskDone: parseDailyTaskDone(stored[START_KEYS.dailyTaskDone] ?? null),
   };
 }
 
@@ -534,6 +604,17 @@ export async function updateStartSettings(input: UpdateStartSettingsInput): Prom
   if (input.deferred !== undefined) {
     const items = input.deferred ?? [];
     await setSetting(START_KEYS.deferred, items.length > 0 ? JSON.stringify(items) : null);
+  }
+  if (input.dailyTasks !== undefined) {
+    const tasks = input.dailyTasks ?? [];
+    await setSetting(START_KEYS.dailyTasks, tasks.length > 0 ? JSON.stringify(tasks) : null);
+  }
+  if (input.dailyTaskDone !== undefined) {
+    const done = input.dailyTaskDone;
+    await setSetting(
+      START_KEYS.dailyTaskDone,
+      done && done.doneIds.length > 0 ? JSON.stringify(done) : null,
+    );
   }
   return getStartSettings();
 }

@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 
 import { ActivityLogCard } from "@/components/ActivityLogCard";
 import { DailyXpGoalCard } from "@/components/DailyXpGoalCard";
+import { DayStartHourCard } from "@/components/DayStartHourCard";
 import { LearnerGoalsEditor } from "@/components/LearnerGoalsEditor";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePageTitle } from "@/hooks/usePageTitle";
@@ -43,6 +44,7 @@ function ProfilePage() {
           className="space-y-6"
         >
           <DailyXpGoalCard />
+          <DayStartHourCard />
           <LearnerGoalsEditor />
         </TabsContent>
         <TabsContent

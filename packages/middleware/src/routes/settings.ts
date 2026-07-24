@@ -225,6 +225,11 @@ const updateLearnerProfileBody = {
       type: ["number", "null"],
       minimum: 0,
     },
+    dayStartHour: {
+      type: ["integer", "null"],
+      minimum: 0,
+      maximum: 23,
+    },
   },
 } as const;
 
@@ -283,6 +288,31 @@ const lineupItemSchema = {
     },
     done: {
       type: "boolean",
+    },
+  },
+} as const;
+
+/** One recurring daily task: a resource the learner works on every day. */
+const dailyTaskSchema = {
+  type: "object",
+  additionalProperties: false,
+  required: ["id", "resourceId", "resourceTitle", "label", "area"],
+  properties: {
+    id: {
+      type: "string",
+    },
+    resourceId: {
+      type: "string",
+    },
+    resourceTitle: {
+      type: "string",
+    },
+    label: {
+      type: ["string", "null"],
+    },
+    area: {
+      type: ["string", "null"],
+      enum: [...learningAreaEnum, null],
     },
   },
 } as const;
@@ -362,6 +392,27 @@ const updateStartSettingsBody = {
     deferred: {
       type: ["array", "null"],
       items: deferredItemSchema,
+    },
+    dailyTasks: {
+      type: ["array", "null"],
+      items: dailyTaskSchema,
+    },
+    dailyTaskDone: {
+      type: ["object", "null"],
+      additionalProperties: false,
+      required: ["date", "doneIds"],
+      properties: {
+        date: {
+          type: "string",
+          pattern: "^\\d{4}-\\d{2}-\\d{2}$",
+        },
+        doneIds: {
+          type: "array",
+          items: {
+            type: "string",
+          },
+        },
+      },
     },
   },
 } as const;

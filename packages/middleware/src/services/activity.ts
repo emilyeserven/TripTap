@@ -1,5 +1,6 @@
 import type { ActivityDay, ActivityItem } from "@sentence-bank/types";
 import { loadXpGrants, localDateString, type XpGrant } from "@/services/xp";
+import { getLearnerProfile } from "@/services/settings";
 
 /** Round away float noise from fractional rates without hiding quarter points (mirrors xp.ts). */
 function roundXp(xp: number): number {
@@ -14,14 +15,20 @@ function roundXp(xp: number): number {
  * vocab grants, or a sheet's per-area splits, read as a single entry. Grants without a `sourceId`
  * each stand alone. Items are sorted highest-XP first within each day.
  */
-export function groupActivityByDay(grants: XpGrant[], tzOffsetMinutes = 0): ActivityDay[] {
+export function groupActivityByDay(
+  grants: XpGrant[],
+  tzOffsetMinutes = 0,
+  dayStartHour = 0,
+): ActivityDay[] {
+  // A new day starts at `dayStartHour` local — fold it into the offset (date-only grants bypass it).
+  const dayOffset = tzOffsetMinutes + dayStartHour * 60;
   // day → (mergeKey → item). Grants without a sourceId get a unique key so they never merge.
   const byDay = new Map<string, Map<string, ActivityItem>>();
   let anon = 0;
 
   for (const grant of grants) {
     if (grant.xp <= 0) continue;
-    const day = grant.dateOnly ?? localDateString(grant.at, tzOffsetMinutes);
+    const day = grant.dateOnly ?? localDateString(grant.at, dayOffset);
     let items = byDay.get(day);
     if (!items) {
       items = new Map();
@@ -87,11 +94,12 @@ export function groupActivityByDay(grants: XpGrant[], tzOffsetMinutes = 0): Acti
  * built from the same derived XP grants as the summary so the numbers always agree.
  */
 export async function getActivity(days: number, tzOffsetMinutes = 0): Promise<ActivityDay[]> {
-  const grants = await loadXpGrants();
-  const all = groupActivityByDay(grants, tzOffsetMinutes);
+  const [grants, profile] = await Promise.all([loadXpGrants(), getLearnerProfile()]);
+  const dayOffset = tzOffsetMinutes + profile.dayStartHour * 60;
+  const all = groupActivityByDay(grants, tzOffsetMinutes, profile.dayStartHour);
   const cutoff = localDateString(
     new Date(Date.now() - days * 24 * 60 * 60 * 1000),
-    tzOffsetMinutes,
+    dayOffset,
   );
   return all.filter(day => day.date >= cutoff);
 }

@@ -4,6 +4,8 @@ import type { OcrSettings } from "@sentence-bank/types";
 import { buildApp } from "@/app";
 import {
   parseDailyLineup,
+  parseDailyTaskDone,
+  parseDailyTasks,
   parseDeferredItems,
   parseFavoriteResourceIds,
   serializeSource,
@@ -416,6 +418,86 @@ test("PATCH /api/settings/start accepts a deferred/carried-over item", async () 
   });
   assert.notEqual(res.statusCode, 400);
   await app.close();
+});
+
+test("PATCH /api/settings/start accepts daily tasks and today's check-offs", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "PATCH",
+    url: "/api/settings/start",
+    payload: {
+      dailyTasks: [
+        {
+          id: "task-1",
+          resourceId: "res-genki",
+          resourceTitle: "Genki I",
+          label: null,
+          area: "Reading",
+        },
+      ],
+      dailyTaskDone: {
+        date: "2026-07-24",
+        doneIds: ["task-1"],
+      },
+    },
+  });
+  assert.notEqual(res.statusCode, 400);
+  await app.close();
+});
+
+test("PATCH /api/settings/start rejects a daily task missing its resourceId", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "PATCH",
+    url: "/api/settings/start",
+    payload: {
+      dailyTasks: [
+        {
+          id: "task-1",
+          resourceTitle: "Genki I",
+          label: null,
+          area: null,
+        },
+      ],
+    },
+  });
+  assert.equal(res.statusCode, 400);
+  await app.close();
+});
+
+test("parseDailyTasks drops malformed entries; parseDailyTaskDone requires a valid date", () => {
+  const tasks = parseDailyTasks(JSON.stringify([
+    {
+      id: "t1",
+      resourceId: "r1",
+      resourceTitle: "R",
+      label: null,
+      area: "Reading",
+    },
+    {
+      id: "t2",
+    }, // missing resourceId → dropped
+    {
+      id: "t3",
+      resourceId: "r3",
+      area: "Nope",
+    }, // unknown area → nulled, kept
+  ]));
+  assert.deepEqual(tasks.map(t => t.id), ["t1", "t3"]);
+  assert.equal(tasks[0].area, "Reading");
+  assert.equal(tasks[1].area, null);
+
+  assert.equal(parseDailyTaskDone(JSON.stringify({
+    date: "nope",
+    doneIds: [],
+  })), null);
+  assert.deepEqual(parseDailyTaskDone(JSON.stringify({
+    date: "2026-07-24",
+    doneIds: ["a", 2, "b"],
+  })), {
+    date: "2026-07-24",
+    doneIds: ["a", "b"],
+  });
 });
 
 test("PATCH /api/settings/start rejects a deferred item without a deferredTo date", async () => {
