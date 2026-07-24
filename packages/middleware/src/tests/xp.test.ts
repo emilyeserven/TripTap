@@ -804,6 +804,34 @@ test("summarizeGrants treats today as the UTC day when no offset is given", () =
   assert.equal(summary.today.totalXp, 2);
 });
 
+test("summarizeGrants counts pre-dayStartHour work toward the previous day", () => {
+  // UTC caller, day starts at 3am. A grant at 01:30 UTC July 20 is before the 3am cutoff, so it
+  // belongs to July 19; the same 01:30 grant would land on July 20 with the default midnight start.
+  const now = new Date("2026-07-20T12:00:00Z");
+  const grant = {
+    area: "Reading" as const,
+    feature: "reading" as const,
+    xp: 2,
+    at: new Date("2026-07-20T01:30:00Z"),
+  };
+  const withCutoff = summarizeGrants([grant], 7, now, 0, 3);
+  assert.equal(withCutoff.today.totalXp, 0);
+  assert.equal(withCutoff.yesterday.totalXp, 2);
+
+  // A grant at 04:00 (after the 3am start) counts as today.
+  const later = summarizeGrants(
+    [{
+      ...grant,
+      at: new Date("2026-07-20T04:00:00Z"),
+    }],
+    7,
+    now,
+    0,
+    3,
+  );
+  assert.equal(later.today.totalXp, 2);
+});
+
 test("GET /api/xp/summary rejects an out-of-range days value", async () => {
   const app = await buildApp();
   const res = await app.inject({

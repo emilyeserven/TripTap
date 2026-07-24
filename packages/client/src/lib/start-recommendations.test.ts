@@ -442,6 +442,7 @@ describe("buildStartSuggestions", () => {
       summary: summary({}),
       profile: {
         dailyXpGoal: null,
+        dayStartHour: 0,
         goals: [
           {
             id: "g1",

@@ -77,6 +77,34 @@ export interface DeferredLineupItem extends LineupItem {
   deferredTo: string;
 }
 
+/**
+ * A recurring daily task: a resource the learner wants to work on every day. Its action is derived
+ * live from the resource — the next uncompleted section (a Reading session) when it has sections, a
+ * new Drill session when it's Drills-tagged and section-less, else a whole-resource Reading session.
+ * A durable definition (unlike the today-only lineup); completion is tracked per day in
+ * {@link DailyTaskDone}.
+ */
+export interface DailyTask {
+  /** Stable id minted on create (`task-<uuid>`). */
+  id: string;
+  /** The bookmark resource this task points at. */
+  resourceId: string;
+  /** Snapshot of the resource title, for display while the live resource list loads. */
+  resourceTitle: string;
+  /** Optional override label; when null the card derives one from the resource / next section. */
+  label: string | null;
+  /** Optional learning area, used for the badge and to hint the reading/drill target. */
+  area: LearningArea | null;
+}
+
+/** Which daily tasks were checked off on a given day. Reset by the client when `date` isn't today. */
+export interface DailyTaskDone {
+  /** Client-local YYYY-MM-DD these check-offs belong to. */
+  date: string;
+  /** Ids of {@link DailyTask}s completed on `date`. */
+  doneIds: string[];
+}
+
 /** The response of `GET /api/settings/start`. */
 export interface StartSettings {
   /** Bookmark ids of locally-favorited resources, prioritized in Start Something suggestions. */
@@ -85,6 +113,10 @@ export interface StartSettings {
   lineup: DailyLineup | null;
   /** Items deferred to a future day / carried over from an earlier one, awaiting re-add. */
   deferred: DeferredLineupItem[];
+  /** The learner's recurring daily tasks (durable definitions). */
+  dailyTasks: DailyTask[];
+  /** Which daily tasks are checked off today; null when none/stale. The client date-checks it. */
+  dailyTaskDone: DailyTaskDone | null;
 }
 
 /** Payload for updating the Start settings. Tri-state per field: omit = leave, null/[] = clear. */
@@ -92,4 +124,6 @@ export interface UpdateStartSettingsInput {
   favoriteResourceIds?: string[] | null;
   lineup?: DailyLineup | null;
   deferred?: DeferredLineupItem[] | null;
+  dailyTasks?: DailyTask[] | null;
+  dailyTaskDone?: DailyTaskDone | null;
 }

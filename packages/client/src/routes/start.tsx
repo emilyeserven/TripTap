@@ -1,6 +1,6 @@
 import type { XpBreakdownView } from "@/components/XpBreakdown";
 import type { StartSuggestion } from "@/lib/start-recommendations";
-import type { BookmarkSectionMatch } from "@sentence-bank/types";
+import type { BookmarkSectionMatch, DailyTask } from "@sentence-bank/types";
 import type * as React from "react";
 
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -25,7 +25,9 @@ import {
 
 import { DailyGoalProgress } from "@/components/DailyGoalProgress";
 import { DailyLineupCard } from "@/components/DailyLineupCard";
+import { DailyTasksCard } from "@/components/DailyTasksCard";
 import { DueSoonCard } from "@/components/DueSoonCard";
+import { GoalAchievementStrip } from "@/components/GoalAchievementStrip";
 import { LearningAreaBadges } from "@/components/LearningAreaBadges";
 import { LineupExclusionsEditor } from "@/components/LineupExclusionsEditor";
 import { Button } from "@/components/ui/button";
@@ -37,6 +39,7 @@ import {
 } from "@/components/ui/collapsible";
 import { XpBreakdown } from "@/components/XpBreakdown";
 import { XpRadarChart } from "@/components/XpRadarChart";
+import { useActivity } from "@/hooks/useActivity";
 import { useAnswerSheets } from "@/hooks/useAnswerSheets";
 import { useAllBookmarkSections, useBookmarkResources } from "@/hooks/useBookmarks";
 import { useGrammarNotes } from "@/hooks/useGrammarNotes";
@@ -163,6 +166,7 @@ function StartPage() {
 
   const summary = useXpSummary();
   const profile = useLearnerProfile();
+  const activity = useActivity(30);
   const questionSheets = useQuestionSheets();
   const answerSheets = useAnswerSheets();
   const grammarNotes = useGrammarNotes();
@@ -243,6 +247,37 @@ function StartPage() {
   const dismissDeferred = (id: string) => {
     updateStartSettings.mutate({
       deferred: deferred.filter(d => d.id !== id),
+    });
+  };
+
+  // Recurring daily tasks (durable) + today's check-offs (reset when the stored done blob isn't today's).
+  const dailyTasks = startSettings.data?.dailyTasks ?? [];
+  const dailyTaskDone = startSettings.data?.dailyTaskDone;
+  const dailyTaskDoneIds = dailyTaskDone?.date === today ? dailyTaskDone.doneIds : [];
+
+  const toggleDailyTask = (taskId: string) => {
+    const doneIds = dailyTaskDoneIds.includes(taskId)
+      ? dailyTaskDoneIds.filter(id => id !== taskId)
+      : [...dailyTaskDoneIds, taskId];
+    updateStartSettings.mutate({
+      dailyTaskDone: {
+        date: today,
+        doneIds,
+      },
+    });
+  };
+  const addDailyTask = (task: DailyTask) => {
+    updateStartSettings.mutate({
+      dailyTasks: [...dailyTasks, task],
+    });
+  };
+  const removeDailyTask = (taskId: string) => {
+    updateStartSettings.mutate({
+      dailyTasks: dailyTasks.filter(t => t.id !== taskId),
+      dailyTaskDone: {
+        date: today,
+        doneIds: dailyTaskDoneIds.filter(id => id !== taskId),
+      },
     });
   };
 
@@ -342,6 +377,15 @@ function StartPage() {
           dailyXpGoal={profile.data?.dailyXpGoal ?? null}
         />
       )}
+
+      <DailyTasksCard
+        tasks={dailyTasks}
+        resources={resources}
+        doneIds={dailyTaskDoneIds}
+        onToggle={toggleDailyTask}
+        onAdd={addDailyTask}
+        onRemove={removeDailyTask}
+      />
 
       <DailyLineupCard
         lineup={lineup}
@@ -487,12 +531,19 @@ function StartPage() {
           <CardContent>
             {summary.data
               ? (
-                <XpRadarChart
-                  areas={summary.data.areas}
-                  todayAreas={summary.data.today.areas}
-                  yesterdayAreas={summary.data.yesterday.areas}
-                  dailyXpGoal={profile.data?.dailyXpGoal ?? null}
-                />
+                <div className="space-y-4">
+                  <XpRadarChart
+                    areas={summary.data.areas}
+                    todayAreas={summary.data.today.areas}
+                    yesterdayAreas={summary.data.yesterday.areas}
+                    dailyXpGoal={profile.data?.dailyXpGoal ?? null}
+                  />
+                  <GoalAchievementStrip
+                    activity={activity.data ?? []}
+                    dailyXpGoal={profile.data?.dailyXpGoal ?? null}
+                    dayStartHour={profile.data?.dayStartHour ?? 0}
+                  />
+                </div>
               )
               : <p className="text-sm text-muted-foreground">Loading XP…</p>}
           </CardContent>

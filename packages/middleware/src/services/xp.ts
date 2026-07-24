@@ -537,7 +537,12 @@ export function summarizeGrants(
   days: number,
   now: Date,
   tzOffsetMinutes = 0,
+  dayStartHour = 0,
 ): XpSummary {
+  // A new day starts at `dayStartHour` local — fold it into the offset so work before it (e.g. 1am
+  // with a 3am start) lands on the previous calendar date. Date-only sources bypass this (already
+  // whole learner-entered dates); the rolling `recent` window is unaffected.
+  const dayOffset = tzOffsetMinutes + dayStartHour * 60;
   const areas = new Map<LearningArea, XpAreaSummary>(
     LEARNING_AREAS.map(area => [area, {
       area,
@@ -564,8 +569,8 @@ export function summarizeGrants(
     }]),
   );
   const cutoff = now.getTime() - days * 24 * 60 * 60 * 1000;
-  const today = localDateString(now, tzOffsetMinutes);
-  const yesterday = localDateString(new Date(now.getTime() - 24 * 60 * 60 * 1000), tzOffsetMinutes);
+  const today = localDateString(now, dayOffset);
+  const yesterday = localDateString(new Date(now.getTime() - 24 * 60 * 60 * 1000), dayOffset);
 
   for (const grant of grants) {
     const area = areas.get(grant.area);
@@ -579,7 +584,7 @@ export function summarizeGrants(
     }
     // Date-only sources (drills, lessons) carry the learner-entered date; compare it directly so a
     // midnight-UTC `at` can't land the grant on the wrong local day.
-    const grantDay = grant.dateOnly ?? localDateString(grant.at, tzOffsetMinutes);
+    const grantDay = grant.dateOnly ?? localDateString(grant.at, dayOffset);
     if (grantDay === today) {
       const todayArea = todayAreas.get(grant.area);
       if (todayArea) {
@@ -798,6 +803,6 @@ export async function loadXpGrants(): Promise<XpGrant[]> {
  * Settings-page overrides) so a rate change retroactively re-scores everything on the next fetch.
  */
 export async function getXpSummary(days: number, tzOffsetMinutes = 0): Promise<XpSummary> {
-  const grants = await loadXpGrants();
-  return summarizeGrants(grants, days, new Date(), tzOffsetMinutes);
+  const [grants, profile] = await Promise.all([loadXpGrants(), getLearnerProfile()]);
+  return summarizeGrants(grants, days, new Date(), tzOffsetMinutes, profile.dayStartHour);
 }

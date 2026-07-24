@@ -35,10 +35,18 @@ export interface LearnerProfile {
   goals: LearnerGoal[];
   /** Minimum XP the learner wants to earn each day; null when no daily goal is set. */
   dailyXpGoal: number | null;
+  /**
+   * The hour (0–23, local) at which a new day starts for XP/activity counting. Work before this hour
+   * counts toward the previous day — e.g. 3 means a session logged at 1am still counts as "yesterday".
+   * Defaults to 0 (midnight).
+   */
+  dayStartHour: number;
 }
 
 /** Payload for updating the profile. Tri-state per field: omit = leave, null/empty = clear. */
 export interface UpdateLearnerProfileInput {
   goals?: LearnerGoal[] | null;
   dailyXpGoal?: number | null;
+  /** 0–23; null resets to the 0 (midnight) default. */
+  dayStartHour?: number | null;
 }
