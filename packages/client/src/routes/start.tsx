@@ -23,6 +23,7 @@ import {
   X,
 } from "lucide-react";
 
+import { AddDailyTaskCard } from "@/components/AddDailyTaskCard";
 import { DailyGoalProgress } from "@/components/DailyGoalProgress";
 import { DailyLineupCard } from "@/components/DailyLineupCard";
 import { DailyTasksCard } from "@/components/DailyTasksCard";
@@ -383,7 +384,6 @@ function StartPage() {
         resources={resources}
         doneIds={dailyTaskDoneIds}
         onToggle={toggleDailyTask}
-        onAdd={addDailyTask}
         onRemove={removeDailyTask}
       />
 
@@ -501,6 +501,11 @@ function StartPage() {
           </CardContent>
         </Card>
       </Collapsible>
+
+      <AddDailyTaskCard
+        tasks={dailyTasks}
+        onAdd={addDailyTask}
+      />
 
       <div className="flex flex-wrap gap-2">
         {QUICK_STARTS.map(item => (

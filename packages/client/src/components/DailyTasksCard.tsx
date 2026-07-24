@@ -2,47 +2,28 @@ import type { BookmarkResource, DailyTask } from "@sentence-bank/types";
 
 import { CalendarCheck } from "lucide-react";
 
-import { BookmarkPicker } from "@/components/BookmarkPicker";
 import { DailyTaskRow } from "@/components/DailyTaskRow";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { newId } from "@/lib/id";
 
 /**
  * The recurring "Daily tasks" card, pinned above Today's lineup on the Start page: each task is a
- * resource the learner works on every day, checkable and reset overnight. Adding picks a resource;
- * the card owns no persistence — every change hands the full task list / done set back to the parent.
+ * resource the learner works on every day, checkable and reset overnight. The picker to add one lives
+ * in a separate {@link AddDailyTaskCard}; this card owns no persistence — changes go to the parent.
  */
 export function DailyTasksCard({
   tasks,
   resources,
   doneIds,
   onToggle,
-  onAdd,
   onRemove,
 }: {
   tasks: DailyTask[];
   resources: BookmarkResource[];
   doneIds: string[];
   onToggle: (taskId: string) => void;
-  onAdd: (task: DailyTask) => void;
   onRemove: (taskId: string) => void;
 }) {
   const doneCount = tasks.filter(t => doneIds.includes(t.id)).length;
-
-  const addResource = (record: { id: string;
-    title: string; } | null) => {
-    if (!record) return;
-    // One task per resource — re-picking an existing one is a no-op.
-    if (tasks.some(t => t.resourceId === record.id)) return;
-    onAdd({
-      id: `task-${newId()}`,
-      resourceId: record.id,
-      resourceTitle: record.title,
-      label: null,
-      area: null,
-    });
-  };
 
   return (
     <Card>
@@ -82,16 +63,6 @@ export function DailyTasksCard({
               ))}
             </ul>
           )}
-        <div className="space-y-1.5">
-          <Label className="text-xs text-muted-foreground">Add a daily task</Label>
-          <BookmarkPicker
-            category="resource"
-            label="Resource"
-            selectedBookmarkId={null}
-            selectedBookmarkTitle={null}
-            onPick={addResource}
-          />
-        </div>
       </CardContent>
     </Card>
   );
