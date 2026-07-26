@@ -6,6 +6,7 @@ import type {
 
 import { useMemo, useState } from "react";
 
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -61,6 +62,9 @@ export function AnswerSheetForm({
 
   const [title, setTitle] = useState(answerSheet.title ?? "");
   const [date, setDate] = useState(answerSheet.date?.slice(0, 10) ?? "");
+  // When first answering, keep each question to just its answer box; the correction/explanation/meaning
+  // fields are review-phase clutter, revealed only when the learner opts in.
+  const [showDetails, setShowDetails] = useState(false);
   const [entries, setEntries] = useState<Record<string, AnswerSheetEntry>>(() => {
     const seed: Record<string, AnswerSheetEntry> = {};
     for (const e of answerSheet.entries ?? []) seed[e.slotId] = e;
@@ -123,7 +127,14 @@ export function AnswerSheetForm({
       className="space-y-6"
       onSubmit={e => e.preventDefault()}
     >
-      <div className="flex h-4 items-center justify-end">
+      <div className="flex h-4 items-center justify-between">
+        <label className="flex items-center gap-2 text-xs text-muted-foreground">
+          <Checkbox
+            checked={showDetails}
+            onCheckedChange={v => setShowDetails(v === true)}
+          />
+          Show correction &amp; notes fields
+        </label>
         <span className="text-xs text-muted-foreground">{SAVE_LABEL[status]}</span>
       </div>
 
@@ -184,6 +195,7 @@ export function AnswerSheetForm({
                   label={slot.label}
                   entry={getEntry(slot.id)}
                   answerMode={isGrid ? "preview" : "edit"}
+                  showDetails={showDetails}
                   onField={(field, value) => setField(slot.id, field, value)}
                   flush={flush}
                 />
@@ -199,12 +211,15 @@ function SlotBlock({
   label,
   entry,
   answerMode,
+  showDetails,
   onField,
   flush,
 }: {
   label: string;
   entry: AnswerSheetEntry;
   answerMode: "edit" | "preview";
+  /** Show the review-phase correction/explanation/meaning fields; when false, only the answer shows. */
+  showDetails: boolean;
   onField: <K extends keyof AnswerSheetEntry>(field: K, value: AnswerSheetEntry[K]) => void;
   flush: () => void;
 }) {
@@ -239,53 +254,57 @@ function SlotBlock({
           </div>
         )}
 
-      <div className="space-y-1.5">
-        <Label>Correction</Label>
-        <Textarea
-          value={entry.correction ?? ""}
-          onChange={e => onField("correction", e.target.value)}
-          onBlur={flush}
-          placeholder="The corrected answer"
-          rows={2}
-        />
-      </div>
-      <div className="space-y-1.5">
-        <Label>Explanation (Markdown)</Label>
-        <Textarea
-          value={entry.reasoning ?? ""}
-          onChange={e => onField("reasoning", e.target.value)}
-          onBlur={flush}
-          placeholder="Why it was wrong — Markdown & multiple lines supported"
-          rows={4}
-        />
-      </div>
-      <div
-        className="
-          grid gap-4
-          sm:grid-cols-2
-        "
-      >
-        <div className="space-y-1.5">
-          <Label>Intended meaning</Label>
-          <Textarea
-            value={entry.intendedMeaning ?? ""}
-            onChange={e => onField("intendedMeaning", e.target.value)}
-            onBlur={flush}
-            placeholder="What you meant to say"
-            rows={2}
-          />
-        </div>
-        <div className="space-y-1.5">
-          <Label>What it actually says</Label>
-          <Textarea
-            value={entry.actualMeaning ?? ""}
-            onChange={e => onField("actualMeaning", e.target.value)}
-            onBlur={flush}
-            placeholder="The literal reading of your answer, if different"
-            rows={2}
-          />
-        </div>
-      </div>
+      {showDetails && (
+        <>
+          <div className="space-y-1.5">
+            <Label>Correction</Label>
+            <Textarea
+              value={entry.correction ?? ""}
+              onChange={e => onField("correction", e.target.value)}
+              onBlur={flush}
+              placeholder="The corrected answer"
+              rows={2}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Explanation (Markdown)</Label>
+            <Textarea
+              value={entry.reasoning ?? ""}
+              onChange={e => onField("reasoning", e.target.value)}
+              onBlur={flush}
+              placeholder="Why it was wrong — Markdown & multiple lines supported"
+              rows={4}
+            />
+          </div>
+          <div
+            className="
+              grid gap-4
+              sm:grid-cols-2
+            "
+          >
+            <div className="space-y-1.5">
+              <Label>Intended meaning</Label>
+              <Textarea
+                value={entry.intendedMeaning ?? ""}
+                onChange={e => onField("intendedMeaning", e.target.value)}
+                onBlur={flush}
+                placeholder="What you meant to say"
+                rows={2}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>What it actually says</Label>
+              <Textarea
+                value={entry.actualMeaning ?? ""}
+                onChange={e => onField("actualMeaning", e.target.value)}
+                onBlur={flush}
+                placeholder="The literal reading of your answer, if different"
+                rows={2}
+              />
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

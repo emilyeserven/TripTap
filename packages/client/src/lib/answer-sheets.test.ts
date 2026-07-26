@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   answerSheetMeetsDueDate,
+  answerSheetScore,
   dueDateMet,
   isAnswerSheetComplete,
   matchesLearningArea,
@@ -15,11 +16,11 @@ import {
   resourceFilterOptions,
 } from "./answer-sheets";
 
-function entry(slotId: string, value: string): AnswerSheetEntry {
+function entry(slotId: string, value: string, correct: boolean | null = null): AnswerSheetEntry {
   return {
     slotId,
     value,
-    correct: null,
+    correct,
     correction: null,
     reasoning: null,
     intendedMeaning: null,
@@ -97,6 +98,35 @@ describe("isAnswerSheetComplete", () => {
     }), answer({
       entries: [],
     }))).toBe(false);
+  });
+});
+
+describe("answerSheetScore", () => {
+  it("tallies correct, graded, and total across the sheet's slots", () => {
+    const score = answerSheetScore(listSheet(), answer({
+      entries: [entry("q1", "答え1", true), entry("q2", "答え2", false)],
+    }));
+    expect(score).toEqual({
+      correct: 1,
+      graded: 2,
+      total: 2,
+    });
+  });
+
+  it("counts total from the question sheet's slots, not the entries", () => {
+    // Only one slot graded; the other is unanswered, so graded < total.
+    const score = answerSheetScore(listSheet(), answer({
+      entries: [entry("q1", "答え1", true)],
+    }));
+    expect(score).toEqual({
+      correct: 1,
+      graded: 1,
+      total: 2,
+    });
+  });
+
+  it("reports zero graded when nothing has a verdict yet", () => {
+    expect(answerSheetScore(listSheet(), answer()).graded).toBe(0);
   });
 });
 

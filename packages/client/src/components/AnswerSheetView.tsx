@@ -8,6 +8,7 @@ import { CalendarCheck } from "lucide-react";
 import { AnswerCorrectionModal } from "@/components/AnswerCorrectionModal";
 import { AnswerSheetGridView } from "@/components/AnswerSheetGridView";
 import { AnswerSheetListView } from "@/components/AnswerSheetListView";
+import { AnswerSheetScoreBadge } from "@/components/AnswerSheetScoreBadge";
 import { GrammarTermBadges } from "@/components/GrammarTermBadges";
 import { LearningAreaBadges } from "@/components/LearningAreaBadges";
 import { Badge } from "@/components/ui/badge";
@@ -157,6 +158,17 @@ export function AnswerSheetView({
           <Badge variant="secondary">
             {as.entries.length} {as.entries.length === 1 ? "answer" : "answers"}
           </Badge>
+          {sheet
+            ? (
+              <AnswerSheetScoreBadge
+                questionSheet={sheet}
+                answerSheet={{
+                  ...as,
+                  entries: Object.values(entries),
+                }}
+              />
+            )
+            : null}
           {as.date ? <span>Dated {formatDueDate(as.date)}</span> : null}
           {sheet && answerSheetMeetsDueDate(sheet, as)
             ? (
