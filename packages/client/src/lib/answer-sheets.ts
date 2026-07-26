@@ -89,6 +89,41 @@ export function isAnswerSheetComplete(qs: QuestionSheet, as: AnswerSheet): boole
   return slots.every(s => (byId.get(s.id)?.value.trim().length ?? 0) > 0);
 }
 
+/** A graded score for an answer sheet: how many slots were marked correct, graded, and total. */
+export interface AnswerSheetScore {
+  /** Slots whose entry verdict is `correct === true`. */
+  correct: number;
+  /** Slots that have been reviewed (a verdict of true or false was recorded). */
+  graded: number;
+  /** Total answerable slots on the linked question sheet. */
+  total: number;
+}
+
+/**
+ * Tally an answer sheet against its question sheet: `correct` (verdict true), `graded` (verdict set
+ * either way), and `total` slots. Callers decide whether to show it — typically only once the sheet
+ * {@link isAnswerSheetComplete is complete} and at least one entry has been graded.
+ */
+export function answerSheetScore(qs: QuestionSheet, as: AnswerSheet): AnswerSheetScore {
+  const total = questionSheetSlots(qs).length;
+  let correct = 0;
+  let graded = 0;
+  for (const e of as.entries) {
+    if (e.correct === true) {
+      correct += 1;
+      graded += 1;
+    }
+    else if (e.correct === false) {
+      graded += 1;
+    }
+  }
+  return {
+    correct,
+    graded,
+    total,
+  };
+}
+
 /** The UTC calendar day of an ISO timestamp, as an epoch-ms at midnight (for day-granular comparisons). */
 function utcDay(iso: string): number {
   const d = new Date(iso);

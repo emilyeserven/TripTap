@@ -35,7 +35,7 @@ test("countSentences splits on Japanese and latin terminators and newlines", () 
   assert.equal(countSentences("。。。"), 0);
 });
 
-test("readingXp counts translated lines at 2xp and word notes at 1xp", () => {
+test("readingXp counts translated lines at 2xp and only banked word notes at 1xp", () => {
   const grants = readingXp([
     {
       id: "r1",
@@ -50,7 +50,9 @@ test("readingXp counts translated lines at 2xp and word notes at 1xp", () => {
           translation: "A",
           summaryOnly: false,
           correction: null,
+          note: null,
           needsCorrection: false,
+          grammarTerms: null,
         },
         {
           id: "l2",
@@ -58,7 +60,9 @@ test("readingXp counts translated lines at 2xp and word notes at 1xp", () => {
           translation: null,
           summaryOnly: false,
           correction: null,
+          note: null,
           needsCorrection: true,
+          grammarTerms: null,
         },
         {
           id: "l3",
@@ -66,7 +70,9 @@ test("readingXp counts translated lines at 2xp and word notes at 1xp", () => {
           translation: "  ",
           summaryOnly: false,
           correction: null,
+          note: null,
           needsCorrection: true,
+          grammarTerms: null,
         },
       ],
       wordNotes: [
@@ -77,6 +83,18 @@ test("readingXp counts translated lines at 2xp and word notes at 1xp", () => {
           meaning: "hot",
           status: "shaky",
           flashcard: false,
+          // Banked — the learner wrote a sentence from it, so it earns XP.
+          mySentenceId: "ms1",
+        },
+        {
+          id: "w2",
+          word: "涼しい",
+          reading: "すずしい",
+          meaning: "cool",
+          status: "unknown",
+          flashcard: false,
+          // No sentence yet — earns nothing.
+          mySentenceId: null,
         },
       ],
       createdAt: RECENT,
@@ -84,7 +102,7 @@ test("readingXp counts translated lines at 2xp and word notes at 1xp", () => {
   ]);
   assert.equal(grants.length, 1);
   assert.equal(grants[0].area, "Reading");
-  // One translated line (2) + one word note (1); blank translation doesn't count.
+  // One translated line (2) + one banked word note (1); blank translation and the un-banked note skip.
   assert.equal(grants[0].xp, 3);
 });
 
@@ -549,6 +567,7 @@ test("grant functions honor overridden rates", () => {
       meaning: "hot",
       status: "shaky",
       flashcard: false,
+      mySentenceId: "ms1",
     }],
     createdAt: RECENT,
   }], rates);

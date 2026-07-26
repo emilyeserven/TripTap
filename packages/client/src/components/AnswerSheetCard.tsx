@@ -3,6 +3,7 @@ import type { AnswerSheet } from "@sentence-bank/types";
 import { Link } from "@tanstack/react-router";
 import { CalendarCheck } from "lucide-react";
 
+import { AnswerSheetScoreBadge } from "@/components/AnswerSheetScoreBadge";
 import { LearningAreaBadges } from "@/components/LearningAreaBadges";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -49,6 +50,14 @@ export function AnswerSheetCard({
           <Badge variant="secondary">
             {as.entries.length} {as.entries.length === 1 ? "answer" : "answers"}
           </Badge>
+          {sheet
+            ? (
+              <AnswerSheetScoreBadge
+                questionSheet={sheet}
+                answerSheet={as}
+              />
+            )
+            : null}
           {corrected > 0
             ? (
               <Badge variant="outline">

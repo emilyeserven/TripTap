@@ -8,10 +8,10 @@
  * both the Fastify API and the React client.
  */
 
-import type { BookmarkSectionRef } from "./index.js";
+import type { BookmarkSectionRef, SentenceTermRef } from "./index.js";
 
 /** How the learner recorded meaning for the whole session. */
-export type ReadingTranslationMode = "freeform" | "line-by-line";
+export type ReadingTranslationMode = "freeform" | "line-by-line" | "summary";
 
 /** How confident the learner was on a noted word: shaky on it, or didn't know it at all. */
 export type WordNoteStatus = "shaky" | "unknown";
@@ -28,8 +28,12 @@ export interface ReadingLine {
   summaryOnly: boolean;
   /** A correction to this line's translation, recorded later. */
   correction: string | null;
+  /** A freeform comment on this line's translation/correction (why it was wrong, a note). */
+  note: string | null;
   /** Flags this line as having a translation the learner wants to revisit/correct. */
   needsCorrection: boolean;
+  /** Grammar-source tags for this line (the grammar points it exercises); null when untagged. */
+  grammarTerms: SentenceTermRef[] | null;
 }
 
 /** One flagged word encountered while reading. */
@@ -46,6 +50,11 @@ export interface WordNote {
   status: WordNoteStatus;
   /** Marker to add this to a flashcard list later; no vocab is auto-created. */
   flashcard: boolean;
+  /**
+   * The id of the My Sentence the learner wrote from this word (via "Make a sentence"), or null.
+   * A word note only earns Reading XP once this is set — making a sentence is the way to bank the word.
+   */
+  mySentenceId: string | null;
 }
 
 /** A reading session. */
@@ -66,6 +75,10 @@ export interface ReadingSession {
   passage: string | null;
   /** The whole-passage translation, used in "freeform" mode. */
   freeformTranslation: string | null;
+  /** A correction to the freeform translation, recorded later; used in "freeform" mode. */
+  freeformCorrection: string | null;
+  /** A freeform comment on the freeform translation/correction. */
+  freeformNote: string | null;
   /** A summary of the whole passage, when a literal translation isn't warranted. */
   summary: string | null;
   /** The per-line breakdown, used in "line-by-line" mode; null otherwise. */
@@ -95,6 +108,8 @@ export interface CreateReadingSessionInput {
   mode?: ReadingTranslationMode;
   passage?: string | null;
   freeformTranslation?: string | null;
+  freeformCorrection?: string | null;
+  freeformNote?: string | null;
   summary?: string | null;
   lines?: ReadingLine[] | null;
   wordNotes?: WordNote[] | null;

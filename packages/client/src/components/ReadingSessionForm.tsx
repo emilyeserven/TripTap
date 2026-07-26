@@ -11,7 +11,6 @@ import { useState } from "react";
 import { BookmarkPicker } from "@/components/BookmarkPicker";
 import { ReadingLineEditor } from "@/components/ReadingLineEditor";
 import { ReadingWordNotesEditor } from "@/components/ReadingWordNotesEditor";
-import { SourcePicker } from "@/components/SourcePicker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -55,13 +54,19 @@ export function ReadingSessionForm({
   const [date, setDate] = useState(session?.date ?? todayDateString(new Date()));
   const [title, setTitle] = useState(session?.title ?? initialTitle ?? "");
   const [language, setLanguage] = useState(session?.language ?? "Japanese");
-  const [sourceId, setSourceId] = useState<string | null>(session?.sourceId ?? null);
+  // Source was retired in favour of the Resource picker; preserve any existing value on edit, but
+  // it's no longer user-editable.
+  const sourceId = session?.sourceId ?? null;
   const [page, setPage] = useState(session?.page ?? "");
   const [mode, setMode] = useState<ReadingTranslationMode>(session?.mode ?? "freeform");
   const [passage, setPassage] = useState(session?.passage ?? "");
   const [freeformTranslation, setFreeformTranslation] = useState(
     session?.freeformTranslation ?? "",
   );
+  const [freeformCorrection, setFreeformCorrection] = useState(
+    session?.freeformCorrection ?? "",
+  );
+  const [freeformNote, setFreeformNote] = useState(session?.freeformNote ?? "");
   const [summary, setSummary] = useState(session?.summary ?? "");
   const [lines, setLines] = useState<ReadingLine[]>(session?.lines ?? []);
   const [wordNotes, setWordNotes] = useState<WordNote[]>(session?.wordNotes ?? []);
@@ -83,6 +88,7 @@ export function ReadingSessionForm({
       ...l,
       translation: l.translation?.trim() || null,
       correction: l.correction?.trim() || null,
+      note: l.note?.trim() || null,
     }));
     const cleanWords = wordNotes
       .filter(w => w.word.trim().length > 0)
@@ -101,6 +107,8 @@ export function ReadingSessionForm({
       mode,
       passage: passage.trim() || null,
       freeformTranslation: freeformTranslation.trim() || null,
+      freeformCorrection: freeformCorrection.trim() || null,
+      freeformNote: freeformNote.trim() || null,
       summary: summary.trim() || null,
       lines: cleanLines.length > 0 ? cleanLines : null,
       wordNotes: cleanWords.length > 0 ? cleanWords : null,
@@ -166,25 +174,14 @@ export function ReadingSessionForm({
         </div>
       </div>
 
-      <div
-        className="
-          grid gap-4
-          sm:grid-cols-2
-        "
-      >
-        <SourcePicker
-          value={sourceId}
-          onChange={setSourceId}
+      <div className="space-y-1.5">
+        <Label htmlFor="rs-page">Where from (page / location)</Label>
+        <Input
+          id="rs-page"
+          value={page}
+          onChange={e => setPage(e.target.value)}
+          placeholder="p. 12–13, ch. 3, …"
         />
-        <div className="space-y-1.5">
-          <Label htmlFor="rs-page">Where from (page / location)</Label>
-          <Input
-            id="rs-page"
-            value={page}
-            onChange={e => setPage(e.target.value)}
-            placeholder="p. 12–13, ch. 3, …"
-          />
-        </div>
       </div>
 
       <BookmarkPicker
@@ -203,17 +200,6 @@ export function ReadingSessionForm({
         onPickSection={setSection}
       />
 
-      <div className="space-y-1.5">
-        <Label htmlFor="rs-summary">Summary (optional)</Label>
-        <Textarea
-          id="rs-summary"
-          value={summary}
-          onChange={e => setSummary(e.target.value)}
-          placeholder="A quick gist of the whole passage, when a literal translation isn't worth it."
-          rows={2}
-        />
-      </div>
-
       <Tabs
         value={mode}
         onValueChange={v => setMode(v as ReadingTranslationMode)}
@@ -221,6 +207,7 @@ export function ReadingSessionForm({
         <TabsList>
           <TabsTrigger value="freeform">Freeform translation</TabsTrigger>
           <TabsTrigger value="line-by-line">Line by line</TabsTrigger>
+          <TabsTrigger value="summary">Just summarize</TabsTrigger>
         </TabsList>
 
         <TabsContent
@@ -247,6 +234,26 @@ export function ReadingSessionForm({
               rows={6}
             />
           </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="rs-freeform-correction">Corrected translation (optional)</Label>
+            <Textarea
+              id="rs-freeform-correction"
+              value={freeformCorrection}
+              onChange={e => setFreeformCorrection(e.target.value)}
+              placeholder="The corrected translation, recorded later."
+              rows={3}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="rs-freeform-note">Comment on the translation (optional)</Label>
+            <Textarea
+              id="rs-freeform-note"
+              value={freeformNote}
+              onChange={e => setFreeformNote(e.target.value)}
+              placeholder="A note on what was off and why."
+              rows={2}
+            />
+          </div>
         </TabsContent>
 
         <TabsContent
@@ -258,11 +265,28 @@ export function ReadingSessionForm({
             onChange={setLines}
           />
         </TabsContent>
+
+        <TabsContent
+          value="summary"
+          className="space-y-4 pt-4"
+        >
+          <div className="space-y-1.5">
+            <Label htmlFor="rs-summary">Summary (optional)</Label>
+            <Textarea
+              id="rs-summary"
+              value={summary}
+              onChange={e => setSummary(e.target.value)}
+              placeholder="A quick gist of the whole passage, when a literal translation isn't worth it."
+              rows={2}
+            />
+          </div>
+        </TabsContent>
       </Tabs>
 
       <ReadingWordNotesEditor
         wordNotes={wordNotes}
         onChange={setWordNotes}
+        language={language}
       />
 
       <div className="flex items-center gap-2">

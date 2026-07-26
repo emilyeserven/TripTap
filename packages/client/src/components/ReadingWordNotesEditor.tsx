@@ -1,12 +1,17 @@
 import type { WordNote } from "@sentence-bank/types";
 
 import { Plus } from "lucide-react";
+import { toKana } from "wanakana";
 
+import { AddSentenceFromWordNoteDialog } from "@/components/AddSentenceFromWordNoteDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { WordExampleLookup } from "@/components/WordExampleLookup";
+import { WordLookup } from "@/components/WordLookup";
 import { WordNoteControls } from "@/components/WordNoteControls";
 import { newId } from "@/lib/id";
+import { useUiStore } from "@/stores/uiStore";
 
 /**
  * The word-notes section of the reading-session form: words the learner was shaky on or didn't
@@ -16,10 +21,20 @@ import { newId } from "@/lib/id";
 export function ReadingWordNotesEditor({
   wordNotes,
   onChange,
+  language,
 }: {
   wordNotes: WordNote[];
   onChange: (wordNotes: WordNote[]) => void;
+  /** The reading session's language, seeded into a sentence made from a word note. */
+  language: string;
 }) {
+  const kanaScript = useUiStore(s => s.kanaScript);
+
+  const toKanaInput = (raw: string) =>
+    toKana(raw, {
+      IMEMode: kanaScript === "katakana" ? "toKatakana" : "toHiragana",
+    });
+
   const addWordNote = () =>
     onChange([...wordNotes, {
       id: newId(),
@@ -28,6 +43,7 @@ export function ReadingWordNotesEditor({
       meaning: null,
       status: "shaky",
       flashcard: false,
+      mySentenceId: null,
     }]);
   const patchWord = (id: string, patch: Partial<WordNote>) =>
     onChange(wordNotes.map(w => (w.id === id
@@ -72,20 +88,32 @@ export function ReadingWordNotesEditor({
                     sm:grid-cols-3
                   "
                 >
-                  <Input
-                    value={w.word}
-                    onChange={e => patchWord(w.id, {
-                      word: e.target.value,
-                    })}
-                    placeholder="Word"
-                    aria-label="Word"
-                  />
+                  <div className="flex gap-2">
+                    <Input
+                      value={w.word}
+                      onChange={e => patchWord(w.id, {
+                        word: e.target.value,
+                      })}
+                      placeholder="Word"
+                      aria-label="Word"
+                    />
+                    <WordLookup
+                      word={w.word}
+                      onPick={entry => patchWord(w.id, {
+                        word: entry.word,
+                        // Route the reading through the kana-only transform to keep that invariant here.
+                        reading: toKanaInput(entry.reading),
+                        meaning: entry.meanings.slice(0, 3).join("; "),
+                      })}
+                    />
+                    <WordExampleLookup word={w.word} />
+                  </div>
                   <Input
                     value={w.reading ?? ""}
                     onChange={e => patchWord(w.id, {
-                      reading: e.target.value,
+                      reading: toKanaInput(e.target.value),
                     })}
-                    placeholder="Reading (optional)"
+                    placeholder="Reading — kana (optional)"
                     aria-label="Reading"
                   />
                   <Input
@@ -107,6 +135,13 @@ export function ReadingWordNotesEditor({
                     flashcard,
                   })}
                   onDelete={() => removeWord(w.id)}
+                />
+                <AddSentenceFromWordNoteDialog
+                  note={w}
+                  language={language}
+                  onLinked={mySentenceId => patchWord(w.id, {
+                    mySentenceId,
+                  })}
                 />
               </li>
             ))}
