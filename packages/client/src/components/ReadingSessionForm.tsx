@@ -3,6 +3,7 @@ import type {
   ReadingLine,
   ReadingSession,
   ReadingTranslationMode,
+  TranslationVerdict,
   WordNote,
 } from "@sentence-bank/types";
 
@@ -11,6 +12,7 @@ import { useState } from "react";
 import { BookmarkPicker } from "@/components/BookmarkPicker";
 import { ReadingLineEditor } from "@/components/ReadingLineEditor";
 import { ReadingWordNotesEditor } from "@/components/ReadingWordNotesEditor";
+import { TranslationVerdictPicker } from "@/components/TranslationVerdictPicker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -67,6 +69,9 @@ export function ReadingSessionForm({
     session?.freeformCorrection ?? "",
   );
   const [freeformNote, setFreeformNote] = useState(session?.freeformNote ?? "");
+  const [freeformVerdict, setFreeformVerdict] = useState<TranslationVerdict | null>(
+    session?.freeformVerdict ?? null,
+  );
   const [summary, setSummary] = useState(session?.summary ?? "");
   const [lines, setLines] = useState<ReadingLine[]>(session?.lines ?? []);
   const [wordNotes, setWordNotes] = useState<WordNote[]>(session?.wordNotes ?? []);
@@ -109,6 +114,7 @@ export function ReadingSessionForm({
       freeformTranslation: freeformTranslation.trim() || null,
       freeformCorrection: freeformCorrection.trim() || null,
       freeformNote: freeformNote.trim() || null,
+      freeformVerdict,
       summary: summary.trim() || null,
       lines: cleanLines.length > 0 ? cleanLines : null,
       wordNotes: cleanWords.length > 0 ? cleanWords : null,
@@ -235,12 +241,19 @@ export function ReadingSessionForm({
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="rs-freeform-correction">Corrected translation (optional)</Label>
+            <Label>How did the translation go?</Label>
+            <TranslationVerdictPicker
+              value={freeformVerdict}
+              onChange={setFreeformVerdict}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="rs-freeform-correction">Reference translation (optional)</Label>
             <Textarea
               id="rs-freeform-correction"
               value={freeformCorrection}
               onChange={e => setFreeformCorrection(e.target.value)}
-              placeholder="The corrected translation, recorded later."
+              placeholder="The reference translation to compare against."
               rows={3}
             />
           </div>

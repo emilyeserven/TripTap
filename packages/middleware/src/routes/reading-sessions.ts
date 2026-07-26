@@ -47,6 +47,10 @@ const linesSchema = {
       note: {
         type: ["string", "null"],
       },
+      verdict: {
+        type: ["string", "null"],
+        enum: ["correct", "partial", "incorrect", null],
+      },
       needsCorrection: {
         type: "boolean",
       },
@@ -180,6 +184,10 @@ const createReadingSessionBody = {
     },
     freeformNote: {
       type: ["string", "null"],
+    },
+    freeformVerdict: {
+      type: ["string", "null"],
+      enum: ["correct", "partial", "incorrect", null],
     },
     summary: {
       type: ["string", "null"],

@@ -28,6 +28,7 @@ export function DrillMistakes({
     onChange([...mistakes, {
       id: newId(),
       question: null,
+      cue: null,
       prompt: "",
       correctAnswer: null,
       reflection: null,
@@ -42,6 +43,7 @@ export function DrillMistakes({
       .map(question => ({
         id: newId(),
         question,
+        cue: null,
         prompt: "",
         correctAnswer: null,
         reflection: null,
@@ -128,16 +130,34 @@ export function DrillMistakes({
                   </Button>
                 </div>
 
-                <div className="space-y-1.5">
-                  <Label>Question (optional)</Label>
-                  <Input
-                    value={m.question ?? ""}
-                    onChange={e => patch(m.id, {
-                      question: e.target.value,
-                    })}
-                    placeholder="The prompt you were answering, e.g. Conjugate 食べる (potential)"
-                    aria-label="Question"
-                  />
+                <div
+                  className="
+                    grid gap-2
+                    sm:grid-cols-2
+                  "
+                >
+                  <div className="space-y-1.5">
+                    <Label>Question (optional)</Label>
+                    <Input
+                      value={m.question ?? ""}
+                      onChange={e => patch(m.id, {
+                        question: e.target.value,
+                      })}
+                      placeholder="The prompt you were answering, e.g. Conjugate 食べる (potential)"
+                      aria-label="Question"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Cue (optional)</Label>
+                    <Input
+                      value={m.cue ?? ""}
+                      onChange={e => patch(m.id, {
+                        cue: e.target.value,
+                      })}
+                      placeholder="A hint/stimulus that came with it, e.g. the English word or a picture note"
+                      aria-label="Cue"
+                    />
+                  </div>
                 </div>
 
                 <div

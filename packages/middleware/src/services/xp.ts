@@ -127,25 +127,60 @@ interface ReadingXpRow {
   title: string;
   mode: string;
   freeformTranslation: string | null;
+  freeformCorrection: string | null;
+  freeformNote: string | null;
+  freeformVerdict: string | null;
   lines: ReadingLine[] | null;
   wordNotes: WordNote[] | null;
   date: string;
   createdAt: Date;
 }
 
+/** A translation earns only this fraction of the full rate when it wasn't verified as correct. */
+const PARTIAL_TRANSLATION_CREDIT = 0.5;
+
 /**
- * 2xp per translated sentence + 1xp per word note → Reading. A word note only earns its XP once the
- * learner has written a sentence from it (`mySentenceId` set) — making a sentence is the sole way to
- * bank word-note XP; noting a word alone earns nothing.
+ * Whether a translation earns full credit: it was self-assessed `correct`, or the learner did the
+ * corrective work of recording a reference translation and/or a comment. Anything else — marked wrong,
+ * marked partial, or simply left unassessed — earns only partial credit.
+ */
+function translationEarnsFullCredit(
+  verdict: string | null,
+  correction: string | null,
+  note: string | null,
+): boolean {
+  return verdict === "correct" || Boolean(correction?.trim()) || Boolean(note?.trim());
+}
+
+/**
+ * 2xp per translated sentence + 1xp per word note → Reading. A translation earns full credit when it's
+ * self-assessed correct or backed by a reference translation/comment, and half credit otherwise (see
+ * {@link translationEarnsFullCredit}). A word note only earns its XP once the learner has written a
+ * sentence from it (`mySentenceId` set) — making a sentence is the sole way to bank word-note XP.
  */
 export function readingXp(rows: ReadingXpRow[], rates: XpRates = DEFAULT_XP_RATES): XpGrant[] {
   return rows.flatMap((row) => {
-    const translated = row.mode === "line-by-line"
-      ? (row.lines ?? []).filter(line => line.translation?.trim()).length
-      : countSentences(row.freeformTranslation);
+    const full = rates.readingTranslatedSentence;
+    const partial = full * PARTIAL_TRANSLATION_CREDIT;
+    let translatedXp: number;
+    if (row.mode === "line-by-line") {
+      translatedXp = (row.lines ?? [])
+        .filter(line => line.translation?.trim())
+        .reduce(
+          (sum, line) =>
+            sum + (translationEarnsFullCredit(line.verdict, line.correction, line.note) ? full : partial),
+          0,
+        );
+    }
+    else {
+      const sentences = countSentences(row.freeformTranslation);
+      const rate = translationEarnsFullCredit(row.freeformVerdict, row.freeformCorrection, row.freeformNote)
+        ? full
+        : partial;
+      translatedXp = sentences * rate;
+    }
     const bankedWords = (row.wordNotes ?? []).filter(note => note.mySentenceId).length;
-    const xp = translated * rates.readingTranslatedSentence
-      + bankedWords * rates.readingWordNote;
+    const xp = translatedXp + bankedWords * rates.readingWordNote;
     return xp > 0
       ? [{
         area: "Reading" as const,
@@ -712,6 +747,9 @@ export async function loadXpGrants(): Promise<XpGrant[]> {
       title: readingSessions.title,
       mode: readingSessions.mode,
       freeformTranslation: readingSessions.freeformTranslation,
+      freeformCorrection: readingSessions.freeformCorrection,
+      freeformNote: readingSessions.freeformNote,
+      freeformVerdict: readingSessions.freeformVerdict,
       lines: readingSessions.lines,
       wordNotes: readingSessions.wordNotes,
       date: readingSessions.date,

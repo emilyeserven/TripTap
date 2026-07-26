@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Scissors, Trash2 } from "lucide-react";
 
 import { TermPicker } from "@/components/TermPicker";
+import { TranslationVerdictPicker } from "@/components/TranslationVerdictPicker";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -21,6 +22,7 @@ function freshLine(text: string): ReadingLine {
     summaryOnly: false,
     correction: null,
     note: null,
+    verdict: null,
     needsCorrection: false,
     grammarTerms: null,
   };
@@ -161,37 +163,42 @@ export function ReadingLineEditor({
                   rows={2}
                   aria-label={line.summaryOnly ? "Line summary" : "Line translation"}
                 />
-                <label className="flex items-center gap-2 text-sm">
-                  <Checkbox
-                    checked={line.needsCorrection}
-                    onCheckedChange={v => patchLine(line.id, {
-                      needsCorrection: v === true,
+                <div className="space-y-1.5">
+                  <Label>How did the translation go?</Label>
+                  <TranslationVerdictPicker
+                    value={line.verdict}
+                    onChange={verdict => patchLine(line.id, {
+                      verdict,
                     })}
                   />
-                  Needs correction
-                </label>
-                {line.needsCorrection && (
-                  <>
-                    <Textarea
-                      value={line.correction ?? ""}
-                      onChange={e => patchLine(line.id, {
-                        correction: e.target.value,
-                      })}
-                      placeholder="The corrected translation"
-                      rows={2}
-                      aria-label="Line correction"
-                    />
-                    <Textarea
-                      value={line.note ?? ""}
-                      onChange={e => patchLine(line.id, {
-                        note: e.target.value,
-                      })}
-                      placeholder="Comment on the translation (optional)"
-                      rows={2}
-                      aria-label="Line comment"
-                    />
-                  </>
-                )}
+                </div>
+                {line.verdict === "incorrect"
+                  || line.verdict === "partial"
+                  || line.correction
+                  || line.note
+                  ? (
+                    <>
+                      <Textarea
+                        value={line.correction ?? ""}
+                        onChange={e => patchLine(line.id, {
+                          correction: e.target.value,
+                        })}
+                        placeholder="Reference translation"
+                        rows={2}
+                        aria-label="Reference translation"
+                      />
+                      <Textarea
+                        value={line.note ?? ""}
+                        onChange={e => patchLine(line.id, {
+                          note: e.target.value,
+                        })}
+                        placeholder="Comment on the translation (optional)"
+                        rows={2}
+                        aria-label="Line comment"
+                      />
+                    </>
+                  )
+                  : null}
                 <TermPicker
                   category="grammar"
                   label="Grammar"

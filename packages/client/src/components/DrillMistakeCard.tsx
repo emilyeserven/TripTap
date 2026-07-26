@@ -36,6 +36,15 @@ export function DrillMistakeCard({
         {mistake.question
           ? <p className="font-medium">{mistake.question}</p>
           : null}
+        {mistake.cue
+          ? (
+            <p className="text-sm text-muted-foreground">
+              Cue:
+              {" "}
+              <span className="text-foreground">{mistake.cue}</span>
+            </p>
+          )
+          : null}
         {isRecurring && recurrence
           ? (
             <p

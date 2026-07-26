@@ -82,6 +82,8 @@ export interface DrillMistake {
   id: string;
   /** The question or prompt that was asked. */
   question?: string | null;
+  /** A separate cue/hint that accompanied the question (e.g. the stimulus word or a prompt image note). */
+  cue?: string | null;
   /** What they got wrong — the answer they gave. Kept only when non-empty. */
   prompt: string;
   /** The correct answer, when known. */

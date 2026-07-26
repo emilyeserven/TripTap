@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import type { ReadingLine } from "@sentence-bank/types";
 import { DEFAULT_XP_RATES } from "@sentence-bank/types";
 import { buildApp } from "@/app";
 import { parseXpRateOverrides } from "@/services/settings";
@@ -35,13 +36,16 @@ test("countSentences splits on Japanese and latin terminators and newlines", () 
   assert.equal(countSentences("。。。"), 0);
 });
 
-test("readingXp counts translated lines at 2xp and only banked word notes at 1xp", () => {
+test("readingXp counts a verified translated line at 2xp and only banked word notes at 1xp", () => {
   const grants = readingXp([
     {
       id: "r1",
       title: "Reading 1",
       mode: "line-by-line",
       freeformTranslation: null,
+      freeformCorrection: null,
+      freeformNote: null,
+      freeformVerdict: null,
       date: "2026-07-19",
       lines: [
         {
@@ -51,6 +55,8 @@ test("readingXp counts translated lines at 2xp and only banked word notes at 1xp
           summaryOnly: false,
           correction: null,
           note: null,
+          // Self-assessed correct → full credit.
+          verdict: "correct",
           needsCorrection: false,
           grammarTerms: null,
         },
@@ -61,6 +67,7 @@ test("readingXp counts translated lines at 2xp and only banked word notes at 1xp
           summaryOnly: false,
           correction: null,
           note: null,
+          verdict: null,
           needsCorrection: true,
           grammarTerms: null,
         },
@@ -71,6 +78,7 @@ test("readingXp counts translated lines at 2xp and only banked word notes at 1xp
           summaryOnly: false,
           correction: null,
           note: null,
+          verdict: null,
           needsCorrection: true,
           grammarTerms: null,
         },
@@ -106,19 +114,67 @@ test("readingXp counts translated lines at 2xp and only banked word notes at 1xp
   assert.equal(grants[0].xp, 3);
 });
 
-test("readingXp counts freeform translations by sentence", () => {
+test("readingXp counts a verified freeform translation by sentence", () => {
   const grants = readingXp([
     {
       id: "r1",
       title: "Reading 1",
       mode: "freeform",
       freeformTranslation: "First. Second。",
+      // A reference translation → full credit for both sentences.
+      freeformCorrection: "First reference. Second reference.",
+      freeformNote: null,
+      freeformVerdict: null,
       date: "2026-07-19",
       lines: null,
       wordNotes: null,
       createdAt: RECENT,
     },
   ]);
+  assert.equal(grants[0].xp, 4);
+});
+
+test("readingXp gives half credit to un-verified translations (no correct verdict, no reference)", () => {
+  const line = (id: string, over: Partial<ReadingLine>): ReadingLine => ({
+    id,
+    text: id,
+    translation: "T",
+    summaryOnly: false,
+    correction: null,
+    note: null,
+    verdict: null,
+    needsCorrection: false,
+    grammarTerms: null,
+    ...over,
+  });
+  const grants = readingXp([
+    {
+      id: "r1",
+      title: "Reading 1",
+      mode: "line-by-line",
+      freeformTranslation: null,
+      freeformCorrection: null,
+      freeformNote: null,
+      freeformVerdict: null,
+      date: "2026-07-19",
+      lines: [
+        // Unassessed → partial (1).
+        line("l1", {}),
+        // Marked incorrect but no reference/comment → partial (1).
+        line("l2", {
+          verdict: "incorrect",
+        }),
+        // Marked incorrect but reference recorded → full (2).
+        line("l3", {
+          verdict: "incorrect",
+          correction: "the fix",
+        }),
+      ],
+      wordNotes: null,
+      createdAt: RECENT,
+    },
+  ]);
+  // 1 (unassessed) + 1 (incorrect, no ref) + 2 (incorrect but corrected) = 4.
   assert.equal(grants[0].xp, 4);
 });
 
@@ -558,6 +614,9 @@ test("grant functions honor overridden rates", () => {
     title: "Reading 1",
     mode: "line-by-line",
     freeformTranslation: null,
+    freeformCorrection: null,
+    freeformNote: null,
+    freeformVerdict: null,
     date: "2026-07-19",
     lines: null,
     wordNotes: [{
@@ -675,6 +734,9 @@ test("the four dated sessions stamp dateOnly for local-day bucketing", () => {
     title: "R",
     mode: "freeform",
     freeformTranslation: "One.",
+    freeformCorrection: "One reference.",
+    freeformNote: null,
+    freeformVerdict: null,
     date: "2026-07-20",
     lines: null,
     wordNotes: null,

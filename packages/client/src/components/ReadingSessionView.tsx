@@ -5,7 +5,7 @@ import { ExternalLink } from "lucide-react";
 
 import { AddSentenceFromWordNoteDialog } from "@/components/AddSentenceFromWordNoteDialog";
 import { GrammarTermBadges } from "@/components/GrammarTermBadges";
-import { ReadingCorrectionEditor } from "@/components/ReadingCorrectionEditor";
+import { TranslationVerdictEditor } from "@/components/TranslationVerdictEditor";
 import { Badge } from "@/components/ui/badge";
 import { useUpdateReadingSession } from "@/hooks/useReadingSessions";
 import { useSources } from "@/hooks/useSources";
@@ -30,8 +30,9 @@ function Field({
 /**
  * Render of a reading session: its origin, the freeform or line-by-line translation, an optional
  * whole-passage summary, and the word notes with shaky/unknown + flashcard markers. Mostly read-only,
- * but corrections + comments on each line (and the freeform translation) are editable inline here via
- * {@link ReadingCorrectionEditor}; all other editing happens on the separate edit page.
+ * but each translation's self-assessment verdict + comment are editable inline here via
+ * {@link TranslationVerdictEditor} (the reference translation is authored on the edit page); all other
+ * editing happens on the separate edit page.
  */
 export function ReadingSessionView({
   session,
@@ -170,10 +171,10 @@ export function ReadingSessionView({
                             </div>
                           )
                           : null}
-                        <ReadingCorrectionEditor
-                          correction={line.correction}
+                        <TranslationVerdictEditor
+                          referenceTranslation={line.correction}
+                          verdict={line.verdict}
                           note={line.note}
-                          needsCorrection={line.needsCorrection}
                           onSave={patch => saveLine(line.id, patch)}
                         />
                       </li>
@@ -192,14 +193,15 @@ export function ReadingSessionView({
                 label="Translation"
                 value={session.freeformTranslation}
               />
-              <ReadingCorrectionEditor
-                correction={session.freeformCorrection}
+              <TranslationVerdictEditor
+                referenceTranslation={session.freeformCorrection}
+                verdict={session.freeformVerdict}
                 note={session.freeformNote}
                 onSave={patch =>
                   update.mutateAsync({
                     id: session.id,
                     input: {
-                      freeformCorrection: patch.correction,
+                      freeformVerdict: patch.verdict,
                       freeformNote: patch.note,
                     },
                   }).then(() => undefined)}

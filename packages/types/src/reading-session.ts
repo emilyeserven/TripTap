@@ -13,6 +13,9 @@ import type { BookmarkSectionRef, SentenceTermRef } from "./index.js";
 /** How the learner recorded meaning for the whole session. */
 export type ReadingTranslationMode = "freeform" | "line-by-line" | "summary";
 
+/** The learner's self-assessment of how a translation went, against the reference translation. */
+export type TranslationVerdict = "correct" | "partial" | "incorrect";
+
 /** How confident the learner was on a noted word: shaky on it, or didn't know it at all. */
 export type WordNoteStatus = "shaky" | "unknown";
 
@@ -26,10 +29,12 @@ export interface ReadingLine {
   translation: string | null;
   /** When true this line was summarised, not translated literally. */
   summaryOnly: boolean;
-  /** A correction to this line's translation, recorded later. */
+  /** The reference ("correct") translation for this line, entered on the edit page. */
   correction: string | null;
-  /** A freeform comment on this line's translation/correction (why it was wrong, a note). */
+  /** A freeform comment on this line's translation (why it was off, a note). */
   note: string | null;
+  /** The learner's self-assessment of their translation against the reference; null when unassessed. */
+  verdict: TranslationVerdict | null;
   /** Flags this line as having a translation the learner wants to revisit/correct. */
   needsCorrection: boolean;
   /** Grammar-source tags for this line (the grammar points it exercises); null when untagged. */
@@ -75,10 +80,12 @@ export interface ReadingSession {
   passage: string | null;
   /** The whole-passage translation, used in "freeform" mode. */
   freeformTranslation: string | null;
-  /** A correction to the freeform translation, recorded later; used in "freeform" mode. */
+  /** The reference ("correct") translation for the freeform translation, entered on the edit page. */
   freeformCorrection: string | null;
-  /** A freeform comment on the freeform translation/correction. */
+  /** A freeform comment on the freeform translation. */
   freeformNote: string | null;
+  /** The learner's self-assessment of the freeform translation; null when unassessed. */
+  freeformVerdict: TranslationVerdict | null;
   /** A summary of the whole passage, when a literal translation isn't warranted. */
   summary: string | null;
   /** The per-line breakdown, used in "line-by-line" mode; null otherwise. */
@@ -110,6 +117,7 @@ export interface CreateReadingSessionInput {
   freeformTranslation?: string | null;
   freeformCorrection?: string | null;
   freeformNote?: string | null;
+  freeformVerdict?: TranslationVerdict | null;
   summary?: string | null;
   lines?: ReadingLine[] | null;
   wordNotes?: WordNote[] | null;
