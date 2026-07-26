@@ -36,6 +36,9 @@ const mistakesSchema = {
       question: {
         type: ["string", "null"],
       },
+      cue: {
+        type: ["string", "null"],
+      },
       prompt: {
         type: "string",
       },
