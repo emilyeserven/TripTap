@@ -494,6 +494,7 @@ export const readingSessions = pgTable("reading_sessions", {
   freeformTranslation: text("freeform_translation"),
   freeformCorrection: text("freeform_correction"),
   freeformNote: text("freeform_note"),
+  freeformVerdict: text("freeform_verdict"),
   summary: text("summary"),
   lines: jsonb("lines").$type<ReadingLine[]>(),
   wordNotes: jsonb("word_notes").$type<WordNote[]>(),
