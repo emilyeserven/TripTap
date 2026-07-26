@@ -59,8 +59,11 @@ append them to a scratch run-log file (e.g. `/tmp/overnight-run.md`) so they sur
 context reset; compare against them at the end of every loop iteration.
 
 ```bash
-# Full health snapshot — the overall score lives at .health_score in the JSON
+# Full health snapshot (JSON) — findings[], targets[], large_functions[], file_scores[], vital_signs
 pnpm exec fallow health --hotspots --targets --file-scores --format json --quiet 2>/dev/null || true
+
+# The composite score itself is TEXT-only in fallow 2.97 — read it from the human report:
+pnpm exec fallow health --quiet 2>/dev/null | head -1   # e.g. "● Health score: 76 B" + a deductions line
 
 # Dead-code count — target 0
 pnpm exec fallow dead-code --format json --quiet 2>/dev/null || true
@@ -72,15 +75,23 @@ pnpm exec fallow dupes --format json --quiet 2>/dev/null || true
 pnpm exec fallow --format json --quiet 2>/dev/null || true
 ```
 
+> **Score scale & location (fallow 2.97 / schema v7):** the composite health score is a **0–100**
+> grade (e.g. `76 B`) printed by the **text** `fallow health` output — the target `8.0 / 10` in this
+> skill means **≥ 80 / 100**. The `--format json` output has **no `.health_score` field** (an older
+> fallow exposed it); read the number from the text report's first line, and the per-lever deductions
+> (`hotspots`, `unit size`, `coupling`, `duplication`, `dead exports`, `complexity`) from the line
+> below it. The JSON is still the source for the actionable detail (`findings[]`, `targets[]`,
+> `large_functions[]`, `file_scores[]`).
+
 Key values to record:
 
-| Metric | Location in JSON | Target |
+| Metric | Location | Target |
 |---|---|---|
-| Health score | `.health_score` (top-level, `fallow health` output) | ≥ 8.0 |
-| Dead-code issues | `.total_issues` (`fallow dead-code` output) | 0 |
+| Health score | first line of **text** `fallow health` (e.g. `76 B`) — **no** JSON field in 2.97 | ≥ 80 / 100 (= 8.0 / 10) |
+| Dead-code **errors** | `.unused_files` + `.duplicate_exports` (`fallow dead-code`) — **not** `.total_issues`, which also counts `components/ui/**` warnings | 0 |
 | Duplication % | `.stats.duplication_percentage` (`fallow dupes` output) | < 6.5 % |
-| Complexity findings | `.findings[]` where `kind` contains `"complexity"` | 0 above caps |
-| Untested high-risk files | cross-ref `.refactoring_targets[]` / complexity `.findings[]` against the test-file map (Phase 2.1) | trending down |
+| Complexity findings | `.findings[]` (`fallow health --complexity`), each with `cyclomatic`/`cognitive`/`exceeded` | 0 above caps |
+| Untested high-risk files | cross-ref `.targets[]` / complexity `.findings[]` against the test-file map (Phase 2.1) | trending down |
 
 There is no coverage percentage in fallow's output and no coverage tooling configured by default —
 the "untested high-risk" metric is a heuristic (risk targets that have no corresponding test file),
@@ -749,16 +760,17 @@ every iteration: Phase 2 is the safety net the refactoring phases depend on, and
 standing documentation goal.
 
 ```bash
-pnpm exec fallow health --format json --quiet 2>/dev/null || true
+pnpm exec fallow health --quiet 2>/dev/null | head -1   # read the 0–100 score from the text report
 ```
 
-Extract `.health_score` from the JSON output.
+Read the composite score from the text report's first line (fallow 2.97 has no `.health_score` JSON
+field). Scores below are on the **0–100** scale (≥ 80 = the 8.0 / 10 target).
 
 | Score | Decision |
 |---|---|
-| ≥ 8.0 | **Stop.** Target reached. Proceed to Verify. |
-| 7.0 – 7.9 | Continue the loop. Meaningful gains still available. |
-| < 7.0 | Continue the loop. Significant work remains. |
+| ≥ 80 | **Stop.** Target reached. Proceed to Verify. |
+| 70 – 79 | Continue the loop. Meaningful gains still available. |
+| < 70 | Continue the loop. Significant work remains. |
 | Same as previous iteration | **Stop.** No further automated gains are possible. |
 
 If the score is unchanged from the previous iteration (no phase produced any diff), stop the
@@ -830,8 +842,8 @@ Once the loop exits, run the full suite one final time:
 # Full fallow analysis
 pnpm exec fallow --format json --quiet 2>/dev/null || true
 
-# Health score (confirm ≥ 8.0 or report actual)
-pnpm exec fallow health --format json --quiet 2>/dev/null || true
+# Health score (confirm ≥ 80/100 or report actual) — text report, first line
+pnpm exec fallow health --quiet 2>/dev/null | head -2
 
 # Dead-code count (confirm 0 errors)
 pnpm exec fallow dead-code --format json --quiet 2>/dev/null || true

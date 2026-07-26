@@ -59,7 +59,7 @@ export function parseStartValue(value: string | null | undefined): number | null
 }
 
 /** How far ahead (in days) a due question sheet counts as a "do this first" suggestion. */
-export const DUE_SOON_DAYS = 7;
+const DUE_SOON_DAYS = 7;
 /** Cap on due-sheet suggestions so one busy week doesn't crowd out the lowest-area pick. */
 const DUE_LIMIT = 2;
 
@@ -626,6 +626,58 @@ function interleaveByBookmark(picks: ContentPick[]): ContentPick[] {
 }
 
 /**
+ * The content pick(s) for one already-vetted resource: one suggestion per gated section, or a single
+ * whole-resource suggestion when it has no usable sections. `rank` is identical across a resource's
+ * picks, so it is computed once.
+ */
+function buildContentPicks(
+  resource: BookmarkResource,
+  area: LearningArea | null,
+  to: string,
+  verb: string,
+  sections: BookmarkSectionMatch[],
+  rawSections: BookmarkSectionMatch[],
+  input: StartRecommendationInput,
+  favoriteIds: string[],
+): ContentPick[] {
+  const description = area ? `${area} practice from your resources.` : "From your resources.";
+  const rank = contentRank(resource, area, input, favoriteIds, rawSections);
+
+  if (sections.length > 0) {
+    return sections.map((match): ContentPick => ({
+      suggestion: {
+        id: `section-${match.section.id}`,
+        kind: "area",
+        area,
+        title: `${verb} "${match.section.label}" of ${resource.title}`,
+        description,
+        to,
+        search: sessionSearch(to, resource.id, resource.title, resource.url, match.section),
+        resourceId: resource.id,
+        sectionId: match.section.id,
+      },
+      rank,
+      bookmarkId: resource.id,
+    }));
+  }
+
+  return [{
+    suggestion: {
+      id: `resource-${resource.id}`,
+      kind: "area",
+      area,
+      title: `${verb} a bit of ${resource.title}`,
+      description,
+      to,
+      search: sessionSearch(to, resource.id, resource.title, resource.url),
+      resourceId: resource.id,
+    },
+    rank,
+    bookmarkId: resource.id,
+  }];
+}
+
+/**
  * Turn every resource (and its sections) into suggestions. A resource with usable sections yields one
  * suggestion per section; a section-less resource yields one whole-resource suggestion. Filters by the
  * day's exclusions (media type, complexity, learning area) and gates Sequential-Material resources to
@@ -657,41 +709,7 @@ function contentSuggestions(input: StartRecommendationInput, favoriteIds: string
 
     const rawSections = sectionsByBookmark.get(resource.id) ?? [];
     const sections = gateSequentialSections(rawSections, input);
-    if (sections.length > 0) {
-      for (const match of sections) {
-        picks.push({
-          suggestion: {
-            id: `section-${match.section.id}`,
-            kind: "area",
-            area,
-            title: `${verb} "${match.section.label}" of ${resource.title}`,
-            description: area ? `${area} practice from your resources.` : "From your resources.",
-            to,
-            search: sessionSearch(to, resource.id, resource.title, resource.url, match.section),
-            resourceId: resource.id,
-            sectionId: match.section.id,
-          },
-          rank: contentRank(resource, area, input, favoriteIds, rawSections),
-          bookmarkId: resource.id,
-        });
-      }
-    }
-    else {
-      picks.push({
-        suggestion: {
-          id: `resource-${resource.id}`,
-          kind: "area",
-          area,
-          title: `${verb} a bit of ${resource.title}`,
-          description: area ? `${area} practice from your resources.` : "From your resources.",
-          to,
-          search: sessionSearch(to, resource.id, resource.title, resource.url),
-          resourceId: resource.id,
-        },
-        rank: contentRank(resource, area, input, favoriteIds, rawSections),
-        bookmarkId: resource.id,
-      });
-    }
+    picks.push(...buildContentPicks(resource, area, to, verb, sections, rawSections, input, favoriteIds));
   }
   return picks;
 }

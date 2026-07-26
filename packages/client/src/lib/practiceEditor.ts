@@ -68,7 +68,7 @@ export const COMPREHENSION_OPTIONS: { value: PracticeComprehension;
   },
 ];
 
-export const emptyWord = (): PracticeWord => ({
+const emptyWord = (): PracticeWord => ({
   w: "",
   r: "",
   m: "",

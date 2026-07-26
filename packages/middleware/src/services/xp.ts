@@ -69,7 +69,7 @@ export interface XpGrant {
 }
 
 /** The extra multiplier XP earns when its area is targeted by one of the learner's goals. */
-export const GOAL_ALIGNMENT_BONUS = 0.25;
+const GOAL_ALIGNMENT_BONUS = 0.25;
 
 /**
  * Reward grants whose learning area is targeted by a learner goal: their XP is scaled by

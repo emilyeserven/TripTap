@@ -251,7 +251,7 @@ export type ResourceAction = "listening" | "shadowing" | "reading" | "writing";
  * are absent. Listening material can also be shadowed (listen-and-repeat is speaking practice), so a
  * Listening resource offers both listening and shadowing.
  */
-export const LEARNING_AREA_ACTIONS: Partial<Record<LearningArea, ResourceAction[]>> = {
+const LEARNING_AREA_ACTIONS: Partial<Record<LearningArea, ResourceAction[]>> = {
   Listening: ["listening", "shadowing"],
   Speaking: ["shadowing"],
   Reading: ["reading"],
@@ -273,7 +273,7 @@ export function resourceActions(r: BookmarkResource, map: LearningAreaTagMap): R
 export const COMPLEXITY_MIN = 0;
 
 /** The default scheme id — the property's own generic labels. */
-export const DEFAULT_COMPLEXITY_SCHEME = "default";
+const DEFAULT_COMPLEXITY_SCHEME = "default";
 
 /**
  * The scheme the picker starts on: the first per-category override (e.g. "Language" → JLPT) when the
