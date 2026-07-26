@@ -224,10 +224,182 @@ function dueSheetSuggestions(input: StartRecommendationInput): StartSuggestion[]
     }));
 }
 
+/** The identity fields shared by every area pick, before the arm fills in title/link/search. */
+type AreaBase = Pick<StartSuggestion, "id" | "kind" | "area">;
+
+/** The whole-resource search payload for a shadowing/listening session (id + title + optional url). */
+function resourceSessionSearch(resource: BookmarkResource): Record<string, string> {
+  return {
+    bookmarkId: resource.id,
+    bookmarkTitle: resource.title,
+    ...(resource.url
+      ? {
+        bookmarkUrl: resource.url,
+      }
+      : {}),
+  };
+}
+
+/** Speaking (shadowing) pick: a tagged section, else a whole resource, else a bare session start. */
+function speakingSuggestion(
+  base: AreaBase,
+  section: BookmarkSectionMatch | undefined,
+  resource: BookmarkResource | undefined,
+  why: string,
+): StartSuggestion {
+  if (section) {
+    return {
+      ...base,
+      title: `Shadow "${section.section.label}" of ${section.bookmarkTitle}`,
+      description: why,
+      to: "/shadowing/new",
+      search: bookmarkSearch(section),
+    };
+  }
+  return {
+    ...base,
+    title: resource ? `Shadow a bit of ${resource.title}` : "Start a short shadowing session",
+    description: why,
+    to: "/shadowing/new",
+    ...(resource
+      ? {
+        search: resourceSessionSearch(resource),
+      }
+      : {}),
+  };
+}
+
+/** Listening pick: a tagged section, else a whole resource, else a bare session start. */
+function listeningSuggestion(
+  base: AreaBase,
+  section: BookmarkSectionMatch | undefined,
+  resource: BookmarkResource | undefined,
+  why: string,
+): StartSuggestion {
+  if (section) {
+    return {
+      ...base,
+      title: `Listen to "${section.section.label}" of ${section.bookmarkTitle}`,
+      description: why,
+      to: "/listening-sessions/new",
+      search: bookmarkSearch(section),
+    };
+  }
+  return {
+    ...base,
+    title: resource
+      ? `Listen to a bit of ${resource.title}`
+      : "Start a short listening session",
+    description: why,
+    to: "/listening-sessions/new",
+    ...(resource
+      ? {
+        search: resourceSessionSearch(resource),
+      }
+      : {}),
+  };
+}
+
+/** Reading pick: carries the resource (and section, when picked) so the reading form preselects them. */
+function readingSuggestion(
+  base: AreaBase,
+  section: BookmarkSectionMatch | undefined,
+  resource: BookmarkResource | undefined,
+  why: string,
+): StartSuggestion {
+  const title = section
+    ? `Read "${section.section.label}" of ${section.bookmarkTitle}`
+    : resource
+      ? `Read a bit of ${resource.title}`
+      : "Start a short reading session";
+  const search = section
+    ? sessionSearch(
+      "/reading-sessions/new",
+      section.bookmarkId,
+      section.bookmarkTitle,
+      section.bookmarkUrl,
+      section.section,
+    )
+    : resource
+      ? sessionSearch("/reading-sessions/new", resource.id, resource.title, resource.url)
+      : null;
+  return {
+    ...base,
+    title,
+    description: why,
+    to: "/reading-sessions/new",
+    ...(search
+      ? {
+        search,
+        ...(section
+          ? {
+            resourceId: section.bookmarkId,
+            sectionId: section.section.id,
+          }
+          : resource
+            ? {
+              resourceId: resource.id,
+            }
+            : {}),
+      }
+      : {}),
+  };
+}
+
+/** Writing pick: the first writing prompt if there is one, else the free My Writing entry. */
+function writingSuggestion(base: AreaBase, input: StartRecommendationInput, why: string): StartSuggestion {
+  const prompt = input.writingPrompts?.[0];
+  if (prompt) {
+    return {
+      ...base,
+      title: `Write from the prompt "${prompt.title ?? prompt.text}"`,
+      description: why,
+      to: "/writing-prompts/$id",
+      params: {
+        id: prompt.id,
+      },
+    };
+  }
+  return {
+    ...base,
+    title: "Write a few sentences in My Writing",
+    description: why,
+    to: "/my-writing",
+  };
+}
+
+/** Grammar pick: a starred note first, then a goal-aligned note, else the grammar-notes list. */
+function grammarSuggestion(base: AreaBase, input: StartRecommendationInput, why: string): StartSuggestion {
+  const starred = (input.grammarNotes ?? []).find(note => note.starred);
+  const goalTerm = (input.profile?.goals ?? []).flatMap(goal => goal.grammarTerms)[0];
+  const goalNote = goalTerm
+    ? (input.grammarNotes ?? []).find(note => note.tagId === goalTerm.id)
+    : undefined;
+  const note = starred ?? goalNote;
+  if (note) {
+    return {
+      ...base,
+      title: `Review the grammar point "${note.title}"`,
+      description: starred ? `${why} You starred this one.` : why,
+      to: "/grammar-notes/$id",
+      params: {
+        id: note.id,
+      },
+    };
+  }
+  return {
+    ...base,
+    title: "Review a grammar note",
+    description: why,
+    to: "/grammar-notes",
+  };
+}
+
 /**
  * The concrete pick for one area. Prefers a tagged bookmark *section* (quick and contained), then a
  * whole tagged resource, then the bare session entry point. `section`/`resource` are the already
- * filtered-and-ordered top candidates for this area (empty for non-lowest areas → a bare link).
+ * filtered-and-ordered top candidates for this area (empty for non-lowest areas → a bare link). The
+ * per-area logic lives in one helper each; this dispatches by area.
  */
 function areaSuggestion(
   input: StartRecommendationInput,
@@ -236,159 +408,23 @@ function areaSuggestion(
   resource: BookmarkResource | undefined,
   why: string,
 ): StartSuggestion {
-  const base = {
+  const base: AreaBase = {
     id: `area-${area}`,
-    kind: "area" as const,
+    kind: "area",
     area,
   };
 
   switch (area) {
     case "Speaking":
-      if (section) {
-        return {
-          ...base,
-          title: `Shadow "${section.section.label}" of ${section.bookmarkTitle}`,
-          description: why,
-          to: "/shadowing/new",
-          search: bookmarkSearch(section),
-        };
-      }
-      return {
-        ...base,
-        title: resource ? `Shadow a bit of ${resource.title}` : "Start a short shadowing session",
-        description: why,
-        to: "/shadowing/new",
-        ...(resource
-          ? {
-            search: {
-              bookmarkId: resource.id,
-              bookmarkTitle: resource.title,
-              ...(resource.url
-                ? {
-                  bookmarkUrl: resource.url,
-                }
-                : {}),
-            },
-          }
-          : {}),
-      };
+      return speakingSuggestion(base, section, resource, why);
     case "Listening":
-      if (section) {
-        return {
-          ...base,
-          title: `Listen to "${section.section.label}" of ${section.bookmarkTitle}`,
-          description: why,
-          to: "/listening-sessions/new",
-          search: bookmarkSearch(section),
-        };
-      }
-      return {
-        ...base,
-        title: resource
-          ? `Listen to a bit of ${resource.title}`
-          : "Start a short listening session",
-        description: why,
-        to: "/listening-sessions/new",
-        ...(resource
-          ? {
-            search: {
-              bookmarkId: resource.id,
-              bookmarkTitle: resource.title,
-              ...(resource.url
-                ? {
-                  bookmarkUrl: resource.url,
-                }
-                : {}),
-            },
-          }
-          : {}),
-      };
-    case "Reading": {
-      const title = section
-        ? `Read "${section.section.label}" of ${section.bookmarkTitle}`
-        : resource
-          ? `Read a bit of ${resource.title}`
-          : "Start a short reading session";
-      // Carry the resource (and section, when picked) so the reading form preselects them.
-      const search = section
-        ? sessionSearch(
-          "/reading-sessions/new",
-          section.bookmarkId,
-          section.bookmarkTitle,
-          section.bookmarkUrl,
-          section.section,
-        )
-        : resource
-          ? sessionSearch("/reading-sessions/new", resource.id, resource.title, resource.url)
-          : null;
-      return {
-        ...base,
-        title,
-        description: why,
-        to: "/reading-sessions/new",
-        ...(search
-          ? {
-            search,
-            ...(section
-              ? {
-                resourceId: section.bookmarkId,
-                sectionId: section.section.id,
-              }
-              : resource
-                ? {
-                  resourceId: resource.id,
-                }
-                : {}),
-          }
-          : {}),
-      };
-    }
-    case "Writing": {
-      const prompt = input.writingPrompts?.[0];
-      if (prompt) {
-        return {
-          ...base,
-          title: `Write from the prompt "${prompt.title ?? prompt.text}"`,
-          description: why,
-          to: "/writing-prompts/$id",
-          params: {
-            id: prompt.id,
-          },
-        };
-      }
-      return {
-        ...base,
-        title: "Write a few sentences in My Writing",
-        description: why,
-        to: "/my-writing",
-      };
-    }
-    case "Grammar": {
-      // Starred grammar points get first claim on the Grammar slot.
-      const starred = (input.grammarNotes ?? []).find(note => note.starred);
-      const goalTerm = (input.profile?.goals ?? []).flatMap(goal => goal.grammarTerms)[0];
-      const goalNote = goalTerm
-        ? (input.grammarNotes ?? []).find(note => note.tagId === goalTerm.id)
-        : undefined;
-      const note = starred ?? goalNote;
-      if (note) {
-        return {
-          ...base,
-          title: `Review the grammar point "${note.title}"`,
-          description: starred ? `${why} You starred this one.` : why,
-          to: "/grammar-notes/$id",
-          params: {
-            id: note.id,
-          },
-        };
-      }
-      return {
-        ...base,
-        title: "Review a grammar note",
-        description: why,
-        to: "/grammar-notes",
-      };
-    }
+      return listeningSuggestion(base, section, resource, why);
+    case "Reading":
+      return readingSuggestion(base, section, resource, why);
+    case "Writing":
+      return writingSuggestion(base, input, why);
+    case "Grammar":
+      return grammarSuggestion(base, input, why);
     case "Vocabulary":
       return {
         ...base,
