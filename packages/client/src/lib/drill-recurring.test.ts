@@ -10,9 +10,14 @@ import {
 
 const NOW = new Date("2026-07-20T12:00:00Z");
 
+// A deterministic counter for unique-but-stable mistake ids — the ids aren't asserted, they only need
+// to differ, so this avoids the non-determinism of Math.random() without changing any behavior.
+let mistakeSeq = 0;
+
 function mistake(question: string | null, over: Partial<DrillMistake> = {}): DrillMistake {
+  mistakeSeq += 1;
   return {
-    id: `m-${Math.round(Math.random() * 1e9)}`,
+    id: `m-${mistakeSeq}`,
     question,
     prompt: "wrong answer",
     reasons: [],
