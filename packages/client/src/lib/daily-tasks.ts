@@ -69,7 +69,7 @@ export function nextUncompletedSection(
 }
 
 /** Build a stored section reference (id/type/values + a `Parent › Child` breadcrumb) from a tree node. */
-export function sectionNodeToRef(
+function sectionNodeToRef(
   node: BookmarkSectionNode,
   tree: BookmarkSectionNode[],
 ): BookmarkSectionRef {

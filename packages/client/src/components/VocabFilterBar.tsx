@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/select";
 
 /** A fixed-width select over "all" + the given options, used for the level/category refinements. */
-export function FilterSelect({
+function FilterSelect({
   value,
   onChange,
   placeholder,

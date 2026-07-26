@@ -10,7 +10,7 @@ import { todayDateString } from "@/lib/daily-lineup";
  */
 
 /** How many days back counts as "recent" (the trailing window, including today). */
-export const RECURRENCE_DAYS = 7;
+const RECURRENCE_DAYS = 7;
 /** How many distinct sessions a question must appear in (within the window) to be flagged. */
 export const RECURRENCE_MIN_SESSIONS = 3;
 

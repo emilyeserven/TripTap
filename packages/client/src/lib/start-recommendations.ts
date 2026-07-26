@@ -59,7 +59,7 @@ export function parseStartValue(value: string | null | undefined): number | null
 }
 
 /** How far ahead (in days) a due question sheet counts as a "do this first" suggestion. */
-export const DUE_SOON_DAYS = 7;
+const DUE_SOON_DAYS = 7;
 /** Cap on due-sheet suggestions so one busy week doesn't crowd out the lowest-area pick. */
 const DUE_LIMIT = 2;
 

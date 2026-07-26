@@ -443,7 +443,7 @@ function imageObjectUrl(raw: unknown): string | null {
  * `imageDisplayPreference === "screenshot"` prefers the screenshot then the image; every other value
  * (`"image"`, `"auto"`, unset) prefers the image then the screenshot. Null when it has neither.
  */
-export function resolveDisplayImageUrl(o: Record<string, unknown>): string | null {
+function resolveDisplayImageUrl(o: Record<string, unknown>): string | null {
   const image = imageObjectUrl(o.image);
   const screenshot = imageObjectUrl(o.screenshot);
   return o.imageDisplayPreference === "screenshot"
