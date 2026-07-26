@@ -44,8 +44,41 @@ const linesSchema = {
       correction: {
         type: ["string", "null"],
       },
+      note: {
+        type: ["string", "null"],
+      },
       needsCorrection: {
         type: "boolean",
+      },
+      grammarTerms: {
+        type: ["array", "null"],
+        items: {
+          type: "object",
+          additionalProperties: false,
+          required: ["id", "name", "kind", "sourceId", "sourceLabel"],
+          properties: {
+            id: {
+              type: "string",
+            },
+            name: {
+              type: "string",
+            },
+            kind: {
+              type: "string",
+              enum: ["tag", "taxonomy"],
+            },
+            sourceId: {
+              type: "string",
+            },
+            sourceLabel: {
+              type: "string",
+            },
+            category: {
+              type: "string",
+              enum: ["vocabulary", "grammar", "general", "resource"],
+            },
+          },
+        },
       },
     },
   },
@@ -76,6 +109,9 @@ const wordNotesSchema = {
       },
       flashcard: {
         type: "boolean",
+      },
+      mySentenceId: {
+        type: ["string", "null"],
       },
     },
   },
@@ -131,12 +167,18 @@ const createReadingSessionBody = {
     },
     mode: {
       type: "string",
-      enum: ["freeform", "line-by-line"],
+      enum: ["freeform", "line-by-line", "summary"],
     },
     passage: {
       type: ["string", "null"],
     },
     freeformTranslation: {
+      type: ["string", "null"],
+    },
+    freeformCorrection: {
+      type: ["string", "null"],
+    },
+    freeformNote: {
       type: ["string", "null"],
     },
     summary: {

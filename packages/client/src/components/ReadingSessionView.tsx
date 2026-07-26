@@ -1,9 +1,13 @@
-import type { ReadingSession } from "@sentence-bank/types";
+import type { ReadingLine, ReadingSession, WordNote } from "@sentence-bank/types";
 
 import { Link } from "@tanstack/react-router";
 import { ExternalLink } from "lucide-react";
 
+import { AddSentenceFromWordNoteDialog } from "@/components/AddSentenceFromWordNoteDialog";
+import { GrammarTermBadges } from "@/components/GrammarTermBadges";
+import { ReadingCorrectionEditor } from "@/components/ReadingCorrectionEditor";
 import { Badge } from "@/components/ui/badge";
+import { useUpdateReadingSession } from "@/hooks/useReadingSessions";
 import { useSources } from "@/hooks/useSources";
 
 /** A labelled block of read-only text; renders nothing when empty. */
@@ -24,9 +28,10 @@ function Field({
 }
 
 /**
- * Read-only render of a reading session: its origin, the freeform or line-by-line translation, an
- * optional whole-passage summary, and the word notes with shaky/unknown + flashcard markers. All
- * editing happens on the separate edit page.
+ * Render of a reading session: its origin, the freeform or line-by-line translation, an optional
+ * whole-passage summary, and the word notes with shaky/unknown + flashcard markers. Mostly read-only,
+ * but corrections + comments on each line (and the freeform translation) are editable inline here via
+ * {@link ReadingCorrectionEditor}; all other editing happens on the separate edit page.
  */
 export function ReadingSessionView({
   session,
@@ -36,11 +41,40 @@ export function ReadingSessionView({
   const {
     data: sources,
   } = useSources();
+  const update = useUpdateReadingSession();
   const sourceName = session.sourceId
     ? (sources ?? []).find(s => s.id === session.sourceId)?.name ?? null
     : null;
   const wordNotes = session.wordNotes ?? [];
   const lines = session.lines ?? [];
+
+  /** Patch a single line in place and persist the whole lines array. */
+  const saveLine = (id: string, patch: Partial<ReadingLine>) =>
+    update.mutateAsync({
+      id: session.id,
+      input: {
+        lines: lines.map(l => (l.id === id
+          ? {
+            ...l,
+            ...patch,
+          }
+          : l)),
+      },
+    }).then(() => undefined);
+
+  /** Patch a single word note in place and persist the whole wordNotes array. */
+  const saveWordNote = (id: string, patch: Partial<WordNote>) =>
+    update.mutateAsync({
+      id: session.id,
+      input: {
+        wordNotes: wordNotes.map(w => (w.id === id
+          ? {
+            ...w,
+            ...patch,
+          }
+          : w)),
+      },
+    }).then(() => undefined);
 
   return (
     <div className="space-y-6">
@@ -53,7 +87,11 @@ export function ReadingSessionView({
         >
           <span>{session.language}</span>
           <Badge variant="secondary">
-            {session.mode === "line-by-line" ? "Line by line" : "Freeform"}
+            {session.mode === "line-by-line"
+              ? "Line by line"
+              : session.mode === "summary"
+                ? "Just summarize"
+                : "Freeform"}
           </Badge>
           {sourceName && session.sourceId
             ? (
@@ -101,56 +139,73 @@ export function ReadingSessionView({
         value={session.summary}
       />
 
-      {session.mode === "line-by-line"
-        ? (
-          <div className="space-y-3">
-            <p className="text-sm font-semibold">Lines</p>
-            {lines.length === 0
-              ? <p className="text-sm text-muted-foreground">No lines recorded.</p>
-              : (
-                <ul className="space-y-3">
-                  {lines.map(line => (
-                    <li
-                      key={line.id}
-                      className="space-y-1 rounded-md border p-3"
-                    >
-                      <p className="text-base">{line.text}</p>
-                      {line.translation
-                        ? (
-                          <p className="text-sm text-muted-foreground">
-                            {line.summaryOnly ? "Summary: " : ""}
-                            {line.translation}
-                          </p>
-                        )
-                        : null}
-                      {line.needsCorrection || line.correction
-                        ? (
-                          <div className="space-y-1 pt-1">
-                            <Badge variant="destructive">Needs correction</Badge>
-                            {line.correction
-                              ? <p className="text-sm">{line.correction}</p>
-                              : null}
-                          </div>
-                        )
-                        : null}
-                    </li>
-                  ))}
-                </ul>
-              )}
-          </div>
-        )
-        : (
-          <>
-            <Field
-              label="Passage"
-              value={session.passage}
-            />
-            <Field
-              label="Translation"
-              value={session.freeformTranslation}
-            />
-          </>
-        )}
+      {session.mode === "summary"
+        ? null
+        : session.mode === "line-by-line"
+          ? (
+            <div className="space-y-3">
+              <p className="text-sm font-semibold">Lines</p>
+              {lines.length === 0
+                ? <p className="text-sm text-muted-foreground">No lines recorded.</p>
+                : (
+                  <ul className="space-y-3">
+                    {lines.map(line => (
+                      <li
+                        key={line.id}
+                        className="space-y-1 rounded-md border p-3"
+                      >
+                        <p className="text-base">{line.text}</p>
+                        {line.translation
+                          ? (
+                            <p className="text-sm text-muted-foreground">
+                              {line.summaryOnly ? "Summary: " : ""}
+                              {line.translation}
+                            </p>
+                          )
+                          : null}
+                        {line.grammarTerms && line.grammarTerms.length > 0
+                          ? (
+                            <div className="pt-1 text-xs text-muted-foreground">
+                              <GrammarTermBadges terms={line.grammarTerms} />
+                            </div>
+                          )
+                          : null}
+                        <ReadingCorrectionEditor
+                          correction={line.correction}
+                          note={line.note}
+                          needsCorrection={line.needsCorrection}
+                          onSave={patch => saveLine(line.id, patch)}
+                        />
+                      </li>
+                    ))}
+                  </ul>
+                )}
+            </div>
+          )
+          : (
+            <>
+              <Field
+                label="Passage"
+                value={session.passage}
+              />
+              <Field
+                label="Translation"
+                value={session.freeformTranslation}
+              />
+              <ReadingCorrectionEditor
+                correction={session.freeformCorrection}
+                note={session.freeformNote}
+                onSave={patch =>
+                  update.mutateAsync({
+                    id: session.id,
+                    input: {
+                      freeformCorrection: patch.correction,
+                      freeformNote: patch.note,
+                    },
+                  }).then(() => undefined)}
+              />
+            </>
+          )}
 
       <div className="space-y-3">
         <p className="text-sm font-semibold">Word notes</p>
@@ -176,6 +231,13 @@ export function ReadingSessionView({
                     {w.status === "unknown" ? "Didn't know" : "Shaky"}
                   </Badge>
                   {w.flashcard ? <Badge variant="outline">Flashcard</Badge> : null}
+                  <AddSentenceFromWordNoteDialog
+                    note={w}
+                    language={session.language}
+                    onLinked={mySentenceId => saveWordNote(w.id, {
+                      mySentenceId,
+                    })}
+                  />
                 </li>
               ))}
             </ul>

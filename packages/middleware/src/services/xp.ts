@@ -133,14 +133,19 @@ interface ReadingXpRow {
   createdAt: Date;
 }
 
-/** 2xp per translated sentence + 1xp per word note → Reading. */
+/**
+ * 2xp per translated sentence + 1xp per word note → Reading. A word note only earns its XP once the
+ * learner has written a sentence from it (`mySentenceId` set) — making a sentence is the sole way to
+ * bank word-note XP; noting a word alone earns nothing.
+ */
 export function readingXp(rows: ReadingXpRow[], rates: XpRates = DEFAULT_XP_RATES): XpGrant[] {
   return rows.flatMap((row) => {
     const translated = row.mode === "line-by-line"
       ? (row.lines ?? []).filter(line => line.translation?.trim()).length
       : countSentences(row.freeformTranslation);
+    const bankedWords = (row.wordNotes ?? []).filter(note => note.mySentenceId).length;
     const xp = translated * rates.readingTranslatedSentence
-      + (row.wordNotes?.length ?? 0) * rates.readingWordNote;
+      + bankedWords * rates.readingWordNote;
     return xp > 0
       ? [{
         area: "Reading" as const,

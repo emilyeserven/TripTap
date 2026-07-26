@@ -10,7 +10,7 @@ import { readingSessions, type ReadingSessionRow } from "@/db/schema";
 
 /** Coalesce a possibly-null stored mode to the default. */
 function toMode(mode: string | null): ReadingTranslationMode {
-  return mode === "line-by-line" ? "line-by-line" : "freeform";
+  return mode === "line-by-line" || mode === "summary" ? mode : "freeform";
 }
 
 /** Map a DB row to the shared `ReadingSession` wire type. */
@@ -25,6 +25,8 @@ function toReadingSession(row: ReadingSessionRow): ReadingSession {
     mode: toMode(row.mode),
     passage: row.passage,
     freeformTranslation: row.freeformTranslation,
+    freeformCorrection: row.freeformCorrection,
+    freeformNote: row.freeformNote,
     summary: row.summary,
     lines: row.lines ?? null,
     wordNotes: row.wordNotes ?? null,
@@ -50,6 +52,8 @@ function toInsert(input: CreateReadingSessionInput) {
     mode: input.mode ?? "freeform",
     passage: input.passage ?? null,
     freeformTranslation: input.freeformTranslation ?? null,
+    freeformCorrection: input.freeformCorrection ?? null,
+    freeformNote: input.freeformNote ?? null,
     summary: input.summary ?? null,
     lines: input.lines ?? null,
     wordNotes: input.wordNotes ?? null,
