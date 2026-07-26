@@ -64,6 +64,7 @@ import {
   todayDateString,
   tomorrowDateString,
 } from "@/lib/daily-lineup";
+import { learningDayKey } from "@/lib/goal-achievement";
 import { buildStartSuggestions } from "@/lib/start-recommendations";
 
 export const Route = createFileRoute("/start")({
@@ -179,6 +180,11 @@ function StartPage() {
   const today = todayDateString(new Date());
   // The stored lineup only counts when it was built for today; a stale one reads as an empty day.
   const lineup = effectiveLineup(startSettings.data?.lineup ?? null, today);
+  // Activities actually logged today, from the XP feed — the feed's day keys are shifted by the
+  // learner's day-start hour, so match on the same learning-day key (not the plain calendar `today`).
+  const completedToday = activity.data
+    ?.find(day => day.date === learningDayKey(new Date(), profile.data?.dayStartHour ?? 0))
+    ?.items ?? [];
   const favoriteResourceIds = startSettings.data?.favoriteResourceIds ?? [];
   const persistLineup = (next: typeof lineup) => {
     updateStartSettings.mutate({
@@ -391,6 +397,7 @@ function StartPage() {
         lineup={lineup}
         resources={resources}
         sectionsByResource={sectionsByResource}
+        completedToday={completedToday}
         onChange={persistLineup}
         onDefer={deferToTomorrow}
       />

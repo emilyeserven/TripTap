@@ -1,4 +1,5 @@
 import type {
+  ActivityItem,
   BookmarkResource,
   BookmarkSectionMatch,
   BookmarkSectionRef,
@@ -11,7 +12,7 @@ import type * as React from "react";
 import { useState } from "react";
 
 import { Link } from "@tanstack/react-router";
-import { ArrowDown, ArrowUp, CalendarArrowUp, ListChecksIcon, Pencil, Plus, X } from "lucide-react";
+import { ArrowDown, ArrowUp, CalendarArrowUp, Check, ListChecksIcon, Pencil, Plus, X } from "lucide-react";
 
 import { BookmarkPicker } from "@/components/BookmarkPicker";
 import { LearningAreaBadges } from "@/components/LearningAreaBadges";
@@ -26,6 +27,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Textarea } from "@/components/ui/textarea";
 import { customLineupItem, moveItem, removeItem, renameItem, toggleItemDone } from "@/lib/daily-lineup";
 import { retargetLineupItem, sessionLinkFor, sessionSearch } from "@/lib/start-recommendations";
+import { formatXp } from "@/lib/xp";
 
 /** Route a lineup item's snapshotted link data into a typed `Link` (same cast as suggestions). */
 function itemLinkProps(item: LineupItem): React.ComponentProps<typeof Link> {
@@ -33,6 +35,14 @@ function itemLinkProps(item: LineupItem): React.ComponentProps<typeof Link> {
     to: item.to,
     params: item.params,
     search: item.search,
+  } as unknown as React.ComponentProps<typeof Link>;
+}
+
+/** Route an activity item's deep-link into a typed `Link` (same cast as the lineup items). */
+function activityLinkProps(item: ActivityItem): React.ComponentProps<typeof Link> {
+  return {
+    to: item.to,
+    params: item.params,
   } as unknown as React.ComponentProps<typeof Link>;
 }
 
@@ -297,6 +307,7 @@ export function DailyLineupCard({
   lineup,
   resources,
   sectionsByResource,
+  completedToday = [],
   onChange,
   onDefer,
 }: {
@@ -305,6 +316,8 @@ export function DailyLineupCard({
   resources: BookmarkResource[];
   /** Each resource's sections (by bookmark id), for the per-item "swap section" picker. */
   sectionsByResource: Record<string, BookmarkSectionMatch[]>;
+  /** Activities actually logged today (from the XP activity feed), shown as a "Completed today" list. */
+  completedToday?: ActivityItem[];
   onChange: (next: DailyLineup) => void;
   /** Move an item out of today and onto tomorrow's carried-over list. */
   onDefer: (item: LineupItem) => void;
@@ -450,6 +463,42 @@ export function DailyLineupCard({
             items: [...lineup.items, item],
           })}
         />
+
+        {completedToday.length > 0 && (
+          <div className="space-y-2 border-t pt-3">
+            <p className="text-xs font-medium text-muted-foreground">
+              Completed today
+            </p>
+            <ul className="space-y-2">
+              {completedToday.map(item => (
+                <li
+                  key={`${item.to ?? ""}-${item.id ?? item.title ?? ""}`}
+                  className="
+                    flex items-center gap-2 rounded-md border p-2 text-sm
+                  "
+                >
+                  <Check className="size-4 shrink-0 text-green-600" />
+                  {item.to
+                    ? (
+                      <Link
+                        {...activityLinkProps(item)}
+                        className="
+                          flex-1 font-medium
+                          hover:underline
+                        "
+                      >
+                        {item.title ?? "Activity"}
+                      </Link>
+                    )
+                    : <span className="flex-1 font-medium">{item.title ?? "Activity"}</span>}
+                  <span className="text-xs text-muted-foreground tabular-nums">
+                    +{formatXp(item.xp)} XP
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
