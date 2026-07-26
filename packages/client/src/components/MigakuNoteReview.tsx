@@ -5,6 +5,7 @@ import type {
   MigakuImportDetail,
   MigakuNoteGroup,
 } from "@sentence-bank/types";
+import type { ReactNode } from "react";
 
 import { useMemo, useState } from "react";
 
@@ -97,29 +98,36 @@ function DedupPicker({
   );
 }
 
-/** The focus-word (vocab) block of a note group. */
-function VocabBlock({
+/**
+ * The shared header of a candidate block: the include toggle, a type badge, the "already in bank"
+ * marker, an audio player, and the dedup picker — identical between the vocab and sentence blocks.
+ */
+function ItemReviewHeader({
   importId,
   candidate,
   state,
   onChange,
+  includeLabel,
+  badge,
 }: {
   importId: string;
   candidate: MigakuCandidate;
   state: ItemState;
   onChange: (patch: Partial<ItemState>) => void;
+  includeLabel: string;
+  badge: ReactNode;
 }) {
   return (
-    <div className="space-y-3 rounded-md border p-3">
+    <>
       <div className="flex flex-wrap items-center gap-2">
         <Checkbox
           checked={state.include}
           onCheckedChange={v => onChange({
             include: v === true,
           })}
-          aria-label="Include this word"
+          aria-label={includeLabel}
         />
-        <Badge>Word</Badge>
+        {badge}
         {candidate.alreadyExists
           ? <Badge variant="secondary">Already in bank</Badge>
           : null}
@@ -144,6 +152,32 @@ function VocabBlock({
       </div>
 
       <MigakuReadingPreview reading={candidate.reading} />
+    </>
+  );
+}
+
+/** The focus-word (vocab) block of a note group. */
+function VocabBlock({
+  importId,
+  candidate,
+  state,
+  onChange,
+}: {
+  importId: string;
+  candidate: MigakuCandidate;
+  state: ItemState;
+  onChange: (patch: Partial<ItemState>) => void;
+}) {
+  return (
+    <div className="space-y-3 rounded-md border p-3">
+      <ItemReviewHeader
+        importId={importId}
+        candidate={candidate}
+        state={state}
+        onChange={onChange}
+        includeLabel="Include this word"
+        badge={<Badge>Word</Badge>}
+      />
 
       <div
         className="
@@ -216,39 +250,14 @@ function SentenceBlock({
 }) {
   return (
     <div className="space-y-3 rounded-md border p-3">
-      <div className="flex flex-wrap items-center gap-2">
-        <Checkbox
-          checked={state.include}
-          onCheckedChange={v => onChange({
-            include: v === true,
-          })}
-          aria-label="Include this sentence"
-        />
-        <Badge variant="outline">Sentence</Badge>
-        {candidate.alreadyExists
-          ? <Badge variant="secondary">Already in bank</Badge>
-          : null}
-        {candidate.hasAudio
-          ? (
-            <AudioPlayer
-              importId={importId}
-              candidateId={candidate.id}
-            />
-          )
-          : null}
-        {candidate.alreadyExists
-          ? (
-            <DedupPicker
-              value={state.dedupAction}
-              onChange={v => onChange({
-                dedupAction: v,
-              })}
-            />
-          )
-          : null}
-      </div>
-
-      <MigakuReadingPreview reading={candidate.reading} />
+      <ItemReviewHeader
+        importId={importId}
+        candidate={candidate}
+        state={state}
+        onChange={onChange}
+        includeLabel="Include this sentence"
+        badge={<Badge variant="outline">Sentence</Badge>}
+      />
 
       <div
         className="
