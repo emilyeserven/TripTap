@@ -490,6 +490,7 @@ export const readingSessions = pgTable("reading_sessions", {
   }),
   page: text("page"),
   mode: text("mode").notNull().default("freeform"),
+  difficulty: text("difficulty"),
   passage: text("passage"),
   freeformTranslation: text("freeform_translation"),
   freeformCorrection: text("freeform_correction"),

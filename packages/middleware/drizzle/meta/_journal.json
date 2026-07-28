@@ -407,6 +407,13 @@
       "when": 1785036897013,
       "tag": "0057_quiet_mantis",
       "breakpoints": true
+    },
+    {
+      "idx": 58,
+      "version": "7",
+      "when": 1785207981846,
+      "tag": "0058_skinny_grey_gargoyle",
+      "breakpoints": true
     }
   ]
 }

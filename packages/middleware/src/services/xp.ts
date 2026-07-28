@@ -126,6 +126,7 @@ interface ReadingXpRow {
   id: string;
   title: string;
   mode: string;
+  difficulty: string | null;
   freeformTranslation: string | null;
   freeformCorrection: string | null;
   freeformNote: string | null;
@@ -138,6 +139,20 @@ interface ReadingXpRow {
 
 /** A translation earns only this fraction of the full rate when it wasn't verified as correct. */
 const PARTIAL_TRANSLATION_CREDIT = 0.5;
+
+/** Difficulty modifier on a reading session's earned XP; unset/unknown scores as medium (×1). */
+function readingDifficultyMultiplier(difficulty: string | null): number {
+  switch (difficulty) {
+    case "very-easy":
+      return 0.25;
+    case "easy":
+      return 0.5;
+    case "hard":
+      return 1.25;
+    default:
+      return 1;
+  }
+}
 
 /**
  * Whether a translation earns full credit: it was self-assessed `correct`, or the learner did the
@@ -156,7 +171,8 @@ function translationEarnsFullCredit(
  * 2xp per translated sentence + 1xp per word note → Reading. A translation earns full credit when it's
  * self-assessed correct or backed by a reference translation/comment, and half credit otherwise (see
  * {@link translationEarnsFullCredit}). A word note only earns its XP once the learner has written a
- * sentence from it (`mySentenceId` set) — making a sentence is the sole way to bank word-note XP.
+ * sentence from it (`mySentenceId` set). The whole session's XP is then scaled by its difficulty
+ * modifier (see {@link readingDifficultyMultiplier}).
  */
 export function readingXp(rows: ReadingXpRow[], rates: XpRates = DEFAULT_XP_RATES): XpGrant[] {
   return rows.flatMap((row) => {
@@ -180,7 +196,8 @@ export function readingXp(rows: ReadingXpRow[], rates: XpRates = DEFAULT_XP_RATE
       translatedXp = sentences * rate;
     }
     const bankedWords = (row.wordNotes ?? []).filter(note => note.mySentenceId).length;
-    const xp = translatedXp + bankedWords * rates.readingWordNote;
+    const base = translatedXp + bankedWords * rates.readingWordNote;
+    const xp = base * readingDifficultyMultiplier(row.difficulty);
     return xp > 0
       ? [{
         area: "Reading" as const,
@@ -746,6 +763,7 @@ export async function loadXpGrants(): Promise<XpGrant[]> {
       id: readingSessions.id,
       title: readingSessions.title,
       mode: readingSessions.mode,
+      difficulty: readingSessions.difficulty,
       freeformTranslation: readingSessions.freeformTranslation,
       freeformCorrection: readingSessions.freeformCorrection,
       freeformNote: readingSessions.freeformNote,

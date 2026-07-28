@@ -9,6 +9,7 @@ import { TranslationVerdictEditor } from "@/components/TranslationVerdictEditor"
 import { Badge } from "@/components/ui/badge";
 import { useUpdateReadingSession } from "@/hooks/useReadingSessions";
 import { useSources } from "@/hooks/useSources";
+import { READING_DIFFICULTIES } from "@/lib/reading-difficulty";
 
 /** A labelled block of read-only text; renders nothing when empty. */
 function Field({
@@ -48,6 +49,13 @@ export function ReadingSessionView({
     : null;
   const wordNotes = session.wordNotes ?? [];
   const lines = session.lines ?? [];
+  const difficulty = READING_DIFFICULTIES.find(d => d.value === session.difficulty);
+  // Show the multiplier only when it actually changes XP (i.e. anything but medium).
+  const difficultyLabel = difficulty
+    ? difficulty.value === "medium"
+      ? difficulty.label
+      : `${difficulty.label} ${difficulty.multiplier}`
+    : null;
 
   /** Patch a single line in place and persist the whole lines array. */
   const saveLine = (id: string, patch: Partial<ReadingLine>) =>
@@ -94,6 +102,9 @@ export function ReadingSessionView({
                 ? "Just summarize"
                 : "Freeform"}
           </Badge>
+          {difficultyLabel
+            ? <Badge variant="outline">{difficultyLabel}</Badge>
+            : null}
           {sourceName && session.sourceId
             ? (
               <Link

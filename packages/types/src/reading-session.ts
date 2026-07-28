@@ -16,6 +16,12 @@ export type ReadingTranslationMode = "freeform" | "line-by-line" | "summary";
 /** The learner's self-assessment of how a translation went, against the reference translation. */
 export type TranslationVerdict = "correct" | "partial" | "incorrect";
 
+/**
+ * How hard the reading felt, a modifier on the session's earned XP: very-easy ×0.25, easy ×0.5,
+ * medium ×1 (the default), hard ×1.25. Null (legacy/unset) scores as medium.
+ */
+export type ReadingDifficulty = "very-easy" | "easy" | "medium" | "hard";
+
 /** How confident the learner was on a noted word: shaky on it, or didn't know it at all. */
 export type WordNoteStatus = "shaky" | "unknown";
 
@@ -76,6 +82,8 @@ export interface ReadingSession {
   page: string | null;
   /** Which translation workflow this session uses. */
   mode: ReadingTranslationMode;
+  /** How hard the reading felt — a modifier on earned XP; null (unset) scores as medium. */
+  difficulty: ReadingDifficulty | null;
   /** The original text being read; in line-by-line mode this is what gets split into `lines`. */
   passage: string | null;
   /** The whole-passage translation, used in "freeform" mode. */
@@ -113,6 +121,7 @@ export interface CreateReadingSessionInput {
   sourceId?: string | null;
   page?: string | null;
   mode?: ReadingTranslationMode;
+  difficulty?: ReadingDifficulty | null;
   passage?: string | null;
   freeformTranslation?: string | null;
   freeformCorrection?: string | null;

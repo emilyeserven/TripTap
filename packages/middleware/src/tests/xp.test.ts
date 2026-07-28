@@ -42,6 +42,7 @@ test("readingXp counts a verified translated line at 2xp and only banked word no
       id: "r1",
       title: "Reading 1",
       mode: "line-by-line",
+      difficulty: null,
       freeformTranslation: null,
       freeformCorrection: null,
       freeformNote: null,
@@ -120,6 +121,7 @@ test("readingXp counts a verified freeform translation by sentence", () => {
       id: "r1",
       title: "Reading 1",
       mode: "freeform",
+      difficulty: null,
       freeformTranslation: "First. Second。",
       // A reference translation → full credit for both sentences.
       freeformCorrection: "First reference. Second reference.",
@@ -152,6 +154,7 @@ test("readingXp gives half credit to un-verified translations (no correct verdic
       id: "r1",
       title: "Reading 1",
       mode: "line-by-line",
+      difficulty: null,
       freeformTranslation: null,
       freeformCorrection: null,
       freeformNote: null,
@@ -176,6 +179,30 @@ test("readingXp gives half credit to un-verified translations (no correct verdic
   ]);
   // 1 (unassessed) + 1 (incorrect, no ref) + 2 (incorrect but corrected) = 4.
   assert.equal(grants[0].xp, 4);
+});
+
+test("readingXp scales the whole session by its difficulty modifier", () => {
+  // A verified freeform sentence is worth 2 at medium; scale by each difficulty.
+  const at = (difficulty: string | null) =>
+    readingXp([{
+      id: "r1",
+      title: "R",
+      mode: "freeform",
+      difficulty,
+      freeformTranslation: "One.",
+      freeformCorrection: "One reference.",
+      freeformNote: null,
+      freeformVerdict: null,
+      lines: null,
+      wordNotes: null,
+      date: "2026-07-19",
+      createdAt: RECENT,
+    }])[0]?.xp ?? 0;
+  assert.equal(at("very-easy"), 0.5); // 2 × 0.25
+  assert.equal(at("easy"), 1); //        2 × 0.5
+  assert.equal(at("medium"), 2); //      2 × 1
+  assert.equal(at("hard"), 2.5); //      2 × 1.25
+  assert.equal(at(null), 2); //          unset → medium
 });
 
 test("writingXp counts sentences and corrections, skipping promoted my-sentences", () => {
@@ -613,6 +640,7 @@ test("grant functions honor overridden rates", () => {
     id: "r1",
     title: "Reading 1",
     mode: "line-by-line",
+    difficulty: null,
     freeformTranslation: null,
     freeformCorrection: null,
     freeformNote: null,
@@ -733,6 +761,7 @@ test("the four dated sessions stamp dateOnly for local-day bucketing", () => {
     id: "r1",
     title: "R",
     mode: "freeform",
+    difficulty: null,
     freeformTranslation: "One.",
     freeformCorrection: "One reference.",
     freeformNote: null,
