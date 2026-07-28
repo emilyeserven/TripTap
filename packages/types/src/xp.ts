@@ -107,6 +107,14 @@ export interface XpTodaySummary {
   areas: XpAreaSummary[];
 }
 
+/** Per-area XP earned on one learning-day (sparse — areas with no XP that day are omitted). */
+export interface XpDayAreas {
+  /** Learning-day key (YYYY-MM-DD), shifted by the caller's day-start hour to match the activity feed. */
+  date: string;
+  areas: { area: LearningArea;
+    xp: number; }[];
+}
+
 /** The response of `GET /api/xp/summary`. `areas` always holds all six areas, zero-filled. */
 export interface XpSummary {
   totalXp: number;
@@ -117,4 +125,6 @@ export interface XpSummary {
   today: XpTodaySummary;
   /** Per-area XP earned during the caller's previous local calendar day. */
   yesterday: XpTodaySummary;
+  /** Per-area XP for each of the last 14 learning-days, newest first — powers the radar's day picker. */
+  dailyAreas: XpDayAreas[];
 }
