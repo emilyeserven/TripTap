@@ -66,6 +66,7 @@ import {
 } from "@/lib/daily-lineup";
 import { learningDayKey } from "@/lib/goal-achievement";
 import { buildStartSuggestions } from "@/lib/start-recommendations";
+import { radarScaleMax } from "@/lib/xp";
 
 export const Route = createFileRoute("/start")({
   component: StartPage,
@@ -178,13 +179,26 @@ function StartPage() {
   const updateStartSettings = useUpdateStartSettings();
 
   const today = todayDateString(new Date());
+  const dayStartHour = profile.data?.dayStartHour ?? 0;
+  const todayKey = learningDayKey(new Date(), dayStartHour);
+  const yesterdayKey = learningDayKey(new Date(Date.now() - 86_400_000), dayStartHour);
   // The stored lineup only counts when it was built for today; a stale one reads as an empty day.
   const lineup = effectiveLineup(startSettings.data?.lineup ?? null, today);
   // Activities actually logged today, from the XP feed — the feed's day keys are shifted by the
   // learner's day-start hour, so match on the same learning-day key (not the plain calendar `today`).
-  const completedToday = activity.data
-    ?.find(day => day.date === learningDayKey(new Date(), profile.data?.dayStartHour ?? 0))
-    ?.items ?? [];
+  const completedToday = activity.data?.find(day => day.date === todayKey)?.items ?? [];
+
+  // Which day the radar plots; null falls back to today (so it tracks the rollover until a day is picked).
+  const [selectedDay, setSelectedDay] = useState<string | null>(null);
+  const activeDay = selectedDay ?? todayKey;
+  const dailyAreas = summary.data?.dailyAreas ?? [];
+  const activeDayAreas = dailyAreas.find(d => d.date === activeDay)?.areas ?? [];
+  const radarDayMax = radarScaleMax(dailyAreas);
+  const activeDayLabel = activeDay === todayKey
+    ? "Today"
+    : activeDay === yesterdayKey
+      ? "Yesterday"
+      : `${Number(activeDay.split("-")[1])}/${Number(activeDay.split("-")[2])}`;
   const favoriteResourceIds = startSettings.data?.favoriteResourceIds ?? [];
   const persistLineup = (next: typeof lineup) => {
     updateStartSettings.mutate({
@@ -546,14 +560,16 @@ function StartPage() {
                 <div className="space-y-4">
                   <XpRadarChart
                     areas={summary.data.areas}
-                    todayAreas={summary.data.today.areas}
-                    yesterdayAreas={summary.data.yesterday.areas}
-                    dailyXpGoal={profile.data?.dailyXpGoal ?? null}
+                    dayAreas={activeDayAreas}
+                    dayMax={radarDayMax}
+                    dayLabel={activeDayLabel}
                   />
                   <GoalAchievementStrip
                     activity={activity.data ?? []}
                     dailyXpGoal={profile.data?.dailyXpGoal ?? null}
-                    dayStartHour={profile.data?.dayStartHour ?? 0}
+                    dayStartHour={dayStartHour}
+                    selectedDate={activeDay}
+                    onSelectDay={setSelectedDay}
                   />
                 </div>
               )

@@ -39,6 +39,7 @@ const summary: XpSummary = {
       },
     }],
   },
+  dailyAreas: [],
 };
 
 describe("XpBreakdown", () => {

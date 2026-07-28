@@ -17,71 +17,66 @@ const areas: XpAreaSummary[] = (
 
 describe("XpRadarChart", () => {
   it("labels all six areas with their all-time XP", () => {
-    render(<XpRadarChart areas={areas} />);
+    render(
+      <XpRadarChart
+        areas={areas}
+        dayMax={20}
+        dayLabel="Today"
+      />,
+    );
     for (const area of areas) {
       expect(screen.getByText(area.area)).toBeInTheDocument();
       expect(screen.getAllByText(`${formatXp(area.xp)} xp`).length).toBeGreaterThan(0);
     }
   });
 
-  it("shows a legend with both series totals", () => {
+  it("shows a legend with the all-time and selected-day totals", () => {
     render(
       <XpRadarChart
         areas={areas}
-        todayAreas={[{
+        dayAreas={[{
           area: "Reading",
           xp: 3,
         }]}
+        dayMax={20}
+        dayLabel="Today"
       />,
     );
-    // All-time total across the six areas is 0+2+4+6+8+10 = 30; today total is 3.
+    // All-time total across the six areas is 0+2+4+6+8+10 = 30; the day total is 3.
     expect(screen.getByText("All-time")).toBeInTheDocument();
     expect(screen.getByText("30")).toBeInTheDocument();
     expect(screen.getByText("Today")).toBeInTheDocument();
     expect(screen.getByText("3")).toBeInTheDocument();
   });
 
-  it("describes both series for assistive tech", () => {
+  it("uses the day label and reports the fixed scale for assistive tech", () => {
     render(
       <XpRadarChart
         areas={areas}
-        todayAreas={[{
+        dayAreas={[{
           area: "Reading",
           xp: 3,
         }]}
+        dayMax={20}
+        dayLabel="Jul 27"
       />,
     );
     const svg = screen.getByRole("img");
     // Axes are reordered by RADAR_AREA_ORDER (Grammar first, Vocabulary last).
     expect(svg).toHaveAccessibleName(/All-time: Grammar 8.*Vocabulary 10/);
-    expect(svg).toHaveAccessibleName(/Today: Reading 3/);
+    expect(svg).toHaveAccessibleName(/Jul 27: Reading 3/);
+    expect(svg).toHaveAccessibleName(/scaled to a max of 20 xp/);
   });
 
-  it("reports no today series when nothing was earned today", () => {
-    render(<XpRadarChart areas={areas} />);
-    expect(screen.getByRole("img")).toHaveAccessibleName(/Today: none/);
-  });
-
-  it("adds a yesterday series and reports the shared daily scale", () => {
+  it("reports no day series when nothing was earned that day", () => {
     render(
       <XpRadarChart
         areas={areas}
-        todayAreas={[{
-          area: "Reading",
-          xp: 3,
-        }]}
-        yesterdayAreas={[{
-          area: "Grammar",
-          xp: 4,
-        }]}
-        dailyXpGoal={30}
+        dayMax={10}
+        dayLabel="Today"
       />,
     );
-    expect(screen.getByText("Yesterday")).toBeInTheDocument();
-    const svg = screen.getByRole("img");
-    expect(svg).toHaveAccessibleName(/Yesterday: Grammar 4/);
-    // The daily scale starts at two-thirds of the goal (30 → 20); the peak day-area (4) is under it.
-    expect(svg).toHaveAccessibleName(/daily max of 20 xp/);
+    expect(screen.getByRole("img")).toHaveAccessibleName(/Today: none/);
   });
 });
 
