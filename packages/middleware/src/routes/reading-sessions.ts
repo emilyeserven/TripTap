@@ -173,6 +173,10 @@ const createReadingSessionBody = {
       type: "string",
       enum: ["freeform", "line-by-line", "summary"],
     },
+    difficulty: {
+      type: ["string", "null"],
+      enum: ["very-easy", "easy", "medium", "hard", null],
+    },
     passage: {
       type: ["string", "null"],
     },

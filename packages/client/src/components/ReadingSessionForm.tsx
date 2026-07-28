@@ -1,5 +1,6 @@
 import type {
   BookmarkSectionRef,
+  ReadingDifficulty,
   ReadingLine,
   ReadingSession,
   ReadingTranslationMode,
@@ -10,6 +11,7 @@ import type {
 import { useState } from "react";
 
 import { BookmarkPicker } from "@/components/BookmarkPicker";
+import { ReadingDifficultyPicker } from "@/components/ReadingDifficultyPicker";
 import { ReadingLineEditor } from "@/components/ReadingLineEditor";
 import { ReadingWordNotesEditor } from "@/components/ReadingWordNotesEditor";
 import { TranslationVerdictPicker } from "@/components/TranslationVerdictPicker";
@@ -60,6 +62,9 @@ export function ReadingSessionForm({
   // it's no longer user-editable.
   const sourceId = session?.sourceId ?? null;
   const [page, setPage] = useState(session?.page ?? "");
+  const [difficulty, setDifficulty] = useState<ReadingDifficulty | null>(
+    session?.difficulty ?? "medium",
+  );
   const [mode, setMode] = useState<ReadingTranslationMode>(session?.mode ?? "freeform");
   const [passage, setPassage] = useState(session?.passage ?? "");
   const [freeformTranslation, setFreeformTranslation] = useState(
@@ -110,6 +115,7 @@ export function ReadingSessionForm({
       sourceId,
       page: page.trim() || null,
       mode,
+      difficulty,
       passage: passage.trim() || null,
       freeformTranslation: freeformTranslation.trim() || null,
       freeformCorrection: freeformCorrection.trim() || null,
@@ -187,6 +193,17 @@ export function ReadingSessionForm({
           value={page}
           onChange={e => setPage(e.target.value)}
           placeholder="p. 12–13, ch. 3, …"
+        />
+      </div>
+
+      <div className="space-y-1.5">
+        <Label>Difficulty</Label>
+        <p className="text-xs text-muted-foreground">
+          How hard the reading felt — scales the XP this session earns.
+        </p>
+        <ReadingDifficultyPicker
+          value={difficulty}
+          onChange={setDifficulty}
         />
       </div>
 
