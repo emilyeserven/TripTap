@@ -14,6 +14,7 @@ import type {
   WordNote,
   WritingCorrection,
   XpAreaSummary,
+  XpDayAreas,
   XpFeature,
   XpRates,
   XpSummary,
@@ -629,6 +630,16 @@ export function summarizeGrants(
   const today = localDateString(now, dayOffset);
   const yesterday = localDateString(new Date(now.getTime() - 24 * 60 * 60 * 1000), dayOffset);
 
+  // Per-area XP for each of the last 14 learning-days (newest first), for the radar's day picker.
+  const RADAR_DAY_WINDOW = 14;
+  const dayKeys: string[] = [];
+  const dayAreaTotals = new Map<string, Map<LearningArea, number>>();
+  for (let i = 0; i < RADAR_DAY_WINDOW; i += 1) {
+    const key = localDateString(new Date(now.getTime() - i * 86_400_000), dayOffset);
+    dayKeys.push(key);
+    dayAreaTotals.set(key, new Map());
+  }
+
   for (const grant of grants) {
     const area = areas.get(grant.area);
     if (!area) continue;
@@ -658,6 +669,10 @@ export function summarizeGrants(
           = (yesterdayArea.byFeature[grant.feature] ?? 0) + grant.xp;
         yesterdayArea.goalBonusXp = (yesterdayArea.goalBonusXp ?? 0) + bonus;
       }
+    }
+    const dayBucket = dayAreaTotals.get(grantDay);
+    if (dayBucket) {
+      dayBucket.set(grant.area, (dayBucket.get(grant.area) ?? 0) + grant.xp);
     }
   }
 
@@ -708,6 +723,15 @@ export function summarizeGrants(
       });
   const todayByArea = toDayAreas(todayAreas);
   const yesterdayByArea = toDayAreas(yesterdayAreas);
+  const dailyAreas: XpDayAreas[] = dayKeys.map(date => ({
+    date,
+    areas: [...(dayAreaTotals.get(date) ?? new Map<LearningArea, number>())]
+      .filter(([, xp]) => xp > 0)
+      .map(([area, xp]) => ({
+        area,
+        xp: roundXp(xp),
+      })),
+  }));
 
   const goalBonusTotal = roundXp(
     [...areas.values()].reduce((sum, area) => sum + (area.goalBonusXp ?? 0), 0),
@@ -733,6 +757,7 @@ export function summarizeGrants(
       totalXp: roundXp(yesterdayByArea.reduce((sum, area) => sum + area.xp, 0)),
       areas: yesterdayByArea,
     },
+    dailyAreas,
   };
 }
 

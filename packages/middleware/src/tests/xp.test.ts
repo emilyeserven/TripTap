@@ -897,6 +897,32 @@ test("summarizeGrants counts today against the caller's local calendar day", () 
       },
     },
   ]);
+  // dailyAreas mirrors the same day-bucketing over a 14-day window, newest first, area+xp only.
+  assert.equal(summary.dailyAreas.length, 14);
+  assert.equal(summary.dailyAreas[0].date, "2026-07-20");
+  assert.deepEqual(summary.dailyAreas[0].areas, [
+    {
+      area: "Reading",
+      xp: 4,
+    },
+    {
+      area: "Grammar",
+      xp: 0.25,
+    },
+  ]);
+  assert.equal(summary.dailyAreas[1].date, "2026-07-19");
+  assert.deepEqual(summary.dailyAreas[1].areas, [
+    {
+      area: "Reading",
+      xp: 2,
+    },
+    {
+      area: "Grammar",
+      xp: 0.5,
+    },
+  ]);
+  // Days with no logged XP are still present, just empty.
+  assert.deepEqual(summary.dailyAreas[2].areas, []);
 });
 
 test("summarizeGrants treats today as the UTC day when no offset is given", () => {
