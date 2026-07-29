@@ -19,7 +19,7 @@ Output **only the JSON object**, in a single ```json code block, and nothing els
 no explanation. The user copies it straight into the app's paste box, which validates it against the
 exact schema below. Unknown keys are rejected, so do not invent fields.
 
-## Two modes
+## Modes
 
 - **From a URL**: Read the page. Pull *real* sentences from it into `source` (keep the original
   wording; record where each came from in `where` and link it in `url`). Mine the useful words into
@@ -29,9 +29,16 @@ exact schema below. Unknown keys are rejected, so do not invent fields.
 - **From a topic**: Invent representative, natural content for the topic and target level. `source`
   can hold example sentences you compose; set `where` to a short label (e.g. "Example") and omit
   `url`.
+- **From an existing JSX lesson artifact**: When the current conversation already contains a lesson
+  built as a JSX/React artifact, don't re-author it — *convert* it into this JSON. Map its data
+  arrays onto the fields below (vocab/word cards → `vocab`, grammar patterns → `grammar`, example or
+  source sentences → `source`, culture/context cards → `culture`, filter groups → `categories`).
+  Carry over any dual-level Japanese: a simplified/N4 vocab gloss → `vocab[].easyJp`, a two-level
+  culture summary → `culture[].summaryEasy`/`summaryFull`, a yasashii restatement → `source[].easyJp`.
+  Preserve the original wording and array order; only reshape field names to match this contract.
 
 Aim for roughly 20–35 vocab, 3–5 grammar patterns, 5–15 source sentences, and 3–5 culture notes,
-scaled to the material.
+scaled to the material (or the full amount already present when converting an existing artifact).
 
 ## The JSON contract
 
