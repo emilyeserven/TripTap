@@ -1,11 +1,13 @@
 import type { SentenceTermRef } from "@sentence-bank/types";
 
+import { GrammarTermBadges } from "@/components/GrammarTermBadges";
 import { Badge } from "@/components/ui/badge";
 import { groupTermsByCategory, TERM_CATEGORIES } from "@/lib/terms";
 
 /**
  * The per-channel term badges shared by the My Sentence and Writing cards/views: one labelled group
- * per channel that has terms, each term as an outline badge titled with its source.
+ * per channel that has terms, each term as an outline badge titled with its source. Grammar tags are
+ * rendered by {@link GrammarTermBadges} so they link to their Grammar note (or offer to create one).
  */
 export function TermCategoryBadges({
   terms,
@@ -20,6 +22,15 @@ export function TermCategoryBadges({
       }) => {
         const grouped = termGroups[category];
         if (grouped.length === 0) return null;
+        // Grammar tags become links to their note (GrammarTermBadges supplies its own "Grammar:" label).
+        if (category === "grammar") {
+          return (
+            <GrammarTermBadges
+              key={category}
+              terms={grouped}
+            />
+          );
+        }
         return (
           <span
             key={category}

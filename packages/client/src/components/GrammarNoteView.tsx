@@ -13,10 +13,11 @@ import { Button } from "@/components/ui/button";
 import { useAiLessonContent } from "@/hooks/useAiLessons";
 import { useBookmarksByTag, useBookmarkSectionsByTag } from "@/hooks/useBookmarks";
 import { useGrammarNotes, useUpdateGrammarNote } from "@/hooks/useGrammarNotes";
+import { useMySentences } from "@/hooks/useMySentences";
 import { useQuestionSheets } from "@/hooks/useQuestionSheets";
 import { useSentences } from "@/hooks/useSentences";
 import { useBookmarksSettings } from "@/hooks/useSettings";
-import { bookmarkAppUrl } from "@/lib/bookmarks";
+import { bookmarkAppUrl, bookmarkTagUrl } from "@/lib/bookmarks";
 import { resourceDrillTags, resourceLearningAreas, resourceMaterialTypes } from "@/lib/collections";
 import { sentencesByGrammarTagId } from "@/lib/grammar-links";
 import { otherUsages, resolvedRelations, usageLabel } from "@/lib/grammar-notes";
@@ -49,6 +50,7 @@ export function GrammarNoteView({
   note: GrammarNote;
 }) {
   const sentences = useSentences();
+  const mySentences = useMySentences();
   const aiContent = useAiLessonContent();
   const allNotes = useGrammarNotes();
   const questionSheets = useQuestionSheets();
@@ -104,10 +106,15 @@ export function GrammarNoteView({
     [sentences.data],
   );
 
-  // Auto-gathered: every bank + AI-lesson sentence carrying this grammar tag.
+  // Auto-gathered: every bank + AI-lesson + own sentence carrying this grammar tag.
   const linkedByTag = useMemo(
-    () => sentencesByGrammarTagId(sentences.data ?? [], aiContent.data?.sentences ?? []),
-    [sentences.data, aiContent.data],
+    () =>
+      sentencesByGrammarTagId(
+        sentences.data ?? [],
+        aiContent.data?.sentences ?? [],
+        mySentences.data ?? [],
+      ),
+    [sentences.data, aiContent.data, mySentences.data],
   );
   const taggedSentences = linkedByTag.get(note.tagId) ?? [];
 
@@ -184,6 +191,20 @@ export function GrammarNoteView({
         {note.nuance
           ? <p className="mt-1 text-sm text-muted-foreground">{note.nuance}</p>
           : null}
+        <a
+          href={bookmarkTagUrl(bookmarksSettings.data?.endpointUrl, note.tagName)}
+          target="_blank"
+          rel="noreferrer"
+          className="
+            mt-1 inline-flex items-center gap-1 text-xs text-muted-foreground
+            hover:text-foreground hover:underline
+          "
+        >
+          <ExternalLink className="size-3" />
+          View “
+          {note.tagName}
+          ” tag in bookmarks
+        </a>
       </div>
 
       {note.summary
@@ -247,12 +268,27 @@ export function GrammarNoteView({
                   key={s.id}
                   className="space-y-0.5 border-l-2 pl-3 text-sm"
                 >
-                  <p>{s.text}</p>
+                  {s.mine
+                    ? (
+                      <Link
+                        to="/my-sentences/$id"
+                        params={{
+                          id: s.id,
+                        }}
+                        className="hover:underline"
+                      >
+                        {s.text}
+                      </Link>
+                    )
+                    : <p>{s.text}</p>}
                   {s.translation
                     ? <p className="text-muted-foreground">{s.translation}</p>
                     : null}
                   {s.aiLessonTitle
                     ? <p className="text-xs text-muted-foreground">{s.aiLessonTitle}</p>
+                    : null}
+                  {s.mine
+                    ? <p className="text-xs text-muted-foreground">Your sentence</p>
                     : null}
                 </li>
               ))}
