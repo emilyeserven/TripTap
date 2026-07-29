@@ -7,6 +7,7 @@ import { ExternalLink, ImageOff, Plus, Star } from "lucide-react";
 import { toast } from "sonner";
 
 import { AiLessonBadge } from "@/components/ai-lesson/AiLessonBadge";
+import { GrammarFailureBadge } from "@/components/GrammarFailureBadge";
 import { Markdown } from "@/components/Markdown";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -187,6 +188,7 @@ export function GrammarNoteView({
               `}
             />
           </Button>
+          <GrammarFailureBadge tagId={note.tagId} />
         </div>
         {note.nuance
           ? <p className="mt-1 text-sm text-muted-foreground">{note.nuance}</p>

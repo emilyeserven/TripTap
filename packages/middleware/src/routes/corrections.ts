@@ -15,6 +15,7 @@ import {
   deleteCorrection,
   getCorrection,
   getCorrectionLog,
+  grammarFailureStats,
   listCorrections,
   triageCorrection,
   TriageValidationError,
@@ -166,6 +167,17 @@ const listCorrectionsQuery = {
   },
 } as const;
 
+const grammarStatsQuery = {
+  type: "object",
+  required: ["grammarTagId"],
+  properties: {
+    grammarTagId: {
+      type: "string",
+      minLength: 1,
+    },
+  },
+} as const;
+
 const importKindEnum = ["my_sentence", "writing", "answer_sheet"] as const;
 
 const importableQuery = {
@@ -234,6 +246,19 @@ export async function correctionsRoutes(app: FastifyInstance): Promise<void> {
       tags: ["corrections"],
     },
   }, async () => getCorrectionLog());
+
+  // Failure history for one grammar tag — powers the "broken N times" badge on a grammar note.
+  app.get("/api/corrections/grammar-stats", {
+    schema: {
+      tags: ["corrections"],
+      querystring: grammarStatsQuery,
+    },
+  }, async (req) => {
+    const {
+      grammarTagId,
+    } = req.query as { grammarTagId: string };
+    return grammarFailureStats(grammarTagId);
+  });
 
   // Not-yet-imported (original, corrected) pairs from existing entities, for the import picker.
   app.get("/api/corrections/importable", {

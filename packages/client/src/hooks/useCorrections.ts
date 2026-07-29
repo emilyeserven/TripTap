@@ -11,7 +11,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { useEntityCacheSync } from "./useEntityCacheSync";
-import { correctionsApi } from "../lib/api";
+import { correctionsApi, ruleTagsApi } from "../lib/api";
 
 const CORRECTIONS_KEY = ["corrections"] as const;
 const CORRECTION_LOG_KEY = ["corrections", "log"] as const;
@@ -34,6 +34,22 @@ export function useCorrectionLog() {
   return useQuery({
     queryKey: CORRECTION_LOG_KEY,
     queryFn: () => correctionsApi.log(),
+  });
+}
+
+export function useRuleTags() {
+  return useQuery({
+    queryKey: ["rule-tags"],
+    queryFn: () => ruleTagsApi.list(),
+  });
+}
+
+/** Failure history for a grammar tag; disabled (no fetch) when no tag id is given. */
+export function useGrammarFailureStats(grammarTagId: string | null | undefined) {
+  return useQuery({
+    queryKey: ["corrections", "grammar-stats", grammarTagId],
+    queryFn: () => correctionsApi.grammarStats(grammarTagId ?? ""),
+    enabled: Boolean(grammarTagId),
   });
 }
 

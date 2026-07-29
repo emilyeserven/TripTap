@@ -442,6 +442,13 @@
       "when": 1785364827464,
       "tag": "0062_bitter_leo",
       "breakpoints": true
+    },
+    {
+      "idx": 63,
+      "version": "7",
+      "when": 1785365683329,
+      "tag": "0063_unique_jubilee",
+      "breakpoints": true
     }
   ]
 }

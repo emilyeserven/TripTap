@@ -231,6 +231,13 @@ export interface TriageCorrectionInput {
   path: TriageNodeId[];
   ruleTagKey?: string | null;
   scene?: string | null;
+  /**
+   * For a `rule_gap`, the rule tag's display + optional grammar link. The server upserts a
+   * {@link RuleTag} from these so the tag exists (with a label and any grammar join) after triage.
+   */
+  ruleTagLabel?: string | null;
+  grammarTagId?: string | null;
+  grammarTagName?: string | null;
 }
 
 /* ── Derived error log (computed on read; never persisted — counts would drift) ──────────────────── */

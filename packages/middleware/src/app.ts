@@ -25,6 +25,7 @@ import { practiceSentenceRoutes } from "@/routes/practice-sentences";
 import { questionSheetRoutes } from "@/routes/question-sheets";
 import { readingSessionsRoutes } from "@/routes/reading-sessions";
 import { renshuuRoutes } from "@/routes/renshuu";
+import { ruleTagsRoutes } from "@/routes/rule-tags";
 import { sentenceRoutes } from "@/routes/sentences";
 import { settingsRoutes } from "@/routes/settings";
 import { shadowingListRoutes } from "@/routes/shadowing-lists";
@@ -144,6 +145,10 @@ export async function buildApp(): Promise<FastifyInstance> {
           description: "Correction triage — capture, triage, and the derived error log",
         },
         {
+          name: "rule-tags",
+          description: "Correction triage — the global rule-error taxonomy",
+        },
+        {
           name: "health",
           description: "Service health",
         },
@@ -225,6 +230,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(drillSessionRoutes);
   await app.register(theorySessionRoutes);
   await app.register(correctionsRoutes);
+  await app.register(ruleTagsRoutes);
   await app.register(sourceRoutes);
   await app.register(vocabRoutes);
   await app.register(captureRoutes);

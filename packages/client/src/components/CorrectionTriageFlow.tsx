@@ -1,9 +1,11 @@
+import type { RuleTagSelection } from "@/components/RuleTagPicker";
 import type { Correction, CorrectionBucket, TriageNodeId } from "@sentence-bank/types";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { isCorrectionBucket, TRIAGE_TREE } from "@sentence-bank/types";
 
+import { RuleTagPicker } from "@/components/RuleTagPicker";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -61,13 +63,13 @@ export function CorrectionTriageFlow({
 }) {
   const triage = useTriageCorrection();
   const [answers, setAnswers] = useState<Answer[]>([]);
-  const [ruleTagKey, setRuleTagKey] = useState("");
+  const [ruleTag, setRuleTag] = useState<RuleTagSelection | null>(null);
   const [scene, setScene] = useState("");
 
   // Reset the flow whenever we advance to a new correction.
   useEffect(() => {
     setAnswers([]);
-    setRuleTagKey("");
+    setRuleTag(null);
     setScene("");
   }, [correction.id]);
 
@@ -93,7 +95,7 @@ export function CorrectionTriageFlow({
   const canConfirm
     = bucket === "slip"
       || bucket === "collocation"
-      || (bucket === "rule_gap" && ruleTagKey.trim().length > 0)
+      || (bucket === "rule_gap" && Boolean(ruleTag?.key))
       || (bucket === "register" && scene.trim().length > 0);
 
   const confirm = useCallback(async () => {
@@ -103,12 +105,15 @@ export function CorrectionTriageFlow({
       input: {
         bucket,
         path: answers.map(a => a.node),
-        ruleTagKey: bucket === "rule_gap" ? ruleTagKey.trim() : null,
+        ruleTagKey: bucket === "rule_gap" ? ruleTag?.key ?? null : null,
+        ruleTagLabel: bucket === "rule_gap" ? ruleTag?.label ?? null : null,
+        grammarTagId: bucket === "rule_gap" ? ruleTag?.grammarTagId ?? null : null,
+        grammarTagName: bucket === "rule_gap" ? ruleTag?.grammarTagName ?? null : null,
         scene: bucket === "register" ? scene.trim() : null,
       },
     });
     onDone();
-  }, [answers, bucket, canConfirm, correction.id, onDone, ruleTagKey, scene, triage]);
+  }, [answers, bucket, canConfirm, correction.id, onDone, ruleTag, scene, triage]);
 
   // Keyboard control: 1/2 pick options on a question, Backspace undoes, Enter confirms a bucket.
   useEffect(() => {
@@ -205,18 +210,7 @@ export function CorrectionTriageFlow({
               </div>
 
               {bucket === "rule_gap"
-                ? (
-                  <div className="space-y-1.5">
-                    <Label htmlFor="triage-rule-tag">Rule tag</Label>
-                    <Input
-                      id="triage-rule-tag"
-                      autoFocus
-                      value={ruleTagKey}
-                      onChange={e => setRuleTagKey(e.target.value)}
-                      placeholder="transitivity"
-                    />
-                  </div>
-                )
+                ? <RuleTagPicker onChange={setRuleTag} />
                 : null}
 
               {bucket === "register"

@@ -1006,3 +1006,22 @@ export const corrections = pgTable("corrections", {
 
 export type CorrectionRow = typeof corrections.$inferSelect;
 export type NewCorrectionRow = typeof corrections.$inferInsert;
+
+/**
+ * `rule_tags` — the global taxonomy of nameable grammar-error categories that recurring rule-gap
+ * corrections group under. `key` is a stable slug primary key (what corrections reference via
+ * `triage.ruleTagKey`). `grammar_tag_id` optionally links a tag to a Grammar Source tag
+ * (`grammar_notes.tag_id`), which is what lets a grammar note surface its failure history.
+ */
+export const ruleTags = pgTable("rule_tags", {
+  key: text("key").primaryKey(),
+  label: text("label").notNull(),
+  grammarTagId: text("grammar_tag_id"),
+  grammarTagName: text("grammar_tag_name"),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+});
+
+export type RuleTagRow = typeof ruleTags.$inferSelect;
+export type NewRuleTagRow = typeof ruleTags.$inferInsert;

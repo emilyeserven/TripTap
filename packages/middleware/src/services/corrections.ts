@@ -5,12 +5,14 @@ import type {
   CorrectionLogEntry,
   CorrectionRuleGapGroup,
   CreateCorrectionInput,
+  GrammarFailureStats,
   TriageCorrectionInput,
   UpdateCorrectionInput,
 } from "@sentence-bank/types";
 import { DEFAULT_RECURRENCE_GATE } from "@sentence-bank/types";
 import { db } from "@/db";
-import { corrections, type CorrectionRow } from "@/db/schema";
+import { corrections, type CorrectionRow, ruleTags } from "@/db/schema";
+import { upsertRuleTag } from "@/services/rule-tags";
 
 /**
  * Thrown when a triage verdict is missing a field its bucket requires (a rule tag for `rule_gap`, a
@@ -140,10 +142,22 @@ export async function triageCorrection(
       : null;
   }
 
+  const ruleTagKey = input.bucket === "rule_gap" ? input.ruleTagKey!.trim() : null;
+  // Make sure the rule tag exists (with its label and any grammar link) so the log and grammar
+  // badges can resolve it — a first sighting inserts it, a repeat refreshes the label/link.
+  if (ruleTagKey) {
+    await upsertRuleTag({
+      key: ruleTagKey,
+      label: input.ruleTagLabel ?? undefined,
+      grammarTagId: input.grammarTagId ?? undefined,
+      grammarTagName: input.grammarTagName ?? undefined,
+    });
+  }
+
   const triage = {
     bucket: input.bucket,
     path: input.path,
-    ruleTagKey: input.bucket === "rule_gap" ? input.ruleTagKey!.trim() : null,
+    ruleTagKey,
     scene: input.bucket === "register" ? input.scene!.trim() : null,
     triagedAt: new Date().toISOString(),
     producedCardIds: [] as string[],
@@ -174,11 +188,15 @@ function toLogEntry(row: CorrectionRow): CorrectionLogEntry {
  * mistakes are flat lists. Counts are computed here, never persisted, so they can't drift.
  */
 export async function getCorrectionLog(gate = DEFAULT_RECURRENCE_GATE): Promise<CorrectionLog> {
-  const rows = await db
-    .select()
-    .from(corrections)
-    .where(isNotNull(corrections.triage))
-    .orderBy(desc(corrections.createdAt));
+  const [rows, tags] = await Promise.all([
+    db
+      .select()
+      .from(corrections)
+      .where(isNotNull(corrections.triage))
+      .orderBy(desc(corrections.createdAt)),
+    db.select().from(ruleTags),
+  ]);
+  const tagByKey = new Map(tags.map(t => [t.key, t]));
 
   const groups = new Map<string, CorrectionRuleGapGroup>();
   const collocations: CorrectionLogEntry[] = [];
@@ -201,12 +219,12 @@ export async function getCorrectionLog(gate = DEFAULT_RECURRENCE_GATE): Promise<
     if (!key) continue;
     let group = groups.get(key);
     if (!group) {
+      const tag = tagByKey.get(key);
       group = {
         ruleTagKey: key,
-        // Enriched from the rule_tags table in M4; the client falls back to the key for now.
-        ruleTagLabel: null,
-        grammarTagId: null,
-        grammarTagName: null,
+        ruleTagLabel: tag?.label ?? null,
+        grammarTagId: tag?.grammarTagId ?? null,
+        grammarTagName: tag?.grammarTagName ?? null,
         occurrenceCount: 0,
         lastSeenAt: entry.createdAt,
         meetsGate: false,
@@ -233,5 +251,55 @@ export async function getCorrectionLog(gate = DEFAULT_RECURRENCE_GATE): Promise<
     ruleGaps,
     collocations,
     registers,
+  };
+}
+
+/**
+ * Failure history for one Grammar Source tag: how many kept rule-gap corrections carry a rule tag
+ * linked to it, and when the most recent was. Powers the "you've broken this N times" badge on a
+ * grammar note (spec §5, §11). Returns a zero count when nothing links to the tag.
+ */
+export async function grammarFailureStats(grammarTagId: string): Promise<GrammarFailureStats> {
+  // Rule-tag keys linked to this grammar tag.
+  const linkedTags = await db
+    .select({
+      key: ruleTags.key,
+    })
+    .from(ruleTags)
+    .where(eq(ruleTags.grammarTagId, grammarTagId));
+  const keys = new Set(linkedTags.map(t => t.key));
+  if (keys.size === 0) {
+    return {
+      grammarTagId,
+      count: 0,
+      lastSeenAt: null,
+    };
+  }
+
+  const rows = await db
+    .select({
+      triage: corrections.triage,
+      createdAt: corrections.createdAt,
+    })
+    .from(corrections)
+    .where(isNotNull(corrections.triage))
+    .orderBy(desc(corrections.createdAt));
+
+  let count = 0;
+  let lastSeenAt: string | null = null;
+  for (const row of rows) {
+    const triage = row.triage;
+    if (!triage || triage.bucket !== "rule_gap") continue;
+    if (!triage.ruleTagKey || !keys.has(triage.ruleTagKey)) continue;
+    count += 1;
+    const iso
+      = row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt);
+    if (!lastSeenAt || iso > lastSeenAt) lastSeenAt = iso;
+  }
+
+  return {
+    grammarTagId,
+    count,
+    lastSeenAt,
   };
 }
