@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { Check, Copy } from "lucide-react";
+import { Check, Copy, Download } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -29,12 +29,27 @@ export function SkillInstallCard() {
     }
   }
 
+  /** Save the skill straight to a file, ready to drop at the install path below. */
+  function download() {
+    const blob = new Blob([skillMd], {
+      type: "text/markdown",
+    });
+    const url = URL.createObjectURL(blob);
+    const anchor = globalThis.document.createElement("a");
+    anchor.href = url;
+    anchor.download = "SKILL.md";
+    anchor.click();
+    URL.revokeObjectURL(url);
+  }
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>AI-Lesson-authoring skill</CardTitle>
         <CardDescription>
-          Copy this into Claude so it can generate valid AI Lesson JSON. Save it as
+          Copy or download this into Claude so it can generate valid AI Lesson JSON — including
+          dual-level N4/native content, and converting an existing JSX lesson artifact into the JSON.
+          Save it as
           {" "}
           <code className="rounded-sm bg-muted px-1 py-0.5 text-xs">
             ~/.claude/skills/sentence-bank-lesson/SKILL.md
@@ -50,13 +65,22 @@ export function SkillInstallCard() {
           className="font-mono text-xs"
           aria-label="AI Lesson skill (SKILL.md)"
         />
-        <Button
-          variant="outline"
-          onClick={copy}
-        >
-          {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
-          {copied ? "Copied" : "Copy SKILL.md"}
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant="outline"
+            onClick={copy}
+          >
+            {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
+            {copied ? "Copied" : "Copy SKILL.md"}
+          </Button>
+          <Button
+            variant="outline"
+            onClick={download}
+          >
+            <Download className="size-4" />
+            Download .md
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );
