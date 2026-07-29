@@ -72,6 +72,7 @@ const sentence: Sentence = {
   hasAudio: false,
   hasImage: false,
   vocabCount: 0,
+  shadowingCandidate: false,
   createdAt: "2026-06-01T00:00:00.000Z",
 };
 

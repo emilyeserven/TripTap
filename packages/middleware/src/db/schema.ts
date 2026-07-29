@@ -102,6 +102,8 @@ export const sentences = pgTable("sentences", {
   audioMime: text("audio_mime"),
   imageKey: text("image_key"),
   imageMime: text("image_mime"),
+  // Marked by the learner as a good sentence to shadow (practise aloud).
+  shadowingCandidate: boolean("shadowing_candidate").notNull().default(false),
   createdAt: timestamp("created_at", {
     withTimezone: true,
   }).notNull().defaultNow(),
@@ -282,6 +284,8 @@ export const mySentences = pgTable("my_sentences", {
   reasons: jsonb("reasons").$type<DrillMistakeReasonRef[]>(),
   // Learner-marked correct/incorrect spans of `text` (offsets into the original). Null until any are made.
   marks: jsonb("marks").$type<SentenceMark[]>(),
+  // Marked by the learner as a good sentence to shadow (practise aloud).
+  shadowingCandidate: boolean("shadowing_candidate").notNull().default(false),
   createdAt: timestamp("created_at", {
     withTimezone: true,
   }).notNull().defaultNow(),

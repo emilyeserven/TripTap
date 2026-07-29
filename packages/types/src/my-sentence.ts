@@ -42,6 +42,8 @@ export interface MySentence {
   reasons: DrillMistakeReasonRef[] | null;
   /** Learner-marked correct/incorrect spans of `text` (offsets into the original); null if none. */
   marks: SentenceMark[] | null;
+  /** Marked by the learner as a good sentence to shadow (practise aloud). */
+  shadowingCandidate: boolean;
   /** ISO-8601 timestamp of when the sentence was added. */
   createdAt: string;
 }
@@ -62,6 +64,7 @@ export interface CreateMySentenceInput {
   terms?: SentenceTermRef[] | null;
   reasons?: DrillMistakeReasonRef[] | null;
   marks?: SentenceMark[] | null;
+  shadowingCandidate?: boolean;
 }
 
 /** Payload for partially updating a my-sentence. */
