@@ -118,6 +118,49 @@ export async function deleteCorrection(id: string): Promise<boolean> {
 }
 
 /**
+ * How many kept rule-gap corrections carry a given rule tag — the count the recurrence gate checks
+ * (spec §6 inv.1). Computed on read, never persisted.
+ */
+export async function ruleTagOccurrenceCount(ruleTagKey: string): Promise<number> {
+  const rows = await db
+    .select({
+      triage: corrections.triage,
+    })
+    .from(corrections)
+    .where(isNotNull(corrections.triage));
+  return rows.filter(r => r.triage?.bucket === "rule_gap" && r.triage.ruleTagKey === ruleTagKey)
+    .length;
+}
+
+/**
+ * Record that a card/group was produced from the given corrections, appending its id to each one's
+ * `triage.producedCardIds` (deduped). Best-effort — a correction that was deleted or never triaged is
+ * skipped.
+ */
+export async function linkProducedCards(
+  correctionIds: string[],
+  cardId: string,
+): Promise<void> {
+  for (const id of correctionIds) {
+    const [row] = await db
+      .select({
+        triage: corrections.triage,
+      })
+      .from(corrections)
+      .where(eq(corrections.id, id));
+    if (!row?.triage) continue;
+    if (row.triage.producedCardIds.includes(cardId)) continue;
+    const triage = {
+      ...row.triage,
+      producedCardIds: [...row.triage.producedCardIds, cardId],
+    };
+    await db.update(corrections).set({
+      triage,
+    }).where(eq(corrections.id, id));
+  }
+}
+
+/**
  * Apply a triage verdict. A `slip` **deletes** the correction (it produces zero cards and shouldn't
  * accumulate); every other bucket persists the verdict. Returns `{ deleted: true }` for a slip, the
  * updated correction otherwise, or `null` when the correction doesn't exist.
@@ -177,6 +220,7 @@ function toLogEntry(row: CorrectionRow): CorrectionLogEntry {
     correctionId: row.id,
     original: row.original,
     corrected: row.corrected,
+    batchId: row.batchId,
     createdAt:
       row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
   };

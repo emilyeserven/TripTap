@@ -1,5 +1,6 @@
 import type { CorrectionLog, CorrectionLogEntry } from "@sentence-bank/types";
 
+import { CollocationCardBuilder } from "@/components/CollocationCardBuilder";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -102,9 +103,9 @@ export function CorrectionLogView({
             <h2 className="text-sm font-semibold text-muted-foreground">Collocations</h2>
             <Card>
               <CardContent className="pt-6">
-                <ul className="space-y-1">
+                <ul className="space-y-3">
                   {log.collocations.map(entry => (
-                    <EntryLine
+                    <CollocationCardBuilder
                       key={entry.correctionId}
                       entry={entry}
                     />

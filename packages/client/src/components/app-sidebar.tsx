@@ -236,6 +236,11 @@ const actionItems = [
         to: "/corrections/log",
         icon: ScrollTextIcon,
       },
+      {
+        title: "Rule Groups",
+        to: "/corrections/groups",
+        icon: LayersIcon,
+      },
     ],
   },
   {

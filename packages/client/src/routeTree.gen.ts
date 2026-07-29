@@ -78,6 +78,7 @@ import { Route as DrillSessionsNewRouteImport } from './routes/drill-sessions.ne
 import { Route as DrillSessionsIdRouteImport } from './routes/drill-sessions.$id'
 import { Route as CorrectionsTriageRouteImport } from './routes/corrections.triage'
 import { Route as CorrectionsLogRouteImport } from './routes/corrections.log'
+import { Route as CorrectionsGroupsRouteImport } from './routes/corrections.groups'
 import { Route as CapturesIdRouteImport } from './routes/captures.$id'
 import { Route as AnswerSheetsNewRouteImport } from './routes/answer-sheets.new'
 import { Route as AnswerSheetsIdRouteImport } from './routes/answer-sheets.$id'
@@ -455,6 +456,11 @@ const CorrectionsLogRoute = CorrectionsLogRouteImport.update({
   path: '/corrections/log',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CorrectionsGroupsRoute = CorrectionsGroupsRouteImport.update({
+  id: '/corrections/groups',
+  path: '/corrections/groups',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CapturesIdRoute = CapturesIdRouteImport.update({
   id: '/captures/$id',
   path: '/captures/$id',
@@ -630,6 +636,7 @@ export interface FileRoutesByFullPath {
   '/answer-sheets/$id': typeof AnswerSheetsIdRouteWithChildren
   '/answer-sheets/new': typeof AnswerSheetsNewRoute
   '/captures/$id': typeof CapturesIdRoute
+  '/corrections/groups': typeof CorrectionsGroupsRoute
   '/corrections/log': typeof CorrectionsLogRoute
   '/corrections/triage': typeof CorrectionsTriageRoute
   '/drill-sessions/$id': typeof DrillSessionsIdRouteWithChildren
@@ -731,6 +738,7 @@ export interface FileRoutesByTo {
   '/ai-lessons/new': typeof AiLessonsNewRoute
   '/answer-sheets/new': typeof AnswerSheetsNewRoute
   '/captures/$id': typeof CapturesIdRoute
+  '/corrections/groups': typeof CorrectionsGroupsRoute
   '/corrections/log': typeof CorrectionsLogRoute
   '/corrections/triage': typeof CorrectionsTriageRoute
   '/drill-sessions/new': typeof DrillSessionsNewRoute
@@ -822,6 +830,7 @@ export interface FileRoutesById {
   '/answer-sheets/$id': typeof AnswerSheetsIdRouteWithChildren
   '/answer-sheets/new': typeof AnswerSheetsNewRoute
   '/captures/$id': typeof CapturesIdRoute
+  '/corrections/groups': typeof CorrectionsGroupsRoute
   '/corrections/log': typeof CorrectionsLogRoute
   '/corrections/triage': typeof CorrectionsTriageRoute
   '/drill-sessions/$id': typeof DrillSessionsIdRouteWithChildren
@@ -926,6 +935,7 @@ export interface FileRouteTypes {
     | '/answer-sheets/$id'
     | '/answer-sheets/new'
     | '/captures/$id'
+    | '/corrections/groups'
     | '/corrections/log'
     | '/corrections/triage'
     | '/drill-sessions/$id'
@@ -1027,6 +1037,7 @@ export interface FileRouteTypes {
     | '/ai-lessons/new'
     | '/answer-sheets/new'
     | '/captures/$id'
+    | '/corrections/groups'
     | '/corrections/log'
     | '/corrections/triage'
     | '/drill-sessions/new'
@@ -1117,6 +1128,7 @@ export interface FileRouteTypes {
     | '/answer-sheets/$id'
     | '/answer-sheets/new'
     | '/captures/$id'
+    | '/corrections/groups'
     | '/corrections/log'
     | '/corrections/triage'
     | '/drill-sessions/$id'
@@ -1220,6 +1232,7 @@ export interface RootRouteChildren {
   AnswerSheetsIdRoute: typeof AnswerSheetsIdRouteWithChildren
   AnswerSheetsNewRoute: typeof AnswerSheetsNewRoute
   CapturesIdRoute: typeof CapturesIdRoute
+  CorrectionsGroupsRoute: typeof CorrectionsGroupsRoute
   CorrectionsLogRoute: typeof CorrectionsLogRoute
   CorrectionsTriageRoute: typeof CorrectionsTriageRoute
   DrillSessionsIdRoute: typeof DrillSessionsIdRouteWithChildren
@@ -1764,6 +1777,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CorrectionsLogRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/corrections/groups': {
+      id: '/corrections/groups'
+      path: '/corrections/groups'
+      fullPath: '/corrections/groups'
+      preLoaderRoute: typeof CorrectionsGroupsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/captures/$id': {
       id: '/captures/$id'
       path: '/captures/$id'
@@ -2179,6 +2199,7 @@ const rootRouteChildren: RootRouteChildren = {
   AnswerSheetsIdRoute: AnswerSheetsIdRouteWithChildren,
   AnswerSheetsNewRoute: AnswerSheetsNewRoute,
   CapturesIdRoute: CapturesIdRoute,
+  CorrectionsGroupsRoute: CorrectionsGroupsRoute,
   CorrectionsLogRoute: CorrectionsLogRoute,
   CorrectionsTriageRoute: CorrectionsTriageRoute,
   DrillSessionsIdRoute: DrillSessionsIdRouteWithChildren,

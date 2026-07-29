@@ -247,6 +247,8 @@ export interface CorrectionLogEntry {
   correctionId: string;
   original: string;
   corrected: string;
+  /** The capture batch — needed to file a chunk card produced from this correction under its cap. */
+  batchId: string;
   createdAt: string;
 }
 

@@ -2,7 +2,9 @@ import type {
   AiLessonSection,
   AnswerSheetEntry,
   BookmarkSectionRef,
+  ChunkCardFormat,
   CleanedBlocks,
+  ContrastPair,
   CorrectionImportRef,
   CorrectionSource,
   DrillMistake,
@@ -27,6 +29,7 @@ import type {
   QuestionSheetGrid,
   QuestionSheetQuestion,
   ReadingLine,
+  RuleGroupStatus,
   SentenceMark,
   SentenceTermRef,
   ShadowingSegment,
@@ -1025,3 +1028,61 @@ export const ruleTags = pgTable("rule_tags", {
 
 export type RuleTagRow = typeof ruleTags.$inferSelect;
 export type NewRuleTagRow = typeof ruleTags.$inferInsert;
+
+/**
+ * `rule_groups` — the 4–6 minimal-contrast-pair artifact a recurring rule tag earns. `rule_tag_key`
+ * is unique (one group per tag; a reappearing tag reactivates its group rather than duplicating it —
+ * spec §6 inv.7). `items` are the contrast pairs (jsonb); `status` is an authoring lifecycle, not a
+ * scheduler — Anki owns review after export.
+ */
+export const ruleGroups = pgTable("rule_groups", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  ruleTagKey: text("rule_tag_key").notNull().unique().references((): AnyPgColumn => ruleTags.key, {
+    onDelete: "cascade",
+  }),
+  axis: text("axis").notNull(),
+  status: text("status").$type<RuleGroupStatus>().notNull().default("proposed"),
+  items: jsonb("items").$type<ContrastPair[]>().notNull(),
+  seedCorrectionIds: jsonb("seed_correction_ids").$type<string[]>().notNull().default([]),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+  exportedAt: timestamp("exported_at", {
+    withTimezone: true,
+  }),
+  suspendedAt: timestamp("suspended_at", {
+    withTimezone: true,
+  }),
+});
+
+export type RuleGroupRow = typeof ruleGroups.$inferSelect;
+export type NewRuleGroupRow = typeof ruleGroups.$inferInsert;
+
+/**
+ * `chunk_cards` — the single-chunk memorization card a collocation correction produces. `batch_id`
+ * groups a capture session and bounds card production per batch (spec §6 inv.2). `wrong_form` keeps
+ * the learner's incorrect form for the log only; it is never placed on a card face (spec §6 inv.3).
+ */
+export const chunkCards = pgTable("chunk_cards", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  correctionId: uuid("correction_id").references((): AnyPgColumn => corrections.id, {
+    onDelete: "set null",
+  }),
+  batchId: uuid("batch_id").notNull(),
+  chunk: text("chunk").notNull(),
+  gloss: text("gloss").notNull(),
+  format: text("format").$type<ChunkCardFormat>().notNull(),
+  prompt: text("prompt").notNull(),
+  answer: text("answer").notNull(),
+  // Log/analytics only — never rendered on a card face.
+  wrongForm: text("wrong_form"),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+  exportedAt: timestamp("exported_at", {
+    withTimezone: true,
+  }),
+});
+
+export type ChunkCardRow = typeof chunkCards.$inferSelect;
+export type NewChunkCardRow = typeof chunkCards.$inferInsert;

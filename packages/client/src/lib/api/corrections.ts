@@ -1,15 +1,21 @@
-/** Correction-triage API: capture, triage, import, rule tags, grammar stats, and the error log. */
+/** Correction-triage API: capture, triage, import, rule tags/groups, chunk cards, and the log. */
 import type {
+  ChunkCard,
   Correction,
   CorrectionImportCandidate,
   CorrectionImportKind,
   CorrectionLog,
+  CreateChunkCardInput,
   CreateCorrectionInput,
+  CreateRuleGroupInput,
   GrammarFailureStats,
   ImportCorrectionsInput,
+  RuleGroup,
   RuleTag,
   TriageCorrectionInput,
+  UpdateChunkCardInput,
   UpdateCorrectionInput,
+  UpdateRuleGroupInput,
   UpsertRuleTagInput,
 } from "@sentence-bank/types";
 
@@ -73,4 +79,41 @@ export const ruleTagsApi = {
       method: "PUT",
       body: JSON.stringify(input),
     }),
+};
+
+export const ruleGroupsApi = {
+  list: () => request<RuleGroup[]>("/rule-groups"),
+  get: (id: string) => request<RuleGroup>(`/rule-groups/${id}`),
+  create: (input: CreateRuleGroupInput) =>
+    request<RuleGroup>("/rule-groups", {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+  update: (id: string, input: UpdateRuleGroupInput) =>
+    request<RuleGroup>(`/rule-groups/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    }),
+  remove: (id: string) => request<undefined>(`/rule-groups/${id}`, {
+    method: "DELETE",
+  }),
+};
+
+export const chunkCardsApi = {
+  list: (batchId?: string) =>
+    request<ChunkCard[]>(`/chunk-cards${batchId ? `?batchId=${batchId}` : ""}`),
+  get: (id: string) => request<ChunkCard>(`/chunk-cards/${id}`),
+  create: (input: CreateChunkCardInput) =>
+    request<ChunkCard>("/chunk-cards", {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+  update: (id: string, input: UpdateChunkCardInput) =>
+    request<ChunkCard>(`/chunk-cards/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    }),
+  remove: (id: string) => request<undefined>(`/chunk-cards/${id}`, {
+    method: "DELETE",
+  }),
 };
