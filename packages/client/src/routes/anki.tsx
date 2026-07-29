@@ -8,10 +8,18 @@ import { ExportPanel } from "@/components/ExportPanel";
 import { Button } from "@/components/ui/button";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { usePracticeSentences } from "@/hooks/usePracticeSentences";
+import { useRuleGroups, useChunkCards } from "@/hooks/useRuleGroups";
 import { useSentences } from "@/hooks/useSentences";
 import { useSources } from "@/hooks/useSources";
 import { useVocab } from "@/hooks/useVocab";
-import { furiganaReading, isAnkiSentenceEligible, toAnkiSentenceText, toAnkiVocabText } from "@/lib/anki";
+import {
+  furiganaReading,
+  isAnkiSentenceEligible,
+  toAnkiChunkText,
+  toAnkiContrastText,
+  toAnkiSentenceText,
+  toAnkiVocabText,
+} from "@/lib/anki";
 
 export const Route = createFileRoute("/anki")({
   component: AnkiPage,
@@ -34,8 +42,16 @@ function AnkiPage() {
   const {
     data: sources,
   } = useSources();
+  const {
+    data: ruleGroups,
+  } = useRuleGroups();
+  const {
+    data: chunkCards,
+  } = useChunkCards();
 
-  const [mode, setMode] = useState<"sentences" | "vocab" | "practice">("sentences");
+  const [mode, setMode] = useState<
+    "sentences" | "vocab" | "practice" | "groups" | "chunks"
+  >("sentences");
 
   const sentenceItems: ExportItem[] = useMemo(() => (sentences ?? []).map(s => ({
     id: s.id,
@@ -71,6 +87,35 @@ function AnkiPage() {
     searchExtra: [p.target, p.nuance],
   })), [practiceSentences]);
 
+  const groupsById = useMemo(
+    () => new Map((ruleGroups ?? []).map(g => [g.id, g])),
+    [ruleGroups],
+  );
+  const groupItems: ExportItem[] = useMemo(() => (ruleGroups ?? []).map(g => ({
+    id: g.id,
+    label: g.ruleTagKey,
+    sublabel: `${g.axis} · ${g.items.length} pairs`,
+    secondary: null,
+    sourceId: null,
+    // Suspended groups are retired — don't re-export them.
+    eligible: g.status !== "suspended",
+    searchExtra: [g.axis, g.status],
+  })), [ruleGroups]);
+
+  const cardsById = useMemo(
+    () => new Map((chunkCards ?? []).map(c => [c.id, c])),
+    [chunkCards],
+  );
+  const chunkItems: ExportItem[] = useMemo(() => (chunkCards ?? []).map(c => ({
+    id: c.id,
+    label: c.chunk,
+    sublabel: c.gloss,
+    secondary: null,
+    sourceId: null,
+    eligible: Boolean(c.prompt.trim() && c.answer.trim()),
+    searchExtra: [c.prompt, c.gloss],
+  })), [chunkCards]);
+
   return (
     <section className="space-y-6">
       <div>
@@ -98,6 +143,14 @@ function AnkiPage() {
           {
             m: "practice",
             label: "Practice",
+          },
+          {
+            m: "groups",
+            label: "Rule groups",
+          },
+          {
+            m: "chunks",
+            label: "Chunk cards",
           },
         ] as const).map(({
           m, label,
@@ -165,6 +218,40 @@ function AnkiPage() {
                 translation: i.secondary,
                 reading: i.tertiary ?? null,
               })))}
+          />
+        )
+        : null}
+      {mode === "groups"
+        ? (
+          <ExportPanel
+            items={groupItems}
+            sources={undefined}
+            storageKey="anki-export-groups"
+            pickerHint="Each pair is one note (frontA⇥answerA⇥frontB⇥answerB). Import to a 2-template note type so Anki buries siblings."
+            outputHint={OUTPUT_HINT}
+            outputLabel="Anki export text"
+            toText={selected =>
+              toAnkiContrastText(
+                selected.flatMap(i => groupsById.get(i.id)?.items ?? []),
+              )}
+          />
+        )
+        : null}
+      {mode === "chunks"
+        ? (
+          <ExportPanel
+            items={chunkItems}
+            sources={undefined}
+            storageKey="anki-export-chunks"
+            pickerHint="One note per card as front⇥back. Your wrong form is never exported."
+            outputHint={OUTPUT_HINT}
+            outputLabel="Anki export text"
+            toText={selected =>
+              toAnkiChunkText(
+                selected
+                  .map(i => cardsById.get(i.id))
+                  .filter((c): c is NonNullable<typeof c> => Boolean(c)),
+              )}
           />
         )
         : null}
