@@ -204,6 +204,27 @@ export interface CreateCorrectionInput {
 /** Payload for partially updating a correction (editing the text/note or re-triaging). */
 export type UpdateCorrectionInput = Partial<CreateCorrectionInput>;
 
+/**
+ * An importable (original, corrected) pair drawn from an existing embedded-correction entity (a My
+ * Sentence, a writing's inline correction, or an answer-sheet slot) that hasn't been imported yet.
+ */
+export interface CorrectionImportCandidate {
+  ref: CorrectionImportRef;
+  original: string;
+  corrected: string;
+  correctorNote: string | null;
+  context: string | null;
+  /** Where it came from, for display (e.g. a writing's date or an answer sheet's title). */
+  label: string | null;
+}
+
+/** Payload for `POST /api/corrections/import`: the refs to pull in, and the batch to file them under. */
+export interface ImportCorrectionsInput {
+  refs: CorrectionImportRef[];
+  /** One capture session for the whole import; a fresh batch id is minted server-side when omitted. */
+  batchId?: string | null;
+}
+
 /** Payload for submitting a triage verdict via `POST /api/corrections/:id/triage`. */
 export interface TriageCorrectionInput {
   bucket: CorrectionBucket;

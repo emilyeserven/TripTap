@@ -1,9 +1,15 @@
 import type { FastifyInstance } from "fastify";
 import type {
+  CorrectionImportKind,
   CreateCorrectionInput,
+  ImportCorrectionsInput,
   TriageCorrectionInput,
   UpdateCorrectionInput,
 } from "@sentence-bank/types";
+import {
+  importCorrections,
+  listImportCandidates,
+} from "@/services/correction-import";
 import {
   createCorrection,
   deleteCorrection,
@@ -160,6 +166,50 @@ const listCorrectionsQuery = {
   },
 } as const;
 
+const importKindEnum = ["my_sentence", "writing", "answer_sheet"] as const;
+
+const importableQuery = {
+  type: "object",
+  required: ["kind"],
+  properties: {
+    kind: {
+      type: "string",
+      enum: importKindEnum,
+    },
+  },
+} as const;
+
+const importRefSchema = {
+  type: "object",
+  additionalProperties: false,
+  required: ["kind", "id"],
+  properties: {
+    kind: {
+      type: "string",
+      enum: importKindEnum,
+    },
+    id: {
+      type: "string",
+    },
+  },
+} as const;
+
+const importBody = {
+  type: "object",
+  required: ["refs"],
+  additionalProperties: false,
+  properties: {
+    refs: {
+      type: "array",
+      items: importRefSchema,
+    },
+    batchId: {
+      type: ["string", "null"],
+      format: "uuid",
+    },
+  },
+} as const;
+
 /** CRUD + triage + derived-log routes for corrections, mounted under `/api/corrections`. */
 export async function correctionsRoutes(app: FastifyInstance): Promise<void> {
   app.get("/api/corrections", {
@@ -184,6 +234,33 @@ export async function correctionsRoutes(app: FastifyInstance): Promise<void> {
       tags: ["corrections"],
     },
   }, async () => getCorrectionLog());
+
+  // Not-yet-imported (original, corrected) pairs from existing entities, for the import picker.
+  app.get("/api/corrections/importable", {
+    schema: {
+      tags: ["corrections"],
+      querystring: importableQuery,
+    },
+  }, async (req) => {
+    const {
+      kind,
+    } = req.query as { kind: CorrectionImportKind };
+    return listImportCandidates(kind);
+  });
+
+  // Pull the selected existing corrections into the triage pipeline under one batch.
+  app.post("/api/corrections/import", {
+    schema: {
+      tags: ["corrections"],
+      body: importBody,
+    },
+  }, async (req, reply) => {
+    const {
+      refs, batchId,
+    } = req.body as ImportCorrectionsInput;
+    const created = await importCorrections(refs, batchId ?? undefined);
+    return reply.code(201).send(created);
+  });
 
   app.get("/api/corrections/:id", {
     schema: {

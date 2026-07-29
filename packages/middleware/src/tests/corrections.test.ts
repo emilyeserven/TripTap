@@ -207,3 +207,47 @@ test("triage as register without a scene is rejected (spec §6, §11)", async ()
   assert.equal(res.statusCode, 400);
   await app.close();
 });
+
+/* ── Import route schema validation (no DB) ──────────────────────────────────────────────────────── */
+
+test("GET /api/corrections/importable requires a known kind", async () => {
+  const app = await buildApp();
+  const missing = await app.inject({
+    method: "GET",
+    url: "/api/corrections/importable",
+  });
+  assert.equal(missing.statusCode, 400);
+  const bad = await app.inject({
+    method: "GET",
+    url: "/api/corrections/importable?kind=robots",
+  });
+  assert.equal(bad.statusCode, 400);
+  await app.close();
+});
+
+test("POST /api/corrections/import rejects a body without refs", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/corrections/import",
+    payload: {},
+  });
+  assert.equal(res.statusCode, 400);
+  await app.close();
+});
+
+test("POST /api/corrections/import rejects a ref with an unknown kind", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/corrections/import",
+    payload: {
+      refs: [{
+        kind: "flashcard",
+        id: "x",
+      }],
+    },
+  });
+  assert.equal(res.statusCode, 400);
+  await app.close();
+});

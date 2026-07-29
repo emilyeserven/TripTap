@@ -1,8 +1,11 @@
-/** Correction-triage API: capture, triage, and the derived error log. */
+/** Correction-triage API: capture, triage, import, and the derived error log. */
 import type {
   Correction,
+  CorrectionImportCandidate,
+  CorrectionImportKind,
   CorrectionLog,
   CreateCorrectionInput,
+  ImportCorrectionsInput,
   TriageCorrectionInput,
   UpdateCorrectionInput,
 } from "@sentence-bank/types";
@@ -28,6 +31,13 @@ export const correctionsApi = {
     request<Correction[]>(`/corrections${listQuery(params)}`),
   get: (id: string) => request<Correction>(`/corrections/${id}`),
   log: () => request<CorrectionLog>("/corrections/log"),
+  importable: (kind: CorrectionImportKind) =>
+    request<CorrectionImportCandidate[]>(`/corrections/importable?kind=${kind}`),
+  import: (input: ImportCorrectionsInput) =>
+    request<Correction[]>("/corrections/import", {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
   create: (input: CreateCorrectionInput) =>
     request<Correction>("/corrections", {
       method: "POST",

@@ -1,6 +1,8 @@
 import type { CorrectionListParams } from "../lib/api";
 import type {
+  CorrectionImportKind,
   CreateCorrectionInput,
+  ImportCorrectionsInput,
   TriageCorrectionInput,
   UpdateCorrectionInput,
 } from "@sentence-bank/types";
@@ -32,6 +34,26 @@ export function useCorrectionLog() {
   return useQuery({
     queryKey: CORRECTION_LOG_KEY,
     queryFn: () => correctionsApi.log(),
+  });
+}
+
+export function useImportCandidates(kind: CorrectionImportKind) {
+  return useQuery({
+    queryKey: [...CORRECTIONS_KEY, "importable", kind],
+    queryFn: () => correctionsApi.importable(kind),
+  });
+}
+
+export function useImportCorrections() {
+  const {
+    invalidate,
+  } = useEntityCacheSync(CORRECTIONS_KEY);
+  return useMutation({
+    mutationFn: (input: ImportCorrectionsInput) => correctionsApi.import(input),
+    onSuccess: invalidate,
+    onError: err => toast.error("Couldn't import corrections", {
+      description: err instanceof Error ? err.message : undefined,
+    }),
   });
 }
 

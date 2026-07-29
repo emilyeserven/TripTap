@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ListChecks, ScrollText } from "lucide-react";
 
 import { CorrectionCaptureForm } from "@/components/CorrectionCaptureForm";
+import { CorrectionImportDialog } from "@/components/CorrectionImportDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -29,6 +30,7 @@ function CorrectionsInboxPage() {
           fix does almost nothing; working through it is where the learning is.
         </p>
         <div className="flex gap-2">
+          <CorrectionImportDialog />
           <Button
             asChild
             variant="outline"
