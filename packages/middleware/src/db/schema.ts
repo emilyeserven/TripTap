@@ -1,4 +1,5 @@
 import type {
+  AiLessonSection,
   AnswerSheetEntry,
   BookmarkSectionRef,
   CleanedBlocks,
@@ -806,6 +807,8 @@ export const aiLessons = pgTable("ai_lessons", {
   sourceUrl: text("source_url"),
   videoUrl: text("video_url"),
   sourceLabel: text("source_label"),
+  /** Open-ended extra Markdown tabs (title + body), rendered on the single page after the built-ins. */
+  sections: jsonb("sections").$type<AiLessonSection[]>(),
   createdAt: timestamp("created_at", {
     withTimezone: true,
   }).notNull().defaultNow(),

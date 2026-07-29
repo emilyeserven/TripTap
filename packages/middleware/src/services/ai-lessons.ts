@@ -221,6 +221,7 @@ async function assembleDetail(aiLessonId: string, lesson: AiLessonRow): Promise<
     grammar: grammar.map(toGrammar),
     source: source.map(toSourceSentence),
     culture: culture.map(toCulture),
+    sections: lesson.sections ?? [],
   };
 }
 
@@ -245,6 +246,7 @@ export async function createAiLessonFromImport(input: AiLessonImportInput): Prom
         sourceUrl: input.sourceUrl ?? null,
         videoUrl: input.videoUrl ?? null,
         sourceLabel: input.sourceLabel ?? null,
+        sections: input.sections ?? [],
       })
       .returning();
     const aiLessonId = inserted.id;

@@ -1,0 +1,1 @@
+ALTER TABLE "ai_lessons" ADD COLUMN "sections" jsonb;
