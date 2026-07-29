@@ -3,6 +3,7 @@ import type { Sentence } from "@sentence-bank/types";
 import { Headphones, Volume2 } from "lucide-react";
 
 import { AddToBasketButton } from "./AddToBasketButton";
+import { AddToShadowingListButton } from "./AddToShadowingListButton";
 import { speak } from "./ai-lesson/speak";
 import { SentenceCardMedia } from "./SentenceCardMedia";
 import { SentenceCardMeta } from "./SentenceCardMeta";
@@ -84,6 +85,14 @@ export function SentenceCard({
                 >
                   <Headphones className="size-4" />
                 </Button>
+                {sentence.shadowingCandidate
+                  ? (
+                    <AddToShadowingListButton
+                      kind="sentence"
+                      id={sentence.id}
+                    />
+                  )
+                  : null}
                 <AddToBasketButton
                   item={{
                     kind: "sentence",

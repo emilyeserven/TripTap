@@ -20,6 +20,7 @@ export * from "./practice-sentence.js";
 export * from "./question-sheet.js";
 export * from "./reading-session.js";
 export * from "./sentence-mark.js";
+export * from "./shadowing-list.js";
 export * from "./shadowing-session.js";
 export * from "./theory-session.js";
 export * from "./renshuu.js";

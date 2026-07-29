@@ -540,6 +540,27 @@ export type TutorRow = typeof tutors.$inferSelect;
 export type NewTutorRow = typeof tutors.$inferInsert;
 
 /**
+ * `shadowing_lists` — named collections of shadowing-candidate sentences. Membership is stored inline
+ * as jsonb id arrays (many-to-many, drawn from both the bank and the learner's own sentences).
+ */
+export const shadowingLists = pgTable("shadowing_lists", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull(),
+  notes: text("notes"),
+  sentenceIds: jsonb("sentence_ids").$type<string[]>().notNull().default([]),
+  mySentenceIds: jsonb("my_sentence_ids").$type<string[]>().notNull().default([]),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+});
+
+export type ShadowingListRow = typeof shadowingLists.$inferSelect;
+export type NewShadowingListRow = typeof shadowingLists.$inferInsert;
+
+/**
  * `grammar_notes` — a rich, personal write-up of a single grammar *usage*, keyed to one tag from the
  * Grammar Source (bookmarks "grammar" channel). `tag_id` is unique: one note per usage. Distinct usages
  * of the same surface form (topic は vs. contrastive は) are separate rows sharing a `title` but with

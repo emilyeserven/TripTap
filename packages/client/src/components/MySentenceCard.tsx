@@ -7,6 +7,7 @@ import { Check, Eye, EyeOff, Headphones } from "lucide-react";
 
 import { CorrectionDiff } from "../lib/sentenceDiff";
 
+import { AddToShadowingListButton } from "@/components/AddToShadowingListButton";
 import { MySentenceMetaBadges } from "@/components/MySentenceMetaBadges";
 import { SentenceCorrector } from "@/components/SentenceCorrector";
 import { Button } from "@/components/ui/button";
@@ -120,6 +121,14 @@ export function MySentenceCard({
             >
               <Headphones className="size-4" />
             </Button>
+            {ms.shadowingCandidate
+              ? (
+                <AddToShadowingListButton
+                  kind="mySentence"
+                  id={ms.id}
+                />
+              )
+              : null}
             {!readOnly && unreviewed && !correcting
               ? (
                 <Button

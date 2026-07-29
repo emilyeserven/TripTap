@@ -1,17 +1,20 @@
-/** Bank-content APIs: sentences, practice sentences, my sentences, vocab, and sources. */
+/** Bank-content APIs: sentences, practice sentences, my sentences, vocab, sources, and shadowing lists. */
 import type {
   CreatePracticeSentenceInput,
   CreateSentenceInput,
+  CreateShadowingListInput,
   CreateSourceInput,
   CreateVocabInput,
   CreateMySentenceInput,
   MySentence,
   PracticeSentence,
   Sentence,
+  ShadowingList,
   Source,
   UpdateMySentenceInput,
   UpdatePracticeSentenceInput,
   UpdateSentenceInput,
+  UpdateShadowingListInput,
   UpdateSourceInput,
   UpdateVocabInput,
   Vocab,
@@ -172,6 +175,24 @@ export const sourcesApi = {
       body: JSON.stringify(input),
     }),
   remove: (id: string) => request<undefined>(`/sources/${id}`, {
+    method: "DELETE",
+  }),
+};
+
+export const shadowingListsApi = {
+  list: () => request<ShadowingList[]>("/shadowing-lists"),
+  get: (id: string) => request<ShadowingList>(`/shadowing-lists/${id}`),
+  create: (input: CreateShadowingListInput) =>
+    request<ShadowingList>("/shadowing-lists", {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+  update: (id: string, input: UpdateShadowingListInput) =>
+    request<ShadowingList>(`/shadowing-lists/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    }),
+  remove: (id: string) => request<undefined>(`/shadowing-lists/${id}`, {
     method: "DELETE",
   }),
 };
