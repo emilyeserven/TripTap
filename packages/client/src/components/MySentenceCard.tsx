@@ -193,6 +193,17 @@ export function MySentenceCard({
           )
           : null}
 
+        {/* The correction note — why it was wrong. Shown whenever we're not actively correcting (the
+            corrector already exposes it as an editable field), so it's visible in read-only/view mode. */}
+        {!showCorrector && ms.explanation?.trim()
+          ? (
+            <div className="space-y-0.5">
+              <p className="text-xs font-medium text-muted-foreground">Explanation</p>
+              <p className="text-sm whitespace-pre-wrap">{ms.explanation}</p>
+            </div>
+          )
+          : null}
+
         {ms.translation ? <p className="text-sm text-muted-foreground">Meant: {ms.translation}</p> : null}
 
         <MySentenceMetaBadges mySentence={ms} />
