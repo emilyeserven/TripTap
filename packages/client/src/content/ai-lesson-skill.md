@@ -56,12 +56,15 @@ Top-level object:
 | `culture` | CultureNote[] | short context cards |
 
 **Category** `{ "key", "jp", "en", "icon" }` — `key` is referenced by each vocab's `cat`.
-**Vocab** `{ "jp", "yomi", "en", "lvl", "cat" }` — `cat` must equal one of the category keys.
+**Vocab** `{ "jp", "yomi", "en", "lvl", "cat", "easyJp"? }` — `cat` must equal one of the category
+keys. `easyJp` (optional) is a simplified plain-Japanese definition, shown on the card back in N4 mode.
 **Grammar** `{ "pat", "gloss", "note", "ex": [ { "jp", "en" } ] }`.
-**SourceSentence** `{ "jp", "en", "where", "url"?, "grammar": [ { "p", "d" } ], "vocab": [ { "w", "y", "m", "lvl" } ] }`
-— `p`=pattern, `d`=description; `w`=word, `y`=reading, `m`=meaning.
-**CultureNote** `{ "icon", "jp", "en", "body", "terms": [string] }` — `terms` are words to surface as
-hover chips; prefer terms that also appear in `vocab` (matched by `jp`).
+**SourceSentence** `{ "jp", "en", "where", "url"?, "easyJp"?, "grammar": [ { "p", "d" } ], "vocab": [ { "w", "y", "m", "lvl" } ] }`
+— `p`=pattern, `d`=description; `w`=word, `y`=reading, `m`=meaning. `easyJp` (optional) is a simplified
+(yasashii) restatement of the sentence, shown in N4 mode.
+**CultureNote** `{ "icon", "jp", "en", "body", "terms": [string], "summaryEasy"?, "summaryFull"? }` —
+`terms` are words to surface as hover chips; prefer terms that also appear in `vocab` (matched by `jp`).
+`summaryEasy`/`summaryFull` (optional) are a dual-level Japanese summary of the card (N4 vs native).
 
 ### Rules
 
@@ -73,6 +76,9 @@ hover chips; prefer terms that also appear in `vocab` (matched by `jp`).
   `sparkles`, `home`, `utensils`, `landmark`, `bus`, `waves`, `sun`, `book-open`, `graduation-cap`,
   `scroll-text`, `ghost`, `message-square`, `music`, `history`, `clapperboard`, `map-pin`.
   Pick the closest match; use `sparkles` if nothing fits.
+- **Dual-level Japanese (optional):** when a lesson mixes native Japanese with a simplified N4 layer,
+  add `vocab[].easyJp`, `source[].easyJp`, and/or `culture[].summaryEasy`+`culture[].summaryFull`. Any
+  of these turns on a 易/難 (N4 ↔ native) toggle on the lesson page. Omit them for single-level lessons.
 
 ## Compact example
 

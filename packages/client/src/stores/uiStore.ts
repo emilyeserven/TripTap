@@ -15,6 +15,12 @@ export type TimestampMode = "typing-start" | "submit";
  */
 export type KanaScript = "hiragana" | "katakana";
 
+/**
+ * Reading level for dual-level AI Lesson content: simplified N4 ("easy") vs native ("full"). Global UI
+ * pref (mirrors {@link furigana}); only surfaced on lessons that actually carry a simplified layer.
+ */
+export type ReadingLevel = "easy" | "full";
+
 interface UiState {
   /** Whether translations are revealed on the sentence cards (turn off to self-test). */
   showTranslations: boolean;
@@ -22,6 +28,9 @@ interface UiState {
   /** Whether furigana readings are shown across AI Lesson content (app-wide). */
   furigana: boolean;
   toggleFurigana: () => void;
+  /** Simplified-N4 vs native Japanese for dual-level AI Lesson content (app-wide). */
+  readingLevel: ReadingLevel;
+  toggleReadingLevel: () => void;
   /** The learner's self-assessed level, driving the practice add-rate guidance. */
   studyLevel: StudyLevel;
   setStudyLevel: (level: StudyLevel) => void;
@@ -47,6 +56,10 @@ export const useUiStore = create<UiState>(set => ({
   furigana: true,
   toggleFurigana: () => set(state => ({
     furigana: !state.furigana,
+  })),
+  readingLevel: "easy",
+  toggleReadingLevel: () => set(state => ({
+    readingLevel: state.readingLevel === "easy" ? "full" : "easy",
   })),
   studyLevel: "intermediate",
   setStudyLevel: level => set({
