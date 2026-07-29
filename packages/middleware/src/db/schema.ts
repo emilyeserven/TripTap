@@ -2,7 +2,11 @@ import type {
   AiLessonSection,
   AnswerSheetEntry,
   BookmarkSectionRef,
+  ChunkCardFormat,
   CleanedBlocks,
+  ContrastPair,
+  CorrectionImportRef,
+  CorrectionSource,
   DrillMistake,
   DrillMistakeReasonRef,
   DrillReason,
@@ -25,6 +29,7 @@ import type {
   QuestionSheetGrid,
   QuestionSheetQuestion,
   ReadingLine,
+  RuleGroupStatus,
   SentenceMark,
   SentenceTermRef,
   ShadowingSegment,
@@ -32,6 +37,7 @@ import type {
   SourceVocab,
   TheoryDensity,
   TheoryEntryMode,
+  Triage,
   WordNote,
   WritingCorrection,
 } from "@sentence-bank/types";
@@ -971,3 +977,112 @@ export const migakuImports = pgTable("migaku_imports", {
 
 export type MigakuImportRow = typeof migakuImports.$inferSelect;
 export type NewMigakuImportRow = typeof migakuImports.$inferInsert;
+
+/**
+ * `corrections` — corrected learner output awaiting (or carrying) a triage verdict. Each row is one
+ * (original, corrected) pair. `triage` is null while the correction sits in the Inbox; once triaged it
+ * holds the bucket, the traversed question path, and (for rule gaps / register mistakes) the rule tag
+ * or scene. Slips are deleted on triage rather than stored, so this table never accumulates the
+ * attention-failure noise. `batch_id` groups one capture session and drives the per-batch volume cap.
+ */
+export const corrections = pgTable("corrections", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  original: text("original").notNull(),
+  corrected: text("corrected").notNull(),
+  context: text("context"),
+  correctorNote: text("corrector_note"),
+  source: text("source").$type<CorrectionSource>().notNull().default("self"),
+  // The tutoring lesson this came out of, if any; survives the lesson's deletion.
+  lessonId: uuid("lesson_id").references((): AnyPgColumn => lessons.id, {
+    onDelete: "set null",
+  }),
+  // Set when imported from an existing embedded correction (My Sentence / Writing / Answer Sheet).
+  importedFrom: jsonb("imported_from").$type<CorrectionImportRef>(),
+  // One capture session; groups the Inbox and bounds card production (spec §6 inv.2).
+  batchId: uuid("batch_id").notNull().defaultRandom(),
+  // The triage verdict; null while still in the Inbox.
+  triage: jsonb("triage").$type<Triage>(),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+});
+
+export type CorrectionRow = typeof corrections.$inferSelect;
+export type NewCorrectionRow = typeof corrections.$inferInsert;
+
+/**
+ * `rule_tags` — the global taxonomy of nameable grammar-error categories that recurring rule-gap
+ * corrections group under. `key` is a stable slug primary key (what corrections reference via
+ * `triage.ruleTagKey`). `grammar_tag_id` optionally links a tag to a Grammar Source tag
+ * (`grammar_notes.tag_id`), which is what lets a grammar note surface its failure history.
+ */
+export const ruleTags = pgTable("rule_tags", {
+  key: text("key").primaryKey(),
+  label: text("label").notNull(),
+  grammarTagId: text("grammar_tag_id"),
+  grammarTagName: text("grammar_tag_name"),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+});
+
+export type RuleTagRow = typeof ruleTags.$inferSelect;
+export type NewRuleTagRow = typeof ruleTags.$inferInsert;
+
+/**
+ * `rule_groups` — the 4–6 minimal-contrast-pair artifact a recurring rule tag earns. `rule_tag_key`
+ * is unique (one group per tag; a reappearing tag reactivates its group rather than duplicating it —
+ * spec §6 inv.7). `items` are the contrast pairs (jsonb); `status` is an authoring lifecycle, not a
+ * scheduler — Anki owns review after export.
+ */
+export const ruleGroups = pgTable("rule_groups", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  ruleTagKey: text("rule_tag_key").notNull().unique().references((): AnyPgColumn => ruleTags.key, {
+    onDelete: "cascade",
+  }),
+  axis: text("axis").notNull(),
+  status: text("status").$type<RuleGroupStatus>().notNull().default("proposed"),
+  items: jsonb("items").$type<ContrastPair[]>().notNull(),
+  seedCorrectionIds: jsonb("seed_correction_ids").$type<string[]>().notNull().default([]),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+  exportedAt: timestamp("exported_at", {
+    withTimezone: true,
+  }),
+  suspendedAt: timestamp("suspended_at", {
+    withTimezone: true,
+  }),
+});
+
+export type RuleGroupRow = typeof ruleGroups.$inferSelect;
+export type NewRuleGroupRow = typeof ruleGroups.$inferInsert;
+
+/**
+ * `chunk_cards` — the single-chunk memorization card a collocation correction produces. `batch_id`
+ * groups a capture session and bounds card production per batch (spec §6 inv.2). `wrong_form` keeps
+ * the learner's incorrect form for the log only; it is never placed on a card face (spec §6 inv.3).
+ */
+export const chunkCards = pgTable("chunk_cards", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  correctionId: uuid("correction_id").references((): AnyPgColumn => corrections.id, {
+    onDelete: "set null",
+  }),
+  batchId: uuid("batch_id").notNull(),
+  chunk: text("chunk").notNull(),
+  gloss: text("gloss").notNull(),
+  format: text("format").$type<ChunkCardFormat>().notNull(),
+  prompt: text("prompt").notNull(),
+  answer: text("answer").notNull(),
+  // Log/analytics only — never rendered on a card face.
+  wrongForm: text("wrong_form"),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+  exportedAt: timestamp("exported_at", {
+    withTimezone: true,
+  }),
+});
+
+export type ChunkCardRow = typeof chunkCards.$inferSelect;
+export type NewChunkCardRow = typeof chunkCards.$inferInsert;

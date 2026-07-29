@@ -8,6 +8,8 @@ import { aiLessonRoutes } from "@/routes/ai-lessons";
 import { answerSheetRoutes } from "@/routes/answer-sheets";
 import { bookmarksRoutes } from "@/routes/bookmarks";
 import { captureRoutes } from "@/routes/captures";
+import { chunkCardsRoutes } from "@/routes/chunk-cards";
+import { correctionsRoutes } from "@/routes/corrections";
 import { dictionaryRoutes } from "@/routes/dictionary";
 import { tatoebaRoutes } from "@/routes/tatoeba";
 import { drillReasonCategoryRoutes } from "@/routes/drill-reason-categories";
@@ -24,6 +26,8 @@ import { practiceSentenceRoutes } from "@/routes/practice-sentences";
 import { questionSheetRoutes } from "@/routes/question-sheets";
 import { readingSessionsRoutes } from "@/routes/reading-sessions";
 import { renshuuRoutes } from "@/routes/renshuu";
+import { ruleGroupsRoutes } from "@/routes/rule-groups";
+import { ruleTagsRoutes } from "@/routes/rule-tags";
 import { sentenceRoutes } from "@/routes/sentences";
 import { settingsRoutes } from "@/routes/settings";
 import { shadowingListRoutes } from "@/routes/shadowing-lists";
@@ -139,6 +143,22 @@ export async function buildApp(): Promise<FastifyInstance> {
           description: "Theory study sessions — pages/word-count study earning Grammar XP",
         },
         {
+          name: "corrections",
+          description: "Correction triage — capture, triage, and the derived error log",
+        },
+        {
+          name: "rule-tags",
+          description: "Correction triage — the global rule-error taxonomy",
+        },
+        {
+          name: "rule-groups",
+          description: "Correction triage — minimal-contrast-pair rule groups",
+        },
+        {
+          name: "chunk-cards",
+          description: "Correction triage — single-chunk collocation cards",
+        },
+        {
           name: "health",
           description: "Service health",
         },
@@ -219,6 +239,10 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(drillReasonCategoryRoutes);
   await app.register(drillSessionRoutes);
   await app.register(theorySessionRoutes);
+  await app.register(correctionsRoutes);
+  await app.register(ruleTagsRoutes);
+  await app.register(ruleGroupsRoutes);
+  await app.register(chunkCardsRoutes);
   await app.register(sourceRoutes);
   await app.register(vocabRoutes);
   await app.register(captureRoutes);
