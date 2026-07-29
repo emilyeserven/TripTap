@@ -41,4 +41,39 @@ describe("AiLessonTemplate", () => {
       name: /Examples/,
     })).not.toBeInTheDocument();
   });
+
+  it("renders an extra tab for each custom section, after the built-ins", () => {
+    render(
+      <AiLessonTemplate
+        aiLesson={{
+          ...aiLessonDetailFixture,
+          sections: [
+            {
+              title: "Kanji",
+              body: "# 漢字",
+            },
+            {
+              title: "Listening",
+              body: "Notes",
+            },
+          ],
+        }}
+      />,
+    );
+
+    // Each custom section becomes its own tab, alongside the built-in ones.
+    expect(screen.getByRole("tab", {
+      name: /Kanji/,
+    })).toBeInTheDocument();
+    expect(screen.getByRole("tab", {
+      name: /Listening/,
+    })).toBeInTheDocument();
+    expect(screen.getByRole("tab", {
+      name: /Practice/,
+    })).toBeInTheDocument();
+
+    // Custom tabs come after the five built-ins.
+    const tabNames = screen.getAllByRole("tab").map(t => t.textContent);
+    expect(tabNames).toEqual(["Culture", "Vocabulary", "Grammar", "Sentences", "Practice", "Kanji", "Listening"]);
+  });
 });

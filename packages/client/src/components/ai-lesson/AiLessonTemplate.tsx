@@ -2,13 +2,14 @@ import type { AiLessonDetail } from "@sentence-bank/types";
 
 import { useMemo } from "react";
 
-import { BookOpen, GraduationCap, Landmark, RefreshCw, ScrollText, Video } from "lucide-react";
+import { BookOpen, FileText, GraduationCap, Landmark, RefreshCw, ScrollText, Video } from "lucide-react";
 
 import { FuriganaScope } from "./FuriganaScope";
 import { FuriganaToggle } from "./FuriganaToggle";
 import { CulturePane, GrammarPane, PracticePane, SourcePane, VocabPane } from "./panes";
 import { VocabMapContext } from "./vocab-map-context";
 
+import { Markdown } from "@/components/Markdown";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 /** Renders a full AI Lesson from its data. The fixed scaffold; all content comes from `aiLesson`. */
@@ -78,6 +79,15 @@ export function AiLessonTemplate({
                 <RefreshCw className="size-4" />
                 Practice
               </TabsTrigger>
+              {aiLesson.sections.map((section, i) => (
+                <TabsTrigger
+                  key={`custom-${i}`}
+                  value={`custom-${i}`}
+                >
+                  <FileText className="size-4" />
+                  {section.title}
+                </TabsTrigger>
+              ))}
             </TabsList>
 
             <TabsContent
@@ -113,6 +123,15 @@ export function AiLessonTemplate({
             >
               <PracticePane vocab={aiLesson.vocab} />
             </TabsContent>
+            {aiLesson.sections.map((section, i) => (
+              <TabsContent
+                key={`custom-${i}`}
+                value={`custom-${i}`}
+                className="mt-4"
+              >
+                <Markdown content={section.body} />
+              </TabsContent>
+            ))}
           </Tabs>
 
           <footer className="border-t pt-4 text-xs text-muted-foreground">

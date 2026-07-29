@@ -414,6 +414,13 @@
       "when": 1785207981846,
       "tag": "0058_skinny_grey_gargoyle",
       "breakpoints": true
+    },
+    {
+      "idx": 59,
+      "version": "7",
+      "when": 1785286378351,
+      "tag": "0059_lame_tempest",
+      "breakpoints": true
     }
   ]
 }

@@ -62,6 +62,7 @@ export const aiLessonImportFixture: AiLessonImportInput = {
       terms: ["珈琲"],
     },
   ],
+  sections: [],
 };
 
 /** The same content assembled as a persisted AiLessonDetail for viewer/template tests. */
@@ -108,4 +109,5 @@ export const aiLessonDetailFixture: AiLessonDetail = {
     id: `cul-${i}`,
     sortOrder: i,
   })),
+  sections: aiLessonImportFixture.sections,
 };

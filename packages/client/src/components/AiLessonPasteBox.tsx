@@ -21,7 +21,8 @@ const PLACEHOLDER = `{
   "grammar": [ … ],
   "source": [ … ],
   "culture": [ … ],
-  "categories": [ … ]
+  "categories": [ … ],
+  "sections": [ { "title": "Kanji", "body": "# 漢字 …" } ]
 }`;
 
 /** Paste AI Lesson JSON, validate it against the shared contract, and import it. */

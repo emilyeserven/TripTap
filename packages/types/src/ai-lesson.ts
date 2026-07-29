@@ -182,6 +182,19 @@ export const aiLessonMetaSchema = z.strictObject({
   sourceLabel: z.string().optional().nullable(),
 });
 
+/**
+ * An open-ended extra section: a titled tab of freeform Markdown, rendered on the AI-lesson single
+ * page after the five built-in tabs. Deliberately schemaless beyond title + body so a lesson can carry
+ * any additional content (Kanji, Listening, notes, …) without a new typed section. These do NOT appear
+ * in the cross-lesson Library views.
+ */
+export const aiLessonSectionSchema = z.strictObject({
+  /** Tab label. */
+  title: z.string().min(1),
+  /** Tab body, rendered as Markdown. */
+  body: z.string().min(1),
+});
+
 /** The full import payload. */
 export const aiLessonImportSchema = aiLessonMetaSchema.extend({
   categories: z.array(categoryInputSchema),
@@ -189,6 +202,8 @@ export const aiLessonImportSchema = aiLessonMetaSchema.extend({
   grammar: z.array(grammarInputSchema),
   source: z.array(sourceSentenceInputSchema),
   culture: z.array(cultureInputSchema),
+  /** Optional extra Markdown tabs; defaults to none for lessons authored before this existed. */
+  sections: z.array(aiLessonSectionSchema).default([]),
 });
 
 /**
@@ -210,6 +225,8 @@ export type SourceSentenceInput = z.infer<typeof sourceSentenceInputSchema>;
 export type SourceGrammar = z.infer<typeof sourceGrammarSchema>;
 export type SourceVocab = z.infer<typeof sourceVocabSchema>;
 export type CultureInput = z.infer<typeof cultureInputSchema>;
+/** An extra Markdown tab on an AI lesson (title + body). */
+export type AiLessonSection = z.infer<typeof aiLessonSectionSchema>;
 
 /* ── Persisted / response types ───────────────────────────────────────────────────────────── */
 
@@ -264,6 +281,8 @@ export interface AiLessonDetail extends AiLessonRecord {
   grammar: GrammarItem[];
   source: SourceSentenceItem[];
   culture: CultureItem[];
+  /** Extra Markdown tabs, in author order; empty for lessons without any. */
+  sections: AiLessonSection[];
 }
 
 /** Lightweight list-view shape. */
