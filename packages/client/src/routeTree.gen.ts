@@ -62,6 +62,7 @@ import { Route as QuestionSheetsNewRouteImport } from './routes/question-sheets.
 import { Route as QuestionSheetsIdRouteImport } from './routes/question-sheets.$id'
 import { Route as PracticeNewRouteImport } from './routes/practice.new'
 import { Route as PracticeIdRouteImport } from './routes/practice.$id'
+import { Route as MyWritingRewriteRouteImport } from './routes/my-writing.rewrite'
 import { Route as MyWritingIdRouteImport } from './routes/my-writing.$id'
 import { Route as MySentencesNewRouteImport } from './routes/my-sentences.new'
 import { Route as MySentencesIdRouteImport } from './routes/my-sentences.$id'
@@ -376,6 +377,11 @@ const PracticeIdRoute = PracticeIdRouteImport.update({
   path: '/practice/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MyWritingRewriteRoute = MyWritingRewriteRouteImport.update({
+  id: '/my-writing/rewrite',
+  path: '/my-writing/rewrite',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MyWritingIdRoute = MyWritingIdRouteImport.update({
   id: '/my-writing/$id',
   path: '/my-writing/$id',
@@ -653,6 +659,7 @@ export interface FileRoutesByFullPath {
   '/my-sentences/$id': typeof MySentencesIdRouteWithChildren
   '/my-sentences/new': typeof MySentencesNewRoute
   '/my-writing/$id': typeof MyWritingIdRoute
+  '/my-writing/rewrite': typeof MyWritingRewriteRoute
   '/practice/$id': typeof PracticeIdRouteWithChildren
   '/practice/new': typeof PracticeNewRoute
   '/question-sheets/$id': typeof QuestionSheetsIdRouteWithChildren
@@ -750,6 +757,7 @@ export interface FileRoutesByTo {
   '/migaku-import/$id': typeof MigakuImportIdRoute
   '/my-sentences/new': typeof MySentencesNewRoute
   '/my-writing/$id': typeof MyWritingIdRoute
+  '/my-writing/rewrite': typeof MyWritingRewriteRoute
   '/practice/new': typeof PracticeNewRoute
   '/question-sheets/new': typeof QuestionSheetsNewRoute
   '/reading-sessions/new': typeof ReadingSessionsNewRoute
@@ -847,6 +855,7 @@ export interface FileRoutesById {
   '/my-sentences/$id': typeof MySentencesIdRouteWithChildren
   '/my-sentences/new': typeof MySentencesNewRoute
   '/my-writing/$id': typeof MyWritingIdRoute
+  '/my-writing/rewrite': typeof MyWritingRewriteRoute
   '/practice/$id': typeof PracticeIdRouteWithChildren
   '/practice/new': typeof PracticeNewRoute
   '/question-sheets/$id': typeof QuestionSheetsIdRouteWithChildren
@@ -952,6 +961,7 @@ export interface FileRouteTypes {
     | '/my-sentences/$id'
     | '/my-sentences/new'
     | '/my-writing/$id'
+    | '/my-writing/rewrite'
     | '/practice/$id'
     | '/practice/new'
     | '/question-sheets/$id'
@@ -1049,6 +1059,7 @@ export interface FileRouteTypes {
     | '/migaku-import/$id'
     | '/my-sentences/new'
     | '/my-writing/$id'
+    | '/my-writing/rewrite'
     | '/practice/new'
     | '/question-sheets/new'
     | '/reading-sessions/new'
@@ -1145,6 +1156,7 @@ export interface FileRouteTypes {
     | '/my-sentences/$id'
     | '/my-sentences/new'
     | '/my-writing/$id'
+    | '/my-writing/rewrite'
     | '/practice/$id'
     | '/practice/new'
     | '/question-sheets/$id'
@@ -1249,6 +1261,7 @@ export interface RootRouteChildren {
   MySentencesIdRoute: typeof MySentencesIdRouteWithChildren
   MySentencesNewRoute: typeof MySentencesNewRoute
   MyWritingIdRoute: typeof MyWritingIdRoute
+  MyWritingRewriteRoute: typeof MyWritingRewriteRoute
   PracticeIdRoute: typeof PracticeIdRouteWithChildren
   PracticeNewRoute: typeof PracticeNewRoute
   QuestionSheetsIdRoute: typeof QuestionSheetsIdRouteWithChildren
@@ -1663,6 +1676,13 @@ declare module '@tanstack/react-router' {
       path: '/practice/$id'
       fullPath: '/practice/$id'
       preLoaderRoute: typeof PracticeIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/my-writing/rewrite': {
+      id: '/my-writing/rewrite'
+      path: '/my-writing/rewrite'
+      fullPath: '/my-writing/rewrite'
+      preLoaderRoute: typeof MyWritingRewriteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/my-writing/$id': {
@@ -2216,6 +2236,7 @@ const rootRouteChildren: RootRouteChildren = {
   MySentencesIdRoute: MySentencesIdRouteWithChildren,
   MySentencesNewRoute: MySentencesNewRoute,
   MyWritingIdRoute: MyWritingIdRoute,
+  MyWritingRewriteRoute: MyWritingRewriteRoute,
   PracticeIdRoute: PracticeIdRouteWithChildren,
   PracticeNewRoute: PracticeNewRoute,
   QuestionSheetsIdRoute: QuestionSheetsIdRouteWithChildren,

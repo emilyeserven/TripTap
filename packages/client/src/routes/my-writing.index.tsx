@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { LightbulbIcon, PlusIcon } from "lucide-react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { LightbulbIcon, PlusIcon, Repeat2Icon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -80,6 +80,15 @@ function MyWritingPage() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <Button
+            asChild
+            variant="outline"
+          >
+            <Link to="/my-writing/rewrite">
+              <Repeat2Icon className="size-4" />
+              Rewrite blind
+            </Link>
+          </Button>
           <Dialog
             open={promptPickerOpen}
             onOpenChange={setPromptPickerOpen}

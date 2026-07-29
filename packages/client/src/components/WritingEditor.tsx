@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { Check, LightbulbIcon, SparklesIcon } from "lucide-react";
 
+import { ForcedReusePanel } from "./ForcedReusePanel";
 import { TermPicker } from "./TermPicker";
 import { WritingCorrections } from "./WritingCorrections";
 import { useUpdateWriting } from "../hooks/useWritings";
@@ -66,6 +67,8 @@ export function WritingEditor({
   const [draft, setDraft] = useState<Draft>(() => toDraft(writing));
   const [status, setStatus] = useState("");
   const [correcting, setCorrecting] = useState(false);
+  // Forced-reuse gate: until the requirement is met, "Ready to review" can't be switched on.
+  const [reuseMet, setReuseMet] = useState(true);
   const dirty = useRef(false);
 
   // Debounced autosave — mirrors PracticeSentenceEditor. Corrections aren't in the draft, so this
@@ -158,7 +161,11 @@ export function WritingEditor({
           />
         )
         : (
-          <div className="space-y-1.5">
+          <div className="space-y-3">
+            <ForcedReusePanel
+              current={writing}
+              onMetChange={setReuseMet}
+            />
             {writing.promptText
               ? (
                 <div
@@ -256,10 +263,19 @@ export function WritingEditor({
           <label className="flex items-center gap-2 text-sm">
             <Switch
               checked={draft.readyToReview}
+              // Can't mark ready until the forced-reuse requirement is met (turning it off is always allowed).
+              disabled={!reuseMet && !draft.readyToReview}
               onCheckedChange={checked => set("readyToReview", checked)}
               aria-label="Ready to review"
             />
             Ready to review
+            {!reuseMet && !draft.readyToReview
+              ? (
+                <span className="text-xs text-muted-foreground">
+                  (reuse your last draft first)
+                </span>
+              )
+              : null}
           </label>
           <label className="flex items-center gap-2 text-sm">
             <Switch
