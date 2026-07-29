@@ -844,6 +844,8 @@ export const aiLessonVocab = pgTable("ai_lesson_vocab", {
   jp: text("jp").notNull(),
   yomi: text("yomi").notNull(),
   en: text("en").notNull(),
+  // Optional simplified plain-Japanese (N4) definition, shown on the card back in easy mode.
+  easyJp: text("easy_jp"),
   lvl: text("lvl").notNull(),
   cat: text("cat").notNull(),
   sortOrder: integer("sort_order").notNull(),
@@ -882,6 +884,8 @@ export const aiLessonSourceSentences = pgTable("ai_lesson_source_sentences", {
   // `where` is a SQL reserved word — column is quoted, drizzle field is `whereText`.
   whereText: text("where").notNull(),
   url: text("url"),
+  // Optional simplified (yasashii) restatement in easier Japanese, shown in easy mode.
+  easyJp: text("easy_jp"),
   grammar: jsonb("grammar").$type<SourceGrammar[]>().notNull(),
   vocab: jsonb("vocab").$type<SourceVocab[]>().notNull(),
   sortOrder: integer("sort_order").notNull(),
@@ -901,6 +905,9 @@ export const aiLessonCulture = pgTable("ai_lesson_culture", {
   jp: text("jp").notNull(),
   en: text("en").notNull(),
   body: text("body").notNull(),
+  // Optional dual-level Japanese summary of the card (N4 / native), shown via the level toggle.
+  summaryEasy: text("summary_easy"),
+  summaryFull: text("summary_full"),
   terms: jsonb("terms").$type<string[]>().notNull(),
   sortOrder: integer("sort_order").notNull(),
 });

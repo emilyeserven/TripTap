@@ -16,6 +16,53 @@ test("the hagi fixture satisfies the AI Lesson contract", () => {
   assert.equal(result.success, true, JSON.stringify(result.error?.issues, null, 2));
 });
 
+// A payload that carries the optional dual-level (N4 / native) layer on vocab, source, and culture.
+const dualLevelFixture = {
+  ...hagiFixture,
+  vocab: hagiFixture.vocab.map((v: object, i: number) =>
+    (i === 0
+      ? {
+        ...v,
+        easyJp: "とまるところ。",
+      }
+      : v)),
+  source: hagiFixture.source.map((s: object, i: number) =>
+    (i === 0
+      ? {
+        ...s,
+        easyJp: "やどにとまりました。",
+      }
+      : s)),
+  culture: hagiFixture.culture.map((c: object, i: number) =>
+    (i === 0
+      ? {
+        ...c,
+        summaryEasy: "かんたんなせつめい。",
+        summaryFull: "詳しい説明。",
+      }
+      : c)),
+};
+
+test("the AI Lesson contract accepts the optional dual-level fields", () => {
+  const result = aiLessonImportSchema.safeParse(dualLevelFixture);
+  assert.equal(result.success, true, JSON.stringify(result.error?.issues, null, 2));
+});
+
+test("POST /api/ai-lessons/import accepts a payload with dual-level fields (not rejected as invalid)", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/ai-lessons/import",
+    payload: {
+      ...dualLevelFixture,
+      slug: "dual-level-accept",
+    },
+  });
+  // Without a DB the insert may fail (500), but the derived JSON Schema must not reject it as a 400.
+  assert.notEqual(res.statusCode, 400);
+  await app.close();
+});
+
 test("POST /api/ai-lessons/import rejects a payload missing required fields", async () => {
   const app = await buildApp();
   const res = await app.inject({

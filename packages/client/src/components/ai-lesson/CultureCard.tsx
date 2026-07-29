@@ -2,6 +2,7 @@ import type { AiLessonRef } from "./AiLessonBadge";
 import type { CultureItem } from "@sentence-bank/types";
 
 import { AiLessonBadge } from "./AiLessonBadge";
+import { DualJP } from "./DualJP";
 import { AiLessonIcon } from "./icon-map";
 import { VocabPill } from "./VocabPill";
 
@@ -42,6 +43,12 @@ export function CultureCard({
       </CardHeader>
       <CardContent className="space-y-3">
         <p className="text-sm/relaxed">{c.body}</p>
+        {(c.summaryEasy || c.summaryFull) && (
+          <DualJP
+            easy={c.summaryEasy}
+            full={c.summaryFull}
+          />
+        )}
         {c.terms.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
             {c.terms.map(t => (

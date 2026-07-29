@@ -10,6 +10,7 @@ import { AiLessonBadge } from "./AiLessonBadge";
 import { Furi } from "./Furi";
 import { GrammarTagsEditor } from "./GrammarTagsEditor";
 import { LevelBadge } from "./LevelBadge";
+import { useReadingLevel } from "./reading-level-context";
 import { speak } from "./speak";
 
 import { Button } from "@/components/ui/button";
@@ -23,8 +24,15 @@ export function SourceCard({
   aiLesson?: AiLessonRef;
   onTagClick?: (termId: string) => void; }) {
   const updateTerms = useUpdateSourceSentenceTerms();
+  const level = useReadingLevel();
   const [showEn, setShowEn] = useState(false);
   const [showBreak, setShowBreak] = useState(false);
+
+  // In easy mode, show the simplified (yasashii) restatement when the sentence has one; audio + the
+  // breakdown always stay on the native sentence.
+  const easyJp = level === "easy" ? s.easyJp : null;
+  const displayJp = easyJp ?? s.jp;
+  const useEasy = Boolean(easyJp);
 
   return (
     <Card>
@@ -78,7 +86,12 @@ export function SourceCard({
           >
             <Volume2 className="size-4" />
           </Button>
-          <p className="text-lg">{s.jp}</p>
+          <p className="text-lg">
+            {displayJp}
+            {useEasy && (
+              <span className="ml-2 align-middle text-xs text-muted-foreground">やさしい</span>
+            )}
+          </p>
         </div>
 
         <button

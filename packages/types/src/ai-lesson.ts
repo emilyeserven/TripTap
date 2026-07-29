@@ -37,6 +37,12 @@
  * Each item's fields are documented on its schema below. Array order is preserved on import.
  * Unknown keys are rejected (strict). `lvl` values are freeform strings — "N1".."N5" render as a
  * JLPT badge; anything else ("travel", "local", "food", ...) renders as a plain tag.
+ *
+ * ── Dual-level Japanese (optional) ─────────────────────────────────────────────────────────────
+ * A lesson may carry a simplified **N4** layer alongside its native Japanese: `vocab[].easyJp`
+ * (plain-Japanese definition), `culture[].summaryEasy` / `culture[].summaryFull` (a two-level
+ * Japanese summary), and `source[].easyJp` (a yasashii restatement). All are optional — when any are
+ * present the lesson page shows a 易/難 (N4 / native) toggle; lessons without them are unchanged.
  */
 
 import type { SentenceTermRef } from "./index.js";
@@ -77,6 +83,8 @@ export const vocabInputSchema = z.strictObject({
   yomi: z.string().min(1),
   /** English gloss. */
   en: z.string().min(1),
+  /** Optional simplified plain-Japanese (N4) definition, shown on the card back in easy mode. */
+  easyJp: z.string().optional().nullable(),
   /** Level tag — "N1".."N5" (JLPT badge) or a freeform tag ("travel", "local", ...). */
   lvl: z.string().min(1),
   /** Category key — must match a `categories[].key`. */
@@ -143,6 +151,8 @@ export const sourceSentenceInputSchema = z.strictObject({
   where: z.string().min(1),
   /** Optional deep link to the exact source. */
   url: z.string().optional().nullable(),
+  /** Optional simplified (yasashii) restatement in easier Japanese, shown in easy mode. */
+  easyJp: z.string().optional().nullable(),
   /** Grammar points in this sentence. */
   grammar: z.array(sourceGrammarSchema),
   /** Vocabulary in this sentence. */
@@ -159,6 +169,10 @@ export const cultureInputSchema = z.strictObject({
   en: z.string().min(1),
   /** Body paragraph. */
   body: z.string().min(1),
+  /** Optional simplified-Japanese (N4) summary of this card, shown when the level toggle is easy. */
+  summaryEasy: z.string().optional().nullable(),
+  /** Optional native-level Japanese summary of this card, shown when the level toggle is native. */
+  summaryFull: z.string().optional().nullable(),
   /** Vocab terms to surface as hover chips (should match `vocab[].jp` where possible). */
   terms: z.array(z.string()),
 });

@@ -421,6 +421,13 @@
       "when": 1785286378351,
       "tag": "0059_lame_tempest",
       "breakpoints": true
+    },
+    {
+      "idx": 60,
+      "version": "7",
+      "when": 1785291512571,
+      "tag": "0060_fresh_magdalene",
+      "breakpoints": true
     }
   ]
 }

@@ -9,6 +9,7 @@ import { AddToBasketButton } from "../AddToBasketButton";
 import { AiLessonBadge } from "./AiLessonBadge";
 import { Furi } from "./Furi";
 import { LevelBadge } from "./LevelBadge";
+import { useReadingLevel } from "./reading-level-context";
 import { speak } from "./speak";
 
 import { Badge } from "@/components/ui/badge";
@@ -35,6 +36,8 @@ export function VocabCard({
   onRenshuuChange?: (patch: VocabRenshuuUpdate) => void;
 }) {
   const [flipped, setFlipped] = useState(false);
+  const level = useReadingLevel();
+  const showEasyJp = level === "easy" && Boolean(v.easyJp);
 
   return (
     <Card className="relative gap-0 overflow-hidden py-0">
@@ -68,6 +71,9 @@ export function VocabCard({
           ? (
             <>
               <div className="text-sm text-muted-foreground">{v.yomi}</div>
+              {showEasyJp && (
+                <div className="text-sm/relaxed text-foreground">{v.easyJp}</div>
+              )}
               <div className="text-base font-medium">{v.en}</div>
               <div className="flex items-center gap-2">
                 <Button
