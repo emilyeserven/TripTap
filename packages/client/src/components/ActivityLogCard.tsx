@@ -1,4 +1,4 @@
-import type { ActivityDay, ActivityItem, XpFeature } from "@sentence-bank/types";
+import type { ActivityDay, ActivityItem } from "@sentence-bank/types";
 
 import { Link } from "@tanstack/react-router";
 import { Target } from "lucide-react";
@@ -6,19 +6,7 @@ import { Target } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useActivity } from "@/hooks/useActivity";
-import { formatXp } from "@/lib/xp";
-
-/** Reader-facing names for the XP feature buckets (mirrors XpBreakdown's labels). */
-const TYPE_LABELS: Record<XpFeature, string> = {
-  reading: "Reading",
-  writing: "Writing",
-  bookExercises: "Book exercise",
-  listening: "Listening",
-  shadowing: "Shadowing",
-  drills: "Drills",
-  lessons: "Lesson",
-  theoryStudy: "Theory study",
-};
+import { formatXp, XP_FEATURE_LABELS } from "@/lib/xp";
 
 /** The title cell for one activity item: a link when the source is addressable, else plain text. */
 function ItemTitle({
@@ -26,7 +14,7 @@ function ItemTitle({
 }: {
   item: ActivityItem;
 }) {
-  const label = item.title || TYPE_LABELS[item.type];
+  const label = item.title || XP_FEATURE_LABELS[item.type];
   if (item.to) {
     return (
       <Link
@@ -94,7 +82,7 @@ function ActivityDayTable({
                     px-3 py-2 text-xs whitespace-nowrap text-muted-foreground
                   "
                 >
-                  {TYPE_LABELS[item.type]}
+                  {XP_FEATURE_LABELS[item.type]}
                 </td>
                 <td className="px-3 py-2">
                   <span className="flex flex-wrap items-center gap-2">

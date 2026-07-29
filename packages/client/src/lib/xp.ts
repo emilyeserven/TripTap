@@ -1,9 +1,21 @@
-import type { XpDayAreas } from "@sentence-bank/types";
+import type { XpDayAreas, XpFeature } from "@sentence-bank/types";
 
 /** Format XP without float noise: quarter-point values keep their decimals, whole values drop them. */
 export function formatXp(xp: number): string {
   return Number.isInteger(xp) ? String(xp) : xp.toFixed(2).replace(/\.?0+$/, "");
 }
+
+/** Reader-facing names for the XP feature buckets (mirrors XpBreakdown's labels). */
+export const XP_FEATURE_LABELS: Record<XpFeature, string> = {
+  reading: "Reading",
+  writing: "Writing",
+  bookExercises: "Book exercise",
+  listening: "Listening",
+  shadowing: "Shadowing",
+  drills: "Drills",
+  lessons: "Lesson",
+  theoryStudy: "Theory study",
+};
 
 /**
  * The outer-ring value for the radar's daily scale: the highest single-area XP across the given days,

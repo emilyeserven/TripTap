@@ -27,7 +27,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Textarea } from "@/components/ui/textarea";
 import { customLineupItem, moveItem, removeItem, renameItem, toggleItemDone } from "@/lib/daily-lineup";
 import { retargetLineupItem, sessionLinkFor, sessionSearch } from "@/lib/start-recommendations";
-import { formatXp } from "@/lib/xp";
+import { formatXp, XP_FEATURE_LABELS } from "@/lib/xp";
 
 /** Route a lineup item's snapshotted link data into a typed `Link` (same cast as suggestions). */
 function itemLinkProps(item: LineupItem): React.ComponentProps<typeof Link> {
@@ -470,32 +470,45 @@ export function DailyLineupCard({
               Completed today
             </p>
             <ul className="space-y-2">
-              {completedToday.map(item => (
-                <li
-                  key={`${item.to ?? ""}-${item.id ?? item.title ?? ""}`}
-                  className="
-                    flex items-center gap-2 rounded-md border p-2 text-sm
-                  "
-                >
-                  <Check className="size-4 shrink-0 text-green-600" />
-                  {item.to
-                    ? (
-                      <Link
-                        {...activityLinkProps(item)}
-                        className="
-                          flex-1 font-medium
-                          hover:underline
-                        "
-                      >
-                        {item.title ?? "Activity"}
-                      </Link>
-                    )
-                    : <span className="flex-1 font-medium">{item.title ?? "Activity"}</span>}
-                  <span className="text-xs text-muted-foreground tabular-nums">
-                    +{formatXp(item.xp)} XP
-                  </span>
-                </li>
-              ))}
+              {completedToday.map((item) => {
+                const typeLabel = XP_FEATURE_LABELS[item.type];
+                // Fall back to the activity type when the source has no title (else every untitled
+                // item just read "Activity"); show the type alongside a real title for context.
+                const label = item.title || typeLabel;
+                return (
+                  <li
+                    key={`${item.to ?? ""}-${item.id ?? item.title ?? item.type}`}
+                    className="
+                      flex items-center gap-2 rounded-md border p-2 text-sm
+                    "
+                  >
+                    <Check className="size-4 shrink-0 text-green-600" />
+                    {item.to
+                      ? (
+                        <Link
+                          {...activityLinkProps(item)}
+                          className="
+                            font-medium
+                            hover:underline
+                          "
+                        >
+                          {label}
+                        </Link>
+                      )
+                      : <span className="font-medium">{label}</span>}
+                    {item.title
+                      ? <span className="text-xs text-muted-foreground">{typeLabel}</span>
+                      : null}
+                    <span
+                      className="
+                        ml-auto text-xs text-muted-foreground tabular-nums
+                      "
+                    >
+                      +{formatXp(item.xp)} XP
+                    </span>
+                  </li>
+                );
+              })}
             </ul>
           </div>
         )}
