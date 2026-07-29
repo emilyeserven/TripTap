@@ -8,6 +8,7 @@
 export * from "./activity.js";
 export * from "./answer-sheet.js";
 export * from "./ai-lesson.js";
+export * from "./correction.js";
 export * from "./dictionary.js";
 export * from "./drill-session.js";
 export * from "./grammar-note.js";

@@ -3,6 +3,8 @@ import type {
   AnswerSheetEntry,
   BookmarkSectionRef,
   CleanedBlocks,
+  CorrectionImportRef,
+  CorrectionSource,
   DrillMistake,
   DrillMistakeReasonRef,
   DrillReason,
@@ -32,6 +34,7 @@ import type {
   SourceVocab,
   TheoryDensity,
   TheoryEntryMode,
+  Triage,
   WordNote,
   WritingCorrection,
 } from "@sentence-bank/types";
@@ -971,3 +974,35 @@ export const migakuImports = pgTable("migaku_imports", {
 
 export type MigakuImportRow = typeof migakuImports.$inferSelect;
 export type NewMigakuImportRow = typeof migakuImports.$inferInsert;
+
+/**
+ * `corrections` — corrected learner output awaiting (or carrying) a triage verdict. Each row is one
+ * (original, corrected) pair. `triage` is null while the correction sits in the Inbox; once triaged it
+ * holds the bucket, the traversed question path, and (for rule gaps / register mistakes) the rule tag
+ * or scene. Slips are deleted on triage rather than stored, so this table never accumulates the
+ * attention-failure noise. `batch_id` groups one capture session and drives the per-batch volume cap.
+ */
+export const corrections = pgTable("corrections", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  original: text("original").notNull(),
+  corrected: text("corrected").notNull(),
+  context: text("context"),
+  correctorNote: text("corrector_note"),
+  source: text("source").$type<CorrectionSource>().notNull().default("self"),
+  // The tutoring lesson this came out of, if any; survives the lesson's deletion.
+  lessonId: uuid("lesson_id").references((): AnyPgColumn => lessons.id, {
+    onDelete: "set null",
+  }),
+  // Set when imported from an existing embedded correction (My Sentence / Writing / Answer Sheet).
+  importedFrom: jsonb("imported_from").$type<CorrectionImportRef>(),
+  // One capture session; groups the Inbox and bounds card production (spec §6 inv.2).
+  batchId: uuid("batch_id").notNull().defaultRandom(),
+  // The triage verdict; null while still in the Inbox.
+  triage: jsonb("triage").$type<Triage>(),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+});
+
+export type CorrectionRow = typeof corrections.$inferSelect;
+export type NewCorrectionRow = typeof corrections.$inferInsert;

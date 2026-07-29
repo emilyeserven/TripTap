@@ -23,6 +23,7 @@ import {
   LandmarkIcon,
   LanguagesIcon,
   LayersIcon,
+  ListChecksIcon,
   LibraryIcon,
   LightbulbIcon,
   ListMusicIcon,
@@ -217,6 +218,23 @@ const actionItems = [
         title: "Statistics",
         to: "/drill-sessions/stats",
         icon: ChartColumnIcon,
+      },
+    ],
+  },
+  {
+    title: "Correction Triage",
+    to: "/corrections",
+    icon: ListChecksIcon,
+    children: [
+      {
+        title: "Triage",
+        to: "/corrections/triage",
+        icon: SpellCheckIcon,
+      },
+      {
+        title: "Error Log",
+        to: "/corrections/log",
+        icon: ScrollTextIcon,
       },
     ],
   },

@@ -8,6 +8,7 @@ import { aiLessonRoutes } from "@/routes/ai-lessons";
 import { answerSheetRoutes } from "@/routes/answer-sheets";
 import { bookmarksRoutes } from "@/routes/bookmarks";
 import { captureRoutes } from "@/routes/captures";
+import { correctionsRoutes } from "@/routes/corrections";
 import { dictionaryRoutes } from "@/routes/dictionary";
 import { tatoebaRoutes } from "@/routes/tatoeba";
 import { drillReasonCategoryRoutes } from "@/routes/drill-reason-categories";
@@ -139,6 +140,10 @@ export async function buildApp(): Promise<FastifyInstance> {
           description: "Theory study sessions — pages/word-count study earning Grammar XP",
         },
         {
+          name: "corrections",
+          description: "Correction triage — capture, triage, and the derived error log",
+        },
+        {
           name: "health",
           description: "Service health",
         },
@@ -219,6 +224,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(drillReasonCategoryRoutes);
   await app.register(drillSessionRoutes);
   await app.register(theorySessionRoutes);
+  await app.register(correctionsRoutes);
   await app.register(sourceRoutes);
   await app.register(vocabRoutes);
   await app.register(captureRoutes);

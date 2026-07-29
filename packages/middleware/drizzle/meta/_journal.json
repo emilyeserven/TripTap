@@ -435,6 +435,13 @@
       "when": 1785337769795,
       "tag": "0061_stiff_jean_grey",
       "breakpoints": true
+    },
+    {
+      "idx": 62,
+      "version": "7",
+      "when": 1785364827464,
+      "tag": "0062_bitter_leo",
+      "breakpoints": true
     }
   ]
 }
