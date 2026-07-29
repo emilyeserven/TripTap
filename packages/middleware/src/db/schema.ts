@@ -102,6 +102,8 @@ export const sentences = pgTable("sentences", {
   audioMime: text("audio_mime"),
   imageKey: text("image_key"),
   imageMime: text("image_mime"),
+  // Marked by the learner as a good sentence to shadow (practise aloud).
+  shadowingCandidate: boolean("shadowing_candidate").notNull().default(false),
   createdAt: timestamp("created_at", {
     withTimezone: true,
   }).notNull().defaultNow(),
@@ -282,6 +284,8 @@ export const mySentences = pgTable("my_sentences", {
   reasons: jsonb("reasons").$type<DrillMistakeReasonRef[]>(),
   // Learner-marked correct/incorrect spans of `text` (offsets into the original). Null until any are made.
   marks: jsonb("marks").$type<SentenceMark[]>(),
+  // Marked by the learner as a good sentence to shadow (practise aloud).
+  shadowingCandidate: boolean("shadowing_candidate").notNull().default(false),
   createdAt: timestamp("created_at", {
     withTimezone: true,
   }).notNull().defaultNow(),
@@ -534,6 +538,27 @@ export const tutors = pgTable("tutors", {
 
 export type TutorRow = typeof tutors.$inferSelect;
 export type NewTutorRow = typeof tutors.$inferInsert;
+
+/**
+ * `shadowing_lists` — named collections of shadowing-candidate sentences. Membership is stored inline
+ * as jsonb id arrays (many-to-many, drawn from both the bank and the learner's own sentences).
+ */
+export const shadowingLists = pgTable("shadowing_lists", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull(),
+  notes: text("notes"),
+  sentenceIds: jsonb("sentence_ids").$type<string[]>().notNull().default([]),
+  mySentenceIds: jsonb("my_sentence_ids").$type<string[]>().notNull().default([]),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+});
+
+export type ShadowingListRow = typeof shadowingLists.$inferSelect;
+export type NewShadowingListRow = typeof shadowingLists.$inferInsert;
 
 /**
  * `grammar_notes` — a rich, personal write-up of a single grammar *usage*, keyed to one tag from the

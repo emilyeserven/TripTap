@@ -20,6 +20,7 @@ export * from "./practice-sentence.js";
 export * from "./question-sheet.js";
 export * from "./reading-session.js";
 export * from "./sentence-mark.js";
+export * from "./shadowing-list.js";
 export * from "./shadowing-session.js";
 export * from "./theory-session.js";
 export * from "./renshuu.js";
@@ -107,6 +108,8 @@ export interface Sentence {
   hasImage: boolean;
   /** How many vocab items are linked to this sentence (drives the "Break it down" affordance). */
   vocabCount: number;
+  /** Marked by the learner as a good sentence to shadow (practise aloud). */
+  shadowingCandidate: boolean;
   /** ISO-8601 timestamp of when the sentence was added. */
   createdAt: string;
 }
@@ -126,6 +129,7 @@ export interface CreateSentenceInput {
   captureId?: string | null;
   /** Vocab items to link to this sentence (many-to-many). */
   vocabIds?: string[];
+  shadowingCandidate?: boolean;
 }
 
 /** A standalone vocabulary entry (peer of {@link Sentence}). */

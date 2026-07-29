@@ -21,17 +21,19 @@ function MySentencesPage() {
   } = useMySentences();
   const [search, setSearch] = useState("");
   const [onlyNeedsCorrection, setOnlyNeedsCorrection] = useState(false);
+  const [onlyShadowing, setOnlyShadowing] = useState(false);
 
   const shown = useMemo(() => {
     const q = search.trim().toLowerCase();
     return (mySentences ?? []).filter((ms) => {
       if (onlyNeedsCorrection && !ms.needsCorrection) return false;
+      if (onlyShadowing && !ms.shadowingCandidate) return false;
       if (!q) return true;
       return ms.text.toLowerCase().includes(q)
         || (ms.translation ?? "").toLowerCase().includes(q)
         || (ms.correction ?? "").toLowerCase().includes(q);
     });
-  }, [mySentences, search, onlyNeedsCorrection]);
+  }, [mySentences, search, onlyNeedsCorrection, onlyShadowing]);
 
   const nothing = !isLoading && shown.length === 0;
 
@@ -70,6 +72,14 @@ function MySentencesPage() {
             onChange={e => setOnlyNeedsCorrection(e.target.checked)}
           />
           Needs correction only
+        </label>
+        <label className="flex items-center gap-2 text-sm text-muted-foreground">
+          <input
+            type="checkbox"
+            checked={onlyShadowing}
+            onChange={e => setOnlyShadowing(e.target.checked)}
+          />
+          Shadowing candidates only
         </label>
       </div>
 

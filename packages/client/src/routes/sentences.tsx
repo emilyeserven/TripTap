@@ -74,6 +74,7 @@ function SentencesPage() {
   const [sourceFilter, setSourceFilter] = useState(sourceParam ?? "all");
   const [grammarTag, setGrammarTag] = useState("all"); // "all" | grammar-tag id
   const [deckFilter, setDeckFilter] = useState("all"); // "all" | migaku deck name
+  const [shadowingOnly, setShadowingOnly] = useState(false);
 
   const manual = sentences ?? [];
 
@@ -153,10 +154,11 @@ function SentencesPage() {
       bySource(s.sourceId)
       && byDeck(s.tags)
       && byGrammarTag(grammarTermsOf(s))
+      && (!shadowingOnly || s.shadowingCandidate)
       && matches(search, s.text, s.translation, s.source, s.tags, s.notes))
     : [];
-  // AI-Lesson-mined sentences carry no source or deck tag, so those filters hide them.
-  const aiLessonShown = (sourceFilter !== "all" || deckFilter !== "all"
+  // AI-Lesson-mined sentences carry no source/deck tag or shadowing flag, so those filters hide them.
+  const aiLessonShown = (shadowingOnly || sourceFilter !== "all" || deckFilter !== "all"
     ? []
     : filter === "mine"
       ? []
@@ -327,6 +329,15 @@ function SentencesPage() {
           },
         ]}
       />
+
+      <label className="flex items-center gap-2 text-sm text-muted-foreground">
+        <input
+          type="checkbox"
+          checked={shadowingOnly}
+          onChange={e => setShadowingOnly(e.target.checked)}
+        />
+        Shadowing candidates only
+      </label>
 
       {error ? <p className="text-destructive">{error.message}</p> : null}
       {isLoading ? <p className="text-muted-foreground">Loading…</p> : null}

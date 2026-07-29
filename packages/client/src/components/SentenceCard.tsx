@@ -1,8 +1,9 @@
 import type { Sentence } from "@sentence-bank/types";
 
-import { Volume2 } from "lucide-react";
+import { Headphones, Volume2 } from "lucide-react";
 
 import { AddToBasketButton } from "./AddToBasketButton";
+import { AddToShadowingListButton } from "./AddToShadowingListButton";
 import { speak } from "./ai-lesson/speak";
 import { SentenceCardMedia } from "./SentenceCardMedia";
 import { SentenceCardMeta } from "./SentenceCardMeta";
@@ -12,6 +13,7 @@ import { SentenceTranslationReveal } from "./SentenceTranslationReveal";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useUpdateSentence } from "@/hooks/useSentences";
 
 interface SentenceCardProps {
   sentence: Sentence;
@@ -33,6 +35,7 @@ export function SentenceCard({
   allowFuriganaEdit = true,
 }: SentenceCardProps) {
   const hasMedia = sentence.hasAudio || sentence.hasImage;
+  const update = useUpdateSentence();
   return (
     <Card>
       <CardContent className="p-4">
@@ -58,6 +61,38 @@ export function SentenceCard({
                 </p>
               </div>
               <div className="flex shrink-0 items-center gap-3">
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  aria-label={sentence.shadowingCandidate
+                    ? "Remove from shadowing candidates"
+                    : "Mark as a shadowing candidate"}
+                  aria-pressed={sentence.shadowingCandidate}
+                  title="Shadowing candidate"
+                  className={`
+                    size-7
+                    ${sentence.shadowingCandidate
+      ? "text-primary"
+      : "text-muted-foreground"}
+                  `}
+                  onClick={() =>
+                    update.mutate({
+                      id: sentence.id,
+                      input: {
+                        shadowingCandidate: !sentence.shadowingCandidate,
+                      },
+                    })}
+                >
+                  <Headphones className="size-4" />
+                </Button>
+                {sentence.shadowingCandidate
+                  ? (
+                    <AddToShadowingListButton
+                      kind="sentence"
+                      id={sentence.id}
+                    />
+                  )
+                  : null}
                 <AddToBasketButton
                   item={{
                     kind: "sentence",

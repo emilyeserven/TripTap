@@ -149,6 +149,9 @@ const createMySentenceBody = {
     terms: termsSchema,
     reasons: reasonsSchema,
     marks: marksSchema,
+    shadowingCandidate: {
+      type: "boolean",
+    },
   },
 } as const;
 

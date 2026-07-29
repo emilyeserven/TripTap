@@ -98,6 +98,9 @@ const createSentenceBody = {
         format: "uuid",
       },
     },
+    shadowingCandidate: {
+      type: "boolean",
+    },
   },
 } as const;
 

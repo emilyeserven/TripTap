@@ -26,6 +26,7 @@ import { readingSessionsRoutes } from "@/routes/reading-sessions";
 import { renshuuRoutes } from "@/routes/renshuu";
 import { sentenceRoutes } from "@/routes/sentences";
 import { settingsRoutes } from "@/routes/settings";
+import { shadowingListRoutes } from "@/routes/shadowing-lists";
 import { shadowingSessionsRoutes } from "@/routes/shadowing-sessions";
 import { sourceRoutes } from "@/routes/sources";
 import { theorySessionRoutes } from "@/routes/theory-sessions";
@@ -118,6 +119,10 @@ export async function buildApp(): Promise<FastifyInstance> {
           description: "Tutors who run lessons",
         },
         {
+          name: "shadowing-lists",
+          description: "Named collections of shadowing-candidate sentences",
+        },
+        {
           name: "grammar-notes",
           description: "Rich notes on grammar usages, linking sentences, resources, and related grammar",
         },
@@ -205,6 +210,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(answerSheetRoutes);
   await app.register(listeningSessionsRoutes);
   await app.register(shadowingSessionsRoutes);
+  await app.register(shadowingListRoutes);
   await app.register(readingSessionsRoutes);
   await app.register(writingPromptRoutes);
   await app.register(tutorRoutes);

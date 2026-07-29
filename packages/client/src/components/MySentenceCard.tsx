@@ -3,10 +3,11 @@ import type { MySentence } from "@sentence-bank/types";
 import { useState } from "react";
 
 import { Link } from "@tanstack/react-router";
-import { Check, Eye, EyeOff } from "lucide-react";
+import { Check, Eye, EyeOff, Headphones } from "lucide-react";
 
 import { CorrectionDiff } from "../lib/sentenceDiff";
 
+import { AddToShadowingListButton } from "@/components/AddToShadowingListButton";
 import { MySentenceMetaBadges } from "@/components/MySentenceMetaBadges";
 import { SentenceCorrector } from "@/components/SentenceCorrector";
 import { Button } from "@/components/ui/button";
@@ -68,6 +69,15 @@ export function MySentenceCard({
     });
   }
 
+  function toggleShadowing() {
+    update.mutate({
+      id: ms.id,
+      input: {
+        shadowingCandidate: !ms.shadowingCandidate,
+      },
+    });
+  }
+
   return (
     <Card>
       <CardContent className="space-y-3 p-4">
@@ -89,6 +99,36 @@ export function MySentenceCard({
               </Link>
             )}
           <div className="flex shrink-0 items-center gap-1">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              aria-label={ms.shadowingCandidate
+                ? "Remove from shadowing candidates"
+                : "Mark as a shadowing candidate"}
+              aria-pressed={ms.shadowingCandidate}
+              title="Shadowing candidate"
+              className={`
+                size-8 transition-opacity
+                ${ms.shadowingCandidate
+      ? "text-primary"
+      : `
+        text-muted-foreground opacity-0
+        group-hover:opacity-100
+      `}
+              `}
+              onClick={toggleShadowing}
+            >
+              <Headphones className="size-4" />
+            </Button>
+            {ms.shadowingCandidate
+              ? (
+                <AddToShadowingListButton
+                  kind="mySentence"
+                  id={ms.id}
+                />
+              )
+              : null}
             {!readOnly && unreviewed && !correcting
               ? (
                 <Button

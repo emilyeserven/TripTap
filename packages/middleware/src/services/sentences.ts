@@ -67,6 +67,7 @@ export function toSentence(row: SentenceRow, vocabCount = 0): Sentence {
     hasAudio: row.audioKey != null,
     hasImage: row.imageKey != null,
     vocabCount,
+    shadowingCandidate: row.shadowingCandidate,
     createdAt:
       row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
   };
@@ -85,6 +86,7 @@ function toInsert(input: CreateSentenceInput) {
     tags: input.tags ?? null,
     terms: input.terms ?? null,
     captureId: input.captureId ?? null,
+    shadowingCandidate: input.shadowingCandidate ?? false,
   };
 }
 

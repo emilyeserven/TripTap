@@ -24,6 +24,7 @@ function toMySentence(row: MySentenceRow): MySentence {
     terms: row.terms ?? null,
     reasons: row.reasons ?? null,
     marks: row.marks ?? null,
+    shadowingCandidate: row.shadowingCandidate,
     createdAt:
       row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
   };
@@ -45,6 +46,7 @@ function toInsert(input: CreateMySentenceInput) {
     terms: input.terms ?? null,
     reasons: input.reasons ?? null,
     marks: input.marks ?? null,
+    shadowingCandidate: input.shadowingCandidate ?? false,
   };
 }
 
