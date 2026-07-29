@@ -28,8 +28,9 @@ export function AiLessonTemplate({
     () =>
       aiLesson.vocab.some(v => v.easyJp)
       || aiLesson.culture.some(c => c.summaryEasy || c.summaryFull)
-      || aiLesson.source.some(s => s.easyJp),
-    [aiLesson.vocab, aiLesson.culture, aiLesson.source],
+      || aiLesson.source.some(s => s.easyJp)
+      || aiLesson.grammar.some(g => g.easyEx && g.easyEx.length > 0),
+    [aiLesson.vocab, aiLesson.culture, aiLesson.source, aiLesson.grammar],
   );
 
   return (

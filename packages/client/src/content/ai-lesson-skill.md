@@ -33,9 +33,23 @@ exact schema below. Unknown keys are rejected, so do not invent fields.
   built as a JSX/React artifact, don't re-author it — *convert* it into this JSON. Map its data
   arrays onto the fields below (vocab/word cards → `vocab`, grammar patterns → `grammar`, example or
   source sentences → `source`, culture/context cards → `culture`, filter groups → `categories`).
-  Carry over any dual-level Japanese: a simplified/N4 vocab gloss → `vocab[].easyJp`, a two-level
-  culture summary → `culture[].summaryEasy`/`summaryFull`, a yasashii restatement → `source[].easyJp`.
   Preserve the original wording and array order; only reshape field names to match this contract.
+
+  **Dual-level (易/難) layer.** An artifact may keep its simplified Japanese *inline* on each item, or
+  in a **separate keyed object** (often named `EASY`, `YASASHII`, or similar) that sits alongside the
+  main data. Fold either form into the per-item fields, matching entries up by their key or index:
+  - `EASY.vocab[jp]` (or an inline field) → the matching `vocab[].easyJp`
+  - `EASY.culture[title].{easy,full}` → that `culture[].summaryEasy` / `summaryFull`
+  - `EASY.source[i]` (a parallel array) → `source[i].easyJp`
+  - `EASY.grammar[pat].ex` (simpler examples per pattern) → that `grammar[].easyEx`
+
+  **Any number of tabs.** The template has five built-in tabs (Culture / Vocab / Grammar / Source /
+  Practice) plus **`sections`** — an ordered list of freeform Markdown tabs. If the artifact defines
+  extra tabs beyond the five (a Kanji tab, a Listening tab, notes …), or has a bespoke interactive
+  block that doesn't fit a built-in tab (an exposure-triangle explainer, a diagram, a table), convert
+  each into a `sections` entry (`{ "title", "body" }`) with the content rendered as Markdown, in the
+  artifact's tab order. Don't silently drop content — if it can't map to a typed tab, it becomes a
+  section.
 
 Aim for roughly 20–35 vocab, 3–5 grammar patterns, 5–15 source sentences, and 3–5 culture notes,
 scaled to the material (or the full amount already present when converting an existing artifact).
@@ -61,17 +75,21 @@ Top-level object:
 | `grammar` | Grammar[] | grammar patterns |
 | `source` | SourceSentence[] | real/example sentences with breakdown |
 | `culture` | CultureNote[] | short context cards |
+| `sections` | Section[] | optional extra Markdown tabs, in order (any number); omit or `[]` for none |
 
 **Category** `{ "key", "jp", "en", "icon" }` — `key` is referenced by each vocab's `cat`.
 **Vocab** `{ "jp", "yomi", "en", "lvl", "cat", "easyJp"? }` — `cat` must equal one of the category
 keys. `easyJp` (optional) is a simplified plain-Japanese definition, shown on the card back in N4 mode.
-**Grammar** `{ "pat", "gloss", "note", "ex": [ { "jp", "en" } ] }`.
+**Grammar** `{ "pat", "gloss", "note", "ex": [ { "jp", "en" } ], "easyEx"? }` — `easyEx` (optional) is
+a simpler set of example sentences (same `{ jp, en }` shape), shown in place of `ex` in N4 mode.
 **SourceSentence** `{ "jp", "en", "where", "url"?, "easyJp"?, "grammar": [ { "p", "d" } ], "vocab": [ { "w", "y", "m", "lvl" } ] }`
 — `p`=pattern, `d`=description; `w`=word, `y`=reading, `m`=meaning. `easyJp` (optional) is a simplified
 (yasashii) restatement of the sentence, shown in N4 mode.
 **CultureNote** `{ "icon", "jp", "en", "body", "terms": [string], "summaryEasy"?, "summaryFull"? }` —
 `terms` are words to surface as hover chips; prefer terms that also appear in `vocab` (matched by `jp`).
 `summaryEasy`/`summaryFull` (optional) are a dual-level Japanese summary of the card (N4 vs native).
+**Section** `{ "title", "body" }` — an extra tab: `title` is the tab label, `body` is Markdown. Use
+these for any content beyond the five built-in tabs (there can be any number, kept in order).
 
 ### Rules
 
@@ -84,8 +102,9 @@ keys. `easyJp` (optional) is a simplified plain-Japanese definition, shown on th
   `scroll-text`, `ghost`, `message-square`, `music`, `history`, `clapperboard`, `map-pin`.
   Pick the closest match; use `sparkles` if nothing fits.
 - **Dual-level Japanese (optional):** when a lesson mixes native Japanese with a simplified N4 layer,
-  add `vocab[].easyJp`, `source[].easyJp`, and/or `culture[].summaryEasy`+`culture[].summaryFull`. Any
-  of these turns on a 易/難 (N4 ↔ native) toggle on the lesson page. Omit them for single-level lessons.
+  add `vocab[].easyJp`, `source[].easyJp`, `grammar[].easyEx`, and/or
+  `culture[].summaryEasy`+`culture[].summaryFull`. Any of these turns on a 易/難 (N4 ↔ native) toggle on
+  the lesson page. Omit them for single-level lessons.
 
 ## Compact example
 

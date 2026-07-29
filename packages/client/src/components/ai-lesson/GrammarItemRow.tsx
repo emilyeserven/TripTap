@@ -10,6 +10,7 @@ import { ChevronRight, Volume2 } from "lucide-react";
 import { AddToBasketButton } from "../AddToBasketButton";
 import { AiLessonBadge } from "./AiLessonBadge";
 import { GrammarTagsEditor } from "./GrammarTagsEditor";
+import { useReadingLevel } from "./reading-level-context";
 import { speak } from "./speak";
 
 import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -34,6 +35,9 @@ export function GrammarItemRow({
   linkedSentences?: LinkedSentence[];
   noteLink?: GrammarNoteLink | null; }) {
   const updateTerms = useUpdateAiLessonGrammarTerms();
+  const level = useReadingLevel();
+  // In easy (N4) mode, show the simpler example set when the pattern has one.
+  const examples = level === "easy" && g.easyEx && g.easyEx.length > 0 ? g.easyEx : g.ex;
   const [revealed, setRevealed] = useState<Set<number>>(() => new Set());
   const toggle = (i: number) =>
     setRevealed((prev) => {
@@ -119,7 +123,7 @@ export function GrammarItemRow({
             : null}
 
         <ul className="space-y-3">
-          {g.ex.map((e, ei) => {
+          {examples.map((e, ei) => {
             const show = revealed.has(ei);
             return (
               <li

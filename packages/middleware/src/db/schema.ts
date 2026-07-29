@@ -897,6 +897,8 @@ export const aiLessonGrammar = pgTable("ai_lesson_grammar", {
   gloss: text("gloss").notNull(),
   note: text("note").notNull(),
   examples: jsonb("examples").$type<GrammarExample[]>().notNull(),
+  // Optional simpler (N4) examples shown when the reading-level toggle is easy; null when single-level.
+  easyExamples: jsonb("easy_examples").$type<GrammarExample[]>(),
   sortOrder: integer("sort_order").notNull(),
   // App-set annotation (not part of the import contract): associated Grammar source tags.
   grammarTerms: jsonb("grammar_terms").$type<SentenceTermRef[]>(),
