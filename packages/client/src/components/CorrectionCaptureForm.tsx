@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useCreateCorrection } from "@/hooks/useCorrections";
+import { newId } from "@/lib/id";
 
 const SOURCE_LABELS: Record<CorrectionSource, string> = {
   tutor: "Tutor",
@@ -29,7 +30,7 @@ const SOURCE_LABELS: Record<CorrectionSource, string> = {
  */
 export function CorrectionCaptureForm() {
   const create = useCreateCorrection();
-  const [batchId, setBatchId] = useState(() => crypto.randomUUID());
+  const [batchId, setBatchId] = useState(() => newId());
   const [added, setAdded] = useState(0);
   const [original, setOriginal] = useState("");
   const [corrected, setCorrected] = useState("");
@@ -57,7 +58,7 @@ export function CorrectionCaptureForm() {
   }
 
   function startNewBatch() {
-    setBatchId(crypto.randomUUID());
+    setBatchId(newId());
     setAdded(0);
   }
 
