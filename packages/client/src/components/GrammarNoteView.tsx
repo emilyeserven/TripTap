@@ -22,6 +22,7 @@ import { bookmarkAppUrl, bookmarkTagUrl } from "@/lib/bookmarks";
 import { resourceDrillTags, resourceLearningAreas, resourceMaterialTypes } from "@/lib/collections";
 import { sentencesByGrammarTagId } from "@/lib/grammar-links";
 import { otherUsages, resolvedRelations, usageLabel } from "@/lib/grammar-notes";
+import { newId } from "@/lib/id";
 import { buildTaggedSectionTree } from "@/lib/sections";
 
 /** A titled section wrapper — omitted when it has nothing to show. */
@@ -140,7 +141,7 @@ export function GrammarNoteView({
     const next = [
       ...note.constructions,
       {
-        id: crypto.randomUUID(),
+        id: newId(),
         pattern: pat,
         note: [gloss, body].filter(Boolean).join("\n\n") || null,
         sentenceIds: [],

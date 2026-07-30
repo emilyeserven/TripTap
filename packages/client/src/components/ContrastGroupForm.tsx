@@ -9,10 +9,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useCreateRuleGroup, useUpdateRuleGroup } from "@/hooks/useRuleGroups";
+import { newId } from "@/lib/id";
 
 function emptyPair(): ContrastPair {
   return {
-    id: crypto.randomUUID(),
+    id: newId(),
     a: {
       jp: "",
       en: "",

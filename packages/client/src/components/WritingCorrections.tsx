@@ -10,6 +10,7 @@ import { WritingCorrectedSegment } from "@/components/WritingCorrectedSegment";
 import { WritingUncorrectedSegment } from "@/components/WritingUncorrectedSegment";
 import { useCreateMySentence, useUpdateMySentence } from "@/hooks/useMySentences";
 import { useUpdateWriting } from "@/hooks/useWritings";
+import { newId } from "@/lib/id";
 import { splitSentences } from "@/lib/writing-corrections";
 
 /**
@@ -67,7 +68,7 @@ export function WritingCorrections({
       const next: WritingCorrection[] = [
         ...corrections,
         {
-          id: crypto.randomUUID(),
+          id: newId(),
           original,
           corrected: r.correction.trim(),
           note: r.reasoning,
