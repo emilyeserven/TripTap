@@ -84,3 +84,57 @@ test("POST /api/practice-sentences/bulk rejects a non-array payload", async () =
   assert.equal(res.statusCode, 400);
   await app.close();
 });
+
+/* ── Breakdown import (paste JSON) — schema validation, no DB ─────────────────────────────────────── */
+
+test("POST /api/practice-sentences/import rejects a payload missing text", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/practice-sentences/import",
+    payload: {
+      translation: "no text here",
+    },
+  });
+  assert.equal(res.statusCode, 400);
+  await app.close();
+});
+
+test("POST /api/practice-sentences/import rejects an unknown targetKind", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/practice-sentences/import",
+    payload: {
+      text: "電気を消してくれる？",
+      targetKind: "vibe",
+    },
+  });
+  assert.equal(res.statusCode, 400);
+  await app.close();
+});
+
+// A minimal breakdown (only `text`) is valid; without a DB the insert can't finish, but schema
+// validation must accept it (not a 400).
+test("POST /api/practice-sentences/import accepts a minimal breakdown", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/practice-sentences/import",
+    payload: {
+      text: "電気を消してくれる？",
+    },
+  });
+  assert.notEqual(res.statusCode, 400);
+  await app.close();
+});
+
+test("GET /api/practice-sentences/:id/image rejects a non-uuid id", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "GET",
+    url: "/api/practice-sentences/not-a-uuid/image",
+  });
+  assert.equal(res.statusCode, 400);
+  await app.close();
+});

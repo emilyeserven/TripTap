@@ -90,6 +90,16 @@ export function PracticeSentenceView({
       </div>
 
       <div className="space-y-5">
+        {ps.hasImage
+          ? (
+            <img
+              src={`/api/practice-sentences/${ps.id}/image`}
+              alt="Context screenshot"
+              className="max-h-80 rounded-md border"
+            />
+          )
+          : null}
+
         {/* Sentence */}
         <div className="space-y-2">
           <div className="flex items-start gap-2">

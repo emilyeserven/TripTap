@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 
+import { PracticeScreenshotEditor } from "@/components/PracticeScreenshotEditor";
 import { PracticeSentenceEditor } from "@/components/PracticeSentenceEditor";
 import { Button } from "@/components/ui/button";
 import { useDeletePracticeSentence, usePracticeSentence } from "@/hooks/usePracticeSentences";
@@ -44,6 +45,7 @@ function EditPracticePage() {
         </Button>
       </div>
       <PracticeSentenceEditor practiceSentence={data} />
+      <PracticeScreenshotEditor practiceSentence={data} />
     </section>
   );
 }

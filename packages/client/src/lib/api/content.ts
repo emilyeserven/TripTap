@@ -8,6 +8,7 @@ import type {
   CreateMySentenceInput,
   MySentence,
   PracticeSentence,
+  PracticeSentenceImportInput,
   Sentence,
   ShadowingList,
   Source,
@@ -20,7 +21,7 @@ import type {
   Vocab,
 } from "@sentence-bank/types";
 
-import { BASE, request } from "./request";
+import { BASE, request, uploadFile } from "./request";
 
 /**
  * The shared `getVocab`/`setVocab` endpoints for a resource that links vocab via
@@ -96,6 +97,16 @@ export const practiceSentencesApi = {
       method: "PATCH",
       body: JSON.stringify(input),
     }),
+  import: (input: PracticeSentenceImportInput) =>
+    request<PracticeSentence>("/practice-sentences/import", {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+  uploadImage: (id: string, file: File) =>
+    uploadFile<PracticeSentence>(`/practice-sentences/${id}/image`, file),
+  removeImage: (id: string) => request<undefined>(`/practice-sentences/${id}/image`, {
+    method: "DELETE",
+  }),
   remove: (id: string) => request<undefined>(`/practice-sentences/${id}`, {
     method: "DELETE",
   }),

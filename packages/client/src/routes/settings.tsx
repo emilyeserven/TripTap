@@ -4,6 +4,7 @@ import { BookmarksTagsCard } from "@/components/BookmarksTagsCard";
 import { DictionaryCard } from "@/components/DictionaryCard";
 import { MediaStorageCard } from "@/components/MediaStorageCard";
 import { OcrKeysCard } from "@/components/OcrKeysCard";
+import { PracticeBreakdownSkillCard } from "@/components/PracticeBreakdownSkillCard";
 import { RenshuuKeyCard } from "@/components/RenshuuKeyCard";
 import { SkillInstallCard } from "@/components/SkillInstallCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -74,6 +75,7 @@ function SettingsPage() {
           className="space-y-6"
         >
           <SkillInstallCard />
+          <PracticeBreakdownSkillCard />
         </TabsContent>
       </Tabs>
     </section>
