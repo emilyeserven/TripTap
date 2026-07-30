@@ -156,15 +156,25 @@ export function CorrectionTriageFlow({
       <CardContent className="space-y-5">
         <div className="space-y-1 rounded-md bg-muted/50 p-3 text-sm">
           <p>
-            <span className="text-muted-foreground">Wrote: </span>
-            <span className="font-medium line-through decoration-destructive/60">
+            <span className="text-muted-foreground">
+              {correction.corrected ? "Wrote: " : "Sentence: "}
+            </span>
+            <span
+              className={correction.corrected
+                ? "font-medium line-through decoration-destructive/60"
+                : "font-medium"}
+            >
               {correction.original}
             </span>
           </p>
-          <p>
-            <span className="text-muted-foreground">Fix: </span>
-            <span className="font-medium">{correction.corrected}</span>
-          </p>
+          {correction.corrected
+            ? (
+              <p>
+                <span className="text-muted-foreground">Fix: </span>
+                <span className="font-medium">{correction.corrected}</span>
+              </p>
+            )
+            : null}
           {correction.correctorNote
             ? (
               <p className="text-muted-foreground">

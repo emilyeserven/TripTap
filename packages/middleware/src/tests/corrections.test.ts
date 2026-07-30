@@ -136,16 +136,18 @@ test("POST /api/corrections rejects a payload missing original", async () => {
   await app.close();
 });
 
-test("POST /api/corrections rejects a payload missing corrected", async () => {
+// The fix is optional now — a non-correction sentence has `original` but no `corrected`. Without a DB
+// the insert can't complete, but schema validation must accept it (not a 400).
+test("POST /api/corrections accepts a sentence with no fix (corrected omitted)", async () => {
   const app = await buildApp();
   const res = await app.inject({
     method: "POST",
     url: "/api/corrections",
     payload: {
-      original: "学校え行きました",
+      original: "学校へ行きました",
     },
   });
-  assert.equal(res.statusCode, 400);
+  assert.notEqual(res.statusCode, 400);
   await app.close();
 });
 

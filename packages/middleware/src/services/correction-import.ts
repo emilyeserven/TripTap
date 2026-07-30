@@ -16,6 +16,24 @@ function grammarTermsOf(terms: SentenceTermRef[] | null | undefined): SentenceTe
 }
 
 /**
+ * Split free-form text into sentence segments (mirrors the client's `splitSentences`): a boundary is a
+ * run of terminal punctuation (。！？.!?) or the end of a non-empty line. Used to offer a writing's raw,
+ * uncorrected lines as no-fix candidates.
+ */
+function splitSentences(text: string): string[] {
+  const segments: string[] = [];
+  for (const line of text.split("\n")) {
+    if (!line.trim()) continue;
+    const matches = line.match(/[^。！？.!?]*[。！？.!?]+|[^。！？.!?]+$/g) ?? [line];
+    for (const m of matches) {
+      const trimmed = m.trim();
+      if (trimmed) segments.push(trimmed);
+    }
+  }
+  return segments;
+}
+
+/**
  * Import corrected learner output that already lives embedded in other entities into the triage
  * pipeline. Three sources, each holding an (original, corrected) pair in a different shape:
  *
@@ -45,14 +63,15 @@ async function mySentenceCandidates(): Promise<CorrectionImportCandidate[]> {
   const rows = await db.select().from(mySentences);
   const out: CorrectionImportCandidate[] = [];
   for (const row of rows) {
-    if (!row.correction?.trim()) continue;
+    if (!row.text?.trim()) continue;
     out.push({
       ref: {
         kind: "my_sentence",
         id: row.id,
       },
       original: row.text,
-      corrected: row.correction,
+      // Null when the sentence has no correction yet — a non-correction sentence.
+      corrected: row.correction?.trim() ? row.correction : null,
       correctorNote: row.explanation ?? null,
       context: row.translation ?? null,
       label: null,
@@ -66,10 +85,12 @@ async function writingCandidates(): Promise<CorrectionImportCandidate[]> {
   const rows = await db.select().from(writings);
   const out: CorrectionImportCandidate[] = [];
   for (const row of rows) {
-    // A writing's grammar tags apply to the whole piece, so surface them on each of its corrections.
+    // A writing's grammar tags apply to the whole piece, so surface them on each of its lines.
     const grammarTerms = grammarTermsOf(row.terms);
+    const correctedOriginals = new Set<string>();
     for (const correction of row.corrections ?? []) {
       if (!correction.original?.trim() || !correction.corrected?.trim()) continue;
+      correctedOriginals.add(correction.original.trim());
       out.push({
         ref: {
           kind: "writing",
@@ -81,6 +102,25 @@ async function writingCandidates(): Promise<CorrectionImportCandidate[]> {
         context: null,
         label: row.date,
         grammarTerms,
+      });
+    }
+    // The writing's raw, uncorrected lines — non-correction sentences. Indexed by position so the
+    // import can re-resolve them; skip lines already offered as a correction above.
+    if (row.text?.trim()) {
+      splitSentences(row.text).forEach((line, idx) => {
+        if (correctedOriginals.has(line.trim())) return;
+        out.push({
+          ref: {
+            kind: "writing",
+            id: `${row.id}:line:${idx}`,
+          },
+          original: line,
+          corrected: null,
+          correctorNote: null,
+          context: null,
+          label: row.date,
+          grammarTerms,
+        });
       });
     }
   }
@@ -101,14 +141,15 @@ async function answerSheetCandidates(): Promise<CorrectionImportCandidate[]> {
   for (const row of rows) {
     const grammarTerms = grammarByQuestionSheet.get(row.questionSheetId) ?? [];
     for (const entry of row.entries ?? []) {
-      if (!entry.value?.trim() || !entry.correction?.trim()) continue;
+      if (!entry.value?.trim()) continue;
       out.push({
         ref: {
           kind: "answer_sheet",
           id: `${row.id}:${entry.slotId}`,
         },
         original: entry.value,
-        corrected: entry.correction,
+        // Null when the answer has no correction — a non-correction sentence.
+        corrected: entry.correction?.trim() ? entry.correction : null,
         correctorNote: entry.reasoning ?? null,
         context: entry.intendedMeaning ?? null,
         label: row.title ?? null,
@@ -134,46 +175,67 @@ export async function listImportCandidates(
   return candidates.filter(c => !seen.has(c.ref.id));
 }
 
-/** Resolve one ref back to its candidate (re-read from the source, so the client can't spoof text). */
+/**
+ * Resolve one ref back to its candidate (re-read from the source, so the client can't spoof text).
+ * `corrected` is null when the source sentence has no fix. Import doesn't carry tags onto the
+ * Correction, so `grammarTerms` is always empty here.
+ */
 async function resolveRef(ref: CorrectionImportRef): Promise<CorrectionImportCandidate | null> {
   if (ref.kind === "my_sentence") {
     const [row] = await db.select().from(mySentences).where(eq(mySentences.id, ref.id));
-    if (!row?.correction?.trim()) return null;
+    if (!row?.text?.trim()) return null;
     return {
       ref,
       original: row.text,
-      corrected: row.correction,
+      corrected: row.correction?.trim() ? row.correction : null,
       correctorNote: row.explanation ?? null,
       context: row.translation ?? null,
       label: null,
-      // Import doesn't carry tags onto the Correction; only the picker display uses grammarTerms.
       grammarTerms: [],
     };
   }
-  // The array-backed sources address a child by `entityId:childId`.
-  const [entityId, childId] = ref.id.split(":");
-  if (!entityId || !childId) return null;
+  // The array-backed sources address a child by `entityId:childId` (or `writingId:line:index`).
+  const parts = ref.id.split(":");
+  const entityId = parts[0];
+  if (!entityId) return null;
   if (ref.kind === "writing") {
     const [row] = await db.select().from(writings).where(eq(writings.id, entityId));
-    const correction = row?.corrections?.find(c => c.id === childId);
-    if (!correction?.original?.trim() || !correction.corrected?.trim()) return null;
+    if (!row) return null;
+    if (parts[1] === "line") {
+      // A raw, uncorrected writing line addressed by its position in the split text.
+      const line = row.text ? splitSentences(row.text)[Number(parts[2])] : undefined;
+      if (!line?.trim()) return null;
+      return {
+        ref,
+        original: line,
+        corrected: null,
+        correctorNote: null,
+        context: null,
+        label: row.date ?? null,
+        grammarTerms: [],
+      };
+    }
+    const correction = row.corrections?.find(c => c.id === parts[1]);
+    if (!correction?.original?.trim()) return null;
     return {
       ref,
       original: correction.original,
-      corrected: correction.corrected,
+      corrected: correction.corrected?.trim() ? correction.corrected : null,
       correctorNote: correction.note ?? null,
       context: null,
-      label: row?.date ?? null,
+      label: row.date ?? null,
       grammarTerms: [],
     };
   }
+  const childId = parts[1];
+  if (!childId) return null;
   const [row] = await db.select().from(answerSheets).where(eq(answerSheets.id, entityId));
   const entry = row?.entries?.find(e => e.slotId === childId);
-  if (!entry?.value?.trim() || !entry.correction?.trim()) return null;
+  if (!entry?.value?.trim()) return null;
   return {
     ref,
     original: entry.value,
-    corrected: entry.correction,
+    corrected: entry.correction?.trim() ? entry.correction : null,
     correctorNote: entry.reasoning ?? null,
     context: entry.intendedMeaning ?? null,
     label: row?.title ?? null,

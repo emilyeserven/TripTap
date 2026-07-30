@@ -42,7 +42,7 @@ function toCorrection(row: CorrectionRow): Correction {
 function toInsert(input: CreateCorrectionInput) {
   return {
     original: input.original,
-    corrected: input.corrected,
+    corrected: input.corrected ?? null,
     context: input.context ?? null,
     correctorNote: input.correctorNote ?? null,
     source: input.source ?? "self",

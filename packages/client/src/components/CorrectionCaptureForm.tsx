@@ -38,13 +38,14 @@ export function CorrectionCaptureForm() {
   const [context, setContext] = useState("");
   const [source, setSource] = useState<CorrectionSource>("tutor");
 
-  const canSubmit = original.trim().length > 0 && corrected.trim().length > 0;
+  // The fix is optional — a sentence can be added with no correction (a non-correction sentence).
+  const canSubmit = original.trim().length > 0;
 
   async function handleAdd() {
     if (!canSubmit) return;
     await create.mutateAsync({
       original: original.trim(),
-      corrected: corrected.trim(),
+      corrected: corrected.trim() || null,
       correctorNote: note.trim() || null,
       context: context.trim() || null,
       source,
@@ -67,8 +68,9 @@ export function CorrectionCaptureForm() {
       <CardHeader>
         <CardTitle>Capture corrections</CardTitle>
         <CardDescription>
-          Paste a correction — what you wrote, and the fix. Add the whole batch, then triage it. Most
-          will turn out to be slips and get thrown away; that’s the point.
+          Paste a correction — what you wrote, and the fix. The fix is optional: leave it blank to add
+          a sentence as-is. Add the whole batch, then triage it. Most corrections turn out to be slips
+          and get thrown away; that’s the point.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -89,7 +91,7 @@ export function CorrectionCaptureForm() {
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="correction-corrected">The fix</Label>
+            <Label htmlFor="correction-corrected">The fix (optional)</Label>
             <Textarea
               id="correction-corrected"
               value={corrected}

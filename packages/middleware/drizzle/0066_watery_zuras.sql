@@ -1,0 +1,1 @@
+ALTER TABLE "corrections" ALTER COLUMN "corrected" DROP NOT NULL;

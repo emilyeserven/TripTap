@@ -128,8 +128,9 @@ export function CorrectionImportDialog() {
                 className="mt-0.5"
               />
               <span className="min-w-0 flex-1">
-                {/* Show only the corrected form — never the learner's incorrect original. */}
-                <span className="block font-medium">{candidate.corrected}</span>
+                {/* Show the final sentence: the fix if there is one, else the sentence as written.
+                    Never surface an incorrect original alongside its correction. */}
+                <span className="block font-medium">{candidate.corrected ?? candidate.original}</span>
                 <span className="mt-1 flex flex-wrap gap-1">
                   {candidate.label
                     ? <Badge variant="secondary">{candidate.label}</Badge>

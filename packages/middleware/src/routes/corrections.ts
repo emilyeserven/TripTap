@@ -88,16 +88,16 @@ const importedFromSchema = {
 
 const createCorrectionBody = {
   type: "object",
-  required: ["original", "corrected"],
+  required: ["original"],
   additionalProperties: false,
   properties: {
     original: {
       type: "string",
       minLength: 1,
     },
+    // Null / omitted for a non-correction sentence added without a fix.
     corrected: {
-      type: "string",
-      minLength: 1,
+      type: ["string", "null"],
     },
     context: {
       type: ["string", "null"],
