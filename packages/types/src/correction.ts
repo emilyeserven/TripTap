@@ -10,6 +10,8 @@
  * Fastify API and the React client.
  */
 
+import type { SentenceTermRef } from "./index.js";
+
 /* ── Triage decision tree (shipped as data — inspectable + testable) ─────────────────────────────── */
 
 /** The four buckets every correction resolves to. */
@@ -216,6 +218,8 @@ export interface CorrectionImportCandidate {
   context: string | null;
   /** Where it came from, for display (e.g. a writing's date or an answer sheet's title). */
   label: string | null;
+  /** Grammar-source tags on the source entity, for display in the picker; empty when none. */
+  grammarTerms: SentenceTermRef[];
 }
 
 /** Payload for `POST /api/corrections/import`: the refs to pull in, and the batch to file them under. */

@@ -128,22 +128,21 @@ export function CorrectionImportDialog() {
                 className="mt-0.5"
               />
               <span className="min-w-0 flex-1">
-                <span className="block">
-                  <span className="line-through decoration-destructive/60">
-                    {candidate.original}
-                  </span>
-                  <span className="mx-2 text-muted-foreground">→</span>
-                  <span className="font-medium">{candidate.corrected}</span>
-                </span>
-                {candidate.label
-                  ? (
+                {/* Show only the corrected form — never the learner's incorrect original. */}
+                <span className="block font-medium">{candidate.corrected}</span>
+                <span className="mt-1 flex flex-wrap gap-1">
+                  {candidate.label
+                    ? <Badge variant="secondary">{candidate.label}</Badge>
+                    : null}
+                  {candidate.grammarTerms.map(term => (
                     <Badge
-                      variant="secondary"
-                      className="mt-1"
-                    >{candidate.label}
+                      key={term.id}
+                      variant="outline"
+                    >
+                      {term.name}
                     </Badge>
-                  )
-                  : null}
+                  ))}
+                </span>
               </span>
             </label>
           ))}
