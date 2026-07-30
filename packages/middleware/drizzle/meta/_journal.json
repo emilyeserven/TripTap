@@ -463,6 +463,13 @@
       "when": 1785370483145,
       "tag": "0065_fluffy_cable",
       "breakpoints": true
+    },
+    {
+      "idx": 66,
+      "version": "7",
+      "when": 1785416820581,
+      "tag": "0066_watery_zuras",
+      "breakpoints": true
     }
   ]
 }

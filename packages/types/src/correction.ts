@@ -167,10 +167,10 @@ export interface Triage {
 /** A captured, possibly-triaged correction. */
 export interface Correction {
   id: string;
-  /** What the learner wrote. */
+  /** What the learner wrote (or, for a no-fix sentence, just the sentence). */
   original: string;
-  /** The fix. */
-  corrected: string;
+  /** The fix; null for a non-correction sentence added without one. */
+  corrected: string | null;
   /** Prompt or surrounding sentence, for context; null when none. */
   context: string | null;
   /** The corrector's note / explanation, when given. */
@@ -188,10 +188,10 @@ export interface Correction {
   createdAt: string;
 }
 
-/** Payload for creating a correction. `original` and `corrected` are required. */
+/** Payload for creating a correction. Only `original` is required; omit `corrected` for a no-fix sentence. */
 export interface CreateCorrectionInput {
   original: string;
-  corrected: string;
+  corrected?: string | null;
   context?: string | null;
   correctorNote?: string | null;
   /** Defaults to `"self"` server-side when omitted. */
@@ -213,7 +213,8 @@ export type UpdateCorrectionInput = Partial<CreateCorrectionInput>;
 export interface CorrectionImportCandidate {
   ref: CorrectionImportRef;
   original: string;
-  corrected: string;
+  /** The fix; null for a source sentence that has no correction. */
+  corrected: string | null;
   correctorNote: string | null;
   context: string | null;
   /** Where it came from, for display (e.g. a writing's date or an answer sheet's title). */
@@ -250,7 +251,7 @@ export interface TriageCorrectionInput {
 export interface CorrectionLogEntry {
   correctionId: string;
   original: string;
-  corrected: string;
+  corrected: string | null;
   /** The capture batch — needed to file a chunk card produced from this correction under its cap. */
   batchId: string;
   createdAt: string;

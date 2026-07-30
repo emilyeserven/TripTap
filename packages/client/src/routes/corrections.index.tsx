@@ -79,11 +79,17 @@ function CorrectionsInboxPage() {
         {(untriaged ?? []).map(correction => (
           <Card key={correction.id}>
             <CardContent className="p-4 text-sm">
-              <span className="line-through decoration-destructive/60">
-                {correction.original}
-              </span>
-              <span className="mx-2 text-muted-foreground">→</span>
-              <span className="font-medium">{correction.corrected}</span>
+              {correction.corrected
+                ? (
+                  <>
+                    <span className="line-through decoration-destructive/60">
+                      {correction.original}
+                    </span>
+                    <span className="mx-2 text-muted-foreground">→</span>
+                    <span className="font-medium">{correction.corrected}</span>
+                  </>
+                )
+                : <span className="font-medium">{correction.original}</span>}
             </CardContent>
           </Card>
         ))}

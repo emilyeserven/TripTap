@@ -990,7 +990,8 @@ export type NewMigakuImportRow = typeof migakuImports.$inferInsert;
 export const corrections = pgTable("corrections", {
   id: uuid("id").primaryKey().defaultRandom(),
   original: text("original").notNull(),
-  corrected: text("corrected").notNull(),
+  // Null for a non-correction sentence added without a fix.
+  corrected: text("corrected"),
   context: text("context"),
   correctorNote: text("corrector_note"),
   source: text("source").$type<CorrectionSource>().notNull().default("self"),

@@ -19,9 +19,15 @@ export function CollocationCardBuilder({
     <li className="space-y-2 text-sm">
       <div className="flex flex-wrap items-center gap-2">
         <span>
-          <span className="line-through decoration-destructive/60">{entry.original}</span>
-          <span className="mx-2 text-muted-foreground">→</span>
-          <span className="font-medium">{entry.corrected}</span>
+          {entry.corrected
+            ? (
+              <>
+                <span className="line-through decoration-destructive/60">{entry.original}</span>
+                <span className="mx-2 text-muted-foreground">→</span>
+                <span className="font-medium">{entry.corrected}</span>
+              </>
+            )
+            : <span className="font-medium">{entry.original}</span>}
         </span>
         {building
           ? null
@@ -41,7 +47,7 @@ export function CollocationCardBuilder({
             <ChunkCardForm
               batchId={entry.batchId}
               correctionId={entry.correctionId}
-              defaultChunk={entry.corrected}
+              defaultChunk={entry.corrected ?? entry.original}
               defaultWrongForm={entry.original}
               onSaved={() => setBuilding(false)}
               onCancel={() => setBuilding(false)}

@@ -16,6 +16,12 @@ function daysAgo(iso: string): string {
 function EntryLine({
   entry,
 }: { entry: CorrectionLogEntry }) {
+  // A non-correction sentence (no fix) shows plain; a real correction shows original → fix.
+  if (!entry.corrected) {
+    return (
+      <li className="text-sm font-medium">{entry.original}</li>
+    );
+  }
   return (
     <li className="text-sm">
       <span className="line-through decoration-destructive/60">{entry.original}</span>
