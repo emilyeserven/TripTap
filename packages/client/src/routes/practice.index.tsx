@@ -4,7 +4,7 @@ import type { PracticeComprehension } from "@sentence-bank/types";
 import { useMemo, useState } from "react";
 
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Plus } from "lucide-react";
+import { ClipboardPaste, Plus } from "lucide-react";
 
 import { PracticeSentenceCard } from "@/components/PracticeSentenceCard";
 import { PracticeSentenceImportDialog } from "@/components/PracticeSentenceImportDialog";
@@ -115,6 +115,15 @@ function PracticePage() {
             Show translations
           </label>
           <PracticeSentenceImportDialog />
+          <Button
+            asChild
+            variant="outline"
+          >
+            <Link to="/practice/import">
+              <ClipboardPaste className="size-4" />
+              Import a breakdown
+            </Link>
+          </Button>
           <Button asChild>
             <Link to="/practice/new">
               <Plus className="size-4" />

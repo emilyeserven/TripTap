@@ -61,6 +61,7 @@ import { Route as ReadingSessionsIdRouteImport } from './routes/reading-sessions
 import { Route as QuestionSheetsNewRouteImport } from './routes/question-sheets.new'
 import { Route as QuestionSheetsIdRouteImport } from './routes/question-sheets.$id'
 import { Route as PracticeNewRouteImport } from './routes/practice.new'
+import { Route as PracticeImportRouteImport } from './routes/practice.import'
 import { Route as PracticeIdRouteImport } from './routes/practice.$id'
 import { Route as MyWritingRewriteRouteImport } from './routes/my-writing.rewrite'
 import { Route as MyWritingIdRouteImport } from './routes/my-writing.$id'
@@ -372,6 +373,11 @@ const PracticeNewRoute = PracticeNewRouteImport.update({
   path: '/practice/new',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PracticeImportRoute = PracticeImportRouteImport.update({
+  id: '/practice/import',
+  path: '/practice/import',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PracticeIdRoute = PracticeIdRouteImport.update({
   id: '/practice/$id',
   path: '/practice/$id',
@@ -661,6 +667,7 @@ export interface FileRoutesByFullPath {
   '/my-writing/$id': typeof MyWritingIdRoute
   '/my-writing/rewrite': typeof MyWritingRewriteRoute
   '/practice/$id': typeof PracticeIdRouteWithChildren
+  '/practice/import': typeof PracticeImportRoute
   '/practice/new': typeof PracticeNewRoute
   '/question-sheets/$id': typeof QuestionSheetsIdRouteWithChildren
   '/question-sheets/new': typeof QuestionSheetsNewRoute
@@ -758,6 +765,7 @@ export interface FileRoutesByTo {
   '/my-sentences/new': typeof MySentencesNewRoute
   '/my-writing/$id': typeof MyWritingIdRoute
   '/my-writing/rewrite': typeof MyWritingRewriteRoute
+  '/practice/import': typeof PracticeImportRoute
   '/practice/new': typeof PracticeNewRoute
   '/question-sheets/new': typeof QuestionSheetsNewRoute
   '/reading-sessions/new': typeof ReadingSessionsNewRoute
@@ -857,6 +865,7 @@ export interface FileRoutesById {
   '/my-writing/$id': typeof MyWritingIdRoute
   '/my-writing/rewrite': typeof MyWritingRewriteRoute
   '/practice/$id': typeof PracticeIdRouteWithChildren
+  '/practice/import': typeof PracticeImportRoute
   '/practice/new': typeof PracticeNewRoute
   '/question-sheets/$id': typeof QuestionSheetsIdRouteWithChildren
   '/question-sheets/new': typeof QuestionSheetsNewRoute
@@ -963,6 +972,7 @@ export interface FileRouteTypes {
     | '/my-writing/$id'
     | '/my-writing/rewrite'
     | '/practice/$id'
+    | '/practice/import'
     | '/practice/new'
     | '/question-sheets/$id'
     | '/question-sheets/new'
@@ -1060,6 +1070,7 @@ export interface FileRouteTypes {
     | '/my-sentences/new'
     | '/my-writing/$id'
     | '/my-writing/rewrite'
+    | '/practice/import'
     | '/practice/new'
     | '/question-sheets/new'
     | '/reading-sessions/new'
@@ -1158,6 +1169,7 @@ export interface FileRouteTypes {
     | '/my-writing/$id'
     | '/my-writing/rewrite'
     | '/practice/$id'
+    | '/practice/import'
     | '/practice/new'
     | '/question-sheets/$id'
     | '/question-sheets/new'
@@ -1263,6 +1275,7 @@ export interface RootRouteChildren {
   MyWritingIdRoute: typeof MyWritingIdRoute
   MyWritingRewriteRoute: typeof MyWritingRewriteRoute
   PracticeIdRoute: typeof PracticeIdRouteWithChildren
+  PracticeImportRoute: typeof PracticeImportRoute
   PracticeNewRoute: typeof PracticeNewRoute
   QuestionSheetsIdRoute: typeof QuestionSheetsIdRouteWithChildren
   QuestionSheetsNewRoute: typeof QuestionSheetsNewRoute
@@ -1669,6 +1682,13 @@ declare module '@tanstack/react-router' {
       path: '/practice/new'
       fullPath: '/practice/new'
       preLoaderRoute: typeof PracticeNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/practice/import': {
+      id: '/practice/import'
+      path: '/practice/import'
+      fullPath: '/practice/import'
+      preLoaderRoute: typeof PracticeImportRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/practice/$id': {
@@ -2238,6 +2258,7 @@ const rootRouteChildren: RootRouteChildren = {
   MyWritingIdRoute: MyWritingIdRoute,
   MyWritingRewriteRoute: MyWritingRewriteRoute,
   PracticeIdRoute: PracticeIdRouteWithChildren,
+  PracticeImportRoute: PracticeImportRoute,
   PracticeNewRoute: PracticeNewRoute,
   QuestionSheetsIdRoute: QuestionSheetsIdRouteWithChildren,
   QuestionSheetsNewRoute: QuestionSheetsNewRoute,

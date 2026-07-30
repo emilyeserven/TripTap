@@ -230,6 +230,26 @@ export type PracticeSentenceRow = typeof practiceSentences.$inferSelect;
 export type NewPracticeSentenceRow = typeof practiceSentences.$inferInsert;
 
 /**
+ * `practice_sentence_images` — an optional context screenshot attached to a practice sentence, stored
+ * inline (`bytea`) in a side table so ordinary practice-sentence reads never load the blob. One image
+ * per sentence (the sentence id is the primary key); cascades when the sentence is deleted.
+ */
+export const practiceSentenceImages = pgTable("practice_sentence_images", {
+  practiceSentenceId: uuid("practice_sentence_id")
+    .primaryKey()
+    .references((): AnyPgColumn => practiceSentences.id, {
+      onDelete: "cascade",
+    }),
+  image: bytea("image").notNull(),
+  imageMime: text("image_mime"),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+});
+
+export type PracticeSentenceImageRow = typeof practiceSentenceImages.$inferSelect;
+
+/**
  * `practice_sentence_vocab` — many-to-many link between a practice sentence and the bank vocab created
  * for it (e.g. the words the learner couldn't read aloud). Parallel to `sentence_vocab`, but bound to
  * `practice_sentences` instead of `sentences`.

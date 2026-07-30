@@ -11,6 +11,8 @@
 // Type-only import (erased at build) — `SentenceTermRef` lives in the barrel; no runtime cycle.
 import type { SentenceTermRef } from "./index.js";
 
+import { z } from "zod";
+
 /** One unknown word logged on a practice sentence: the word, its reading, and its meaning. */
 export interface PracticeWord {
   /** The word/term, e.g. "頭". */
@@ -89,6 +91,8 @@ export interface PracticeSentence {
   needsCorrection: boolean;
   /** A corrected version of {@link text}, stored but not yet displayed (follow-up feature); null until added. */
   correction: string | null;
+  /** True when a context screenshot is attached (served at `/api/practice-sentences/:id/image`). */
+  hasImage: boolean;
   /** ISO-8601 timestamp of when the practice sentence was added. */
   createdAt: string;
 }
@@ -121,3 +125,52 @@ export interface CreatePracticeSentenceInput {
 
 /** Payload for partially updating a practice sentence. */
 export type UpdatePracticeSentenceInput = Partial<CreatePracticeSentenceInput>;
+
+/* ── Breakdown import (paste an AI's sentence breakdown as JSON) ──────────────────────────────────── */
+
+/**
+ * The JSON an external AI emits when it breaks down one sentence, pasted into the app to create a
+ * practice card. A Zod schema (strict, so stray keys are rejected) is the single source of truth: the
+ * client validates the paste with `safeParse`, and the route body uses the derived JSON Schema, so the
+ * two can never drift — mirroring the AI-lesson import contract.
+ */
+export const practiceSentenceImportSchema = z.strictObject({
+  /** The sentence in the target language, copied exactly. */
+  text: z.string().min(1),
+  /** Target language; defaults to "Japanese" on import when omitted. */
+  language: z.string().optional(),
+  /** Free-text reading of the tricky parts (not full furigana). */
+  reading: z.string().optional().nullable(),
+  /** Natural translation. */
+  translation: z.string().optional().nullable(),
+  /** The single thing this sentence teaches. */
+  target: z.string().optional().nullable(),
+  targetKind: z.enum(["word", "grammar", "idiom", "collocation", "reading"]).optional().nullable(),
+  /** Pre-lookup guess at the meaning. */
+  guess: z.string().optional().nullable(),
+  /** Literal/structural gloss. */
+  literal: z.string().optional().nullable(),
+  /** Politeness/register label. */
+  register: z.string().optional().nullable(),
+  /** Who says this, to whom. */
+  nuance: z.string().optional().nullable(),
+  /** Unknown words: word / reading / meaning. */
+  words: z.array(z.strictObject({
+    w: z.string().min(1),
+    r: z.string(),
+    m: z.string(),
+  })).optional().nullable(),
+  /** Grammar points: pattern / what it does. */
+  grammar: z.array(z.strictObject({
+    p: z.string().min(1),
+    n: z.string(),
+  })).optional().nullable(),
+});
+
+/** JSON Schema (draft-07) derived from the Zod contract, used verbatim as the import route's body. */
+export const practiceSentenceImportJsonSchema = z.toJSONSchema(practiceSentenceImportSchema, {
+  target: "draft-7",
+});
+
+/** The pasted breakdown payload. */
+export type PracticeSentenceImportInput = z.infer<typeof practiceSentenceImportSchema>;

@@ -1,5 +1,6 @@
 import type {
   CreatePracticeSentenceInput,
+  PracticeSentenceImportInput,
   UpdatePracticeSentenceInput,
 } from "@sentence-bank/types";
 
@@ -87,6 +88,51 @@ export function useCreatePracticeSentencesMany() {
       );
     },
     onError: err => toast.error("Couldn't import practice sentences", {
+      description: err instanceof Error ? err.message : undefined,
+    }),
+  });
+}
+
+/** Import a pasted AI breakdown as one practice sentence. */
+export function useImportPracticeSentence() {
+  const {
+    seed,
+  } = useEntityCacheSync(PRACTICE_KEY);
+  return useMutation({
+    mutationFn: (input: PracticeSentenceImportInput) => practiceSentencesApi.import(input),
+    onSuccess: seed,
+    onError: err => toast.error("Couldn't import the breakdown", {
+      description: err instanceof Error ? err.message : undefined,
+    }),
+  });
+}
+
+/** Upload (or replace) a practice sentence's context screenshot. */
+export function useUploadPracticeSentenceImage() {
+  const {
+    seed,
+  } = useEntityCacheSync(PRACTICE_KEY);
+  return useMutation({
+    mutationFn: ({
+      id, file,
+    }: { id: string;
+      file: File; }) => practiceSentencesApi.uploadImage(id, file),
+    onSuccess: seed,
+    onError: err => toast.error("Couldn't upload the screenshot", {
+      description: err instanceof Error ? err.message : undefined,
+    }),
+  });
+}
+
+/** Remove a practice sentence's context screenshot. */
+export function useRemovePracticeSentenceImage() {
+  const {
+    invalidate,
+  } = useEntityCacheSync(PRACTICE_KEY);
+  return useMutation({
+    mutationFn: (id: string) => practiceSentencesApi.removeImage(id),
+    onSuccess: invalidate,
+    onError: err => toast.error("Couldn't remove the screenshot", {
       description: err instanceof Error ? err.message : undefined,
     }),
   });

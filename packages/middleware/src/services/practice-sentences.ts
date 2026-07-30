@@ -5,10 +5,10 @@ import type {
   UpdatePracticeSentenceInput,
 } from "@sentence-bank/types";
 import { db } from "@/db";
-import { practiceSentences, type PracticeSentenceRow } from "@/db/schema";
+import { practiceSentenceImages, practiceSentences, type PracticeSentenceRow } from "@/db/schema";
 
 /** Map a DB row to the shared `PracticeSentence` wire type. */
-function toPracticeSentence(row: PracticeSentenceRow): PracticeSentence {
+function toPracticeSentence(row: PracticeSentenceRow, hasImage: boolean): PracticeSentence {
   return {
     id: row.id,
     text: row.text,
@@ -32,9 +32,31 @@ function toPracticeSentence(row: PracticeSentenceRow): PracticeSentence {
     sentenceId: row.sentenceId,
     needsCorrection: row.needsCorrection,
     correction: row.correction,
+    hasImage,
     createdAt:
       row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
   };
+}
+
+/** The set of practice-sentence ids that have a context screenshot (ids only — never the blob). */
+async function imageIdSet(): Promise<Set<string>> {
+  const rows = await db
+    .select({
+      id: practiceSentenceImages.practiceSentenceId,
+    })
+    .from(practiceSentenceImages);
+  return new Set(rows.map(r => r.id));
+}
+
+/** Whether one practice sentence has a context screenshot. */
+async function sentenceHasImage(id: string): Promise<boolean> {
+  const [row] = await db
+    .select({
+      id: practiceSentenceImages.practiceSentenceId,
+    })
+    .from(practiceSentenceImages)
+    .where(eq(practiceSentenceImages.practiceSentenceId, id));
+  return Boolean(row);
 }
 
 /** Drizzle insert shape for one practice-sentence row, from the create input. */
@@ -66,23 +88,25 @@ function toInsert(input: CreatePracticeSentenceInput) {
 }
 
 export async function listPracticeSentences(): Promise<PracticeSentence[]> {
-  const rows = await db
-    .select()
-    .from(practiceSentences)
-    .orderBy(desc(practiceSentences.createdAt));
-  return rows.map(toPracticeSentence);
+  const [rows, withImages] = await Promise.all([
+    db.select().from(practiceSentences).orderBy(desc(practiceSentences.createdAt)),
+    imageIdSet(),
+  ]);
+  return rows.map(row => toPracticeSentence(row, withImages.has(row.id)));
 }
 
 export async function getPracticeSentence(id: string): Promise<PracticeSentence | null> {
   const [row] = await db.select().from(practiceSentences).where(eq(practiceSentences.id, id));
-  return row ? toPracticeSentence(row) : null;
+  if (!row) return null;
+  return toPracticeSentence(row, await sentenceHasImage(id));
 }
 
 export async function createPracticeSentence(
   input: CreatePracticeSentenceInput,
 ): Promise<PracticeSentence> {
   const [row] = await db.insert(practiceSentences).values(toInsert(input)).returning();
-  return toPracticeSentence(row);
+  // Freshly created — a screenshot is attached afterwards via the image upload endpoint.
+  return toPracticeSentence(row, false);
 }
 
 /** Create many practice sentences in a single insert (used by the capture/sentence import flow). */
@@ -91,7 +115,7 @@ export async function createPracticeSentencesMany(
 ): Promise<PracticeSentence[]> {
   if (inputs.length === 0) return [];
   const rows = await db.insert(practiceSentences).values(inputs.map(toInsert)).returning();
-  return rows.map(toPracticeSentence);
+  return rows.map(row => toPracticeSentence(row, false));
 }
 
 export async function updatePracticeSentence(
@@ -103,12 +127,79 @@ export async function updatePracticeSentence(
     .set(input)
     .where(eq(practiceSentences.id, id))
     .returning();
-  return row ? toPracticeSentence(row) : null;
+  if (!row) return null;
+  return toPracticeSentence(row, await sentenceHasImage(id));
 }
 
 export async function deletePracticeSentence(id: string): Promise<boolean> {
   const rows = await db.delete(practiceSentences).where(eq(practiceSentences.id, id)).returning({
     id: practiceSentences.id,
   });
+  return rows.length > 0;
+}
+
+/* ── Context screenshot (stored inline in a side table) ──────────────────────────────────────────── */
+
+/** Fetch a practice sentence's context screenshot bytes, or null when it has none. */
+export async function getPracticeSentenceImage(
+  id: string,
+): Promise<{ image: Buffer;
+  mime: string | null; } | null> {
+  const [row] = await db
+    .select({
+      image: practiceSentenceImages.image,
+      imageMime: practiceSentenceImages.imageMime,
+    })
+    .from(practiceSentenceImages)
+    .where(eq(practiceSentenceImages.practiceSentenceId, id));
+  return row
+    ? {
+      image: row.image,
+      mime: row.imageMime,
+    }
+    : null;
+}
+
+/**
+ * Store (or replace) a practice sentence's context screenshot. Returns false when the sentence doesn't
+ * exist, so the route can 404 instead of orphaning an image row.
+ */
+export async function setPracticeSentenceImage(
+  id: string,
+  image: Buffer,
+  mime: string | null,
+): Promise<boolean> {
+  const [sentence] = await db
+    .select({
+      id: practiceSentences.id,
+    })
+    .from(practiceSentences)
+    .where(eq(practiceSentences.id, id));
+  if (!sentence) return false;
+  await db
+    .insert(practiceSentenceImages)
+    .values({
+      practiceSentenceId: id,
+      image,
+      imageMime: mime,
+    })
+    .onConflictDoUpdate({
+      target: practiceSentenceImages.practiceSentenceId,
+      set: {
+        image,
+        imageMime: mime,
+      },
+    });
+  return true;
+}
+
+/** Remove a practice sentence's context screenshot. Returns whether a row was deleted. */
+export async function deletePracticeSentenceImage(id: string): Promise<boolean> {
+  const rows = await db
+    .delete(practiceSentenceImages)
+    .where(eq(practiceSentenceImages.practiceSentenceId, id))
+    .returning({
+      id: practiceSentenceImages.practiceSentenceId,
+    });
   return rows.length > 0;
 }
