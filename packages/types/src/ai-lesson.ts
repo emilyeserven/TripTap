@@ -41,8 +41,9 @@
  * ── Dual-level Japanese (optional) ─────────────────────────────────────────────────────────────
  * A lesson may carry a simplified **N4** layer alongside its native Japanese: `vocab[].easyJp`
  * (plain-Japanese definition), `culture[].summaryEasy` / `culture[].summaryFull` (a two-level
- * Japanese summary), and `source[].easyJp` (a yasashii restatement). All are optional — when any are
- * present the lesson page shows a 易/難 (N4 / native) toggle; lessons without them are unchanged.
+ * Japanese summary), `source[].easyJp` (a yasashii restatement), and `grammar[].easyEx` (simpler
+ * example sentences). All are optional — when any are present the lesson page shows a 易/難 (N4 /
+ * native) toggle; lessons without them are unchanged.
  */
 
 import type { SentenceTermRef } from "./index.js";
@@ -119,6 +120,11 @@ export const grammarInputSchema = z.strictObject({
   note: z.string().min(1),
   /** Example sentences. */
   ex: z.array(grammarExampleSchema),
+  /**
+   * Optional simpler (yasashii / lower-JLPT) example sentences, shown in place of `ex` when the level
+   * toggle is easy. Same shape as `ex`; omit for single-level grammar.
+   */
+  easyEx: z.array(grammarExampleSchema).optional().nullable(),
 });
 
 /** A grammar note attached to a source sentence breakdown. */

@@ -42,6 +42,31 @@ describe("AiLessonTemplate", () => {
     })).not.toBeInTheDocument();
   });
 
+  it("shows the reading-level toggle when only grammar carries an easy layer", () => {
+    // The base fixture has no dual-level content, so no toggle.
+    const {
+      rerender,
+    } = render(<AiLessonTemplate aiLesson={aiLessonDetailFixture} />);
+    expect(screen.queryByText(/くわしい|やさしい/)).not.toBeInTheDocument();
+
+    // Grammar easyEx alone should surface the 易/難 toggle.
+    rerender(
+      <AiLessonTemplate
+        aiLesson={{
+          ...aiLessonDetailFixture,
+          grammar: aiLessonDetailFixture.grammar.map(g => ({
+            ...g,
+            easyEx: [{
+              jp: "コーヒー、ください。",
+              en: "Coffee, please.",
+            }],
+          })),
+        }}
+      />,
+    );
+    expect(screen.getByText(/くわしい|やさしい/)).toBeInTheDocument();
+  });
+
   it("renders an extra tab for each custom section, after the built-ins", () => {
     render(
       <AiLessonTemplate

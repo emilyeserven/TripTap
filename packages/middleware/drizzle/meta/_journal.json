@@ -456,6 +456,13 @@
       "when": 1785366214428,
       "tag": "0064_parched_miek",
       "breakpoints": true
+    },
+    {
+      "idx": 65,
+      "version": "7",
+      "when": 1785370483145,
+      "tag": "0065_fluffy_cable",
+      "breakpoints": true
     }
   ]
 }

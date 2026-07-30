@@ -1,0 +1,1 @@
+ALTER TABLE "ai_lesson_grammar" ADD COLUMN "easy_examples" jsonb;

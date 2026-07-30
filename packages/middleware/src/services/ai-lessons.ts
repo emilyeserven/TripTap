@@ -95,6 +95,7 @@ function toGrammar(row: AiLessonGrammarRow): GrammarItem {
     gloss: row.gloss,
     note: row.note,
     ex: row.examples,
+    easyEx: row.easyExamples ?? null,
     grammarTerms: row.grammarTerms ?? null,
   };
 }
@@ -289,6 +290,7 @@ export async function createAiLessonFromImport(input: AiLessonImportInput): Prom
           gloss: g.gloss,
           note: g.note,
           examples: g.ex,
+          easyExamples: g.easyEx ?? null,
           sortOrder: i,
         })),
       );
