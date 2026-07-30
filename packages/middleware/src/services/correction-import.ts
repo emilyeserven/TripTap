@@ -4,10 +4,16 @@ import type {
   CorrectionImportCandidate,
   CorrectionImportKind,
   CorrectionImportRef,
+  SentenceTermRef,
 } from "@sentence-bank/types";
 import { db } from "@/db";
-import { answerSheets, corrections, mySentences, writings } from "@/db/schema";
+import { answerSheets, corrections, mySentences, questionSheets, writings } from "@/db/schema";
 import { createCorrection } from "@/services/corrections";
+
+/** The Grammar-channel tags among a term list (older rows without a category default to Vocabulary). */
+function grammarTermsOf(terms: SentenceTermRef[] | null | undefined): SentenceTermRef[] {
+  return (terms ?? []).filter(t => (t.category ?? "vocabulary") === "grammar");
+}
 
 /**
  * Import corrected learner output that already lives embedded in other entities into the triage
@@ -50,6 +56,7 @@ async function mySentenceCandidates(): Promise<CorrectionImportCandidate[]> {
       correctorNote: row.explanation ?? null,
       context: row.translation ?? null,
       label: null,
+      grammarTerms: grammarTermsOf(row.terms),
     });
   }
   return out;
@@ -59,6 +66,8 @@ async function writingCandidates(): Promise<CorrectionImportCandidate[]> {
   const rows = await db.select().from(writings);
   const out: CorrectionImportCandidate[] = [];
   for (const row of rows) {
+    // A writing's grammar tags apply to the whole piece, so surface them on each of its corrections.
+    const grammarTerms = grammarTermsOf(row.terms);
     for (const correction of row.corrections ?? []) {
       if (!correction.original?.trim() || !correction.corrected?.trim()) continue;
       out.push({
@@ -71,6 +80,7 @@ async function writingCandidates(): Promise<CorrectionImportCandidate[]> {
         correctorNote: correction.note ?? null,
         context: null,
         label: row.date,
+        grammarTerms,
       });
     }
   }
@@ -78,9 +88,18 @@ async function writingCandidates(): Promise<CorrectionImportCandidate[]> {
 }
 
 async function answerSheetCandidates(): Promise<CorrectionImportCandidate[]> {
-  const rows = await db.select().from(answerSheets);
+  const [rows, sheets] = await Promise.all([
+    db.select().from(answerSheets),
+    db.select({
+      id: questionSheets.id,
+      grammarTerms: questionSheets.grammarTerms,
+    }).from(questionSheets),
+  ]);
+  // An answer sheet's grammar tags live on its parent question sheet.
+  const grammarByQuestionSheet = new Map(sheets.map(s => [s.id, grammarTermsOf(s.grammarTerms)]));
   const out: CorrectionImportCandidate[] = [];
   for (const row of rows) {
+    const grammarTerms = grammarByQuestionSheet.get(row.questionSheetId) ?? [];
     for (const entry of row.entries ?? []) {
       if (!entry.value?.trim() || !entry.correction?.trim()) continue;
       out.push({
@@ -93,6 +112,7 @@ async function answerSheetCandidates(): Promise<CorrectionImportCandidate[]> {
         correctorNote: entry.reasoning ?? null,
         context: entry.intendedMeaning ?? null,
         label: row.title ?? null,
+        grammarTerms,
       });
     }
   }
@@ -126,6 +146,8 @@ async function resolveRef(ref: CorrectionImportRef): Promise<CorrectionImportCan
       correctorNote: row.explanation ?? null,
       context: row.translation ?? null,
       label: null,
+      // Import doesn't carry tags onto the Correction; only the picker display uses grammarTerms.
+      grammarTerms: [],
     };
   }
   // The array-backed sources address a child by `entityId:childId`.
@@ -142,6 +164,7 @@ async function resolveRef(ref: CorrectionImportRef): Promise<CorrectionImportCan
       correctorNote: correction.note ?? null,
       context: null,
       label: row?.date ?? null,
+      grammarTerms: [],
     };
   }
   const [row] = await db.select().from(answerSheets).where(eq(answerSheets.id, entityId));
@@ -154,6 +177,7 @@ async function resolveRef(ref: CorrectionImportRef): Promise<CorrectionImportCan
     correctorNote: entry.reasoning ?? null,
     context: entry.intendedMeaning ?? null,
     label: row?.title ?? null,
+    grammarTerms: [],
   };
 }
 
