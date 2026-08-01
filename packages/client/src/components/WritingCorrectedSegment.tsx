@@ -7,6 +7,7 @@ import { CheckCircle2, Lock, Pencil } from "lucide-react";
 import { SentenceCorrector } from "@/components/SentenceCorrector";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { WritingCorrectionMeaning } from "@/components/WritingCorrectionMeaning";
 import { CorrectionDiff } from "@/lib/sentenceDiff";
 
 /**
@@ -54,16 +55,23 @@ export function WritingCorrectedSegment({
           Corrected
         </Badge>
         <div className="flex shrink-0 items-center gap-1">
-          <Link
-            to="/my-sentences"
-            className="
-              inline-flex items-center gap-1 text-sm text-primary
-              hover:underline
-            "
-          >
-            <CheckCircle2 className="size-4" />
-            In My Sentences
-          </Link>
+          {correction.mySentenceId
+            ? (
+              <Link
+                to="/my-sentences/$id"
+                params={{
+                  id: correction.mySentenceId,
+                }}
+                className="
+                  inline-flex items-center gap-1 text-sm text-primary
+                  hover:underline
+                "
+              >
+                <CheckCircle2 className="size-4" />
+                In My Sentences
+              </Link>
+            )
+            : null}
           <Button
             type="button"
             size="sm"
@@ -91,6 +99,11 @@ export function WritingCorrectedSegment({
       </div>
       {correction.note
         ? <p className="text-sm text-muted-foreground">{correction.note}</p>
+        : null}
+
+      {/* Edit the per-sentence meaning inline — no need to open the My Sentences page. */}
+      {correction.mySentenceId
+        ? <WritingCorrectionMeaning mySentenceId={correction.mySentenceId} />
         : null}
     </div>
   );

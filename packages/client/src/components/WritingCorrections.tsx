@@ -50,7 +50,9 @@ export function WritingCorrections({
         marks: r.marks,
         explanation: r.reasoning,
         needsCorrection: false,
-        translation: writing.meaning,
+        // Per-sentence intended meaning is set inline on the corrected card — don't inherit the whole
+        // writing's meaning, which belongs to the piece, not one sentence.
+        translation: null,
         language: writing.language,
         writingId: writing.id,
         terms: writing.terms,
