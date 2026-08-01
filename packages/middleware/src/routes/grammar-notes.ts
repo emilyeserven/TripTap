@@ -104,7 +104,7 @@ const constructionSlotSchema = {
 
 const constructionSchema = {
   type: "object",
-  required: ["id", "pattern", "sentenceIds"],
+  required: ["id", "pattern"],
   additionalProperties: false,
   properties: {
     id: {

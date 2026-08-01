@@ -23,6 +23,19 @@ const FORM_PRESETS = [
   "Volitional",
 ];
 
+/** Selectable parts of speech; the picker also accepts free-typed custom values. */
+const POS_PRESETS = [
+  "Noun",
+  "Verb",
+  "Adj",
+  "い-Adj",
+  "な-Adj",
+  "Adverb",
+  "Particle",
+  "Counter",
+  "Clause",
+];
+
 /**
  * Editor for one construction's block template: ordered slots, each holding interchangeable
  * alternatives (a word class with optional forms and a grammar tag, or literal text). The parent owns
@@ -116,14 +129,42 @@ export function ConstructionBlocksEditor({
                 className="space-y-2 rounded-md border p-2"
               >
                 <div className="flex items-center gap-2">
-                  <Input
-                    value={alt.label}
-                    onChange={e => patchAlternative(slot, alt.id, {
-                      label: e.target.value,
-                    })}
-                    placeholder={alt.literal ? "Literal text, e.g. の" : "Part of speech, e.g. Verb"}
-                    aria-label="Alternative label"
-                  />
+                  {alt.literal
+                    ? (
+                      <Input
+                        value={alt.label}
+                        onChange={e => patchAlternative(slot, alt.id, {
+                          label: e.target.value,
+                        })}
+                        placeholder="Literal text, e.g. の"
+                        aria-label="Alternative label"
+                      />
+                    )
+                    : (
+                      <MultiSelect
+                        single
+                        creatable
+                        value={alt.label ? [alt.label] : []}
+                        onChange={labels => patchAlternative(slot, alt.id, {
+                          label: labels[0] ?? "",
+                        })}
+                        options={[
+                          ...POS_PRESETS,
+                          ...(alt.label && !POS_PRESETS.includes(alt.label) ? [alt.label] : []),
+                        ].map(l => ({
+                          value: l,
+                          label: l,
+                        }))}
+                        onCreate={label => patchAlternative(slot, alt.id, {
+                          label,
+                        })}
+                        placeholder="Part of speech…"
+                        searchPlaceholder="Search or type a part of speech…"
+                        emptyText="No matches."
+                        ariaLabel="Alternative label"
+                        className="flex-1"
+                      />
+                    )}
                   <label
                     className="
                       flex shrink-0 items-center gap-1.5 text-xs

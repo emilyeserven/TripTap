@@ -157,6 +157,49 @@ test("POST /api/grammar-notes accepts a block-based construction", async () => {
   await app.close();
 });
 
+test("POST /api/grammar-notes accepts a construction without sentenceIds", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/grammar-notes",
+    payload: {
+      tagId: "tag-1",
+      tagName: "の",
+      title: "の",
+      constructions: [
+        {
+          id: "c1",
+          pattern: "Noun + の + Noun",
+          note: null,
+        },
+      ],
+    },
+  });
+  // Valid payload — 201 with a DB, or a 5xx without one, but never a 400.
+  assert.notEqual(res.statusCode, 400);
+  await app.close();
+});
+
+test("PATCH /api/grammar-notes/:id accepts a construction without sentenceIds", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "PATCH",
+    url: "/api/grammar-notes/6f2d2c7e-1111-4222-8333-444455556666",
+    payload: {
+      constructions: [
+        {
+          id: "c1",
+          pattern: "〜ないといけない",
+          note: null,
+        },
+      ],
+    },
+  });
+  // Valid payload — 200/404 with a DB, or a 5xx without one, but never a 400.
+  assert.notEqual(res.statusCode, 400);
+  await app.close();
+});
+
 test("POST /api/grammar-notes rejects an alternative missing label", async () => {
   const app = await buildApp();
   const res = await app.inject({

@@ -17,7 +17,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useBookmarkRecords, useBookmarksGrammarVocabulary, useGrammarTagTree } from "@/hooks/useBookmarks";
 import { useCreateGrammarNote, useGrammarNotes, useUpdateGrammarNote } from "@/hooks/useGrammarNotes";
-import { useSentences } from "@/hooks/useSentences";
 import { usageLabel } from "@/lib/grammar-notes";
 
 /**
@@ -43,7 +42,6 @@ export function GrammarNoteForm({
   const grammarTags = useBookmarksGrammarVocabulary();
   const grammarTree = useGrammarTagTree();
   const resourceRecords = useBookmarkRecords("resource");
-  const sentences = useSentences();
   const existingNotes = useGrammarNotes();
 
   const [tagId, setTagId] = useState(note?.tagId ?? presetTagId ?? "");
@@ -80,15 +78,6 @@ export function GrammarNoteForm({
           };
         }),
     [grammarTags.data, noteByTagId, tagId],
-  );
-
-  const sentenceOptions = useMemo(
-    () =>
-      (sentences.data ?? []).map(s => ({
-        value: s.id,
-        label: s.text,
-      })),
-    [sentences.data],
   );
 
   const resourceOptions = useMemo(
@@ -203,7 +192,6 @@ export function GrammarNoteForm({
       <GrammarConstructionsEditor
         constructions={constructions}
         onChange={setConstructions}
-        sentenceOptions={sentenceOptions}
       />
 
       <GrammarRelationsEditor

@@ -21,7 +21,7 @@ import { useSentences } from "@/hooks/useSentences";
 import { useBookmarksSettings } from "@/hooks/useSettings";
 import { bookmarkAppUrl, bookmarkTagUrl } from "@/lib/bookmarks";
 import { resourceDrillTags, resourceLearningAreas, resourceMaterialTypes } from "@/lib/collections";
-import { hasBlocks } from "@/lib/construction-blocks";
+import { hasBlocks, matchesConstruction } from "@/lib/construction-blocks";
 import { misusedSentencesByGrammarTagId, sentencesByGrammarTagId } from "@/lib/grammar-links";
 import { otherUsages, resolvedRelations, usageLabel } from "@/lib/grammar-notes";
 import { newId } from "@/lib/id";
@@ -105,11 +105,6 @@ export function GrammarNoteView({
     return [...groups.values()];
   }, [tagSections.data]);
 
-  const sentenceById = useMemo(
-    () => new Map((sentences.data ?? []).map(s => [s.id, s] as const)),
-    [sentences.data],
-  );
-
   // Auto-gathered: every bank + AI-lesson + own sentence carrying this grammar tag.
   const linkedByTag = useMemo(
     () =>
@@ -121,6 +116,14 @@ export function GrammarNoteView({
     [sentences.data, aiContent.data, mySentences.data],
   );
   const taggedSentences = linkedByTag.get(note.tagId) ?? [];
+
+  // Tagged sentences that demonstrate each construction, matched by its literal text.
+  const examplesByConstruction = useMemo(
+    () => new Map(note.constructions.map(c =>
+      [c.id, taggedSentences.filter(s => matchesConstruction(s.text, c))] as const)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- taggedSentences derives from linkedByTag + tagId.
+    [note.constructions, linkedByTag, note.tagId],
+  );
 
   // Auto-gathered: the learner's own sentences that used this grammar *incorrectly*.
   const misusedByTag = useMemo(
@@ -153,7 +156,6 @@ export function GrammarNoteView({
         id: newId(),
         pattern: pat,
         note: [gloss, body].filter(Boolean).join("\n\n") || null,
-        sentenceIds: [],
       },
     ];
     update.mutate(
@@ -237,37 +239,54 @@ export function GrammarNoteView({
                       <ConstructionBlocks
                         slots={c.slots ?? []}
                         meaning={c.meaning}
+                        note={c.note}
                       />
                     )
-                    : <p className="font-medium">{c.pattern}</p>}
-                  {c.note
-                    ? (
-                      <p
-                        className="
-                          text-sm whitespace-pre-wrap text-muted-foreground
-                        "
-                      >{c.note}
-                      </p>
-                    )
-                    : null}
-                  {c.sentenceIds.length > 0
+                    : (
+                      <>
+                        <p className="font-medium">{c.pattern}</p>
+                        {c.note
+                          ? (
+                            <p
+                              className="
+                                text-sm whitespace-pre-wrap
+                                text-muted-foreground
+                              "
+                            >{c.note}
+                            </p>
+                          )
+                          : null}
+                      </>
+                    )}
+                  {(examplesByConstruction.get(c.id) ?? []).length > 0
                     ? (
                       <ul className="space-y-1.5">
-                        {c.sentenceIds.map((id) => {
-                          const s = sentenceById.get(id);
-                          if (!s) return null;
-                          return (
-                            <li
-                              key={id}
-                              className="space-y-0.5 border-l-2 pl-3 text-sm"
-                            >
-                              <p>{s.text}</p>
-                              {s.translation
-                                ? <p className="text-muted-foreground">{s.translation}</p>
-                                : null}
-                            </li>
-                          );
-                        })}
+                        {(examplesByConstruction.get(c.id) ?? []).map(s => (
+                          <li
+                            key={s.id}
+                            className="space-y-0.5 border-l-2 pl-3 text-sm"
+                          >
+                            {s.mine
+                              ? (
+                                <Link
+                                  to="/my-sentences/$id"
+                                  params={{
+                                    id: s.id,
+                                  }}
+                                  className="hover:underline"
+                                >
+                                  {s.text}
+                                </Link>
+                              )
+                              : <p>{s.text}</p>}
+                            {s.translation
+                              ? <p className="text-muted-foreground">{s.translation}</p>
+                              : null}
+                            {s.aiLessonTitle
+                              ? <p className="text-xs text-muted-foreground">{s.aiLessonTitle}</p>
+                              : null}
+                          </li>
+                        ))}
                       </ul>
                     )
                     : null}
