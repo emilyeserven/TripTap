@@ -4,8 +4,9 @@ import type {
   QuestionSheet,
 } from "@sentence-bank/types";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
+import { AnswerSheetPartsProgress } from "@/components/AnswerSheetPartsProgress";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,7 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useUpdateAnswerSheet } from "@/hooks/useAnswerSheets";
 import { useAutosave } from "@/hooks/useAutosave";
 import { useQuestionSheets } from "@/hooks/useQuestionSheets";
-import { questionSheetSlots } from "@/lib/answer-sheets";
+import { answerSheetParts, questionSheetSlots } from "@/lib/answer-sheets";
 
 /** A blank entry for a slot the user has not filled in yet. */
 function emptyEntry(slotId: string): AnswerSheetEntry {
@@ -54,8 +55,11 @@ const SAVE_LABEL: Record<string, string> = {
  */
 export function AnswerSheetForm({
   answerSheet,
+  activePart,
 }: {
   answerSheet: AnswerSheet;
+  /** A top-level question id to scroll to on open (from a scheduled task's `?part`). */
+  activePart?: string | null;
 }) {
   const update = useUpdateAnswerSheet();
   const sheets = useQuestionSheets();
@@ -122,6 +126,19 @@ export function AnswerSheetForm({
 
   const isGrid = selected?.layout === "grid" && Boolean(selected.grid);
 
+  // On open from a scheduled task, scroll once to the targeted part's first input.
+  const scrolledTo = useRef<string | null>(null);
+  useEffect(() => {
+    if (!activePart || !selected || scrolledTo.current === activePart) return;
+    const part = answerSheetParts(selected, answerSheet).find(p => p.questionId === activePart);
+    if (!part?.firstSlotId) return;
+    scrolledTo.current = activePart;
+    globalThis.document.getElementById(`slot-${part.firstSlotId}`)?.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
+  }, [activePart, selected, answerSheet]);
+
   return (
     <form
       className="space-y-6"
@@ -178,6 +195,15 @@ export function AnswerSheetForm({
           ? <p className="text-sm text-muted-foreground">This sheet has no questions yet.</p>
           : (
             <>
+              <AnswerSheetPartsProgress
+                questionSheet={selected}
+                answerSheet={{
+                  ...answerSheet,
+                  entries: Object.values(entries),
+                }}
+                activePart={activePart}
+              />
+
               {isGrid && selected.grid
                 ? (
                   <GridAnswers
@@ -192,6 +218,7 @@ export function AnswerSheetForm({
               {slots.map(slot => (
                 <SlotBlock
                   key={slot.id}
+                  anchorId={`slot-${slot.id}`}
                   label={slot.label}
                   entry={getEntry(slot.id)}
                   answerMode={isGrid ? "preview" : "edit"}
@@ -208,6 +235,7 @@ export function AnswerSheetForm({
 
 /** One question rendered as a single block (a direct form child → its own slide-mode panel). */
 function SlotBlock({
+  anchorId,
   label,
   entry,
   answerMode,
@@ -215,6 +243,8 @@ function SlotBlock({
   onField,
   flush,
 }: {
+  /** DOM id for scroll anchoring (a scheduled task's `?part` jumps to the part's first slot). */
+  anchorId?: string;
   label: string;
   entry: AnswerSheetEntry;
   answerMode: "edit" | "preview";
@@ -224,7 +254,10 @@ function SlotBlock({
   flush: () => void;
 }) {
   return (
-    <div className="space-y-3 rounded-md border p-4">
+    <div
+      id={anchorId}
+      className="space-y-3 rounded-md border p-4"
+    >
       {answerMode === "edit"
         ? (
           <div className="space-y-1.5">

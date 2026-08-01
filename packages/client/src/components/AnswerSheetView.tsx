@@ -8,6 +8,7 @@ import { CalendarCheck } from "lucide-react";
 import { AnswerCorrectionModal } from "@/components/AnswerCorrectionModal";
 import { AnswerSheetGridView } from "@/components/AnswerSheetGridView";
 import { AnswerSheetListView } from "@/components/AnswerSheetListView";
+import { AnswerSheetPartsProgress } from "@/components/AnswerSheetPartsProgress";
 import { AnswerSheetScoreBadge } from "@/components/AnswerSheetScoreBadge";
 import { GrammarTermBadges } from "@/components/GrammarTermBadges";
 import { LearningAreaBadges } from "@/components/LearningAreaBadges";
@@ -184,6 +185,18 @@ export function AnswerSheetView({
           <span className="text-muted-foreground">Hover an answer to mark it ✓ or ✗.</span>
         </div>
       </div>
+
+      {sheet
+        ? (
+          <AnswerSheetPartsProgress
+            questionSheet={sheet}
+            answerSheet={{
+              ...as,
+              entries: Object.values(entries),
+            }}
+          />
+        )
+        : null}
 
       {slots.length === 0
         ? <p className="text-sm text-muted-foreground">No answers recorded.</p>

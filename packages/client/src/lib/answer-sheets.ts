@@ -78,6 +78,93 @@ export function questionSheetSlots(qs: QuestionSheet): QuestionSheetSlot[] {
   return slots;
 }
 
+/** Leaf slot ids belonging to one top-level question (the question itself, or its leaf parts). */
+function questionSlotIds(question: QuestionSheet["questions"][number]): string[] {
+  if (!question.parts || question.parts.length === 0) return [question.id];
+  const ids: string[] = [];
+  const walk = (parts: QuestionSheetPart[]): void => {
+    for (const p of parts) {
+      if (p.parts && p.parts.length > 0) walk(p.parts);
+      else ids.push(p.id);
+    }
+  };
+  walk(question.parts);
+  return ids;
+}
+
+/** One selectable "part" of a question sheet — a top-level question. Empty for grid layout. */
+export interface QuestionSheetPartRef {
+  id: string;
+  label: string;
+}
+
+/** A part with the answer-slot ids it owns — the source of truth for parts. Grid = one "grid" part. */
+export interface QuestionSheetPartSlots extends QuestionSheetPartRef {
+  slotIds: string[];
+}
+
+/** Every part of a sheet with its slot ids. Grid layout reports a single `"grid"` part. */
+export function questionSheetPartSlots(qs: QuestionSheet): QuestionSheetPartSlots[] {
+  if (qs.layout === "grid") {
+    return [{
+      id: "grid",
+      label: "Grid",
+      slotIds: questionSheetSlots(qs).map(s => s.id),
+    }];
+  }
+  const firstNumber = qs.firstQuestionNumber ?? 1;
+  return qs.questions.map((q, i) => ({
+    id: q.id,
+    label: q.prompt.trim() || `Question ${firstNumber + i}`,
+    slotIds: questionSlotIds(q),
+  }));
+}
+
+/**
+ * The top-level questions of a list-layout sheet, as targetable "parts" (id + label). Grid sheets have
+ * no parts to single out, so this returns `[]` for them.
+ */
+export function questionSheetParts(qs: QuestionSheet): QuestionSheetPartRef[] {
+  if (qs.layout === "grid") return [];
+  return questionSheetPartSlots(qs).map(p => ({
+    id: p.id,
+    label: p.label,
+  }));
+}
+
+/** Per-part fill progress for an answer sheet (a "part" = one top-level question). */
+export interface AnswerSheetPartProgress {
+  questionId: string;
+  label: string;
+  /** The first answer slot of the part — an anchor to scroll/jump to. */
+  firstSlotId: string | null;
+  filled: number;
+  total: number;
+  complete: boolean;
+}
+
+/**
+ * Progress through an answer sheet, part by part — how many of each top-level question's slots have a
+ * value. Lets the UI show partial completion ("Part 1 done, parts 2–3 to go") without any stored state.
+ * A grid sheet is reported as a single part.
+ */
+export function answerSheetParts(qs: QuestionSheet, as: AnswerSheet): AnswerSheetPartProgress[] {
+  const byId = new Map(as.entries.map(e => [e.slotId, e] as const));
+  return questionSheetPartSlots(qs).map((part) => {
+    const filled = part.slotIds.filter(
+      id => (byId.get(id)?.value.trim().length ?? 0) > 0,
+    ).length;
+    return {
+      questionId: part.id,
+      label: part.label,
+      firstSlotId: part.slotIds[0] ?? null,
+      filled,
+      total: part.slotIds.length,
+      complete: part.slotIds.length > 0 && filled === part.slotIds.length,
+    };
+  });
+}
+
 /**
  * True when every answerable slot of `qs` has a non-empty answer recorded in `as`. A sheet with no
  * slots is never "complete" (there is nothing to fill in).

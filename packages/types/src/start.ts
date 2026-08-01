@@ -9,6 +9,7 @@
  * API and the React client.
  */
 
+import type { BookmarkSectionRef } from "./index.js";
 import type { LearningArea } from "./question-sheet.js";
 
 /** The activity kinds a day's lineup can exclude (mapped to session routes client-side). */
@@ -97,6 +98,45 @@ export interface DailyTask {
   area: LearningArea | null;
 }
 
+/**
+ * What a {@link ScheduledTask} opens. Either a bookmark resource (optionally a specific section) or an
+ * existing answer sheet (optionally focused on one "part" — a top-level question of its question sheet).
+ */
+export type ScheduledTaskTarget
+  = | {
+    kind: "resource";
+    resourceId: string;
+    /** Snapshot of the resource title, for display. */
+    resourceTitle: string;
+    /** The specific section to open, or null for the whole resource. */
+    section: BookmarkSectionRef | null;
+  }
+  | {
+    kind: "answer-sheet";
+    answerSheetId: string;
+    /** Snapshot of the answer sheet's title (or its question sheet's), for display. */
+    title: string | null;
+    /** A top-level question id to focus ("Part 1"), or null for the whole sheet. */
+    partId: string | null;
+  };
+
+/**
+ * A one-off task scheduled for a specific day (e.g. "tomorrow"): open a resource+section or an answer
+ * sheet. Unlike {@link DailyTask} (recurring, resource-only), a scheduled task carries its own `date`
+ * and `done` flag, and is cleared from the list once done + past. A durable definition stored in the
+ * Start settings blob.
+ */
+export interface ScheduledTask {
+  /** Stable id minted on create (`sched-<uuid>`). */
+  id: string;
+  /** Client-local YYYY-MM-DD the task is scheduled for. */
+  date: string;
+  /** Optional label; when null the row derives one from the target. */
+  label: string | null;
+  target: ScheduledTaskTarget;
+  done: boolean;
+}
+
 /** Which daily tasks were checked off on a given day. Reset by the client when `date` isn't today. */
 export interface DailyTaskDone {
   /** Client-local YYYY-MM-DD these check-offs belong to. */
@@ -117,6 +157,8 @@ export interface StartSettings {
   dailyTasks: DailyTask[];
   /** Which daily tasks are checked off today; null when none/stale. The client date-checks it. */
   dailyTaskDone: DailyTaskDone | null;
+  /** One-off tasks scheduled for a specific day (e.g. tomorrow). */
+  scheduledTasks: ScheduledTask[];
 }
 
 /** Payload for updating the Start settings. Tri-state per field: omit = leave, null/[] = clear. */
@@ -126,4 +168,5 @@ export interface UpdateStartSettingsInput {
   deferred?: DeferredLineupItem[] | null;
   dailyTasks?: DailyTask[] | null;
   dailyTaskDone?: DailyTaskDone | null;
+  scheduledTasks?: ScheduledTask[] | null;
 }

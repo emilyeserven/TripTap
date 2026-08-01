@@ -1,6 +1,6 @@
 import type { XpBreakdownView } from "@/components/XpBreakdown";
 import type { StartSuggestion } from "@/lib/start-recommendations";
-import type { BookmarkSectionMatch, DailyTask } from "@sentence-bank/types";
+import type { BookmarkSectionMatch, DailyTask, ScheduledTask } from "@sentence-bank/types";
 import type * as React from "react";
 
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 
 import { AddDailyTaskCard } from "@/components/AddDailyTaskCard";
+import { AddScheduledTaskCard } from "@/components/AddScheduledTaskCard";
 import { DailyGoalProgress } from "@/components/DailyGoalProgress";
 import { DailyLineupCard } from "@/components/DailyLineupCard";
 import { DailyTasksCard } from "@/components/DailyTasksCard";
@@ -31,6 +32,7 @@ import { DueSoonCard } from "@/components/DueSoonCard";
 import { GoalAchievementStrip } from "@/components/GoalAchievementStrip";
 import { LearningAreaBadges } from "@/components/LearningAreaBadges";
 import { LineupExclusionsEditor } from "@/components/LineupExclusionsEditor";
+import { ScheduledTasksCard } from "@/components/ScheduledTasksCard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -302,6 +304,28 @@ function StartPage() {
     });
   };
 
+  const scheduledTasks = startSettings.data?.scheduledTasks ?? [];
+  const addScheduledTask = (task: ScheduledTask) => {
+    updateStartSettings.mutate({
+      scheduledTasks: [...scheduledTasks, task],
+    });
+  };
+  const removeScheduledTask = (id: string) => {
+    updateStartSettings.mutate({
+      scheduledTasks: scheduledTasks.filter(t => t.id !== id),
+    });
+  };
+  const toggleScheduledTask = (id: string) => {
+    updateStartSettings.mutate({
+      scheduledTasks: scheduledTasks.map(t => (t.id === id
+        ? {
+          ...t,
+          done: !t.done,
+        }
+        : t)),
+    });
+  };
+
   const areaTags = bookmarksSettings.data?.learningAreaTags ?? {};
   const materialTypeTags = bookmarksSettings.data?.materialTypeTags ?? {};
   // The whole Collections resource list (with complexity/favorite/content status) and every bookmark
@@ -405,6 +429,17 @@ function StartPage() {
         doneIds={dailyTaskDoneIds}
         onToggle={toggleDailyTask}
         onRemove={removeDailyTask}
+      />
+
+      <ScheduledTasksCard
+        tasks={scheduledTasks}
+        answerSheets={answerSheets.data ?? []}
+        questionSheets={questionSheets.data ?? []}
+        endpointUrl={bookmarksSettings.data?.endpointUrl}
+        today={today}
+        tomorrow={tomorrow}
+        onToggle={toggleScheduledTask}
+        onRemove={removeScheduledTask}
       />
 
       <DailyLineupCard
@@ -526,6 +561,12 @@ function StartPage() {
       <AddDailyTaskCard
         tasks={dailyTasks}
         onAdd={addDailyTask}
+      />
+
+      <AddScheduledTaskCard
+        answerSheets={answerSheets.data ?? []}
+        questionSheets={questionSheets.data ?? []}
+        onAdd={addScheduledTask}
       />
 
       <div className="flex flex-wrap gap-2">

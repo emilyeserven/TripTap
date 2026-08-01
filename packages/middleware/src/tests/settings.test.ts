@@ -8,6 +8,7 @@ import {
   parseDailyTasks,
   parseDeferredItems,
   parseFavoriteResourceIds,
+  parseScheduledTasks,
   serializeSource,
   serializeTagMap,
 } from "@/services/settings";
@@ -463,6 +464,60 @@ test("PATCH /api/settings/start rejects a daily task missing its resourceId", as
   });
   assert.equal(res.statusCode, 400);
   await app.close();
+});
+
+test("parseScheduledTasks keeps well-formed dated tasks and drops the rest", () => {
+  const tasks = parseScheduledTasks(JSON.stringify([
+    {
+      id: "sched-1",
+      date: "2026-08-01",
+      label: null,
+      done: false,
+      target: {
+        kind: "answer-sheet",
+        answerSheetId: "as-1",
+        title: "Exercise 3",
+        partId: "q2",
+      },
+    },
+    {
+      id: "sched-2",
+      date: "2026-08-02",
+      done: true,
+      target: {
+        kind: "resource",
+        resourceId: "r-1",
+        resourceTitle: "Genki",
+        section: {
+          id: "s1",
+          label: "Ch. 3",
+          type: "page",
+        },
+      },
+    },
+    // Bad date → dropped.
+    {
+      id: "sched-3",
+      date: "nope",
+      target: {
+        kind: "resource",
+        resourceId: "r",
+      },
+    },
+    // Unknown target kind → dropped.
+    {
+      id: "sched-4",
+      date: "2026-08-03",
+      target: {
+        kind: "spaceship",
+      },
+    },
+  ]));
+
+  assert.deepEqual(tasks.map(t => t.id), ["sched-1", "sched-2"]);
+  assert.equal(tasks[0].target.kind, "answer-sheet");
+  assert.equal(tasks[1].done, true);
+  assert.equal(tasks[1].target.kind === "resource" && tasks[1].target.section?.label, "Ch. 3");
 });
 
 test("parseDailyTasks drops malformed entries; parseDailyTaskDone requires a valid date", () => {

@@ -2,6 +2,7 @@ import { eq, inArray } from "drizzle-orm";
 import type {
   BookmarksSettings,
   BookmarksSource,
+  BookmarkSectionRef,
   DailyLineup,
   DailyTask,
   DailyTaskDone,
@@ -17,6 +18,8 @@ import type {
   MaterialType,
   OcrSettings,
   RenshuuSettings,
+  ScheduledTask,
+  ScheduledTaskTarget,
   SentenceTermRef,
   StartSettings,
   StartSuggestionKind,
@@ -420,6 +423,7 @@ const START_KEYS = {
   deferred: "start.deferred",
   dailyTasks: "start.dailyTasks",
   dailyTaskDone: "start.dailyTaskDone",
+  scheduledTasks: "start.scheduledTasks",
 } as const;
 
 /** Parse the stored favorite ids: a JSON array of strings, corrupt → empty. */
@@ -576,6 +580,59 @@ export function parseDailyTaskDone(raw: string | null): DailyTaskDone | null {
   }
 }
 
+/** Parse the stored scheduled (dated one-off) tasks, dropping any malformed entry. */
+export function parseScheduledTasks(raw: string | null): ScheduledTask[] {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) return [];
+    const out: ScheduledTask[] = [];
+    for (const t of parsed) {
+      if (!t || typeof t !== "object") continue;
+      const task = t as Record<string, unknown>;
+      if (typeof task.id !== "string") continue;
+      if (typeof task.date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(task.date)) continue;
+      const target = mapScheduledTaskTarget(task.target);
+      if (!target) continue;
+      out.push({
+        id: task.id,
+        date: task.date,
+        label: typeof task.label === "string" ? task.label : null,
+        target,
+        done: task.done === true,
+      });
+    }
+    return out;
+  }
+  catch {
+    return [];
+  }
+}
+
+/** Validate/normalize a scheduled task's target discriminated union; null when malformed. */
+function mapScheduledTaskTarget(value: unknown): ScheduledTaskTarget | null {
+  if (!value || typeof value !== "object") return null;
+  const t = value as Record<string, unknown>;
+  if (t.kind === "resource" && typeof t.resourceId === "string") {
+    return {
+      kind: "resource",
+      resourceId: t.resourceId,
+      resourceTitle: typeof t.resourceTitle === "string" ? t.resourceTitle : "",
+      // The section is a denormalized snapshot; keep it as-is when present and object-shaped.
+      section: t.section && typeof t.section === "object" ? (t.section as BookmarkSectionRef) : null,
+    };
+  }
+  if (t.kind === "answer-sheet" && typeof t.answerSheetId === "string") {
+    return {
+      kind: "answer-sheet",
+      answerSheetId: t.answerSheetId,
+      title: typeof t.title === "string" ? t.title : null,
+      partId: typeof t.partId === "string" ? t.partId : null,
+    };
+  }
+  return null;
+}
+
 /** The Start Something settings stored in the DB. */
 export async function getStartSettings(): Promise<StartSettings> {
   const stored = await getSettings(Object.values(START_KEYS));
@@ -585,6 +642,7 @@ export async function getStartSettings(): Promise<StartSettings> {
     deferred: parseDeferredItems(stored[START_KEYS.deferred] ?? null),
     dailyTasks: parseDailyTasks(stored[START_KEYS.dailyTasks] ?? null),
     dailyTaskDone: parseDailyTaskDone(stored[START_KEYS.dailyTaskDone] ?? null),
+    scheduledTasks: parseScheduledTasks(stored[START_KEYS.scheduledTasks] ?? null),
   };
 }
 
@@ -615,6 +673,10 @@ export async function updateStartSettings(input: UpdateStartSettingsInput): Prom
       START_KEYS.dailyTaskDone,
       done && done.doneIds.length > 0 ? JSON.stringify(done) : null,
     );
+  }
+  if (input.scheduledTasks !== undefined) {
+    const tasks = input.scheduledTasks ?? [];
+    await setSetting(START_KEYS.scheduledTasks, tasks.length > 0 ? JSON.stringify(tasks) : null);
   }
   return getStartSettings();
 }
