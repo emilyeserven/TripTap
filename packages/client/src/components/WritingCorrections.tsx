@@ -36,21 +36,11 @@ export function WritingCorrections({
   const [addingIndex, setAddingIndex] = useState<number | null>(null);
   // Which existing correction (by id) is open for re-editing.
   const [editingId, setEditingId] = useState<string | null>(null);
-  // Which corrections are showing their original-vs-corrected diff.
-  const [showOriginal, setShowOriginal] = useState<Set<string>>(() => new Set());
 
   const segments = splitSentences(text);
   const corrections = writing.corrections ?? [];
   const correctionFor = (segment: string) =>
     corrections.find(c => c.original.trim() === segment.trim());
-
-  const toggleOriginal = (id: string) =>
-    setShowOriginal((cur) => {
-      const next = new Set(cur);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
 
   const officiallyAdd = async (original: string, r: SentenceCorrectionResult) => {
     try {
@@ -60,7 +50,9 @@ export function WritingCorrections({
         marks: r.marks,
         explanation: r.reasoning,
         needsCorrection: false,
-        translation: writing.meaning,
+        // Per-sentence intended meaning is set inline on the corrected card — don't inherit the whole
+        // writing's meaning, which belongs to the piece, not one sentence.
+        translation: null,
         language: writing.language,
         writingId: writing.id,
         terms: writing.terms,
@@ -131,49 +123,82 @@ export function WritingCorrections({
     );
   }
 
+  // Split into a working list (still to correct) and a separate, read-only "Corrected" area, so a
+  // finished sentence can't be re-corrected by accident.
+  const items = segments.map((segment, index) => ({
+    segment,
+    index,
+    existing: correctionFor(segment),
+  }));
+  const uncorrected = items.filter(i => !i.existing);
+  const corrected = items.filter((i): i is typeof i & { existing: WritingCorrection } =>
+    Boolean(i.existing));
+
   return (
-    <div className="space-y-2">
-      <Label className="text-sm">Correction mode</Label>
-      <p className="text-xs text-muted-foreground">
-        Click
-        {" "}
-        <PlusIcon className="inline size-3" />
-        {" "}
-        after a sentence to correct it and add it to My Sentences.
-      </p>
-      <ol className="space-y-2">
-        {segments.map((segment, index) => {
-          const existing = correctionFor(segment);
-          return (
-            <li
-              key={`${index}-${segment}`}
-              className="rounded-md border p-3"
-            >
-              {existing
-                ? (
-                  <WritingCorrectedSegment
-                    segment={segment}
-                    correction={existing}
-                    language={writing.language}
-                    editing={editingId === existing.id}
-                    showOriginal={showOriginal.has(existing.id)}
-                    onStartEdit={() => setEditingId(existing.id)}
-                    onToggleOriginal={() => toggleOriginal(existing.id)}
-                    onSaveEdit={r => void saveEdit(existing, r)}
-                  />
-                )
-                : (
+    <div className="space-y-5">
+      <div className="space-y-2">
+        <Label className="text-sm">Correction mode</Label>
+        <p className="text-xs text-muted-foreground">
+          Click
+          {" "}
+          <PlusIcon className="inline size-3" />
+          {" "}
+          after a sentence to correct it and add it to My Sentences.
+        </p>
+        {uncorrected.length === 0
+          ? (
+            <p className="text-sm text-muted-foreground">
+              Every sentence has been corrected.
+            </p>
+          )
+          : (
+            <ol className="space-y-2">
+              {uncorrected.map(({
+                segment, index,
+              }) => (
+                <li
+                  key={`${index}-${segment}`}
+                  className="rounded-md border p-3"
+                >
                   <WritingUncorrectedSegment
                     segment={segment}
                     adding={addingIndex === index}
                     onStartAdd={() => setAddingIndex(index)}
                     onSave={r => void officiallyAdd(segment, r)}
                   />
-                )}
-            </li>
-          );
-        })}
-      </ol>
+                </li>
+              ))}
+            </ol>
+          )}
+      </div>
+
+      {corrected.length > 0
+        ? (
+          <div className="space-y-2">
+            <Label className="text-sm text-muted-foreground">
+              Corrected ({corrected.length})
+            </Label>
+            <ul className="space-y-2">
+              {corrected.map(({
+                index, segment, existing,
+              }) => (
+                <li
+                  key={`${index}-${segment}`}
+                  className="rounded-md border bg-muted/20 p-3"
+                >
+                  <WritingCorrectedSegment
+                    correction={existing}
+                    language={writing.language}
+                    editing={editingId === existing.id}
+                    onStartEdit={() => setEditingId(existing.id)}
+                    onSaveEdit={r => void saveEdit(existing, r)}
+                  />
+                </li>
+              ))}
+            </ul>
+          </div>
+        )
+        : null}
     </div>
   );
 }
