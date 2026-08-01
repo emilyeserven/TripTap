@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { deriveCorrection } from "@/lib/deriveCorrection";
 import { CorrectMark, IncorrectMark } from "@/lib/tiptap/correctionMarks";
+import { markedContent } from "@/lib/tiptap/markedContent";
 import { TrackChanges } from "@/lib/tiptap/trackChanges";
 
 export interface SentenceCorrectionResult {
@@ -28,11 +29,14 @@ export interface SentenceCorrectionResult {
  */
 export function SentenceCorrector({
   text,
+  marks,
   reasoning: initialReasoning,
   onSave,
   saveLabel = "Save correction",
 }: {
   text: string;
+  /** Existing correct-spans to re-apply when re-opening a correction; omit for a fresh one. */
+  marks?: SentenceMark[] | null;
   reasoning?: string | null;
   onSave: (result: SentenceCorrectionResult) => void;
   saveLabel?: string;
@@ -41,14 +45,16 @@ export function SentenceCorrector({
   const [derived, setDerived] = useState<{ correction: string;
     marks: SentenceMark[]; }>(() => ({
     correction: text,
-    marks: [],
+    // Keep the existing marks so a re-opened correction saved without further edits doesn't lose them.
+    marks: marks ?? [],
   }));
   // Reveal the surrounding chrome only once the learner has started changing the sentence.
   const [hasEdited, setHasEdited] = useState(false);
 
   const editor = useEditor({
     extensions: [StarterKit, CorrectMark, IncorrectMark, TrackChanges],
-    content: text,
+    // Seed with the saved correct-spans highlighted (falls back to plain text for a fresh correction).
+    content: marks && marks.length > 0 ? markedContent(text, marks) : text,
     editorProps: {
       attributes: {
         class: "outline-none whitespace-pre-wrap min-h-8",
