@@ -6,6 +6,7 @@ import { Link } from "@tanstack/react-router";
 import { Furi } from "@/components/ai-lesson/Furi";
 import { LessonMySentences } from "@/components/LessonMySentences";
 import { LessonSections } from "@/components/LessonSections";
+import { LessonWordNotesRenshuuExport } from "@/components/LessonWordNotesRenshuuExport";
 import { NotesEditor } from "@/components/NotesEditor";
 import { Badge } from "@/components/ui/badge";
 import { useAnswerSheets } from "@/hooks/useAnswerSheets";
@@ -53,6 +54,9 @@ export function LessonView({
   sections.push({
     id: "words",
     title: "Word notes",
+    action: wordNotes.some(w => w.flashcard && (w.word ?? "").trim() !== "")
+      ? <LessonWordNotesRenshuuExport wordNotes={wordNotes} />
+      : undefined,
     node: wordNotes.length === 0
       ? <p className="text-sm text-muted-foreground">No word notes.</p>
       : (
