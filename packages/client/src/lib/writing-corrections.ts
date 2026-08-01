@@ -14,3 +14,17 @@ export function splitSentences(text: string): string[] {
   }
   return segments;
 }
+
+/**
+ * Split free-form text into segments one per non-empty line — a new sentence is detected only
+ * on a new line. Unlike {@link splitSentences}, terminal punctuation (。！？.!?) mid-line and dots
+ * inside tokens like "honto.jp" never break a line apart. Used by the My Writing corrections flow.
+ */
+export function splitLines(text: string): string[] {
+  const segments: string[] = [];
+  for (const line of text.split("\n")) {
+    const trimmed = line.trim();
+    if (trimmed) segments.push(trimmed);
+  }
+  return segments;
+}

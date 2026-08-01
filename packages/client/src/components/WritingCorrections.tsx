@@ -11,7 +11,7 @@ import { WritingUncorrectedSegment } from "@/components/WritingUncorrectedSegmen
 import { useCreateMySentence, useUpdateMySentence } from "@/hooks/useMySentences";
 import { useUpdateWriting } from "@/hooks/useWritings";
 import { newId } from "@/lib/id";
-import { splitSentences } from "@/lib/writing-corrections";
+import { splitLines } from "@/lib/writing-corrections";
 
 /**
  * Correction mode for a writing — the same track-changes flow as My Sentences and Answer Sheets. Each
@@ -37,7 +37,7 @@ export function WritingCorrections({
   // Which existing correction (by id) is open for re-editing.
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  const segments = splitSentences(text);
+  const segments = splitLines(text);
   const corrections = writing.corrections ?? [];
   const correctionFor = (segment: string) =>
     corrections.find(c => c.original.trim() === segment.trim());

@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { describe, expect, it } from "vitest";
 
-import { splitSentences } from "./writing-corrections";
+import { splitLines, splitSentences } from "./writing-corrections";
 
 describe("splitSentences", () => {
   it("splits on Japanese and Latin terminal punctuation", () => {
@@ -25,5 +25,29 @@ describe("splitSentences", () => {
 
   it("collapses runs of punctuation into one boundary", () => {
     expect(splitSentences("えっ！？そうなの。")).toEqual(["えっ！？", "そうなの。"]);
+  });
+});
+
+describe("splitLines", () => {
+  it("keeps a whole line as one segment regardless of terminal punctuation", () => {
+    expect(splitLines("猫がいる。犬もいる！鳥は？")).toEqual(["猫がいる。犬もいる！鳥は？"]);
+    expect(splitLines("One. Two! Three?")).toEqual(["One. Two! Three?"]);
+  });
+
+  it("does not break a line on dots inside a token", () => {
+    expect(
+      splitLines("honto.jpは「試し読み」の機能があります。本を買う前に、少し読めます。"),
+    ).toEqual(["honto.jpは「試し読み」の機能があります。本を買う前に、少し読めます。"]);
+  });
+
+  it("detects a new sentence only on a new line", () => {
+    expect(splitLines("句点なしの文\n次の行")).toEqual(["句点なしの文", "次の行"]);
+    expect(splitLines("一行目。\n二行目。")).toEqual(["一行目。", "二行目。"]);
+  });
+
+  it("skips blank lines and returns empty for empty input", () => {
+    expect(splitLines("一行目。\n\n\n二行目。")).toEqual(["一行目。", "二行目。"]);
+    expect(splitLines("")).toEqual([]);
+    expect(splitLines("   \n  ")).toEqual([]);
   });
 });
