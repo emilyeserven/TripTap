@@ -99,8 +99,9 @@ export interface DailyTask {
 }
 
 /**
- * What a {@link ScheduledTask} opens. Either a bookmark resource (optionally a specific section) or an
- * existing answer sheet (optionally focused on one "part" — a top-level question of its question sheet).
+ * What a {@link ScheduledTask} opens. Either a bookmark resource (optionally a specific section) or a
+ * question sheet (optionally focused on one "part" — a top-level question). The `answer-sheet` variant
+ * is legacy: scheduling now targets question sheets, but older stored tasks are still read and opened.
  */
 export type ScheduledTaskTarget
   = | {
@@ -112,6 +113,15 @@ export type ScheduledTaskTarget
     section: BookmarkSectionRef | null;
   }
   | {
+    kind: "question-sheet";
+    questionSheetId: string;
+    /** Snapshot of the question sheet's title, for display. */
+    title: string | null;
+    /** A top-level question id to focus ("Part 1"), or null for the whole sheet. */
+    partId: string | null;
+  }
+  | {
+    /** Legacy: scheduled against an answer sheet before the switch to question sheets. Still opened. */
     kind: "answer-sheet";
     answerSheetId: string;
     /** Snapshot of the answer sheet's title (or its question sheet's), for display. */
@@ -121,7 +131,7 @@ export type ScheduledTaskTarget
   };
 
 /**
- * A one-off task scheduled for a specific day (e.g. "tomorrow"): open a resource+section or an answer
+ * A one-off task scheduled for a specific day (e.g. "tomorrow"): open a resource+section or a question
  * sheet. Unlike {@link DailyTask} (recurring, resource-only), a scheduled task carries its own `date`
  * and `done` flag, and is cleared from the list once done + past. A durable definition stored in the
  * Start settings blob.

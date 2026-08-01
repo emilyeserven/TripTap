@@ -1,5 +1,4 @@
 import type {
-  AnswerSheet,
   BookmarkRecord,
   BookmarkSectionRef,
   QuestionSheet,
@@ -32,20 +31,18 @@ import { questionSheetParts } from "@/lib/answer-sheets";
 import { tomorrowDateString } from "@/lib/daily-lineup";
 import { newId } from "@/lib/id";
 
-type Kind = "resource" | "answer-sheet";
+type Kind = "resource" | "question-sheet";
 const WHOLE_SHEET = "__whole__";
 
 /**
  * A collapsible card for scheduling a one-off task: pick a day (default tomorrow) and a target — a
- * resource+section (via {@link BookmarkPicker}) or an answer sheet, optionally focused on one part
+ * resource+section (via {@link BookmarkPicker}) or a question sheet, optionally focused on one part
  * (a top-level question). Owns no persistence; the built task is handed to the parent.
  */
 export function AddScheduledTaskCard({
-  answerSheets,
   questionSheets,
   onAdd,
 }: {
-  answerSheets: AnswerSheet[];
   questionSheets: QuestionSheet[];
   onAdd: (task: ScheduledTask) => void;
 }) {
@@ -57,28 +54,24 @@ export function AddScheduledTaskCard({
   const [resource, setResource] = useState<BookmarkRecord | null>(null);
   const [section, setSection] = useState<BookmarkSectionRef | null>(null);
 
-  // Answer-sheet target
-  const [answerSheetId, setAnswerSheetId] = useState<string>("");
+  // Question-sheet target
+  const [questionSheetId, setQuestionSheetId] = useState<string>("");
   const [partId, setPartId] = useState<string>(WHOLE_SHEET);
 
-  const selectedSheet = answerSheets.find(a => a.id === answerSheetId) ?? null;
-  const selectedQuestionSheet = selectedSheet
-    ? questionSheets.find(q => q.id === selectedSheet.questionSheetId) ?? null
-    : null;
+  const selectedQuestionSheet = questionSheets.find(q => q.id === questionSheetId) ?? null;
   const parts = selectedQuestionSheet ? questionSheetParts(selectedQuestionSheet) : [];
 
-  function sheetLabel(sheet: AnswerSheet): string {
-    const questionSheet = questionSheets.find(q => q.id === sheet.questionSheetId);
-    return sheet.title?.trim() || questionSheet?.title || "Untitled answer sheet";
+  function sheetLabel(sheet: QuestionSheet): string {
+    return sheet.title?.trim() || "Untitled question sheet";
   }
 
   const canAdd = date.length > 0
-    && (kind === "resource" ? Boolean(resource) : Boolean(answerSheetId));
+    && (kind === "resource" ? Boolean(resource) : Boolean(questionSheetId));
 
   function reset() {
     setResource(null);
     setSection(null);
-    setAnswerSheetId("");
+    setQuestionSheetId("");
     setPartId(WHOLE_SHEET);
   }
 
@@ -95,11 +88,11 @@ export function AddScheduledTaskCard({
       };
     }
     else {
-      if (!selectedSheet) return;
+      if (!selectedQuestionSheet) return;
       target = {
-        kind: "answer-sheet",
-        answerSheetId: selectedSheet.id,
-        title: sheetLabel(selectedSheet),
+        kind: "question-sheet",
+        questionSheetId: selectedQuestionSheet.id,
+        title: sheetLabel(selectedQuestionSheet),
         partId: partId === WHOLE_SHEET ? null : partId,
       };
     }
@@ -156,7 +149,7 @@ export function AddScheduledTaskCard({
                 />
               </div>
               <div className="flex gap-2">
-                {(["resource", "answer-sheet"] as const).map(k => (
+                {(["resource", "question-sheet"] as const).map(k => (
                   <Button
                     key={k}
                     type="button"
@@ -164,7 +157,7 @@ export function AddScheduledTaskCard({
                     variant={kind === k ? "default" : "outline"}
                     onClick={() => setKind(k)}
                   >
-                    {k === "resource" ? "Resource" : "Answer sheet"}
+                    {k === "resource" ? "Resource" : "Question sheet"}
                   </Button>
                 ))}
               </div>
@@ -194,19 +187,19 @@ export function AddScheduledTaskCard({
                   "
                 >
                   <div className="space-y-1.5">
-                    <Label>Answer sheet</Label>
+                    <Label>Question sheet</Label>
                     <Select
-                      value={answerSheetId}
+                      value={questionSheetId}
                       onValueChange={(v) => {
-                        setAnswerSheetId(v);
+                        setQuestionSheetId(v);
                         setPartId(WHOLE_SHEET);
                       }}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Pick an answer sheet" />
+                        <SelectValue placeholder="Pick a question sheet" />
                       </SelectTrigger>
                       <SelectContent>
-                        {answerSheets.map(sheet => (
+                        {questionSheets.map(sheet => (
                           <SelectItem
                             key={sheet.id}
                             value={sheet.id}

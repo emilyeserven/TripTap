@@ -564,7 +564,6 @@ function StartPage() {
       />
 
       <AddScheduledTaskCard
-        answerSheets={answerSheets.data ?? []}
         questionSheets={questionSheets.data ?? []}
         onAdd={addScheduledTask}
       />

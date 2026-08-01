@@ -6,7 +6,7 @@ import { ScheduledTaskRow } from "@/components/ScheduledTaskRow";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { questionSheetParts } from "@/lib/answer-sheets";
 
-/** Section label (resource) or part label (answer sheet) shown under a task; null when none. */
+/** Section label (resource) or part label (question/answer sheet) shown under a task; null when none. */
 function subtitleFor(
   task: ScheduledTask,
   answerSheets: AnswerSheet[],
@@ -15,15 +15,20 @@ function subtitleFor(
   const t = task.target;
   if (t.kind === "resource") return t.section?.label ?? null;
   if (!t.partId) return null;
-  const sheet = answerSheets.find(a => a.id === t.answerSheetId);
-  const questionSheet = sheet && questionSheets.find(q => q.id === sheet.questionSheetId);
+  // A question sheet resolves parts directly; a legacy answer sheet hops through its question sheet.
+  const questionSheetId = t.kind === "question-sheet"
+    ? t.questionSheetId
+    : answerSheets.find(a => a.id === t.answerSheetId)?.questionSheetId;
+  const questionSheet = questionSheetId
+    ? questionSheets.find(q => q.id === questionSheetId)
+    : undefined;
   if (!questionSheet) return null;
   return questionSheetParts(questionSheet).find(p => p.id === t.partId)?.label ?? null;
 }
 
 /**
  * The "Scheduled" card on the Start page: one-off tasks bucketed by day (Today / Tomorrow / Later),
- * each opening a resource+section or an answer-sheet part. Owns no persistence — changes go to the
+ * each opening a resource+section or a question-sheet part. Owns no persistence — changes go to the
  * parent, mirroring {@link DailyTasksCard}.
  */
 export function ScheduledTasksCard({

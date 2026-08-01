@@ -622,6 +622,15 @@ function mapScheduledTaskTarget(value: unknown): ScheduledTaskTarget | null {
       section: t.section && typeof t.section === "object" ? (t.section as BookmarkSectionRef) : null,
     };
   }
+  if (t.kind === "question-sheet" && typeof t.questionSheetId === "string") {
+    return {
+      kind: "question-sheet",
+      questionSheetId: t.questionSheetId,
+      title: typeof t.title === "string" ? t.title : null,
+      partId: typeof t.partId === "string" ? t.partId : null,
+    };
+  }
+  // Legacy: tasks scheduled against an answer sheet before the switch to question sheets.
   if (t.kind === "answer-sheet" && typeof t.answerSheetId === "string") {
     return {
       kind: "answer-sheet",
