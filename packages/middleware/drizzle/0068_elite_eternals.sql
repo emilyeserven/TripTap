@@ -1,0 +1,1 @@
+ALTER TABLE "my_sentences" ADD COLUMN "incorrect_grammar_terms" jsonb;

@@ -22,7 +22,7 @@ import { useBookmarksSettings } from "@/hooks/useSettings";
 import { bookmarkAppUrl, bookmarkTagUrl } from "@/lib/bookmarks";
 import { resourceDrillTags, resourceLearningAreas, resourceMaterialTypes } from "@/lib/collections";
 import { hasBlocks } from "@/lib/construction-blocks";
-import { sentencesByGrammarTagId } from "@/lib/grammar-links";
+import { misusedSentencesByGrammarTagId, sentencesByGrammarTagId } from "@/lib/grammar-links";
 import { otherUsages, resolvedRelations, usageLabel } from "@/lib/grammar-notes";
 import { newId } from "@/lib/id";
 import { buildTaggedSectionTree } from "@/lib/sections";
@@ -121,6 +121,13 @@ export function GrammarNoteView({
     [sentences.data, aiContent.data, mySentences.data],
   );
   const taggedSentences = linkedByTag.get(note.tagId) ?? [];
+
+  // Auto-gathered: the learner's own sentences that used this grammar *incorrectly*.
+  const misusedByTag = useMemo(
+    () => misusedSentencesByGrammarTagId(mySentences.data ?? []),
+    [mySentences.data],
+  );
+  const misusedSentences = misusedByTag.get(note.tagId) ?? [];
 
   const usages = useMemo(
     () => otherUsages(allNotes.data ?? [], note),
@@ -302,6 +309,37 @@ export function GrammarNoteView({
                   {s.mine
                     ? <p className="text-xs text-muted-foreground">Your sentence</p>
                     : null}
+                </li>
+              ))}
+            </ul>
+          </Section>
+        )
+        : null}
+
+      {misusedSentences.length > 0
+        ? (
+          <Section title={`Used incorrectly here (${misusedSentences.length})`}>
+            <ul className="space-y-2">
+              {misusedSentences.map(s => (
+                <li
+                  key={s.id}
+                  className="
+                    space-y-0.5 border-l-2 border-destructive/50 pl-3 text-sm
+                  "
+                >
+                  <Link
+                    to="/my-sentences/$id"
+                    params={{
+                      id: s.id,
+                    }}
+                    className="hover:underline"
+                  >
+                    {s.text}
+                  </Link>
+                  {s.translation
+                    ? <p className="text-muted-foreground">{s.translation}</p>
+                    : null}
+                  <p className="text-xs text-muted-foreground">Your sentence — grammar used incorrectly</p>
                 </li>
               ))}
             </ul>

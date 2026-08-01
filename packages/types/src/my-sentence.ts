@@ -38,6 +38,11 @@ export interface MySentence {
   explanation: string | null;
   /** Structured bookmarks tags (Vocabulary / Grammar / General); null until any are attached. */
   terms: SentenceTermRef[] | null;
+  /**
+   * Grammar-source tags this sentence used **incorrectly** — distinct from the neutral grammar tags in
+   * {@link terms}. Surfaced on the grammar note under "Used incorrectly here". Null until any are tagged.
+   */
+  incorrectGrammarTerms: SentenceTermRef[] | null;
   /** Why it was wrong — references into the shared Drill reason taxonomy; null until any are tagged. */
   reasons: DrillMistakeReasonRef[] | null;
   /** Learner-marked correct/incorrect spans of `text` (offsets into the original); null if none. */
@@ -62,6 +67,7 @@ export interface CreateMySentenceInput {
   actualMeaning?: string | null;
   explanation?: string | null;
   terms?: SentenceTermRef[] | null;
+  incorrectGrammarTerms?: SentenceTermRef[] | null;
   reasons?: DrillMistakeReasonRef[] | null;
   marks?: SentenceMark[] | null;
   shadowingCandidate?: boolean;

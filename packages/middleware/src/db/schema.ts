@@ -306,6 +306,9 @@ export const mySentences = pgTable("my_sentences", {
   // Structured tags from the bookmarks channels (Vocabulary / Grammar / General). Denormalized so
   // display never needs a live bookmarks call. Null until any are attached.
   terms: jsonb("terms").$type<SentenceTermRef[]>(),
+  // Grammar-source tags this sentence used *incorrectly* (distinct from the neutral grammar tags in
+  // `terms`); surfaced on the grammar note under "Used incorrectly here". Null until any are tagged.
+  incorrectGrammarTerms: jsonb("incorrect_grammar_terms").$type<SentenceTermRef[]>(),
   // Why it was wrong — references into the shared Drill reason taxonomy. Null until any are tagged.
   reasons: jsonb("reasons").$type<DrillMistakeReasonRef[]>(),
   // Learner-marked correct/incorrect spans of `text` (offsets into the original). Null until any are made.

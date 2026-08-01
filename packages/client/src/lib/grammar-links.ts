@@ -77,3 +77,28 @@ export function sentencesByGrammarTagId(
   }
   return map;
 }
+
+/**
+ * Map each grammar-tag id → the learner's own sentences that used that grammar **incorrectly** (from
+ * `incorrectGrammarTerms`). Renders the "Used incorrectly here" section on a grammar note, separate
+ * from "Sentences using this grammar". Shows the sentence as the learner wrote it (the misuse).
+ */
+export function misusedSentencesByGrammarTagId(
+  mySentences: MySentence[],
+): Map<string, LinkedSentence[]> {
+  const map = new Map<string, LinkedSentence[]>();
+  for (const s of mySentences) {
+    for (const t of s.incorrectGrammarTerms ?? []) {
+      const entry: LinkedSentence = {
+        id: s.id,
+        text: s.text,
+        translation: s.translation ?? null,
+        mine: true,
+      };
+      const list = map.get(t.id);
+      if (list) list.push(entry);
+      else map.set(t.id, [entry]);
+    }
+  }
+  return map;
+}
