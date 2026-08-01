@@ -1,6 +1,6 @@
 import type { AnswerSheetEntry } from "@sentence-bank/types";
 
-import { Markdown } from "@/components/Markdown";
+import { ExplanationBody } from "@/components/ExplanationBody";
 import { Label } from "@/components/ui/label";
 
 /** The supporting correction fields for one entry (explanation + meanings), each shown only when
@@ -16,8 +16,10 @@ export function AnswerEntryCorrections({
         ? (
           <div className="space-y-1">
             <Label className="text-sm">Explanation</Label>
-            <Markdown
-              content={entry.reasoning}
+            {/* Same target string as the headline in `AnswerEntry`, so a phrase underlines in both. */}
+            <ExplanationBody
+              explanation={entry.reasoning}
+              target={entry.correction?.trim() || entry.value}
               className="text-muted-foreground"
             />
           </div>

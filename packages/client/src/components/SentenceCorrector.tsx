@@ -5,7 +5,9 @@ import { useState } from "react";
 import { EditorContent, useEditor } from "@tiptap/react";
 import { BubbleMenu } from "@tiptap/react/menus";
 import StarterKit from "@tiptap/starter-kit";
+import { Check } from "lucide-react";
 
+import { ExplanationSyntaxHint } from "@/components/ExplanationSyntaxHint";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -26,6 +28,10 @@ export interface SentenceCorrectionResult {
  * strikes it through and drops it from the result, **Correct** keeps it (green), and typing/backspacing
  * edits inline. The corrected sentence is derived from these edits. Once anything is edited, a reasoning
  * field + Save appear; Save commits `{ correction, marks, reasoning }` together via `onSave`.
+ *
+ * A sentence that was already right can be saved too, via "No changes needed" — that reveals the same
+ * explanation field without requiring an edit, so a correct sentence can still carry a note. Callers
+ * detect this case by comparing the returned `correction` with the text they passed in.
  */
 export function SentenceCorrector({
   text,
@@ -48,8 +54,11 @@ export function SentenceCorrector({
     // Keep the existing marks so a re-opened correction saved without further edits doesn't lose them.
     marks: marks ?? [],
   }));
-  // Reveal the surrounding chrome only once the learner has started changing the sentence.
+  // Reveal the surrounding chrome only once the learner has started changing the sentence — or has
+  // said it needs no change, so an already-correct sentence can still be saved with an explanation.
   const [hasEdited, setHasEdited] = useState(false);
+  const [noChangeNeeded, setNoChangeNeeded] = useState(false);
+  const showDetails = hasEdited || noChangeNeeded;
 
   const editor = useEditor({
     extensions: [StarterKit, CorrectMark, IncorrectMark, TrackChanges],
@@ -71,7 +80,7 @@ export function SentenceCorrector({
   return (
     <div className="space-y-3">
       <div className="space-y-1">
-        {hasEdited ? <Label>Correct the sentence</Label> : null}
+        {showDetails ? <Label>Correct the sentence</Label> : null}
         {editor
           ? (
             <BubbleMenu
@@ -126,7 +135,25 @@ export function SentenceCorrector({
         />
       </div>
 
-      {hasEdited
+      {showDetails
+        ? null
+        : (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="
+              h-auto px-0 py-0.5 text-xs font-normal text-muted-foreground
+              hover:bg-transparent hover:text-foreground
+            "
+            onClick={() => setNoChangeNeeded(true)}
+          >
+            <Check className="size-3" />
+            No changes needed — just add a note
+          </Button>
+        )}
+
+      {showDetails
         ? (
           <>
             <div className="space-y-0.5">
@@ -145,8 +172,12 @@ export function SentenceCorrector({
                   id="corrector-reason"
                   value={reasoning}
                   onChange={e => setReasoning(e.target.value)}
-                  placeholder="Why it was wrong — optional, Markdown supported"
+                  placeholder="Why it was wrong — optional"
                   rows={2}
+                />
+                <ExplanationSyntaxHint
+                  explanation={reasoning}
+                  target={derived.correction}
                 />
               </div>
               <Button

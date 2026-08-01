@@ -10,20 +10,30 @@ import { Button } from "@/components/ui/button";
 import { termsChanged } from "@/lib/terms";
 
 /**
- * Displays an AI Lesson grammar item's / source sentence's Grammar source tags with an inline edit
- * affordance (reusing the shared `TermPicker`). `onTagClick`, when provided, turns each tag badge
- * into a filter button (used on the browse pages to surface the grammar↔sentence connection).
+ * Displays one list of Grammar source tags with an inline edit affordance (reusing the shared
+ * `TermPicker`), so tags can be changed wherever the tagged thing is shown rather than only on its
+ * edit page. Used by AI Lesson grammar items and source sentences, and by My Sentences — which
+ * renders it twice, once per grammar list, hence the configurable labels.
+ *
+ * `onTagClick`, when provided, turns each tag badge into a filter button (used on the browse pages
+ * to surface the grammar↔sentence connection).
  */
 export function GrammarTagsEditor({
   value,
   onSave,
   isPending = false,
   onTagClick,
+  label = "Grammar tags",
+  addLabel = "Add grammar tags",
 }: {
   value: SentenceTermRef[] | null;
   onSave: (terms: SentenceTermRef[] | null) => void;
   isPending?: boolean;
   onTagClick?: (termId: string) => void;
+  /** Names this list in the badge row and the picker. */
+  label?: string;
+  /** Call to action when the list is empty. */
+  addLabel?: string;
 }) {
   const current = value ?? [];
   const [editing, setEditing] = useState(false);
@@ -35,7 +45,7 @@ export function GrammarTagsEditor({
       <div className="flex flex-wrap items-center gap-1.5">
         {current.length > 0 && (
           <>
-            <span className="text-xs text-muted-foreground">Grammar tags:</span>
+            <span className="text-xs text-muted-foreground">{label}:</span>
             {current.map(term =>
               onTagClick
                 ? (
@@ -78,7 +88,7 @@ export function GrammarTagsEditor({
           }}
         >
           <Tag className="size-3.5" />
-          {editing ? "Close" : current.length > 0 ? "Edit tags" : "Add grammar tags"}
+          {editing ? "Close" : current.length > 0 ? "Edit tags" : addLabel}
         </Button>
       </div>
       {editing
@@ -86,7 +96,7 @@ export function GrammarTagsEditor({
           <div className="space-y-2 rounded-md border p-3">
             <TermPicker
               category="grammar"
-              label="Grammar tags"
+              label={label}
               value={draft}
               onChange={setDraft}
             />

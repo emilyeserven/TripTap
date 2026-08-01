@@ -3,7 +3,7 @@ import type { Writing, WritingCorrection } from "@sentence-bank/types";
 
 import { useState } from "react";
 
-import { PlusIcon } from "lucide-react";
+import { CheckIcon, PlusIcon } from "lucide-react";
 
 import { Label } from "@/components/ui/label";
 import { WritingCorrectedSegment } from "@/components/WritingCorrectedSegment";
@@ -16,11 +16,13 @@ import { splitLines } from "@/lib/writing-corrections";
 /**
  * Correction mode for a writing — the same track-changes flow as My Sentences and Answer Sheets. Each
  * sentence gets a `+` opening the inline {@link SentenceCorrector} (select a span → Correct/Incorrect,
- * derive `{ correction, marks }`, add an explanation). Saving creates a My Sentence carrying the
- * correction, marks, and explanation (tagged with the writing's terms and linked back to it) and
- * records the correction inline on the writing. Already-corrected sentences lead with the fix, hide the
- * original behind a "Show your original" diff, and offer "Edit corrections" to revise it (and the
- * linked My Sentence) in place.
+ * derive `{ correction, marks }`, add an explanation), or a ✓ to accept it as already right. Saving
+ * creates a My Sentence carrying the correction, marks, and explanation (tagged with the writing's
+ * terms and linked back to it) and records the correction inline on the writing. A sentence that
+ * needed no change is stored with an empty `corrected` (see {@link WritingCorrection}) and its My
+ * Sentence gets no correction at all — it is simply marked reviewed. Already-handled sentences lead
+ * with the corrected text, hide the original behind a "Show your original" diff, and offer "Edit
+ * corrections" to revise it (and the linked My Sentence) in place.
  */
 export function WritingCorrections({
   writing,
@@ -43,11 +45,14 @@ export function WritingCorrections({
     corrections.find(c => c.original.trim() === segment.trim());
 
   const officiallyAdd = async (original: string, r: SentenceCorrectionResult) => {
+    // "No changes needed" comes back with the sentence untouched — record it as reviewed rather
+    // than storing the original as though it were a correction of itself.
+    const unchanged = r.correction.trim() === original.trim();
     try {
       const created = await createMySentence.mutateAsync({
         text: original,
-        correction: r.correction.trim() || null,
-        marks: r.marks,
+        correction: unchanged ? null : (r.correction.trim() || null),
+        marks: unchanged ? null : r.marks,
         explanation: r.reasoning,
         needsCorrection: false,
         // Per-sentence intended meaning is set inline on the corrected card — don't inherit the whole
@@ -62,9 +67,10 @@ export function WritingCorrections({
         {
           id: newId(),
           original,
-          corrected: r.correction.trim(),
+          // Empty marks the sentence as "reviewed, nothing to fix" (see WritingCorrection docs).
+          corrected: unchanged ? "" : r.correction.trim(),
           note: r.reasoning,
-          marks: r.marks,
+          marks: unchanged ? null : r.marks,
           mySentenceId: created.id,
         },
       ];
@@ -82,13 +88,14 @@ export function WritingCorrections({
   };
 
   const saveEdit = async (existing: WritingCorrection, r: SentenceCorrectionResult) => {
+    const unchanged = r.correction.trim() === existing.original.trim();
     try {
       if (existing.mySentenceId) {
         await updateMySentence.mutateAsync({
           id: existing.mySentenceId,
           input: {
-            correction: r.correction.trim() || null,
-            marks: r.marks,
+            correction: unchanged ? null : (r.correction.trim() || null),
+            marks: unchanged ? null : r.marks,
             explanation: r.reasoning,
           },
         });
@@ -97,9 +104,9 @@ export function WritingCorrections({
         c.id === existing.id
           ? {
             ...c,
-            corrected: r.correction.trim(),
+            corrected: unchanged ? "" : r.correction.trim(),
             note: r.reasoning,
-            marks: r.marks,
+            marks: unchanged ? null : r.marks,
           }
           : c);
       await updateWriting.mutateAsync({
@@ -143,7 +150,11 @@ export function WritingCorrections({
           {" "}
           <PlusIcon className="inline size-3" />
           {" "}
-          after a sentence to correct it and add it to My Sentences.
+          after a sentence to correct it, or
+          {" "}
+          <CheckIcon className="inline size-3 text-green-600" />
+          {" "}
+          if it was already right. Either way it&rsquo;s added to My Sentences.
         </p>
         {uncorrected.length === 0
           ? (
@@ -165,6 +176,11 @@ export function WritingCorrections({
                     adding={addingIndex === index}
                     onStartAdd={() => setAddingIndex(index)}
                     onSave={r => void officiallyAdd(segment, r)}
+                    onMarkCorrect={() => void officiallyAdd(segment, {
+                      correction: segment,
+                      marks: [],
+                      reasoning: null,
+                    })}
                   />
                 </li>
               ))}

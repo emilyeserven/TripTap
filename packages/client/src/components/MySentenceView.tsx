@@ -2,14 +2,14 @@ import type { MySentence } from "@sentence-bank/types";
 
 import { useState } from "react";
 
-import { Eye, EyeOff } from "lucide-react";
-
 import { CorrectionDiff } from "../lib/sentenceDiff";
 
+import { ExplainedSentence } from "@/components/ExplainedSentence";
+import { ExplanationBody } from "@/components/ExplanationBody";
 import { MySentenceMetaBadges } from "@/components/MySentenceMetaBadges";
 import { SentenceCorrector } from "@/components/SentenceCorrector";
+import { ShowOriginalToggle } from "@/components/ShowOriginalToggle";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useDrillReasonCategories } from "@/hooks/useDrillReasonCategories";
 import { useUpdateMySentence } from "@/hooks/useMySentences";
@@ -29,6 +29,9 @@ export function MySentenceView({
   // Un-reviewed = still flagged and not yet corrected → offer the inline corrector.
   const unreviewed = !corrected && ms.needsCorrection;
   const [showOriginal, setShowOriginal] = useState(false);
+  // What the explanation's `phrase: note` references resolve against — the fix if there is one,
+  // otherwise what the learner wrote, so an already-correct sentence can still be annotated.
+  const explained = corrected ?? ms.text;
 
   return (
     <div className="space-y-4">
@@ -47,28 +50,23 @@ export function MySentenceView({
             })}
           />
         )
-        : <p className="text-2xl font-semibold">{corrected ?? ms.text}</p>}
+        : (
+          <ExplainedSentence
+            text={explained}
+            explanation={ms.explanation}
+            className="text-2xl font-semibold"
+          />
+        )}
 
       <MySentenceMetaBadges mySentence={ms} />
 
       {corrected
         ? (
           <div className="space-y-1">
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowOriginal(v => !v)}
-            >
-              {showOriginal
-                ? <EyeOff className="size-4" />
-                : (
-                  <Eye
-                    className="size-4"
-                  />
-                )}
-              {showOriginal ? "Hide original" : "Show your original"}
-            </Button>
+            <ShowOriginalToggle
+              open={showOriginal}
+              onToggle={() => setShowOriginal(v => !v)}
+            />
             {showOriginal
               ? (
                 <div className="space-y-1 rounded-md border bg-muted/30 p-3">
@@ -89,7 +87,10 @@ export function MySentenceView({
         ? (
           <div className="space-y-1">
             <Label className="text-sm">Explanation</Label>
-            <p className="text-sm">{ms.explanation}</p>
+            <ExplanationBody
+              explanation={ms.explanation}
+              target={explained}
+            />
           </div>
         )
         : null}

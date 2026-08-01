@@ -3,16 +3,21 @@ import type { MySentence } from "@sentence-bank/types";
 import { useState } from "react";
 
 import { Link } from "@tanstack/react-router";
-import { Check, Eye, EyeOff, Headphones } from "lucide-react";
+import { Check, Headphones } from "lucide-react";
 
 import { CorrectionDiff } from "../lib/sentenceDiff";
 
 import { AddToShadowingListButton } from "@/components/AddToShadowingListButton";
+import { ExplainedSentence } from "@/components/ExplainedSentence";
+import { ExplanationBody } from "@/components/ExplanationBody";
+import { MySentenceGrammarTags } from "@/components/MySentenceGrammarTags";
 import { MySentenceMetaBadges } from "@/components/MySentenceMetaBadges";
 import { SentenceCorrector } from "@/components/SentenceCorrector";
+import { ShowOriginalToggle } from "@/components/ShowOriginalToggle";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useUpdateMySentence } from "@/hooks/useMySentences";
+import { explainSentence } from "@/lib/explanationRefs";
 
 /**
  * One learner-produced sentence in the list — the same correction flow as Answer Sheet entries. When it
@@ -41,6 +46,12 @@ export function MySentenceCard({
   // Un-reviewed = still flagged and not yet corrected → offer the inline corrector (unless read-only).
   const unreviewed = !corrected && ms.needsCorrection;
   const showCorrector = !readOnly && (unreviewed || correcting);
+  // What the explanation's `phrase: note` references resolve against — the fix if there is one,
+  // otherwise what the learner wrote, so an already-correct sentence can still be annotated.
+  const explained = corrected ?? ms.text;
+  const {
+    hasRefs,
+  } = explainSentence(explained, ms.explanation);
 
   function saveCorrection(r: { correction: string;
     marks: MySentence["marks"];
@@ -84,20 +95,31 @@ export function MySentenceCard({
         <div className="group flex items-start justify-between gap-2">
           {showCorrector
             ? <span className="text-lg font-semibold">Correct your sentence</span>
-            : (
-              <Link
-                to="/my-sentences/$id"
-                params={{
-                  id: ms.id,
-                }}
-                className="
-                  text-lg font-semibold
-                  hover:underline
-                "
-              >
-                {corrected ?? ms.text}
-              </Link>
-            )}
+            : hasRefs
+              // A link can't hold the hover targets: its own underline paints through them, and a
+              // focusable span inside an anchor breaks both tab order and clicking a phrase. The
+              // "Open" action below stands in for the headline link in this case.
+              ? (
+                <ExplainedSentence
+                  text={explained}
+                  explanation={ms.explanation}
+                  className="text-lg font-semibold"
+                />
+              )
+              : (
+                <Link
+                  to="/my-sentences/$id"
+                  params={{
+                    id: ms.id,
+                  }}
+                  className="
+                    text-lg font-semibold
+                    hover:underline
+                  "
+                >
+                  {explained}
+                </Link>
+              )}
           <div className="flex shrink-0 items-center gap-1">
             <Button
               type="button"
@@ -143,6 +165,25 @@ export function MySentenceCard({
                   onClick={markCorrect}
                 >
                   <Check className="size-4" />
+                </Button>
+              )
+              : null}
+            {/* The headline stopped being a link to make room for the hover targets. */}
+            {hasRefs && !showCorrector && !onEdit
+              ? (
+                <Button
+                  asChild
+                  variant="ghost"
+                  size="sm"
+                >
+                  <Link
+                    to="/my-sentences/$id"
+                    params={{
+                      id: ms.id,
+                    }}
+                  >
+                    Open
+                  </Link>
                 </Button>
               )
               : null}
@@ -203,21 +244,10 @@ export function MySentenceCard({
         {!showCorrector && corrected
           ? (
             <div className="space-y-1">
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowOriginal(v => !v)}
-              >
-                {showOriginal
-                  ? <EyeOff className="size-4" />
-                  : (
-                    <Eye
-                      className="size-4"
-                    />
-                  )}
-                {showOriginal ? "Hide original" : "Show your original"}
-              </Button>
+              <ShowOriginalToggle
+                open={showOriginal}
+                onToggle={() => setShowOriginal(v => !v)}
+              />
               {showOriginal
                 ? (
                   <div className="space-y-1 rounded-md border bg-muted/30 p-2">
@@ -239,14 +269,24 @@ export function MySentenceCard({
           ? (
             <div className="space-y-0.5">
               <p className="text-xs font-medium text-muted-foreground">Explanation</p>
-              <p className="text-sm whitespace-pre-wrap">{ms.explanation}</p>
+              <ExplanationBody
+                explanation={ms.explanation}
+                target={explained}
+              />
             </div>
           )
           : null}
 
         {ms.translation ? <p className="text-sm text-muted-foreground">Meant: {ms.translation}</p> : null}
 
-        <MySentenceMetaBadges mySentence={ms} />
+        <MySentenceMetaBadges
+          mySentence={ms}
+          omitCategories={readOnly ? undefined : ["grammar"]}
+        />
+
+        {/* Grammar tagging happens in bulk from this list, so it's editable in place rather than
+            only on the sentence's own page. */}
+        {readOnly ? null : <MySentenceGrammarTags mySentence={ms} />}
       </CardContent>
     </Card>
   );

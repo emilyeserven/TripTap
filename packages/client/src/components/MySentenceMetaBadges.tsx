@@ -1,4 +1,4 @@
-import type { MySentence } from "@sentence-bank/types";
+import type { MySentence, SentenceTermCategory } from "@sentence-bank/types";
 
 import { Link } from "@tanstack/react-router";
 import { NotebookPen, PenLine, TriangleAlert } from "lucide-react";
@@ -12,8 +12,11 @@ import { Badge } from "@/components/ui/badge";
  */
 export function MySentenceMetaBadges({
   mySentence: ms,
+  omitCategories,
 }: {
   mySentence: MySentence;
+  /** Term channels to leave out, for callers rendering those themselves (see `TermCategoryBadges`). */
+  omitCategories?: SentenceTermCategory[];
 }) {
   const corrected = ms.correction?.trim() ? ms.correction : null;
   return (
@@ -68,7 +71,10 @@ export function MySentenceMetaBadges({
           </Link>
         )
         : null}
-      <TermCategoryBadges terms={ms.terms} />
+      <TermCategoryBadges
+        terms={ms.terms}
+        omitCategories={omitCategories}
+      />
     </div>
   );
 }

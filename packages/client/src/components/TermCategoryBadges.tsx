@@ -1,4 +1,4 @@
-import type { SentenceTermRef } from "@sentence-bank/types";
+import type { SentenceTermCategory, SentenceTermRef } from "@sentence-bank/types";
 
 import { GrammarTermBadges } from "@/components/GrammarTermBadges";
 import { Badge } from "@/components/ui/badge";
@@ -11,8 +11,11 @@ import { groupTermsByCategory, TERM_CATEGORIES } from "@/lib/terms";
  */
 export function TermCategoryBadges({
   terms,
+  omitCategories,
 }: {
   terms: SentenceTermRef[] | null;
+  /** Channels to leave out — for callers that render those themselves (e.g. an inline tag editor). */
+  omitCategories?: SentenceTermCategory[];
 }) {
   const termGroups = groupTermsByCategory(terms ?? []);
   return (
@@ -21,7 +24,7 @@ export function TermCategoryBadges({
         category, label,
       }) => {
         const grouped = termGroups[category];
-        if (grouped.length === 0) return null;
+        if (grouped.length === 0 || omitCategories?.includes(category)) return null;
         // Grammar tags become links to their note (GrammarTermBadges supplies its own "Grammar:" label).
         if (category === "grammar") {
           return (

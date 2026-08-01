@@ -3,11 +3,13 @@ import type { AnswerSheetEntry } from "@sentence-bank/types";
 
 import { useState } from "react";
 
-import { Check, Eye, EyeOff, X } from "lucide-react";
+import { Check, X } from "lucide-react";
 
 import { AnswerEntryCorrections } from "@/components/AnswerEntryCorrections";
 import { AnswerHoverActions } from "@/components/AnswerHoverActions";
+import { ExplainedSentence } from "@/components/ExplainedSentence";
 import { SentenceCorrector } from "@/components/SentenceCorrector";
+import { ShowOriginalToggle } from "@/components/ShowOriginalToggle";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { hasCorrectionDetail, isEntryAnswered } from "@/lib/answer-sheets";
@@ -96,36 +98,31 @@ export function AnswerEntry({
         )
         : (
           <>
-            <p className="text-xl font-semibold">
-              {corrected ?? entry.value ?? ""}
-              {!corrected && !entry.value.trim()
-                ? (
-                  <span
-                    className="
-                      text-base font-normal text-muted-foreground italic
-                    "
-                  >No answer
-                  </span>
-                )
-                : null}
-            </p>
+            {!corrected && !entry.value.trim()
+              ? (
+                <p
+                  className="text-base font-normal text-muted-foreground italic"
+                >
+                  No answer
+                </p>
+              )
+              : (
+                <ExplainedSentence
+                  text={corrected ?? entry.value ?? ""}
+                  explanation={entry.reasoning}
+                  className="text-xl font-semibold"
+                />
+              )}
 
             <AnswerEntryCorrections entry={entry} />
 
             {corrected
               ? (
                 <div className="space-y-1">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowOriginal(v => !v)}
-                  >
-                    {showOriginal
-                      ? <EyeOff className="size-4" />
-                      : <Eye className="size-4" />}
-                    {showOriginal ? "Hide original" : "Show your original"}
-                  </Button>
+                  <ShowOriginalToggle
+                    open={showOriginal}
+                    onToggle={() => setShowOriginal(v => !v)}
+                  />
                   {showOriginal
                     ? (
                       <div

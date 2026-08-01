@@ -1,3 +1,20 @@
+import type { WritingCorrection } from "@sentence-bank/types";
+
+/**
+ * The text a correction represents: its fix, or the original sentence when it needed no change.
+ * An empty `corrected` is the "reviewed, nothing to fix" marker (see the type's docs), so it must
+ * never be read bare — doing so yields a blank sentence.
+ */
+export function correctedText(correction: WritingCorrection): string {
+  return correction.corrected.trim() ? correction.corrected : correction.original;
+}
+
+/** Whether a correction records "this was already right" rather than an actual fix. */
+export function isUnchanged(correction: WritingCorrection): boolean {
+  return !correction.corrected.trim()
+    || correction.corrected.trim() === correction.original.trim();
+}
+
 /**
  * Split free-form text into sentence segments. A boundary is any run of terminal punctuation
  * (。！？.!?) or the end of a non-empty line — so an unpunctuated line still counts as one sentence.
