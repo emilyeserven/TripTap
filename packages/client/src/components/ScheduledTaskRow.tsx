@@ -30,7 +30,7 @@ export function ScheduledTaskRow({
 }) {
   const open = scheduledTaskOpen(task.target, endpointUrl);
   const title = scheduledTaskTitle(task);
-  const Icon = task.target.kind === "answer-sheet" ? ClipboardCheck : BookOpen;
+  const Icon = task.target.kind === "resource" ? BookOpen : ClipboardCheck;
 
   const linkClass = `
     flex min-w-0 flex-1 flex-col

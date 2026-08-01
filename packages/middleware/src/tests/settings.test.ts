@@ -474,8 +474,8 @@ test("parseScheduledTasks keeps well-formed dated tasks and drops the rest", () 
       label: null,
       done: false,
       target: {
-        kind: "answer-sheet",
-        answerSheetId: "as-1",
+        kind: "question-sheet",
+        questionSheetId: "qs-1",
         title: "Exercise 3",
         partId: "q2",
       },
@@ -493,6 +493,17 @@ test("parseScheduledTasks keeps well-formed dated tasks and drops the rest", () 
           label: "Ch. 3",
           type: "page",
         },
+      },
+    },
+    // Legacy answer-sheet target → still kept.
+    {
+      id: "sched-legacy",
+      date: "2026-08-04",
+      target: {
+        kind: "answer-sheet",
+        answerSheetId: "as-1",
+        title: "Old exercise",
+        partId: "q2",
       },
     },
     // Bad date → dropped.
@@ -514,10 +525,12 @@ test("parseScheduledTasks keeps well-formed dated tasks and drops the rest", () 
     },
   ]));
 
-  assert.deepEqual(tasks.map(t => t.id), ["sched-1", "sched-2"]);
-  assert.equal(tasks[0].target.kind, "answer-sheet");
+  assert.deepEqual(tasks.map(t => t.id), ["sched-1", "sched-2", "sched-legacy"]);
+  assert.equal(tasks[0].target.kind, "question-sheet");
+  assert.equal(tasks[0].target.kind === "question-sheet" && tasks[0].target.questionSheetId, "qs-1");
   assert.equal(tasks[1].done, true);
   assert.equal(tasks[1].target.kind === "resource" && tasks[1].target.section?.label, "Ch. 3");
+  assert.equal(tasks[2].target.kind, "answer-sheet");
 });
 
 test("parseDailyTasks drops malformed entries; parseDailyTaskDone requires a valid date", () => {
