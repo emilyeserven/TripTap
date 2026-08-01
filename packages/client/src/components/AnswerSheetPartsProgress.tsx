@@ -29,12 +29,19 @@ export function AnswerSheetPartsProgress({
   answerSheet: AnswerSheet;
   activePart?: string | null;
 }) {
-  const parts = answerSheetParts(questionSheet, answerSheet);
+  // Number parts by their sheet position first, then drop hidden ones — so "Part 2" stays "Part 2"
+  // even when an earlier part is hidden (matching the edit form's part toggles).
+  const parts = answerSheetParts(questionSheet, answerSheet)
+    .map((part, index) => ({
+      ...part,
+      number: index + 1,
+    }))
+    .filter(p => !p.hidden);
   if (parts.length < 2) return null;
 
   return (
     <div className="flex flex-wrap gap-1.5">
-      {parts.map((part, i) => (
+      {parts.map(part => (
         <button
           key={part.questionId}
           type="button"
@@ -54,7 +61,7 @@ export function AnswerSheetPartsProgress({
           )}
           title={part.label}
         >
-          <span className="font-medium">Part {i + 1}</span>
+          <span className="font-medium">Part {part.number}</span>
           {part.complete
             ? <Check className="size-3" />
             : <span className="text-muted-foreground tabular-nums">{part.filled}/{part.total}</span>}

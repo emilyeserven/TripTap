@@ -141,15 +141,19 @@ export interface AnswerSheetPartProgress {
   filled: number;
   total: number;
   complete: boolean;
+  /** True when this part is hidden for the attempt (excluded from answering & scoring). */
+  hidden: boolean;
 }
 
 /**
  * Progress through an answer sheet, part by part — how many of each top-level question's slots have a
  * value. Lets the UI show partial completion ("Part 1 done, parts 2–3 to go") without any stored state.
- * A grid sheet is reported as a single part.
+ * A grid sheet is reported as a single part. Each part carries a `hidden` flag from the attempt's
+ * `hiddenPartIds`; callers decide whether to skip hidden parts.
  */
 export function answerSheetParts(qs: QuestionSheet, as: AnswerSheet): AnswerSheetPartProgress[] {
   const byId = new Map(as.entries.map(e => [e.slotId, e] as const));
+  const hidden = new Set(as.hiddenPartIds ?? []);
   return questionSheetPartSlots(qs).map((part) => {
     const filled = part.slotIds.filter(
       id => (byId.get(id)?.value.trim().length ?? 0) > 0,
@@ -161,16 +165,78 @@ export function answerSheetParts(qs: QuestionSheet, as: AnswerSheet): AnswerShee
       filled,
       total: part.slotIds.length,
       complete: part.slotIds.length > 0 && filled === part.slotIds.length,
+      hidden: hidden.has(part.id),
+    };
+  });
+}
+
+/** The set of answer-slot ids belonging to the attempt's hidden parts (empty when nothing is hidden). */
+export function hiddenSlotIds(qs: QuestionSheet, as: AnswerSheet): Set<string> {
+  const hiddenParts = new Set(as.hiddenPartIds ?? []);
+  const ids = new Set<string>();
+  if (hiddenParts.size === 0) return ids;
+  for (const part of questionSheetPartSlots(qs)) {
+    if (hiddenParts.has(part.id)) for (const id of part.slotIds) ids.add(id);
+  }
+  return ids;
+}
+
+/** The slots of `qs` still in play for `as` — every slot minus those in hidden parts. */
+export function visibleSlots(qs: QuestionSheet, as: AnswerSheet): QuestionSheetSlot[] {
+  const hidden = hiddenSlotIds(qs, as);
+  const slots = questionSheetSlots(qs);
+  return hidden.size === 0 ? slots : slots.filter(s => !hidden.has(s.id));
+}
+
+/** A graded score for one part of an answer sheet (a "part" = one top-level question). */
+export interface AnswerSheetPartScore {
+  questionId: string;
+  label: string;
+  correct: number;
+  graded: number;
+  total: number;
+  hidden: boolean;
+}
+
+/**
+ * Tally an answer sheet part by part: each top-level question's `correct` / `graded` / `total` slot
+ * counts, plus whether it's hidden. Hidden parts are still returned (flagged) so the edit UI can list
+ * them; score displays filter them out. Mirrors {@link answerSheetScore} at the part grain.
+ */
+export function answerSheetPartScores(qs: QuestionSheet, as: AnswerSheet): AnswerSheetPartScore[] {
+  const byId = new Map(as.entries.map(e => [e.slotId, e] as const));
+  const hidden = new Set(as.hiddenPartIds ?? []);
+  return questionSheetPartSlots(qs).map((part) => {
+    let correct = 0;
+    let graded = 0;
+    for (const id of part.slotIds) {
+      const verdict = byId.get(id)?.correct;
+      if (verdict === true) {
+        correct += 1;
+        graded += 1;
+      }
+      else if (verdict === false) {
+        graded += 1;
+      }
+    }
+    return {
+      questionId: part.id,
+      label: part.label,
+      correct,
+      graded,
+      total: part.slotIds.length,
+      hidden: hidden.has(part.id),
     };
   });
 }
 
 /**
- * True when every answerable slot of `qs` has a non-empty answer recorded in `as`. A sheet with no
- * slots is never "complete" (there is nothing to fill in).
+ * True when every answerable slot of `qs` still in play for `as` has a non-empty answer. Slots in
+ * hidden parts don't count (they're not part of this attempt). A sheet with no in-play slots is never
+ * "complete" (there is nothing to fill in).
  */
 export function isAnswerSheetComplete(qs: QuestionSheet, as: AnswerSheet): boolean {
-  const slots = questionSheetSlots(qs);
+  const slots = visibleSlots(qs, as);
   if (slots.length === 0) return false;
   const byId = new Map(as.entries.map(e => [e.slotId, e] as const));
   return slots.every(s => (byId.get(s.id)?.value.trim().length ?? 0) > 0);
@@ -188,27 +254,62 @@ export interface AnswerSheetScore {
 
 /**
  * Tally an answer sheet against its question sheet: `correct` (verdict true), `graded` (verdict set
- * either way), and `total` slots. Callers decide whether to show it — typically only once the sheet
- * {@link isAnswerSheetComplete is complete} and at least one entry has been graded.
+ * either way), and `total` slots — over the slots still in play (hidden parts excluded). Callers decide
+ * whether to show it — typically only once the sheet {@link isAnswerSheetComplete is complete} and at
+ * least one entry has been graded.
  */
 export function answerSheetScore(qs: QuestionSheet, as: AnswerSheet): AnswerSheetScore {
-  const total = questionSheetSlots(qs).length;
+  const slots = visibleSlots(qs, as);
+  const byId = new Map(as.entries.map(e => [e.slotId, e] as const));
   let correct = 0;
   let graded = 0;
-  for (const e of as.entries) {
-    if (e.correct === true) {
+  for (const s of slots) {
+    const verdict = byId.get(s.id)?.correct;
+    if (verdict === true) {
       correct += 1;
       graded += 1;
     }
-    else if (e.correct === false) {
+    else if (verdict === false) {
       graded += 1;
     }
   }
   return {
     correct,
     graded,
-    total,
+    total: slots.length,
   };
+}
+
+/**
+ * Build a default answer-sheet title from its question sheet, considering which parts are in play. When
+ * a strict, non-empty subset of the sheet's parts is included (some are in `hiddenPartIds`), the
+ * included parts are named — "Genki 3 — Parts 1, 3 — 8/1/2026"; otherwise it's just the sheet title and
+ * date. Grid sheets (no parts) always get the plain form. `now` is injectable for testing.
+ */
+export function generateAnswerSheetTitle(
+  qs: QuestionSheet,
+  hiddenPartIds: string[] = [],
+  now: Date = new Date(),
+): string {
+  const base = qs.title?.trim() || "Answer sheet";
+  const date = now.toLocaleDateString();
+  const parts = questionSheetParts(qs);
+  const hidden = new Set(hiddenPartIds);
+  const included = parts
+    .map((part, index) => ({
+      part,
+      number: index + 1,
+    }))
+    .filter(({
+      part,
+    }) => !hidden.has(part.id));
+  // Only annotate when the attempt covers a strict, non-empty subset of the parts.
+  if (parts.length > 1 && included.length > 0 && included.length < parts.length) {
+    const numbers = included.map(i => i.number);
+    const label = numbers.length === 1 ? `Part ${numbers[0]}` : `Parts ${numbers.join(", ")}`;
+    return `${base} — ${label} — ${date}`;
+  }
+  return `${base} — ${date}`;
 }
 
 /** The UTC calendar day of an ISO timestamp, as an epoch-ms at midnight (for day-granular comparisons). */

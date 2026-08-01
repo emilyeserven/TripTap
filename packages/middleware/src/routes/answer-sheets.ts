@@ -100,6 +100,12 @@ const createAnswerSheetBody = {
       type: ["string", "null"],
     },
     entries: entriesSchema,
+    hiddenPartIds: {
+      type: ["array", "null"],
+      items: {
+        type: "string",
+      },
+    },
   },
 } as const;
 

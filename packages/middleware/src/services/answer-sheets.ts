@@ -38,6 +38,7 @@ function toAnswerSheet(row: AnswerSheetRow): AnswerSheet {
     title: row.title,
     date: row.date instanceof Date ? row.date.toISOString() : (row.date ?? null),
     entries: (row.entries ?? []).map(normalizeEntry),
+    hiddenPartIds: row.hiddenPartIds ?? null,
     createdAt:
       row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
     updatedAt:
@@ -52,6 +53,7 @@ function toInsert(input: CreateAnswerSheetInput) {
     title: input.title ?? null,
     date: input.date ? new Date(input.date) : null,
     entries: input.entries ?? null,
+    hiddenPartIds: input.hiddenPartIds ?? null,
   };
 }
 

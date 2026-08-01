@@ -4,8 +4,10 @@ import { describe, expect, it } from "vitest";
 
 import {
   answerSheetMeetsDueDate,
+  answerSheetPartScores,
   answerSheetScore,
   dueDateMet,
+  generateAnswerSheetTitle,
   isAnswerSheetComplete,
   matchesLearningArea,
   hasCorrectionDetail,
@@ -14,6 +16,7 @@ import {
   matchesResource,
   questionSheetSlots,
   resourceFilterOptions,
+  visibleSlots,
 } from "./answer-sheets";
 
 function entry(slotId: string, value: string, correct: boolean | null = null): AnswerSheetEntry {
@@ -69,6 +72,7 @@ function answer(overrides: Partial<AnswerSheet> = {}): AnswerSheet {
     title: "Attempt",
     date: "2026-07-15T00:00:00.000Z",
     entries: [entry("q1", "答え1"), entry("q2", "答え2")],
+    hiddenPartIds: null,
     createdAt: "2026-07-15T00:00:00.000Z",
     updatedAt: "2026-07-15T00:00:00.000Z",
     ...overrides,
@@ -127,6 +131,98 @@ describe("answerSheetScore", () => {
 
   it("reports zero graded when nothing has a verdict yet", () => {
     expect(answerSheetScore(listSheet(), answer()).graded).toBe(0);
+  });
+
+  it("excludes hidden parts from correct, graded, and total", () => {
+    const score = answerSheetScore(listSheet(), answer({
+      entries: [entry("q1", "答え1", true), entry("q2", "答え2", false)],
+      hiddenPartIds: ["q2"],
+    }));
+    expect(score).toEqual({
+      correct: 1,
+      graded: 1,
+      total: 1,
+    });
+  });
+});
+
+describe("hidden parts", () => {
+  it("visibleSlots drops slots in hidden parts", () => {
+    expect(visibleSlots(listSheet(), answer({
+      hiddenPartIds: ["q2"],
+    })).map(s => s.id)).toEqual(["q1"]);
+  });
+
+  it("isAnswerSheetComplete ignores a hidden part's unanswered slot", () => {
+    // q2 is blank, but hidden — so the attempt still counts as complete.
+    expect(isAnswerSheetComplete(listSheet(), answer({
+      entries: [entry("q1", "答え1")],
+      hiddenPartIds: ["q2"],
+    }))).toBe(true);
+  });
+});
+
+describe("answerSheetPartScores", () => {
+  it("scores each top-level question separately and flags hidden parts", () => {
+    const scores = answerSheetPartScores(listSheet(), answer({
+      entries: [entry("q1", "答え1", true), entry("q2", "答え2", false)],
+      hiddenPartIds: ["q2"],
+    }));
+    expect(scores).toEqual([
+      {
+        questionId: "q1",
+        label: "One",
+        correct: 1,
+        graded: 1,
+        total: 1,
+        hidden: false,
+      },
+      {
+        questionId: "q2",
+        label: "Two",
+        correct: 0,
+        graded: 1,
+        total: 1,
+        hidden: true,
+      },
+    ]);
+  });
+});
+
+describe("generateAnswerSheetTitle", () => {
+  const when = new Date("2026-07-15T12:00:00.000Z");
+
+  it("uses the sheet title + date when every part is included", () => {
+    expect(generateAnswerSheetTitle(listSheet(), [], when))
+      .toBe(`Genki L3 — ${when.toLocaleDateString()}`);
+  });
+
+  it("names the included parts when a strict subset is in play", () => {
+    // Two parts, q2 hidden → only Part 1 included.
+    expect(generateAnswerSheetTitle(listSheet(), ["q2"], when))
+      .toBe(`Genki L3 — Part 1 — ${when.toLocaleDateString()}`);
+  });
+
+  it("lists multiple included parts by their sheet position", () => {
+    const sheet = listSheet({
+      questions: [
+        {
+          id: "q1",
+          prompt: "One",
+        },
+        {
+          id: "q2",
+          prompt: "Two",
+        },
+        {
+          id: "q3",
+          prompt: "Three",
+        },
+      ],
+    });
+    // q2 hidden → Parts 1 and 3 remain.
+    expect(generateAnswerSheetTitle(sheet, ["q2"], when))
+      .toBe(`Genki L3 — Parts 1, 3 — ${when.toLocaleDateString()}`);
   });
 });
 

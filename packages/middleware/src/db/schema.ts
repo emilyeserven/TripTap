@@ -416,6 +416,8 @@ export const answerSheets = pgTable("answer_sheets", {
     withTimezone: true,
   }),
   entries: jsonb("entries").$type<AnswerSheetEntry[]>(),
+  /** Ids of top-level question parts hidden for this attempt (excluded from answering & scoring). */
+  hiddenPartIds: jsonb("hidden_part_ids").$type<string[]>(),
   createdAt: timestamp("created_at", {
     withTimezone: true,
   }).notNull().defaultNow(),

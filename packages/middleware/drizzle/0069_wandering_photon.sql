@@ -1,0 +1,1 @@
+ALTER TABLE "answer_sheets" ADD COLUMN "hidden_part_ids" jsonb;

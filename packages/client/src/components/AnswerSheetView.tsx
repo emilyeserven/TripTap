@@ -8,6 +8,7 @@ import { CalendarCheck } from "lucide-react";
 import { AnswerCorrectionModal } from "@/components/AnswerCorrectionModal";
 import { AnswerSheetGridView } from "@/components/AnswerSheetGridView";
 import { AnswerSheetListView } from "@/components/AnswerSheetListView";
+import { AnswerSheetPartScores } from "@/components/AnswerSheetPartScores";
 import { AnswerSheetPartsProgress } from "@/components/AnswerSheetPartsProgress";
 import { AnswerSheetScoreBadge } from "@/components/AnswerSheetScoreBadge";
 import { GrammarTermBadges } from "@/components/GrammarTermBadges";
@@ -40,6 +41,8 @@ export function AnswerSheetView({
   const slots = sheet ? questionSheetSlots(sheet) : [];
   const labels = new Map(slots.map(s => [s.id, s.label]));
   const isGrid = sheet?.layout === "grid" && sheet.grid != null;
+  // Parts the learner hid for this attempt — omitted from the answer list (and already from scoring).
+  const hiddenParts = new Set(as.hiddenPartIds ?? []);
 
   const [entries, setEntries] = useState<Record<string, AnswerSheetEntry>>(() => {
     const seed: Record<string, AnswerSheetEntry> = {};
@@ -198,6 +201,18 @@ export function AnswerSheetView({
         )
         : null}
 
+      {sheet
+        ? (
+          <AnswerSheetPartScores
+            questionSheet={sheet}
+            answerSheet={{
+              ...as,
+              entries: Object.values(entries),
+            }}
+          />
+        )
+        : null}
+
       {slots.length === 0
         ? <p className="text-sm text-muted-foreground">No answers recorded.</p>
         : isGrid && sheet?.grid
@@ -211,7 +226,7 @@ export function AnswerSheetView({
           )
           : (
             <AnswerSheetListView
-              questions={sheet?.questions ?? []}
+              questions={(sheet?.questions ?? []).filter(q => !hiddenParts.has(q.id))}
               getEntry={getEntry}
               markCorrect={markCorrect}
               markWrong={markWrong}

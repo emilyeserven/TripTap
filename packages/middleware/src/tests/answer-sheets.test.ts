@@ -98,6 +98,39 @@ test("POST /api/answer-sheets accepts a payload with an assigned date", async ()
   await app.close();
 });
 
+test("POST /api/answer-sheets accepts hiddenPartIds", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/answer-sheets",
+    payload: {
+      questionSheetId: "11111111-1111-1111-1111-111111111111",
+      title: "Only part 2",
+      entries: [],
+      hiddenPartIds: ["q1", "q3"],
+    },
+  });
+  // Valid payload — 201 with a DB, or a 5xx (FK) without one, but never a 400.
+  assert.notEqual(res.statusCode, 400);
+  await app.close();
+});
+
+test("POST /api/answer-sheets rejects a non-array hiddenPartIds", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/answer-sheets",
+    payload: {
+      questionSheetId: "11111111-1111-1111-1111-111111111111",
+      hiddenPartIds: {
+        q1: true,
+      }, // must be an array of strings, not an object
+    },
+  });
+  assert.equal(res.statusCode, 400);
+  await app.close();
+});
+
 test("POST /api/answer-sheets rejects a non-string date", async () => {
   const app = await buildApp();
   const res = await app.inject({
