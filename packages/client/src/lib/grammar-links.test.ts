@@ -1,5 +1,6 @@
 // @vitest-environment node
 import type {
+  MySentence,
   Sentence,
   SentenceTermRef,
   SourceSentenceItem,
@@ -8,7 +9,11 @@ import type {
 
 import { describe, expect, it } from "vitest";
 
-import { dedupeGrammarTags, sentencesByGrammarTagId } from "./grammar-links";
+import {
+  dedupeGrammarTags,
+  misusedSentencesByGrammarTagId,
+  sentencesByGrammarTagId,
+} from "./grammar-links";
 
 function term(over: Partial<SentenceTermRef>): SentenceTermRef {
   return {
@@ -138,5 +143,46 @@ describe("sentencesByGrammarTagId", () => {
       id: "s",
       text: "x",
     })], []).size).toBe(0);
+  });
+});
+
+function mySentence(over: {
+  id: string;
+  text: string;
+  translation?: string | null;
+  incorrectGrammarTerms?: SentenceTermRef[] | null;
+}): MySentence {
+  return {
+    translation: null,
+    incorrectGrammarTerms: null,
+    ...over,
+  } as unknown as MySentence;
+}
+
+describe("misusedSentencesByGrammarTagId", () => {
+  it("groups the learner's sentences under the grammar tag they used incorrectly", () => {
+    const map = misusedSentencesByGrammarTagId([
+      mySentence({
+        id: "m-1",
+        text: "電気が消しました",
+        translation: "I turned off the light",
+        incorrectGrammarTerms: [term({
+          id: "tag-1",
+        })],
+      }),
+      mySentence({
+        id: "m-2",
+        text: "fine sentence",
+      }), // no misuse tag → ignored
+    ]);
+    expect([...map.keys()]).toEqual(["tag-1"]);
+    expect(map.get("tag-1")).toEqual([
+      {
+        id: "m-1",
+        text: "電気が消しました",
+        translation: "I turned off the light",
+        mine: true,
+      },
+    ]);
   });
 });

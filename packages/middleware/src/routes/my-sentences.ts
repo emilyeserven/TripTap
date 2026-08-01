@@ -147,6 +147,7 @@ const createMySentenceBody = {
       type: ["string", "null"],
     },
     terms: termsSchema,
+    incorrectGrammarTerms: termsSchema,
     reasons: reasonsSchema,
     marks: marksSchema,
     shadowingCandidate: {
