@@ -5,6 +5,7 @@ import { useState } from "react";
 import { termCategory } from "../lib/terms";
 
 import { DrillReasonPicker } from "@/components/DrillReasonPicker";
+import { ExplanationSyntaxHint } from "@/components/ExplanationSyntaxHint";
 import { TermPicker } from "@/components/TermPicker";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -178,6 +179,10 @@ export function MySentenceForm({
           onChange={e => setExplanation(e.target.value)}
           placeholder="Why it was wrong — e.g. a note from your tutor"
           rows={2}
+        />
+        <ExplanationSyntaxHint
+          explanation={explanation}
+          target={correction.trim() || text}
         />
       </div>
 

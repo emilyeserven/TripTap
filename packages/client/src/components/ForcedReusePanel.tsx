@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useWritings } from "@/hooks/useWritings";
+import { correctedText } from "@/lib/writing-corrections";
 
 /** How many prior corrected sentences must be reused before the writing can be marked ready. */
 const REQUIRED_REUSE = 2;
@@ -39,7 +40,9 @@ export function ForcedReusePanel({
   }, [writings, current.id]);
 
   const sentences = useMemo(
-    () => (previous?.corrections ?? []).map(c => c.corrected).filter(Boolean),
+    // A "no change needed" entry has an empty `corrected` but is still a perfectly reusable
+    // sentence, so resolve through `correctedText` rather than dropping it.
+    () => (previous?.corrections ?? []).map(correctedText).filter(Boolean),
     [previous],
   );
   const required = Math.min(REQUIRED_REUSE, sentences.length);

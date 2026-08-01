@@ -11,11 +11,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { useCreateWriting } from "@/hooks/useWritings";
 import { todayDateString } from "@/lib/daily-lineup";
 import { diffChars } from "@/lib/simple-diff";
+import { correctedText } from "@/lib/writing-corrections";
 
 /** The "corrected version" of a past writing: its corrected sentences, else the original text. */
 function correctedVersion(writing: Writing): string {
   const corrections = writing.corrections ?? [];
-  if (corrections.length > 0) return corrections.map(c => c.corrected).join("\n");
+  // `correctedText` covers the "no change needed" entries, whose `corrected` is empty.
+  if (corrections.length > 0) return corrections.map(correctedText).join("\n");
   return writing.text;
 }
 

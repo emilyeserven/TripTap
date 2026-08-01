@@ -1,7 +1,9 @@
 // @vitest-environment node
+import type { WritingCorrection } from "@sentence-bank/types";
+
 import { describe, expect, it } from "vitest";
 
-import { splitLines, splitSentences } from "./writing-corrections";
+import { correctedText, isUnchanged, splitLines, splitSentences } from "./writing-corrections";
 
 describe("splitSentences", () => {
   it("splits on Japanese and Latin terminal punctuation", () => {
@@ -49,5 +51,50 @@ describe("splitLines", () => {
     expect(splitLines("一行目。\n\n\n二行目。")).toEqual(["一行目。", "二行目。"]);
     expect(splitLines("")).toEqual([]);
     expect(splitLines("   \n  ")).toEqual([]);
+  });
+});
+
+function correction(over: Partial<WritingCorrection> = {}): WritingCorrection {
+  return {
+    id: "c1",
+    original: "猫がいる。",
+    corrected: "猫がいます。",
+    note: null,
+    marks: null,
+    mySentenceId: null,
+    ...over,
+  };
+}
+
+describe("correctedText", () => {
+  it("returns the fix when there is one", () => {
+    expect(correctedText(correction())).toBe("猫がいます。");
+  });
+
+  it("falls back to the original for a 'no change needed' entry", () => {
+    expect(correctedText(correction({
+      corrected: "",
+    }))).toBe("猫がいる。");
+    expect(correctedText(correction({
+      corrected: "   ",
+    }))).toBe("猫がいる。");
+  });
+});
+
+describe("isUnchanged", () => {
+  it("is true for an empty correction", () => {
+    expect(isUnchanged(correction({
+      corrected: "",
+    }))).toBe(true);
+  });
+
+  it("is true when the correction only differs by surrounding whitespace", () => {
+    expect(isUnchanged(correction({
+      corrected: " 猫がいる。 ",
+    }))).toBe(true);
+  });
+
+  it("is false for a real fix", () => {
+    expect(isUnchanged(correction())).toBe(false);
   });
 });

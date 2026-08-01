@@ -8,11 +8,11 @@ import { ChevronDown, ExternalLink, Layers, ScrollText, Volume2 } from "lucide-r
 import { AddToBasketButton } from "../AddToBasketButton";
 import { AiLessonBadge } from "./AiLessonBadge";
 import { Furi } from "./Furi";
-import { GrammarTagsEditor } from "./GrammarTagsEditor";
 import { LevelBadge } from "./LevelBadge";
 import { useReadingLevel } from "./reading-level-context";
 import { speak } from "./speak";
 
+import { GrammarTagsEditor } from "@/components/GrammarTagsEditor";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useUpdateSourceSentenceTerms } from "@/hooks/useAiLessons";

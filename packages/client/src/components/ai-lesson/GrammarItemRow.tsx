@@ -9,10 +9,10 @@ import { ChevronRight, Volume2 } from "lucide-react";
 
 import { AddToBasketButton } from "../AddToBasketButton";
 import { AiLessonBadge } from "./AiLessonBadge";
-import { GrammarTagsEditor } from "./GrammarTagsEditor";
 import { useReadingLevel } from "./reading-level-context";
 import { speak } from "./speak";
 
+import { GrammarTagsEditor } from "@/components/GrammarTagsEditor";
 import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { useUpdateAiLessonGrammarTerms } from "@/hooks/useAiLessons";

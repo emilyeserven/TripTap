@@ -20,9 +20,19 @@ export interface WritingCorrection {
   id: string;
   /** The sentence as originally written (the segment the `+` was clicked after). */
   original: string;
-  /** The corrected version of {@link original}, derived from the track-changes editor. */
+  /**
+   * The corrected version of {@link original}, derived from the track-changes editor.
+   *
+   * An **empty string means "reviewed, no change needed"** — the sentence was already right, and
+   * the entry exists only to record that (and to carry a {@link note}). Read it through the
+   * client's `correctedText()` helper rather than bare, or a no-change entry reads as a blank
+   * sentence.
+   */
   corrected: string;
-  /** An optional explanation of the correction; null if none. */
+  /**
+   * An optional explanation of the correction; null if none. A line shaped `phrase: note`, where
+   * the phrase occurs in the corrected sentence, attaches that note to that phrase in the UI.
+   */
   note: string | null;
   /** Track-changes spans over {@link corrected} (offsets into it); null if none. */
   marks: SentenceMark[] | null;

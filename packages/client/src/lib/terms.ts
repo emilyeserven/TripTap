@@ -38,6 +38,22 @@ export function termsChanged(a: SentenceTermRef[], b: SentenceTermRef[]): boolea
   return a.some(t => !ids.has(t.id));
 }
 
+/**
+ * Swap out one channel's terms while preserving every other channel's. Editing tags one channel at
+ * a time (e.g. grammar only, from a list) writes back the whole `terms` column, so the untouched
+ * channels have to be carried through or they'd be silently dropped. Returns null when nothing is
+ * left, matching how the API stores "no tags".
+ */
+export function replaceCategory(
+  terms: SentenceTermRef[] | null,
+  category: SentenceTermCategory,
+  next: SentenceTermRef[] | null,
+): SentenceTermRef[] | null {
+  const kept = (terms ?? []).filter(t => termCategory(t) !== category);
+  const merged = [...kept, ...(next ?? [])];
+  return merged.length > 0 ? merged : null;
+}
+
 /** Split a sentence's terms into per-channel buckets (each bucket may be empty). */
 export function groupTermsByCategory(
   terms: SentenceTermRef[],

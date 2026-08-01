@@ -3,7 +3,13 @@ import type { SentenceTermCategory, SentenceTermRef } from "@sentence-bank/types
 
 import { describe, expect, it } from "vitest";
 
-import { groupTermsByCategory, TERM_CATEGORIES, termCategory, termsChanged } from "./terms";
+import {
+  groupTermsByCategory,
+  replaceCategory,
+  TERM_CATEGORIES,
+  termCategory,
+  termsChanged,
+} from "./terms";
 
 function term(id: string, category?: string): SentenceTermRef {
   return {
@@ -78,5 +84,28 @@ describe("TERM_CATEGORIES", () => {
       "general",
       "resource",
     ]);
+  });
+});
+
+describe("replaceCategory", () => {
+  it("swaps one channel's terms while preserving the others", () => {
+    const terms = [term("v1", "vocabulary"), term("g1", "grammar"), term("r1", "resource")];
+    const next = replaceCategory(terms, "grammar", [term("g2", "grammar")]);
+    expect(next?.map(t => t.id).sort()).toEqual(["g2", "r1", "v1"]);
+  });
+
+  it("clears a channel without touching the rest", () => {
+    const terms = [term("v1", "vocabulary"), term("g1", "grammar")];
+    expect(replaceCategory(terms, "grammar", null)?.map(t => t.id)).toEqual(["v1"]);
+  });
+
+  it("returns null rather than an empty list when nothing is left", () => {
+    expect(replaceCategory([term("g1", "grammar")], "grammar", [])).toBeNull();
+    expect(replaceCategory(null, "grammar", null)).toBeNull();
+  });
+
+  it("treats a term with no category as vocabulary, so a grammar edit leaves it alone", () => {
+    const next = replaceCategory([term("legacy")], "grammar", [term("g1", "grammar")]);
+    expect(next?.map(t => t.id).sort()).toEqual(["g1", "legacy"]);
   });
 });
