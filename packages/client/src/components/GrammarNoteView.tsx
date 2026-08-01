@@ -7,6 +7,7 @@ import { ExternalLink, ImageOff, Plus, Star } from "lucide-react";
 import { toast } from "sonner";
 
 import { AiLessonBadge } from "@/components/ai-lesson/AiLessonBadge";
+import { ConstructionBlocks } from "@/components/ConstructionBlocks";
 import { GrammarFailureBadge } from "@/components/GrammarFailureBadge";
 import { Markdown } from "@/components/Markdown";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +21,7 @@ import { useSentences } from "@/hooks/useSentences";
 import { useBookmarksSettings } from "@/hooks/useSettings";
 import { bookmarkAppUrl, bookmarkTagUrl } from "@/lib/bookmarks";
 import { resourceDrillTags, resourceLearningAreas, resourceMaterialTypes } from "@/lib/collections";
+import { hasBlocks } from "@/lib/construction-blocks";
 import { sentencesByGrammarTagId } from "@/lib/grammar-links";
 import { otherUsages, resolvedRelations, usageLabel } from "@/lib/grammar-notes";
 import { newId } from "@/lib/id";
@@ -223,7 +225,14 @@ export function GrammarNoteView({
                   key={c.id}
                   className="space-y-2 rounded-md border p-3"
                 >
-                  <p className="font-medium">{c.pattern}</p>
+                  {hasBlocks(c)
+                    ? (
+                      <ConstructionBlocks
+                        slots={c.slots ?? []}
+                        meaning={c.meaning}
+                      />
+                    )
+                    : <p className="font-medium">{c.pattern}</p>}
                   {c.note
                     ? (
                       <p
