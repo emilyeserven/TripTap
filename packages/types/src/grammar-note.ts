@@ -48,10 +48,13 @@ export interface GrammarConstruction {
   slots?: ConstructionSlot[];
   /** English meaning template with [Label] placeholders matched to slots by alternative label, e.g. "A [Noun] who is [Adj/Verb]". */
   meaning?: string | null;
-  /** Explanation of this construction, or null. */
+  /** Explanation of this construction, or null. Blocks referenced as [Label] tokens like `meaning`. */
   note: string | null;
-  /** Ids of hand-linked bank sentences that demonstrate this construction. */
-  sentenceIds: string[];
+  /**
+   * Legacy hand-linked bank sentences. No longer written by the UI — example sentences are
+   * auto-matched to tagged sentences by the construction's literal text — kept so old rows round-trip.
+   */
+  sentenceIds?: string[];
 }
 
 /** How one grammar point relates to another. */

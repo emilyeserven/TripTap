@@ -3,27 +3,25 @@ import type { ConstructionSlot, GrammarConstruction } from "@sentence-bank/types
 import { Blocks, Plus, Trash2 } from "lucide-react";
 
 import { ConstructionBlocksEditor } from "@/components/ConstructionBlocksEditor";
+import { ConstructionNoteEditor } from "@/components/ConstructionNoteEditor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { MultiSelect } from "@/components/ui/multi-select";
 import { Textarea } from "@/components/ui/textarea";
-import { derivePattern, emptySlot, hasBlocks, slotDisplay } from "@/lib/construction-blocks";
+import { derivePattern, emptySlot, hasBlocks, slotToken } from "@/lib/construction-blocks";
 import { newId } from "@/lib/id";
 
 /**
- * The Constructions section of the grammar-note form: possible patterns for the grammar point, each
- * with a note and linked example sentences. The parent owns the array.
+ * The Constructions section of the grammar-note form: possible patterns for the grammar point.
+ * Example sentences are no longer linked by hand — the note page auto-matches tagged sentences
+ * against each construction's literal text. The parent owns the array.
  */
 export function GrammarConstructionsEditor({
   constructions,
   onChange,
-  sentenceOptions,
 }: {
   constructions: GrammarConstruction[];
   onChange: (constructions: GrammarConstruction[]) => void;
-  sentenceOptions: { value: string;
-    label: string; }[];
 }) {
   const patch = (id: string, p: Partial<GrammarConstruction>) =>
     onChange(constructions.map(c => (c.id === id
@@ -39,7 +37,8 @@ export function GrammarConstructionsEditor({
         <div>
           <h3 className="text-sm font-semibold">Constructions</h3>
           <p className="text-xs text-muted-foreground">
-            Possible patterns for this grammar point, each with its own example sentences.
+            Possible patterns for this grammar point — example sentences auto-match tagged
+            sentences by each construction’s literal text.
           </p>
         </div>
         <Button
@@ -51,7 +50,6 @@ export function GrammarConstructionsEditor({
               id: newId(),
               pattern: "",
               note: null,
-              sentenceIds: [],
             }])}
         >
           <Plus className="size-4" />
@@ -145,38 +143,37 @@ export function GrammarConstructionsEditor({
                         <p className="text-xs text-muted-foreground">
                           Use [brackets] to reference blocks:{" "}
                           {(c.slots ?? [])
-                            .map(slotDisplay)
+                            .map(slotToken)
                             .filter(Boolean)
-                            .map(s => `[${s.replace(/\([^)]*\)/g, "")}]`)
+                            .map(s => `[${s}]`)
                             .join(" ") || "add blocks first"}
                         </p>
                       </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-muted-foreground">
+                          How this construction works
+                        </Label>
+                        <ConstructionNoteEditor
+                          value={c.note}
+                          onChange={note => patch(c.id, {
+                            note,
+                          })}
+                          slots={c.slots ?? []}
+                        />
+                      </div>
                     </>
                   )
-                  : null}
-                <Textarea
-                  value={c.note ?? ""}
-                  onChange={e => patch(c.id, {
-                    note: e.target.value || null,
-                  })}
-                  placeholder="How this construction works."
-                  rows={2}
-                  aria-label="Construction note"
-                />
-                <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">Example sentences</Label>
-                  <MultiSelect
-                    value={c.sentenceIds}
-                    onChange={ids => patch(c.id, {
-                      sentenceIds: ids,
-                    })}
-                    options={sentenceOptions}
-                    placeholder="Link bank sentences…"
-                    searchPlaceholder="Search sentences…"
-                    emptyText="No sentences."
-                    ariaLabel="Link sentences to this construction"
-                  />
-                </div>
+                  : (
+                    <Textarea
+                      value={c.note ?? ""}
+                      onChange={e => patch(c.id, {
+                        note: e.target.value || null,
+                      })}
+                      placeholder="How this construction works."
+                      rows={2}
+                      aria-label="Construction note"
+                    />
+                  )}
               </li>
             ))}
           </ul>

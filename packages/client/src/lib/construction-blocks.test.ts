@@ -4,9 +4,12 @@ import { describe, expect, it } from "vitest";
 
 import {
   alternativeDisplay,
+  constructionLiterals,
   derivePattern,
   hasBlocks,
+  matchesConstruction,
   meaningSegments,
+  slotToken,
 } from "./construction-blocks";
 
 const slot = (id: string, alternatives: ConstructionSlot["alternatives"]): ConstructionSlot => ({
@@ -107,6 +110,120 @@ describe("derivePattern", () => {
       })]),
       slot("s3", [alt("a3", "Noun")]),
     ])).toBe("Noun + の + Noun");
+  });
+});
+
+describe("slotToken", () => {
+  it("joins alternative labels with a slash", () => {
+    expect(slotToken(exampleSlots[0]!)).toBe("Adj/Verb");
+    expect(slotToken(exampleSlots[1]!)).toBe("Noun");
+  });
+
+  it("skips empty labels", () => {
+    expect(slotToken(slot("s", [alt("a", " "), alt("b", "Verb")]))).toBe("Verb");
+  });
+});
+
+describe("constructionLiterals", () => {
+  const construction = (
+    over: Partial<GrammarConstruction>,
+  ): GrammarConstruction => ({
+    id: "c",
+    pattern: "",
+    note: null,
+    ...over,
+  });
+
+  it("collects literal alternative labels from blocks", () => {
+    expect(constructionLiterals(construction({
+      slots: [
+        slot("s1", [alt("a1", "Verb", ["Nai"])]),
+        slot("s2", [alt("a2", "と", [], {
+          literal: true,
+        })]),
+        slot("s3", [alt("a3", "いけない", [], {
+          literal: true,
+        })]),
+      ],
+    }))).toEqual(["と", "いけない"]);
+  });
+
+  it("is empty for a block construction with no literals", () => {
+    expect(constructionLiterals(construction({
+      slots: [slot("s1", [alt("a1", "Noun")])],
+    }))).toEqual([]);
+  });
+
+  it("uses the stripped pattern for a flat construction", () => {
+    expect(constructionLiterals(construction({
+      pattern: "〜ないと いけない",
+    }))).toEqual(["ないといけない"]);
+  });
+
+  it("normalizes width and strips tilde variants", () => {
+    expect(constructionLiterals(construction({
+      pattern: "～ｶﾞ",
+    }))).toEqual(["ガ"]);
+  });
+
+  it("dedupes repeated literals", () => {
+    expect(constructionLiterals(construction({
+      slots: [
+        slot("s1", [alt("a1", "の", [], {
+          literal: true,
+        })]),
+        slot("s2", [alt("a2", "の", [], {
+          literal: true,
+        })]),
+      ],
+    }))).toEqual(["の"]);
+  });
+});
+
+describe("matchesConstruction", () => {
+  const c: GrammarConstruction = {
+    id: "c",
+    pattern: "Verb(Nai) + と + いけない",
+    note: null,
+    slots: [
+      slot("s1", [alt("a1", "Verb", ["Nai"])]),
+      slot("s2", [alt("a2", "と", [], {
+        literal: true,
+      })]),
+      slot("s3", [alt("a3", "いけない", [], {
+        literal: true,
+      })]),
+    ],
+  };
+
+  it("requires every literal (ALL semantics)", () => {
+    expect(matchesConstruction("行かないといけない。", c)).toBe(true);
+    expect(matchesConstruction("先生とご飯を食べた。", c)).toBe(false);
+  });
+
+  it("never matches without literals", () => {
+    expect(matchesConstruction("なんでも", {
+      id: "c2",
+      pattern: "",
+      note: null,
+      slots: [slot("s1", [alt("a1", "Noun")])],
+    })).toBe(false);
+  });
+
+  it("matches a flat construction by contained pattern", () => {
+    expect(matchesConstruction("勉強しないといけない。", {
+      id: "c3",
+      pattern: "〜ないといけない",
+      note: null,
+    })).toBe(true);
+  });
+
+  it("normalizes the sentence side", () => {
+    expect(matchesConstruction("ｲｹﾅｲと言った。", {
+      id: "c4",
+      pattern: "〜イケナイ",
+      note: null,
+    })).toBe(true);
   });
 });
 
