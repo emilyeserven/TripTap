@@ -32,11 +32,14 @@ export function TermPicker({
   onChange,
   category = "vocabulary",
   label = "Tags",
+  single = false,
 }: {
   value: SentenceTermRef[];
   onChange: (terms: SentenceTermRef[]) => void;
   category?: SentenceTermCategory;
   label?: string;
+  /** Cap the selection to one term. */
+  single?: boolean;
 }) {
   const settings = useBookmarksSettings();
   const vocab = useBookmarksVocabulary(category);
@@ -95,7 +98,8 @@ export function TermPicker({
         name,
         category,
       });
-      onChange([...value, stamp(created.id, created.name)]);
+      const stamped = stamp(created.id, created.name);
+      onChange(single ? [stamped] : [...value, stamped]);
     }
     catch {
       // Surfaced via createTerm.isError below; the typed value is preserved for a retry.
@@ -130,6 +134,7 @@ export function TermPicker({
               onChange={handleChange}
               options={options}
               ariaLabel={label}
+              single={single}
               placeholder={`Add from “${source.label}”…`}
               searchPlaceholder="Search or create a term…"
               creatable

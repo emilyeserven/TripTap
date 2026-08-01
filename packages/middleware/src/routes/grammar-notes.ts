@@ -35,6 +35,73 @@ const byTagParams = {
   },
 } as const;
 
+const constructionTermSchema = {
+  type: ["object", "null"],
+  additionalProperties: false,
+  required: ["id", "name", "kind", "sourceId", "sourceLabel"],
+  properties: {
+    id: {
+      type: "string",
+    },
+    name: {
+      type: "string",
+    },
+    kind: {
+      type: "string",
+      enum: ["tag", "taxonomy"],
+    },
+    sourceId: {
+      type: "string",
+    },
+    sourceLabel: {
+      type: "string",
+    },
+    category: {
+      type: "string",
+      enum: ["vocabulary", "grammar", "general", "resource"],
+    },
+  },
+} as const;
+
+const constructionAlternativeSchema = {
+  type: "object",
+  required: ["id", "label", "forms"],
+  additionalProperties: false,
+  properties: {
+    id: {
+      type: "string",
+    },
+    label: {
+      type: "string",
+    },
+    forms: {
+      type: "array",
+      items: {
+        type: "string",
+      },
+    },
+    literal: {
+      type: "boolean",
+    },
+    term: constructionTermSchema,
+  },
+} as const;
+
+const constructionSlotSchema = {
+  type: "object",
+  required: ["id", "alternatives"],
+  additionalProperties: false,
+  properties: {
+    id: {
+      type: "string",
+    },
+    alternatives: {
+      type: "array",
+      items: constructionAlternativeSchema,
+    },
+  },
+} as const;
+
 const constructionSchema = {
   type: "object",
   required: ["id", "pattern", "sentenceIds"],
@@ -45,6 +112,13 @@ const constructionSchema = {
     },
     pattern: {
       type: "string",
+    },
+    slots: {
+      type: "array",
+      items: constructionSlotSchema,
+    },
+    meaning: {
+      type: ["string", "null"],
     },
     note: {
       type: ["string", "null"],

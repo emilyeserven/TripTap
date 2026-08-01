@@ -9,14 +9,45 @@
  * both the Fastify API and the React client.
  */
 
-import type { BookmarkSectionRef } from "./index.js";
+import type { BookmarkSectionRef, SentenceTermRef } from "./index.js";
+
+/**
+ * One selectable alternative inside a {@link ConstructionSlot}: a word class ("Adj", "Verb") with
+ * optional inflection forms, or a literal run of text (a particle etc.).
+ */
+export interface ConstructionAlternative {
+  /** Client-generated stable key (crypto.randomUUID()). */
+  id: string;
+  /** Display label — a word-class name ("Adj", "Verb", "Noun") or the literal text when `literal`. */
+  label: string;
+  /** Selectable inflection forms, e.g. ["Short", "Polite"]. Empty when there is no form choice. */
+  forms: string[];
+  /** True when `label` is literal text — rendered bare in the derived pattern, no forms/tag. */
+  literal?: boolean;
+  /** Optional grammar-channel tag; the read view links it to its grammar note. */
+  term?: SentenceTermRef | null;
+}
+
+/**
+ * One ordered block of a construction. Its alternatives are interchangeable — the read view lets the
+ * learner switch between them (and pick a form) like swapping a block in a sentence.
+ */
+export interface ConstructionSlot {
+  /** Client-generated stable key (crypto.randomUUID()). */
+  id: string;
+  alternatives: ConstructionAlternative[];
+}
 
 /** One "possible construction" of a grammar point: a pattern, an explanation, and example sentences. */
 export interface GrammarConstruction {
   /** Client-generated stable key (crypto.randomUUID()). */
   id: string;
-  /** The construction pattern, e.g. "〜ないといけない". */
+  /** The construction pattern, e.g. "〜ないといけない". Auto-derived from `slots` when present. */
   pattern: string;
+  /** Block-based template. Absent/empty on flat constructions — render `pattern` instead. */
+  slots?: ConstructionSlot[];
+  /** English meaning template with [Label] placeholders matched to slots by alternative label, e.g. "A [Noun] who is [Adj/Verb]". */
+  meaning?: string | null;
   /** Explanation of this construction, or null. */
   note: string | null;
   /** Ids of hand-linked bank sentences that demonstrate this construction. */
