@@ -7,6 +7,9 @@ import { useAnswerSheet, useDeleteAnswerSheet } from "@/hooks/useAnswerSheets";
 import { usePageTitle } from "@/hooks/usePageTitle";
 
 export const Route = createFileRoute("/answer-sheets/$id/edit")({
+  validateSearch: (search: Record<string, unknown>): { part?: string } => ({
+    part: typeof search.part === "string" ? search.part : undefined,
+  }),
   component: EditAnswerSheetPage,
 });
 
@@ -15,6 +18,9 @@ function EditAnswerSheetPage() {
   const {
     id,
   } = Route.useParams();
+  const {
+    part,
+  } = Route.useSearch();
   const navigate = useNavigate();
   const deleteAnswerSheet = useDeleteAnswerSheet();
   const {
@@ -61,7 +67,10 @@ function EditAnswerSheetPage() {
           Delete
         </Button>
       </div>
-      <AnswerSheetForm answerSheet={data} />
+      <AnswerSheetForm
+        answerSheet={data}
+        activePart={part ?? null}
+      />
     </section>
   );
 }
