@@ -136,3 +136,46 @@ test("POST /api/my-sentences rejects a malformed mark", async () => {
   assert.equal(res.statusCode, 400);
   await app.close();
 });
+
+test("POST /api/my-sentences accepts incorrectGrammarTerms", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/my-sentences",
+    payload: {
+      text: "電気が消しました",
+      language: "Japanese",
+      incorrectGrammarTerms: [{
+        id: "g1",
+        name: "transitivity",
+        kind: "tag",
+        sourceId: "s1",
+        sourceLabel: "Grammar",
+        category: "grammar",
+      }],
+    },
+  });
+  // Without a DB the insert can't complete, but schema validation must accept the field.
+  assert.notEqual(res.statusCode, 400);
+  await app.close();
+});
+
+test("POST /api/my-sentences rejects an incorrectGrammarTerms entry missing its id", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/my-sentences",
+    payload: {
+      text: "x",
+      language: "Japanese",
+      incorrectGrammarTerms: [{
+        name: "no id",
+        kind: "tag",
+        sourceId: "s1",
+        sourceLabel: "Grammar",
+      }],
+    },
+  });
+  assert.equal(res.statusCode, 400);
+  await app.close();
+});

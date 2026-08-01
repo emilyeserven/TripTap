@@ -84,6 +84,10 @@ export function MySentenceForm({
   const [resourceTerms, setResourceTerms] = useState<SentenceTermRef[]>(
     initialTerms.filter(t => termCategory(t) === "resource"),
   );
+  // Grammar-source tags this sentence used *incorrectly* — kept separate from the neutral grammar tags.
+  const [incorrectGrammarTerms, setIncorrectGrammarTerms] = useState<SentenceTermRef[]>(
+    mySentence?.incorrectGrammarTerms ?? [],
+  );
 
   const pending = create.isPending || update.isPending;
   const canSubmit = text.trim().length > 0 && language.trim().length > 0 && !pending;
@@ -100,6 +104,7 @@ export function MySentenceForm({
       actualMeaning: actualMeaning.trim() || null,
       explanation: explanation.trim() || null,
       terms: terms.length > 0 ? terms : null,
+      incorrectGrammarTerms: incorrectGrammarTerms.length > 0 ? incorrectGrammarTerms : null,
       lessonId: mySentence?.lessonId ?? lessonId ?? null,
       reasons: reasons.length > 0 ? reasons : null,
     };
@@ -229,6 +234,12 @@ export function MySentenceForm({
           label="Grammar tags"
           value={grammarTerms}
           onChange={setGrammarTerms}
+        />
+        <TermPicker
+          category="grammar"
+          label="Grammar used incorrectly"
+          value={incorrectGrammarTerms}
+          onChange={setIncorrectGrammarTerms}
         />
         <TermPicker
           category="general"
