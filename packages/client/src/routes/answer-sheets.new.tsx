@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { useCreateAnswerSheet } from "@/hooks/useAnswerSheets";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useQuestionSheets } from "@/hooks/useQuestionSheets";
+import { generateAnswerSheetTitle } from "@/lib/answer-sheets";
 
 interface NewAnswerSheetSearch {
   questionSheetId?: string;
@@ -43,8 +44,10 @@ function NewAnswerSheetPage() {
 
   const submit = async () => {
     if (!questionSheetId || create.isPending) return;
+    // A brand-new sheet includes every part, so this is just "<sheet> — <date>" (parts are named only
+    // once some are hidden, on the edit page).
     const derivedTitle = title.trim()
-      || `${selected?.title ?? "Answer sheet"} — ${new Date().toLocaleDateString()}`;
+      || (selected ? generateAnswerSheetTitle(selected) : "Answer sheet");
     const saved = await create.mutateAsync({
       questionSheetId,
       title: derivedTitle,
@@ -104,7 +107,7 @@ function NewAnswerSheetPage() {
             id="new-as-title"
             value={title}
             onChange={e => setTitle(e.target.value)}
-            placeholder={selected ? `${selected.title} — today` : "Defaults to the sheet name + date"}
+            placeholder={selected ? generateAnswerSheetTitle(selected) : "Defaults to the sheet name + date"}
             className="max-w-md"
           />
         </div>

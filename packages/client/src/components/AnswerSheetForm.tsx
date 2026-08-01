@@ -7,6 +7,7 @@ import type {
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { AnswerSheetPartsProgress } from "@/components/AnswerSheetPartsProgress";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,7 +15,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { useUpdateAnswerSheet } from "@/hooks/useAnswerSheets";
 import { useAutosave } from "@/hooks/useAutosave";
 import { useQuestionSheets } from "@/hooks/useQuestionSheets";
-import { answerSheetParts, questionSheetSlots } from "@/lib/answer-sheets";
+import {
+  answerSheetParts,
+  generateAnswerSheetTitle,
+  questionSheetPartSlots,
+  questionSheetParts,
+  questionSheetSlots,
+} from "@/lib/answer-sheets";
+import { cn } from "@/lib/utils";
 
 /** A blank entry for a slot the user has not filled in yet. */
 function emptyEntry(slotId: string): AnswerSheetEntry {
@@ -69,6 +77,7 @@ export function AnswerSheetForm({
   // When first answering, keep each question to just its answer box; the correction/explanation/meaning
   // fields are review-phase clutter, revealed only when the learner opts in.
   const [showDetails, setShowDetails] = useState(false);
+  const [hiddenPartIds, setHiddenPartIds] = useState<string[]>(answerSheet.hiddenPartIds ?? []);
   const [entries, setEntries] = useState<Record<string, AnswerSheetEntry>>(() => {
     const seed: Record<string, AnswerSheetEntry> = {};
     for (const e of answerSheet.entries ?? []) seed[e.slotId] = e;
@@ -77,7 +86,23 @@ export function AnswerSheetForm({
 
   const selected: QuestionSheet | undefined = (sheets.data ?? [])
     .find(s => s.id === answerSheet.questionSheetId);
+  // Every slot (for entry preservation), plus the subset still in play (hidden parts filtered out).
   const slots = selected ? questionSheetSlots(selected) : [];
+  const hiddenSet = new Set(hiddenPartIds);
+  const hiddenSlotIds = new Set<string>();
+  if (selected) {
+    for (const part of questionSheetPartSlots(selected)) {
+      if (hiddenSet.has(part.id)) for (const id of part.slotIds) hiddenSlotIds.add(id);
+    }
+  }
+  const shownSlots = slots.filter(s => !hiddenSlotIds.has(s.id));
+  // A part can be hidden only on a multi-part list sheet (grid layout has a single "grid" part).
+  const togglableParts = selected && selected.layout !== "grid" ? questionSheetParts(selected) : [];
+
+  function togglePart(partId: string) {
+    setHiddenPartIds(prev =>
+      prev.includes(partId) ? prev.filter(id => id !== partId) : [...prev, partId]);
+  }
 
   function getEntry(slotId: string): AnswerSheetEntry {
     return entries[slotId] ?? emptyEntry(slotId);
@@ -97,6 +122,8 @@ export function AnswerSheetForm({
   }
 
   const input = useMemo(() => {
+    // Map over every slot (not just the shown ones) so a hidden part's answers are preserved and come
+    // back when it's unhidden.
     const touched = slots
       .map(slot => getEntry(slot.id))
       .filter(isTouched)
@@ -112,10 +139,11 @@ export function AnswerSheetForm({
       title: title.trim() || answerSheet.title,
       date: date ? new Date(date).toISOString() : null,
       entries: touched,
+      hiddenPartIds: hiddenPartIds.length > 0 ? hiddenPartIds : null,
     };
     // getEntry closes over `entries`; slots derive from the loaded sheet.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [title, date, entries, slots.length, answerSheet.questionSheetId, answerSheet.title]);
+  }, [title, date, entries, hiddenPartIds, slots.length, answerSheet.questionSheetId, answerSheet.title]);
 
   const {
     status, flush,
@@ -168,13 +196,24 @@ export function AnswerSheetForm({
       >
         <div className="space-y-1.5">
           <Label htmlFor="as-title">Title</Label>
-          <Input
-            id="as-title"
-            value={title}
-            onChange={e => setTitle(e.target.value)}
-            onBlur={flush}
-            placeholder={selected ? `${selected.title} — today` : "Answer sheet"}
-          />
+          <div className="flex gap-2">
+            <Input
+              id="as-title"
+              value={title}
+              onChange={e => setTitle(e.target.value)}
+              onBlur={flush}
+              placeholder={selected ? generateAnswerSheetTitle(selected, hiddenPartIds) : "Answer sheet"}
+            />
+            <Button
+              type="button"
+              variant="outline"
+              disabled={!selected}
+              // Regenerate from the sheet name + which parts are in play; the change autosaves.
+              onClick={() => selected && setTitle(generateAnswerSheetTitle(selected, hiddenPartIds))}
+            >
+              Auto
+            </Button>
+          </div>
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="as-date">Date</Label>
@@ -200,9 +239,46 @@ export function AnswerSheetForm({
                 answerSheet={{
                   ...answerSheet,
                   entries: Object.values(entries),
+                  hiddenPartIds,
                 }}
                 activePart={activePart}
               />
+
+              {togglableParts.length > 1
+                ? (
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-muted-foreground">
+                      Parts to include
+                    </Label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {togglableParts.map((part, i) => {
+                        const hidden = hiddenSet.has(part.id);
+                        return (
+                          <button
+                            key={part.id}
+                            type="button"
+                            onClick={() => togglePart(part.id)}
+                            aria-pressed={!hidden}
+                            className={cn(
+                              `
+                                inline-flex items-center gap-1 rounded-full
+                                border px-2.5 py-1 text-xs
+                                hover:bg-muted
+                              `,
+                              hidden && `
+                                text-muted-foreground line-through opacity-60
+                              `,
+                            )}
+                            title={hidden ? `Include ${part.label}` : `Hide ${part.label}`}
+                          >
+                            <span className="font-medium">Part {i + 1}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )
+                : null}
 
               {isGrid && selected.grid
                 ? (
@@ -215,7 +291,7 @@ export function AnswerSheetForm({
                 )
                 : null}
 
-              {slots.map(slot => (
+              {shownSlots.map(slot => (
                 <SlotBlock
                   key={slot.id}
                   anchorId={`slot-${slot.id}`}

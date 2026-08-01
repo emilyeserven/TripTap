@@ -34,6 +34,13 @@ export interface AnswerSheet {
    */
   date: string | null;
   entries: AnswerSheetEntry[];
+  /**
+   * Ids of top-level question "parts" the learner has hidden for this attempt (e.g. only doing Part 2).
+   * Their slots are dropped from the editor and excluded from the score/completeness tally, but any
+   * answers already recorded for them are kept so unhiding restores them. `null`/empty = every part is
+   * in play.
+   */
+  hiddenPartIds: string[] | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -43,6 +50,7 @@ export interface CreateAnswerSheetInput {
   title?: string | null;
   date?: string | null;
   entries?: AnswerSheetEntry[];
+  hiddenPartIds?: string[] | null;
 }
 
 export type UpdateAnswerSheetInput = Partial<CreateAnswerSheetInput>;

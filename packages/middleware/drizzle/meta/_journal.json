@@ -484,6 +484,13 @@
       "when": 1785552941691,
       "tag": "0068_elite_eternals",
       "breakpoints": true
+    },
+    {
+      "idx": 69,
+      "version": "7",
+      "when": 1785558823170,
+      "tag": "0069_wandering_photon",
+      "breakpoints": true
     }
   ]
 }
