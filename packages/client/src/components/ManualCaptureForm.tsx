@@ -4,7 +4,7 @@ import { SourcePicker } from "./SourcePicker";
 import { useCreateCapture } from "../hooks/useCaptures";
 
 const fieldClass
-  = "mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none";
+  = "mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:border-ring focus:outline-none";
 
 /**
  * Manual capture entry — for text OCR'd elsewhere (another app/service) and pasted in. Unlike the
@@ -50,7 +50,7 @@ export function ManualCaptureForm({
         void submit(event);
       }}
     >
-      <label className="block text-sm font-medium text-slate-700">
+      <label className="block text-sm font-medium text-foreground">
         Text
         <textarea
           className={fieldClass}
@@ -61,7 +61,7 @@ export function ManualCaptureForm({
         />
       </label>
 
-      <label className="block text-sm font-medium text-slate-700">
+      <label className="block text-sm font-medium text-foreground">
         Title (optional)
         <input
           className={fieldClass}
@@ -71,7 +71,7 @@ export function ManualCaptureForm({
         />
       </label>
 
-      <label className="block text-sm font-medium text-slate-700">
+      <label className="block text-sm font-medium text-foreground">
         Recognized by (optional)
         <input
           className={fieldClass}
@@ -86,7 +86,7 @@ export function ManualCaptureForm({
         onChange={setSourceId}
       />
 
-      <label className="block text-sm font-medium text-slate-700">
+      <label className="block text-sm font-medium text-foreground">
         Page / location
         <input
           className={fieldClass}
@@ -95,7 +95,7 @@ export function ManualCaptureForm({
         />
       </label>
 
-      <label className="block text-sm font-medium text-slate-700">
+      <label className="block text-sm font-medium text-foreground">
         Notes
         <textarea
           className={fieldClass}
@@ -105,12 +105,12 @@ export function ManualCaptureForm({
         />
       </label>
 
-      <label className="block text-sm font-medium text-slate-700">
+      <label className="block text-sm font-medium text-foreground">
         Image (optional)
         <input
           type="file"
           accept="image/*"
-          className="mt-1 block w-full text-sm text-slate-600"
+          className="mt-1 block w-full text-sm text-muted-foreground"
           onChange={e => setImage(e.target.files?.[0] ?? null)}
         />
       </label>
@@ -119,16 +119,16 @@ export function ManualCaptureForm({
         type="submit"
         disabled={createCapture.isPending || !text.trim()}
         className="
-          justify-self-start rounded-md bg-blue-600 px-4 py-2 text-sm
-          font-medium text-white
-          hover:bg-blue-700
+          justify-self-start rounded-md bg-primary px-4 py-2 text-sm font-medium
+          text-primary-foreground
+          hover:bg-primary/90
           disabled:opacity-50
         "
       >
         {createCapture.isPending ? "Saving…" : "Save capture"}
       </button>
       {createCapture.isError
-        ? <p className="text-sm text-red-600">{createCapture.error?.message}</p>
+        ? <p className="text-sm text-destructive">{createCapture.error?.message}</p>
         : null}
     </form>
   );

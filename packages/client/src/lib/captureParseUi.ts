@@ -2,7 +2,7 @@ import type { ParseTarget } from "@sentence-bank/types";
 
 /** Full-width field styling shared by the capture parse workspace's inputs. */
 export const FIELD_CLASS
-  = "mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none";
+  = "mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:border-ring focus:outline-none";
 
 /** The `{{tag}}` names each parse target understands, in chip order. */
 export const TAGS: Record<ParseTarget, string[]> = {

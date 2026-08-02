@@ -16,7 +16,7 @@ export function CleanedLangFilterBar({
   if (presentLangs.length === 0) return null;
   return (
     <div className="flex flex-wrap items-center gap-2 text-sm">
-      <span className="font-medium text-slate-700">Ignore language:</span>
+      <span className="font-medium text-foreground">Ignore language:</span>
       {presentLangs.map(code => (
         <button
           key={code}
@@ -26,10 +26,10 @@ export function CleanedLangFilterBar({
             rounded-full border px-2 py-0.5 text-xs
             ${
         ignoredLangs.has(code)
-          ? "border-destructive bg-red-50 text-destructive line-through"
+          ? "border-destructive bg-destructive/10 text-destructive line-through"
           : `
-            border-slate-300 text-slate-600
-            hover:border-blue-400
+            border-input text-muted-foreground
+            hover:border-ring
           `
         }
           `}

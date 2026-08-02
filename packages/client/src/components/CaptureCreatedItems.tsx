@@ -43,10 +43,10 @@ import { cn } from "@/lib/utils";
 import { vocabToCardItem } from "@/lib/vocab-card";
 
 const fieldClass
-  = "w-full rounded-md border border-slate-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none";
+  = "w-full rounded-md border border-input bg-background px-2 py-1 text-sm focus:border-ring focus:outline-none";
 const saveBtn
-  = "rounded-md bg-blue-600 px-3 py-1 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-50";
-const delBtn = "text-xs text-red-600 hover:underline";
+  = "rounded-md bg-primary px-3 py-1 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50";
+const delBtn = "text-xs text-destructive hover:underline";
 
 /** The sentences and vocab mined from a capture — viewable as cards or editable in place. */
 export function CaptureCreatedItems({
@@ -113,7 +113,7 @@ export function CaptureCreatedItems({
               )}
               {sentenceItems.length > 0 && (
                 <div className="space-y-3">
-                  <p className="text-sm font-medium text-slate-700">
+                  <p className="text-sm font-medium text-foreground">
                     Sentences (
                     {sentenceItems.length}
                     )
@@ -132,7 +132,7 @@ export function CaptureCreatedItems({
 
               {vocabItems.length > 0 && (
                 <div className="mt-4 space-y-3">
-                  <p className="text-sm font-medium text-slate-700">
+                  <p className="text-sm font-medium text-foreground">
                     Vocab (
                     {vocabItems.length}
                     )
@@ -164,7 +164,7 @@ export function CaptureCreatedItems({
                       flex flex-wrap items-baseline justify-between gap-x-2
                     "
                   >
-                    <p className="text-sm font-medium text-slate-700">
+                    <p className="text-sm font-medium text-foreground">
                       Sentences (
                       {sentenceItems.length}
                       )
@@ -193,7 +193,7 @@ export function CaptureCreatedItems({
 
               {vocabItems.length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-sm font-medium text-slate-700">
+                  <p className="text-sm font-medium text-foreground">
                     Vocab (
                     {vocabItems.length}
                     )
