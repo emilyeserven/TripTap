@@ -177,6 +177,13 @@ const createReadingSessionBody = {
       type: ["string", "null"],
       enum: ["very-easy", "easy", "medium", "hard", null],
     },
+    passive: {
+      type: "boolean",
+    },
+    timeSpentMinutes: {
+      type: "integer",
+      minimum: 0,
+    },
     passage: {
       type: ["string", "null"],
     },

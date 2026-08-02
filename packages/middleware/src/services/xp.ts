@@ -128,6 +128,8 @@ interface ReadingXpRow {
   title: string;
   mode: string;
   difficulty: string | null;
+  passive: boolean;
+  timeSpentMinutes: number;
   freeformTranslation: string | null;
   freeformCorrection: string | null;
   freeformNote: string | null;
@@ -169,35 +171,42 @@ function translationEarnsFullCredit(
 }
 
 /**
- * 2xp per translated sentence + 1xp per word note → Reading. A translation earns full credit when it's
- * self-assessed correct or backed by a reference translation/comment, and half credit otherwise (see
- * {@link translationEarnsFullCredit}). A word note only earns its XP once the learner has written a
- * sentence from it (`mySentenceId` set). The whole session's XP is then scaled by its difficulty
- * modifier (see {@link readingDifficultyMultiplier}).
+ * Reading XP → Reading. A **passive** session (just reading, no translation/notes) earns
+ * `readingPassiveMinute` per minute read. An **active** session earns 2xp per translated sentence +
+ * 1xp per word note: a translation earns full credit when it's self-assessed correct or backed by a
+ * reference translation/comment, half credit otherwise (see {@link translationEarnsFullCredit}); a word
+ * note only earns its XP once the learner has written a sentence from it (`mySentenceId` set). Either
+ * way the session's XP is scaled by its difficulty modifier (see {@link readingDifficultyMultiplier}).
  */
 export function readingXp(rows: ReadingXpRow[], rates: XpRates = DEFAULT_XP_RATES): XpGrant[] {
   return rows.flatMap((row) => {
-    const full = rates.readingTranslatedSentence;
-    const partial = full * PARTIAL_TRANSLATION_CREDIT;
-    let translatedXp: number;
-    if (row.mode === "line-by-line") {
-      translatedXp = (row.lines ?? [])
-        .filter(line => line.translation?.trim())
-        .reduce(
-          (sum, line) =>
-            sum + (translationEarnsFullCredit(line.verdict, line.correction, line.note) ? full : partial),
-          0,
-        );
+    let base: number;
+    if (row.passive) {
+      base = Math.max(0, row.timeSpentMinutes) * rates.readingPassiveMinute;
     }
     else {
-      const sentences = countSentences(row.freeformTranslation);
-      const rate = translationEarnsFullCredit(row.freeformVerdict, row.freeformCorrection, row.freeformNote)
-        ? full
-        : partial;
-      translatedXp = sentences * rate;
+      const full = rates.readingTranslatedSentence;
+      const partial = full * PARTIAL_TRANSLATION_CREDIT;
+      let translatedXp: number;
+      if (row.mode === "line-by-line") {
+        translatedXp = (row.lines ?? [])
+          .filter(line => line.translation?.trim())
+          .reduce(
+            (sum, line) =>
+              sum + (translationEarnsFullCredit(line.verdict, line.correction, line.note) ? full : partial),
+            0,
+          );
+      }
+      else {
+        const sentences = countSentences(row.freeformTranslation);
+        const rate = translationEarnsFullCredit(row.freeformVerdict, row.freeformCorrection, row.freeformNote)
+          ? full
+          : partial;
+        translatedXp = sentences * rate;
+      }
+      const bankedWords = (row.wordNotes ?? []).filter(note => note.mySentenceId).length;
+      base = translatedXp + bankedWords * rates.readingWordNote;
     }
-    const bankedWords = (row.wordNotes ?? []).filter(note => note.mySentenceId).length;
-    const base = translatedXp + bankedWords * rates.readingWordNote;
     const xp = base * readingDifficultyMultiplier(row.difficulty);
     return xp > 0
       ? [{
@@ -789,6 +798,8 @@ export async function loadXpGrants(): Promise<XpGrant[]> {
       title: readingSessions.title,
       mode: readingSessions.mode,
       difficulty: readingSessions.difficulty,
+      passive: readingSessions.passive,
+      timeSpentMinutes: readingSessions.timeSpentMinutes,
       freeformTranslation: readingSessions.freeformTranslation,
       freeformCorrection: readingSessions.freeformCorrection,
       freeformNote: readingSessions.freeformNote,
