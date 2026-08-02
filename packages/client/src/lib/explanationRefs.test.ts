@@ -41,6 +41,12 @@ describe("parseExplanationRefs", () => {
     ["+ ", "+ 映画: the film"],
     ["1. ", "1. 映画: the film"],
     ["1) ", "1) 映画: the film"],
+    // Bullet/dash glyphs, with or without a following space, resolve the same as a bare phrase.
+    ["・", "・映画: the film"],
+    ["・ ", "・ 映画: the film"],
+    ["• ", "• 映画: the film"],
+    ["– ", "– 映画: the film"],
+    ["·", "·映画: the film"],
   ])("strips a leading %s list marker", (_marker, line) => {
     expect(parseExplanationRefs(line, SENTENCE)[0]?.snippet).toBe("映画");
   });
@@ -75,10 +81,10 @@ describe("parseExplanationRefs", () => {
     expect(parseExplanationRefs(": orphaned note", SENTENCE)).toEqual([]);
   });
 
-  it("keeps only the first of two lines referring to the same phrase", () => {
+  it("keeps both lines when two refer to the same phrase (notes shown together)", () => {
     const refs = parseExplanationRefs("映画: first\n映画: second", SENTENCE);
-    expect(refs).toHaveLength(1);
-    expect(refs[0].body).toBe("first");
+    expect(refs).toHaveLength(2);
+    expect(refs.map(r => r.body)).toEqual(["first", "second"]);
   });
 
   it.each([null, undefined, "", "   "])("returns nothing for %p", (explanation) => {
@@ -109,15 +115,23 @@ describe("annotateSentence", () => {
     const refs = parseExplanationRefs("友達: friend", SENTENCE);
     const segments = annotateSentence(SENTENCE, refs);
     expectLossless(SENTENCE, segments);
-    expect(segments.filter(s => s.ref)).toHaveLength(1);
-    expect(segments.find(s => s.ref)?.text).toBe("友達");
+    expect(segments.filter(s => s.refs.length > 0)).toHaveLength(1);
+    expect(segments.find(s => s.refs.length > 0)?.text).toBe("友達");
+  });
+
+  it("carries every note for a phrase on its span", () => {
+    const refs = parseExplanationRefs("映画: the film\n映画: also 'movie'", SENTENCE);
+    const segments = annotateSentence(SENTENCE, refs);
+    expectLossless(SENTENCE, segments);
+    const annotated = segments.find(s => s.text === "映画");
+    expect(annotated?.refs.map(r => r.body)).toEqual(["the film", "also 'movie'"]);
   });
 
   it("annotates every occurrence of a phrase, not just the first", () => {
     const target = "はははは";
     const segments = annotateSentence(target, parseExplanationRefs("は: topic", target));
     expectLossless(target, segments);
-    expect(segments.filter(s => s.ref)).toHaveLength(4);
+    expect(segments.filter(s => s.refs.length > 0)).toHaveLength(4);
   });
 
   it("emits no empty segment when a reference starts or ends the sentence", () => {
@@ -137,7 +151,7 @@ describe("annotateSentence", () => {
       parseExplanationRefs("食べ: stem\n食べている: progressive", target),
     );
     expectLossless(target, segments);
-    const annotated = segments.filter(s => s.ref);
+    const annotated = segments.filter(s => s.refs.length > 0);
     expect(annotated.map(s => s.text)).toEqual(["食べている", "食べ"]);
   });
 
@@ -148,14 +162,14 @@ describe("annotateSentence", () => {
       parseExplanationRefs("食べ: stem\n食べて: te-form", target),
     );
     expectLossless(target, segments);
-    expect(segments.filter(s => s.ref).map(s => s.text)).toEqual(["食べて"]);
+    expect(segments.filter(s => s.refs.length > 0).map(s => s.text)).toEqual(["食べて"]);
   });
 
   it("treats regex metacharacters in a phrase literally", () => {
     const target = "cost a.b*c( today";
     const segments = annotateSentence(target, parseExplanationRefs("a.b*c(: literal", target));
     expectLossless(target, segments);
-    expect(segments.find(s => s.ref)?.text).toBe("a.b*c(");
+    expect(segments.find(s => s.refs.length > 0)?.text).toBe("a.b*c(");
   });
 
   it("skips an empty phrase instead of looping forever", () => {
@@ -169,7 +183,7 @@ describe("annotateSentence", () => {
     expect(segments).toEqual([
       {
         text: SENTENCE,
-        ref: null,
+        refs: [],
       },
     ]);
   });
@@ -182,14 +196,14 @@ describe("annotateSentence", () => {
         line: 0,
       },
     ]);
-    expect(segments.filter(s => s.ref)).toHaveLength(0);
+    expect(segments.filter(s => s.refs.length > 0)).toHaveLength(0);
   });
 
   it("returns one plain segment when there are no references", () => {
     expect(annotateSentence(SENTENCE, [])).toEqual([
       {
         text: SENTENCE,
-        ref: null,
+        refs: [],
       },
     ]);
   });

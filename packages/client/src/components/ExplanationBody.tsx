@@ -21,10 +21,14 @@ export function ExplanationBody({
   explanation,
   target,
   className,
+  onHoverSnippet,
 }: {
   explanation: string | null | undefined;
   target: string;
   className?: string;
+  /** Called with a note's phrase on hover/focus (and null on leave/blur), so a caller can highlight
+   * the matching span in the sentence above. */
+  onHoverSnippet?: (snippet: string | null) => void;
 }) {
   const blocks = useMemo(() => explanationBlocks(explanation, target), [explanation, target]);
   if (blocks.length === 0) return null;
@@ -43,6 +47,10 @@ export function ExplanationBody({
             <div
               key={i}
               className="flex flex-wrap items-baseline gap-x-1.5"
+              onMouseEnter={() => onHoverSnippet?.(block.ref.snippet)}
+              onMouseLeave={() => onHoverSnippet?.(null)}
+              onFocus={() => onHoverSnippet?.(block.ref.snippet)}
+              onBlur={() => onHoverSnippet?.(null)}
             >
               <span className={cn("shrink-0 font-medium", REFERENCE_UNDERLINE)}>
                 {block.ref.snippet}
