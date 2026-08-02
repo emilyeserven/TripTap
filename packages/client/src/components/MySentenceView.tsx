@@ -29,6 +29,8 @@ export function MySentenceView({
   // Un-reviewed = still flagged and not yet corrected → offer the inline corrector.
   const unreviewed = !corrected && ms.needsCorrection;
   const [showOriginal, setShowOriginal] = useState(false);
+  // Hovering a note below highlights the phrase it refers to in the sentence above.
+  const [hoveredSnippet, setHoveredSnippet] = useState<string | null>(null);
   // What the explanation's `phrase: note` references resolve against — the fix if there is one,
   // otherwise what the learner wrote, so an already-correct sentence can still be annotated.
   const explained = corrected ?? ms.text;
@@ -55,6 +57,7 @@ export function MySentenceView({
             text={explained}
             explanation={ms.explanation}
             className="text-2xl font-semibold"
+            highlightSnippet={hoveredSnippet}
           />
         )}
 
@@ -90,6 +93,7 @@ export function MySentenceView({
             <ExplanationBody
               explanation={ms.explanation}
               target={explained}
+              onHoverSnippet={setHoveredSnippet}
             />
           </div>
         )

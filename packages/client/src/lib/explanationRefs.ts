@@ -40,10 +40,11 @@ export interface ExplanationLine {
   matched: boolean;
 }
 
-/** One run of the target sentence: plain text, or text covered by exactly one reference. */
+/** One run of the target sentence: plain text (`refs` empty), or text covered by one or more refs. */
 export interface ExplanationSegment {
   text: string;
-  ref: ExplanationRef | null;
+  /** Every reference whose phrase covers exactly this run — usually one, more when notes share a phrase. */
+  refs: ExplanationRef[];
 }
 
 /** Order-preserving blocks for rendering the explanation in full. */
@@ -60,8 +61,14 @@ const MAX_TARGET_LENGTH = 5000;
 /** How many nested decorations (`**`, backticks, 「」…) to peel off a snippet. */
 const MAX_UNWRAP_DEPTH = 3;
 
-/** A leading Markdown list marker (`- `, `* `, `+ `, `1. `, `1) `), which is not part of the phrase. */
-const LIST_MARKER = /^\s*(?:[-*+]\s+|\d+[.)]\s+)/;
+/**
+ * A leading list marker, which is not part of the phrase — so `- まだ:` and `・まだ:` resolve the same
+ * as `まだ:`. Covers Markdown bullets (`- `, `* `, `+ `) and numbered items (`1. `, `1) `), which
+ * require a trailing space, plus common bullet/dash glyphs (`•`, `‣`, `◦`, `▪`, `·`, `・`, en/em/minus
+ * dashes) — including the dash-likes a Japanese keyboard produces instead of ASCII `-` — where the
+ * space is optional since those glyphs aren't Markdown emphasis or ordinary sentence text.
+ */
+const LIST_MARKER = /^\s*(?:[-*+]\s+|[–—−‐•‣◦▪·・]\s*|\d+[.)]\s+)/;
 
 /** Decoration pairs stripped from a phrase, so `**は**: …` and `「は」: …` still resolve. */
 const WRAPPERS: [string, string][] = [
@@ -164,16 +171,18 @@ export function parseExplanationLines(
     .map((raw, i) => classifyLine(raw, i, target));
 }
 
-/** The references in `explanation` that resolve against `target`, deduped by phrase (first wins). */
+/**
+ * Every reference in `explanation` that resolves against `target`, in source order. Two lines can
+ * share a phrase — the notes are kept separate here and shown together on that phrase's span (see
+ * {@link annotateSentence}), so nothing is dropped.
+ */
 export function parseExplanationRefs(
   explanation: string | null | undefined,
   target: string,
 ): ExplanationRef[] {
-  const seen = new Set<string>();
   const refs: ExplanationRef[] = [];
   for (const line of parseExplanationLines(explanation, target)) {
-    if (!line.matched || !line.candidate || seen.has(line.candidate)) continue;
-    seen.add(line.candidate);
+    if (!line.matched || !line.candidate) continue;
     refs.push({
       snippet: line.candidate,
       body: line.body,
@@ -198,14 +207,17 @@ export function annotateSentence(target: string, refs: ExplanationRef[]): Explan
   if (refs.length === 0 || target.length > MAX_TARGET_LENGTH) {
     return [{
       text: target,
-      ref: null,
+      refs: [],
     }];
   }
 
-  // Every occurrence of every phrase, as a half-open [start, end) interval.
-  const candidates: { start: number;
+  const order = new Map(refs.map((ref, i) => [ref, i] as const));
+
+  // Every occurrence of every phrase, merged by the exact span it covers: two notes on the same
+  // phrase (same text, same place) share one interval and travel together onto that span.
+  const bySpan = new Map<string, { start: number;
     end: number;
-    ref: ExplanationRef; }[] = [];
+    refs: ExplanationRef[]; }>();
   refs.forEach((ref) => {
     // An empty phrase would make indexOf loop forever; a too-long one can never match.
     if (!ref.snippet || ref.snippet.length > target.length) return;
@@ -213,61 +225,71 @@ export function annotateSentence(target: string, refs: ExplanationRef[]): Explan
     for (;;) {
       const at = target.indexOf(ref.snippet, from);
       if (at === -1) break;
-      candidates.push({
-        start: at,
-        end: at + ref.snippet.length,
-        ref,
-      });
-      from = at + ref.snippet.length;
+      const end = at + ref.snippet.length;
+      const key = `${at}:${end}`;
+      const group = bySpan.get(key);
+      if (group) group.refs.push(ref);
+      else {
+        bySpan.set(key, {
+          start: at,
+          end,
+          refs: [ref],
+        });
+      }
+      from = end;
     }
   });
 
-  const order = new Map(refs.map((ref, i) => [ref, i] as const));
-  candidates.sort((a, b) =>
+  const minOrder = (r: ExplanationRef[]) => Math.min(...r.map(ref => order.get(ref) ?? 0));
+  const intervals = [...bySpan.values()];
+  // Keep each span's notes in the author's order.
+  intervals.forEach(iv => iv.refs.sort((a, b) => (order.get(a) ?? 0) - (order.get(b) ?? 0)));
+  // Longest span first (ties by earliest author order, then position) so a nested phrase yields.
+  intervals.sort((a, b) =>
     (b.end - b.start) - (a.end - a.start)
-    || (order.get(a.ref) ?? 0) - (order.get(b.ref) ?? 0)
+    || minOrder(a.refs) - minOrder(b.refs)
     || a.start - b.start);
 
   // Claim characters greedily in priority order, so accepted intervals can never overlap.
   const taken = Array.from({
     length: target.length,
   }, () => false);
-  const accepted: typeof candidates = [];
-  for (const candidate of candidates) {
+  const accepted: typeof intervals = [];
+  for (const interval of intervals) {
     let free = true;
-    for (let i = candidate.start; i < candidate.end; i++) {
+    for (let i = interval.start; i < interval.end; i++) {
       if (taken[i]) {
         free = false;
         break;
       }
     }
     if (!free) continue;
-    for (let i = candidate.start; i < candidate.end; i++) taken[i] = true;
-    accepted.push(candidate);
+    for (let i = interval.start; i < interval.end; i++) taken[i] = true;
+    accepted.push(interval);
   }
   accepted.sort((a, b) => a.start - b.start);
 
   const segments: ExplanationSegment[] = [];
   let cursor = 0;
   for (const {
-    start, end, ref,
+    start, end, refs: spanRefs,
   } of accepted) {
     if (start > cursor) {
       segments.push({
         text: target.slice(cursor, start),
-        ref: null,
+        refs: [],
       });
     }
     segments.push({
       text: target.slice(start, end),
-      ref,
+      refs: spanRefs,
     });
     cursor = end;
   }
   if (cursor < target.length) {
     segments.push({
       text: target.slice(cursor),
-      ref: null,
+      refs: [],
     });
   }
   return segments;

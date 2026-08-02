@@ -72,4 +72,32 @@ describe("ExplainedSentence", () => {
     );
     expect(screen.queryByText("friend")).toBeNull();
   });
+
+  it("highlights the span whose snippet is being hovered elsewhere", () => {
+    const {
+      container,
+    } = render(
+      <ExplainedSentence
+        text={SENTENCE}
+        explanation="友達: friend"
+        highlightSnippet="友達"
+      />,
+    );
+    const [trigger] = triggers(container);
+    expect(trigger.className).toContain("bg-primary/15");
+  });
+
+  it("does not highlight when the hovered snippet is a different phrase", () => {
+    const {
+      container,
+    } = render(
+      <ExplainedSentence
+        text={SENTENCE}
+        explanation="友達: friend"
+        highlightSnippet="映画"
+      />,
+    );
+    const [trigger] = triggers(container);
+    expect(trigger.className).not.toContain("bg-primary/15");
+  });
 });
