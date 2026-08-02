@@ -33,6 +33,7 @@ export type XpFeature = (typeof XP_FEATURES)[number];
 export const DEFAULT_XP_RATES = {
   readingTranslatedSentence: 2,
   readingWordNote: 1,
+  readingPassiveMinute: 0.5,
   writingSentence: 1,
   writingCorrection: 1,
   questionSheetAuthored: 5,

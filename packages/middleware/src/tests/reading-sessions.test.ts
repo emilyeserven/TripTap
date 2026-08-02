@@ -158,6 +158,41 @@ test("POST /api/reading-sessions accepts a summary-only payload", async () => {
   await app.close();
 });
 
+test("POST /api/reading-sessions accepts a passive session with time spent", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/reading-sessions",
+    payload: {
+      title: "Evening read",
+      language: "Japanese",
+      date: "2026-07-20",
+      difficulty: "hard",
+      passive: true,
+      timeSpentMinutes: 20,
+    },
+  });
+  assert.notEqual(res.statusCode, 400);
+  await app.close();
+});
+
+test("POST /api/reading-sessions rejects a negative timeSpentMinutes", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/reading-sessions",
+    payload: {
+      title: "Evening read",
+      language: "Japanese",
+      date: "2026-07-20",
+      passive: true,
+      timeSpentMinutes: -5,
+    },
+  });
+  assert.equal(res.statusCode, 400);
+  await app.close();
+});
+
 test("POST /api/reading-sessions accepts an attached bookmark resource + section", async () => {
   const app = await buildApp();
   const res = await app.inject({

@@ -95,13 +95,22 @@ export function ReadingSessionView({
           "
         >
           <span>{session.language}</span>
-          <Badge variant="secondary">
-            {session.mode === "line-by-line"
-              ? "Line by line"
-              : session.mode === "summary"
-                ? "Just summarize"
-                : "Freeform"}
-          </Badge>
+          {session.passive
+            ? (
+              <>
+                <Badge variant="secondary">Passive</Badge>
+                <span>{session.timeSpentMinutes} min read</span>
+              </>
+            )
+            : (
+              <Badge variant="secondary">
+                {session.mode === "line-by-line"
+                  ? "Line by line"
+                  : session.mode === "summary"
+                    ? "Just summarize"
+                    : "Freeform"}
+              </Badge>
+            )}
           {difficultyLabel
             ? <Badge variant="outline">{difficultyLabel}</Badge>
             : null}
@@ -146,116 +155,122 @@ export function ReadingSessionView({
         )}
       </div>
 
-      <Field
-        label="Summary"
-        value={session.summary}
-      />
+      {!session.passive && (
+        <>
+          <Field
+            label="Summary"
+            value={session.summary}
+          />
 
-      {session.mode === "summary"
-        ? null
-        : session.mode === "line-by-line"
-          ? (
-            <div className="space-y-3">
-              <p className="text-sm font-semibold">Lines</p>
-              {lines.length === 0
-                ? <p className="text-sm text-muted-foreground">No lines recorded.</p>
-                : (
-                  <ul className="space-y-3">
-                    {lines.map(line => (
-                      <li
-                        key={line.id}
-                        className="space-y-1 rounded-md border p-3"
-                      >
-                        <p className="text-base">{line.text}</p>
-                        {line.translation
-                          ? (
-                            <p className="text-sm text-muted-foreground">
-                              {line.summaryOnly ? "Summary: " : ""}
-                              {line.translation}
-                            </p>
-                          )
-                          : null}
-                        {line.grammarTerms && line.grammarTerms.length > 0
-                          ? (
-                            <div className="pt-1 text-xs text-muted-foreground">
-                              <GrammarTermBadges terms={line.grammarTerms} />
-                            </div>
-                          )
-                          : null}
-                        <TranslationVerdictEditor
-                          referenceTranslation={line.correction}
-                          verdict={line.verdict}
-                          note={line.note}
-                          onSave={patch => saveLine(line.id, patch)}
-                        />
-                      </li>
-                    ))}
-                  </ul>
-                )}
-            </div>
-          )
-          : (
-            <>
-              <Field
-                label="Passage"
-                value={session.passage}
-              />
-              <Field
-                label="Translation"
-                value={session.freeformTranslation}
-              />
-              <TranslationVerdictEditor
-                referenceTranslation={session.freeformCorrection}
-                verdict={session.freeformVerdict}
-                note={session.freeformNote}
-                onSave={patch =>
-                  update.mutateAsync({
-                    id: session.id,
-                    input: {
-                      freeformVerdict: patch.verdict,
-                      freeformNote: patch.note,
-                    },
-                  }).then(() => undefined)}
-              />
-            </>
-          )}
-
-      <div className="space-y-3">
-        <p className="text-sm font-semibold">Word notes</p>
-        {wordNotes.length === 0
-          ? <p className="text-sm text-muted-foreground">No words noted.</p>
-          : (
-            <ul className="space-y-2">
-              {wordNotes.map(w => (
-                <li
-                  key={w.id}
-                  className="
-                    flex flex-wrap items-center gap-2 rounded-md border p-2
-                    text-sm
-                  "
-                >
-                  <span className="font-medium">{w.word}</span>
-                  {w.reading ? <span className="text-muted-foreground">{w.reading}</span> : null}
-                  {w.meaning ? <span className="text-muted-foreground">— {w.meaning}</span> : null}
-                  <Badge
-                    variant={w.status === "unknown" ? "destructive" : "secondary"}
-                    className="ml-auto"
-                  >
-                    {w.status === "unknown" ? "Didn't know" : "Shaky"}
-                  </Badge>
-                  {w.flashcard ? <Badge variant="outline">Flashcard</Badge> : null}
-                  <AddSentenceFromWordNoteDialog
-                    note={w}
-                    language={session.language}
-                    onLinked={mySentenceId => saveWordNote(w.id, {
-                      mySentenceId,
-                    })}
+          {session.mode === "summary"
+            ? null
+            : session.mode === "line-by-line"
+              ? (
+                <div className="space-y-3">
+                  <p className="text-sm font-semibold">Lines</p>
+                  {lines.length === 0
+                    ? <p className="text-sm text-muted-foreground">No lines recorded.</p>
+                    : (
+                      <ul className="space-y-3">
+                        {lines.map(line => (
+                          <li
+                            key={line.id}
+                            className="space-y-1 rounded-md border p-3"
+                          >
+                            <p className="text-base">{line.text}</p>
+                            {line.translation
+                              ? (
+                                <p className="text-sm text-muted-foreground">
+                                  {line.summaryOnly ? "Summary: " : ""}
+                                  {line.translation}
+                                </p>
+                              )
+                              : null}
+                            {line.grammarTerms && line.grammarTerms.length > 0
+                              ? (
+                                <div
+                                  className="pt-1 text-xs text-muted-foreground"
+                                >
+                                  <GrammarTermBadges terms={line.grammarTerms} />
+                                </div>
+                              )
+                              : null}
+                            <TranslationVerdictEditor
+                              referenceTranslation={line.correction}
+                              verdict={line.verdict}
+                              note={line.note}
+                              onSave={patch => saveLine(line.id, patch)}
+                            />
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                </div>
+              )
+              : (
+                <>
+                  <Field
+                    label="Passage"
+                    value={session.passage}
                   />
-                </li>
-              ))}
-            </ul>
-          )}
-      </div>
+                  <Field
+                    label="Translation"
+                    value={session.freeformTranslation}
+                  />
+                  <TranslationVerdictEditor
+                    referenceTranslation={session.freeformCorrection}
+                    verdict={session.freeformVerdict}
+                    note={session.freeformNote}
+                    onSave={patch =>
+                      update.mutateAsync({
+                        id: session.id,
+                        input: {
+                          freeformVerdict: patch.verdict,
+                          freeformNote: patch.note,
+                        },
+                      }).then(() => undefined)}
+                  />
+                </>
+              )}
+
+          <div className="space-y-3">
+            <p className="text-sm font-semibold">Word notes</p>
+            {wordNotes.length === 0
+              ? <p className="text-sm text-muted-foreground">No words noted.</p>
+              : (
+                <ul className="space-y-2">
+                  {wordNotes.map(w => (
+                    <li
+                      key={w.id}
+                      className="
+                        flex flex-wrap items-center gap-2 rounded-md border p-2
+                        text-sm
+                      "
+                    >
+                      <span className="font-medium">{w.word}</span>
+                      {w.reading ? <span className="text-muted-foreground">{w.reading}</span> : null}
+                      {w.meaning ? <span className="text-muted-foreground">— {w.meaning}</span> : null}
+                      <Badge
+                        variant={w.status === "unknown" ? "destructive" : "secondary"}
+                        className="ml-auto"
+                      >
+                        {w.status === "unknown" ? "Didn't know" : "Shaky"}
+                      </Badge>
+                      {w.flashcard ? <Badge variant="outline">Flashcard</Badge> : null}
+                      <AddSentenceFromWordNoteDialog
+                        note={w}
+                        language={session.language}
+                        onLinked={mySentenceId => saveWordNote(w.id, {
+                          mySentenceId,
+                        })}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              )}
+          </div>
+        </>
+      )}
     </div>
   );
 }

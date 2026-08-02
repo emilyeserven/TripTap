@@ -43,6 +43,8 @@ test("readingXp counts a verified translated line at 2xp and only banked word no
       title: "Reading 1",
       mode: "line-by-line",
       difficulty: null,
+      passive: false,
+      timeSpentMinutes: 0,
       freeformTranslation: null,
       freeformCorrection: null,
       freeformNote: null,
@@ -122,6 +124,8 @@ test("readingXp counts a verified freeform translation by sentence", () => {
       title: "Reading 1",
       mode: "freeform",
       difficulty: null,
+      passive: false,
+      timeSpentMinutes: 0,
       freeformTranslation: "First. Second。",
       // A reference translation → full credit for both sentences.
       freeformCorrection: "First reference. Second reference.",
@@ -155,6 +159,8 @@ test("readingXp gives half credit to un-verified translations (no correct verdic
       title: "Reading 1",
       mode: "line-by-line",
       difficulty: null,
+      passive: false,
+      timeSpentMinutes: 0,
       freeformTranslation: null,
       freeformCorrection: null,
       freeformNote: null,
@@ -189,6 +195,8 @@ test("readingXp scales the whole session by its difficulty modifier", () => {
       title: "R",
       mode: "freeform",
       difficulty,
+      passive: false,
+      timeSpentMinutes: 0,
       freeformTranslation: "One.",
       freeformCorrection: "One reference.",
       freeformNote: null,
@@ -203,6 +211,34 @@ test("readingXp scales the whole session by its difficulty modifier", () => {
   assert.equal(at("medium"), 2); //      2 × 1
   assert.equal(at("hard"), 2.5); //      2 × 1.25
   assert.equal(at(null), 2); //          unset → medium
+});
+
+test("readingXp scores a passive session by the minute, scaled by difficulty", () => {
+  const at = (difficulty: string | null, timeSpentMinutes: number) =>
+    readingXp([{
+      id: "r1",
+      title: "Passive read",
+      mode: "freeform",
+      difficulty,
+      passive: true,
+      timeSpentMinutes,
+      // Translation content is ignored for a passive session.
+      freeformTranslation: "Should not count.",
+      freeformCorrection: "Ref.",
+      freeformNote: null,
+      freeformVerdict: null,
+      lines: null,
+      wordNotes: null,
+      date: "2026-07-19",
+      createdAt: RECENT,
+    }])[0]?.xp ?? 0;
+  // 20 min × 0.5/min = 10 base, then scaled by difficulty.
+  assert.equal(at("medium", 20), 10); //   10 × 1
+  assert.equal(at("hard", 20), 12.5); //   10 × 1.25
+  assert.equal(at("easy", 20), 5); //      10 × 0.5
+  assert.equal(at(null, 20), 10); //       unset → medium
+  // No minutes → no XP (grant is dropped).
+  assert.equal(at("medium", 0), 0);
 });
 
 test("writingXp counts sentences and corrections, skipping promoted my-sentences", () => {
@@ -641,6 +677,8 @@ test("grant functions honor overridden rates", () => {
     title: "Reading 1",
     mode: "line-by-line",
     difficulty: null,
+    passive: false,
+    timeSpentMinutes: 0,
     freeformTranslation: null,
     freeformCorrection: null,
     freeformNote: null,
@@ -762,6 +800,8 @@ test("the four dated sessions stamp dateOnly for local-day bucketing", () => {
     title: "R",
     mode: "freeform",
     difficulty: null,
+    passive: false,
+    timeSpentMinutes: 0,
     freeformTranslation: "One.",
     freeformCorrection: "One reference.",
     freeformNote: null,

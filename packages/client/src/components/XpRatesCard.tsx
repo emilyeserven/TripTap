@@ -16,6 +16,7 @@ import { formatXp } from "@/lib/xp";
 const RATE_LABELS: Record<XpRateKey, string> = {
   readingTranslatedSentence: "Reading — translated sentence",
   readingWordNote: "Reading — word note",
+  readingPassiveMinute: "Reading — passive minute",
   writingSentence: "Writing — sentence written",
   writingCorrection: "Writing — correction",
   questionSheetAuthored: "Book exercises — question sheet created",
@@ -46,6 +47,7 @@ const RATE_LABELS: Record<XpRateKey, string> = {
 const RATE_AREAS: Partial<Record<XpRateKey, LearningArea>> = {
   readingTranslatedSentence: "Reading",
   readingWordNote: "Reading",
+  readingPassiveMinute: "Reading",
   writingSentence: "Writing",
   writingCorrection: "Writing",
   listeningEntry: "Listening",

@@ -84,6 +84,14 @@ export interface ReadingSession {
   mode: ReadingTranslationMode;
   /** How hard the reading felt — a modifier on earned XP; null (unset) scores as medium. */
   difficulty: ReadingDifficulty | null;
+  /**
+   * Passive session: the learner just read (no translation or notes) for {@link timeSpentMinutes}
+   * minutes. A passive session earns XP per minute; an active one earns XP from its translations and
+   * banked words. Either way the total is scaled by {@link difficulty}.
+   */
+  passive: boolean;
+  /** Minutes read, for a passive session's per-minute XP (then scaled by difficulty). 0 when active. */
+  timeSpentMinutes: number;
   /** The original text being read; in line-by-line mode this is what gets split into `lines`. */
   passage: string | null;
   /** The whole-passage translation, used in "freeform" mode. */
@@ -122,6 +130,8 @@ export interface CreateReadingSessionInput {
   page?: string | null;
   mode?: ReadingTranslationMode;
   difficulty?: ReadingDifficulty | null;
+  passive?: boolean;
+  timeSpentMinutes?: number;
   passage?: string | null;
   freeformTranslation?: string | null;
   freeformCorrection?: string | null;

@@ -527,6 +527,9 @@ export const readingSessions = pgTable("reading_sessions", {
   page: text("page"),
   mode: text("mode").notNull().default("freeform"),
   difficulty: text("difficulty"),
+  // Passive session: XP is earned per minute read (then scaled by difficulty), not per translation.
+  passive: boolean("passive").notNull().default(false),
+  timeSpentMinutes: integer("time_spent_minutes").notNull().default(0),
   passage: text("passage"),
   freeformTranslation: text("freeform_translation"),
   freeformCorrection: text("freeform_correction"),
