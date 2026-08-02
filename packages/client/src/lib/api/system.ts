@@ -10,6 +10,7 @@ import type {
   DictionarySettings,
   ExampleSentence,
   LearnerProfile,
+  RecognizeHandwritingInput,
   StartSettings,
   UpdateLearnerProfileInput,
   UpdateStartSettingsInput,
@@ -113,6 +114,18 @@ export const bookmarksApi = {
 export const dictionaryApi = {
   search: (keyword: string) =>
     request<DictionaryEntry[]>(`/dictionary/search?keyword=${encodeURIComponent(keyword)}`),
+};
+
+/**
+ * Proxy to handwriting character recognition (server-side; the recognizer is swappable). Returns
+ * candidate characters best-match first for the strokes drawn on the dictionary lookup's draw pad.
+ */
+export const handwritingApi = {
+  recognize: (input: RecognizeHandwritingInput) =>
+    request<string[]>("/handwriting/recognize", {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
 };
 
 /** Proxy to Tatoeba example-sentence search (server-side; CC-BY 2.0 FR — attribute Tatoeba). */

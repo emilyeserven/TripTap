@@ -14,6 +14,7 @@ export * from "./dictionary.js";
 export * from "./rule-group.js";
 export * from "./drill-session.js";
 export * from "./grammar-note.js";
+export * from "./handwriting.js";
 export * from "./lesson.js";
 export * from "./listening-session.js";
 export * from "./migaku-import.js";
