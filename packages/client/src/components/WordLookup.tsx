@@ -2,9 +2,10 @@ import type { DictionaryEntry } from "@sentence-bank/types";
 
 import { useState } from "react";
 
-import { Loader2, Search } from "lucide-react";
+import { Loader2, Pencil, Search } from "lucide-react";
 
 import { LevelBadge } from "@/components/ai-lesson/LevelBadge";
+import { HandwritingPad } from "@/components/HandwritingPad";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +17,11 @@ import { useDictionarySearch } from "@/hooks/useDictionary";
  * the row's current word. Owns its own search mutation and open state so each row is independent.
  * Picking a result hands the whole {@link DictionaryEntry} back to the caller, which decides how to fill
  * the row (keeping the kana-only reading rule in one place).
+ *
+ * A pencil toggle swaps the search box for a handwriting pad, for the case the search box can't serve:
+ * a character you can see but can't type. Recognized characters are *appended to the query* rather than
+ * looked up directly, so a multi-character word can be built up one drawn character at a time and then
+ * searched through the same path as a typed one.
  */
 export function WordLookup({
   word,
@@ -26,6 +32,7 @@ export function WordLookup({
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [drawing, setDrawing] = useState(false);
   const search = useDictionarySearch();
 
   const runSearch = (term: string) => {
@@ -39,6 +46,7 @@ export function WordLookup({
     if (next) {
       const seed = word.trim();
       setQuery(seed);
+      setDrawing(false);
       runSearch(seed);
     }
   };
@@ -62,7 +70,7 @@ export function WordLookup({
       </PopoverTrigger>
       <PopoverContent
         align="start"
-        className="w-80 space-y-3"
+        className="w-96 space-y-3"
       >
         <form
           className="flex gap-2"
@@ -79,6 +87,16 @@ export function WordLookup({
             autoFocus
           />
           <Button
+            type="button"
+            variant={drawing ? "secondary" : "outline"}
+            size="icon"
+            aria-label="Draw a character"
+            aria-pressed={drawing}
+            onClick={() => setDrawing(d => !d)}
+          >
+            <Pencil className="size-4" />
+          </Button>
+          <Button
             type="submit"
             size="sm"
             disabled={!query.trim() || search.isPending}
@@ -88,6 +106,10 @@ export function WordLookup({
               : <Search className="size-4" />}
           </Button>
         </form>
+
+        {drawing
+          ? <HandwritingPad onPick={char => setQuery(q => q + char)} />
+          : null}
 
         {search.isError
           ? (

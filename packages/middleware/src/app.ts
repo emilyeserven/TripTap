@@ -15,6 +15,7 @@ import { tatoebaRoutes } from "@/routes/tatoeba";
 import { drillReasonCategoryRoutes } from "@/routes/drill-reason-categories";
 import { drillSessionRoutes } from "@/routes/drill-sessions";
 import { grammarNoteRoutes } from "@/routes/grammar-notes";
+import { handwritingRoutes } from "@/routes/handwriting";
 import { healthRoutes } from "@/routes/health";
 import { lessonRoutes } from "@/routes/lessons";
 import { listeningSessionsRoutes } from "@/routes/listening-sessions";
@@ -195,6 +196,10 @@ export async function buildApp(): Promise<FastifyInstance> {
           description: "Japanese dictionary lookup proxy (Jisho / Jotoba)",
         },
         {
+          name: "handwriting",
+          description: "Handwriting character-recognition proxy for dictionary lookup",
+        },
+        {
           name: "tatoeba",
           description: "Tatoeba example-sentence lookup proxy",
         },
@@ -220,6 +225,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(healthRoutes);
   await app.register(bookmarksRoutes);
   await app.register(dictionaryRoutes);
+  await app.register(handwritingRoutes);
   await app.register(tatoebaRoutes);
   await app.register(renshuuRoutes);
   await app.register(sentenceRoutes);
