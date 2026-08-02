@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { isCorrectionBucket, TRIAGE_TREE } from "@sentence-bank/types";
 
 import { RuleTagPicker } from "@/components/RuleTagPicker";
+import { SentenceTranslationReveal } from "@/components/SentenceTranslationReveal";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -161,8 +162,8 @@ export function CorrectionTriageFlow({
             </span>
             <span
               className={correction.corrected
-                ? "font-medium line-through decoration-destructive/60"
-                : "font-medium"}
+                ? "text-lg font-medium line-through decoration-destructive/60"
+                : "text-lg font-medium"}
             >
               {correction.original}
             </span>
@@ -171,10 +172,15 @@ export function CorrectionTriageFlow({
             ? (
               <p>
                 <span className="text-muted-foreground">Fix: </span>
-                <span className="font-medium">{correction.corrected}</span>
+                <span className="text-lg font-medium">{correction.corrected}</span>
               </p>
             )
             : null}
+          {/* The intended English meaning, blurred by default (hover to peek, click to reveal). */}
+          <SentenceTranslationReveal
+            translation={correction.context}
+            showTranslation={false}
+          />
           {correction.correctorNote
             ? (
               <p className="text-muted-foreground">
