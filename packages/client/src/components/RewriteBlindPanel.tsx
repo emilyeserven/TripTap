@@ -11,15 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useCreateWriting } from "@/hooks/useWritings";
 import { todayDateString } from "@/lib/daily-lineup";
 import { diffChars } from "@/lib/simple-diff";
-import { correctedText } from "@/lib/writing-corrections";
-
-/** The "corrected version" of a past writing: its corrected sentences, else the original text. */
-function correctedVersion(writing: Writing): string {
-  const corrections = writing.corrections ?? [];
-  // `correctedText` covers the "no change needed" entries, whose `corrected` is empty.
-  if (corrections.length > 0) return corrections.map(correctedText).join("\n");
-  return writing.text;
-}
+import { fullyCorrectedText } from "@/lib/writing-corrections";
 
 /**
  * Rewrite-blind (spec §8): re-present a past writing's prompt with the text hidden, take a fresh
@@ -33,7 +25,7 @@ export function RewriteBlindPanel({
   const [attempt, setAttempt] = useState("");
   const [revealed, setRevealed] = useState(false);
 
-  const target = correctedVersion(writing);
+  const target = fullyCorrectedText(writing);
   const diff = useMemo(
     () => (revealed ? diffChars(attempt, target) : []),
     [revealed, attempt, target],
