@@ -39,6 +39,11 @@ export function CorrectionImportDialog() {
   const importMutation = useImportCorrections();
 
   const list = candidates ?? [];
+  const allSelected = list.length > 0 && selected.size === list.length;
+
+  function toggleAll() {
+    setSelected(allSelected ? new Set() : new Set(list.map(c => c.ref.id)));
+  }
 
   function toggle(id: string) {
     setSelected((prev) => {
@@ -103,6 +108,23 @@ export function CorrectionImportDialog() {
             ))}
           </TabsList>
         </Tabs>
+
+        {!isLoading && list.length > 0
+          ? (
+            <label
+              className="
+                flex w-fit cursor-pointer items-center gap-2 text-sm font-medium
+              "
+            >
+              <Checkbox
+                checked={allSelected}
+                onCheckedChange={toggleAll}
+                aria-label="Select all"
+              />
+              Select all
+            </label>
+          )
+          : null}
 
         <div className="max-h-80 space-y-2 overflow-y-auto">
           {isLoading ? <p className="text-sm text-muted-foreground">Loading…</p> : null}
