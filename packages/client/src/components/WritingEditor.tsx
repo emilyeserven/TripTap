@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { fullyCorrectedText } from "@/lib/writing-corrections";
 
 /** The autosaved fields of a writing (corrections are managed separately in correction mode). */
 interface Draft {
@@ -182,6 +183,21 @@ export function WritingEditor({
                     {writing.promptTitle ? `: ${writing.promptTitle}` : null}
                   </p>
                   <p className="mt-1 text-sm whitespace-pre-wrap">{writing.promptText}</p>
+                </div>
+              )
+              : null}
+            {correctionCount > 0
+              ? (
+                <div className="space-y-1.5">
+                  <Label className="text-sm">Corrected version</Label>
+                  <div
+                    className="
+                      rounded-md border bg-muted/30 p-3 text-lg
+                      whitespace-pre-wrap
+                    "
+                  >
+                    {fullyCorrectedText(writing)}
+                  </div>
                 </div>
               )
               : null}

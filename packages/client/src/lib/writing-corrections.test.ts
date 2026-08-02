@@ -3,7 +3,13 @@ import type { WritingCorrection } from "@sentence-bank/types";
 
 import { describe, expect, it } from "vitest";
 
-import { correctedText, isUnchanged, splitLines, splitSentences } from "./writing-corrections";
+import {
+  correctedText,
+  fullyCorrectedText,
+  isUnchanged,
+  splitLines,
+  splitSentences,
+} from "./writing-corrections";
 
 describe("splitSentences", () => {
   it("splits on Japanese and Latin terminal punctuation", () => {
@@ -96,5 +102,43 @@ describe("isUnchanged", () => {
 
   it("is false for a real fix", () => {
     expect(isUnchanged(correction())).toBe(false);
+  });
+});
+
+describe("fullyCorrectedText", () => {
+  it("applies each line's fix in text order, keeping uncorrected lines as written", () => {
+    const writing = {
+      text: "猫がいる。\n私は学生。\n犬もいる。",
+      corrections: [
+        // Out of text order on purpose — the assembler must follow the text, not this array.
+        correction({
+          original: "犬もいる。",
+          corrected: "犬もいます。",
+        }),
+        correction({
+          original: "猫がいる。",
+          corrected: "猫がいます。",
+        }),
+      ],
+    };
+    expect(fullyCorrectedText(writing)).toBe("猫がいます。\n私は学生。\n犬もいます。");
+  });
+
+  it("keeps the original line for a 'no change needed' correction (empty corrected)", () => {
+    const writing = {
+      text: "これは正しい。",
+      corrections: [correction({
+        original: "これは正しい。",
+        corrected: "",
+      })],
+    };
+    expect(fullyCorrectedText(writing)).toBe("これは正しい。");
+  });
+
+  it("returns the raw text when there are no corrections", () => {
+    expect(fullyCorrectedText({
+      text: "まだ直していない。",
+      corrections: null,
+    })).toBe("まだ直していない。");
   });
 });

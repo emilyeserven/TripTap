@@ -1,4 +1,4 @@
-import type { WritingCorrection } from "@sentence-bank/types";
+import type { Writing, WritingCorrection } from "@sentence-bank/types";
 
 /**
  * The text a correction represents: its fix, or the original sentence when it needed no change.
@@ -44,4 +44,23 @@ export function splitLines(text: string): string[] {
     if (trimmed) segments.push(trimmed);
   }
   return segments;
+}
+
+/**
+ * The whole writing with each sentence's correction applied, in the order the sentences appear in the
+ * text. Uncorrected lines are kept as written; corrected lines use their fix (or the original when the
+ * correction was "no change needed"). Corrections are matched to lines exactly how the correction flow
+ * does — trimmed equality on `original` (see {@link splitLines}) — so a line edited since it was
+ * corrected simply falls back to its current text. Returns the raw text when nothing is corrected.
+ */
+export function fullyCorrectedText(writing: Pick<Writing, "text" | "corrections">): string {
+  const corrections = writing.corrections ?? [];
+  if (corrections.length === 0) return writing.text;
+  const byOriginal = new Map(corrections.map(c => [c.original.trim(), c] as const));
+  return splitLines(writing.text)
+    .map((segment) => {
+      const correction = byOriginal.get(segment.trim());
+      return correction ? correctedText(correction) : segment;
+    })
+    .join("\n");
 }
