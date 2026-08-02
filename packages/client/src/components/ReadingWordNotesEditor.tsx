@@ -1,5 +1,4 @@
 import type { WordNote } from "@sentence-bank/types";
-import type { KeyboardEvent } from "react";
 
 import { Plus } from "lucide-react";
 import { toKana } from "wanakana";
@@ -11,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { WordExampleLookup } from "@/components/WordExampleLookup";
 import { WordLookup } from "@/components/WordLookup";
 import { WordNoteControls } from "@/components/WordNoteControls";
+import { blockEnterSubmit } from "@/lib/forms";
 import { newId } from "@/lib/id";
 import { useUiStore } from "@/stores/uiStore";
 
@@ -35,13 +35,6 @@ export function ReadingWordNotesEditor({
     toKana(raw, {
       IMEMode: kanaScript === "katakana" ? "toKatakana" : "toHiragana",
     });
-
-  // These are single-line inputs, so a stray Enter would submit the whole reading-session form and
-  // navigate away mid-edit (losing the word note). Swallow Enter here — but not while an IME is
-  // composing, so confirming a kana/kanji candidate still works.
-  const blockEnterSubmit = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && !e.nativeEvent.isComposing) e.preventDefault();
-  };
 
   const addWordNote = () =>
     onChange([...wordNotes, {
@@ -158,6 +151,21 @@ export function ReadingWordNotesEditor({
             ))}
           </ul>
         )}
+
+      {/* A second add button at the bottom, so you can note another word without scrolling back up. */}
+      {wordNotes.length > 0
+        ? (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={addWordNote}
+          >
+            <Plus className="size-4" />
+            New word
+          </Button>
+        )
+        : null}
     </div>
   );
 }

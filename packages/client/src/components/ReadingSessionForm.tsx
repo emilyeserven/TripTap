@@ -25,6 +25,7 @@ import {
   useUpdateReadingSession,
 } from "@/hooks/useReadingSessions";
 import { todayDateString } from "@/lib/daily-lineup";
+import { blockEnterSubmit } from "@/lib/forms";
 
 /**
  * Create/edit form for a reading session. The learner records where the passage came from, then
@@ -158,6 +159,7 @@ export function ReadingSessionForm({
           type="date"
           value={date}
           onChange={e => setDate(e.target.value)}
+          onKeyDown={blockEnterSubmit}
         />
       </div>
 
@@ -173,6 +175,7 @@ export function ReadingSessionForm({
             id="rs-title"
             value={title}
             onChange={e => setTitle(e.target.value)}
+            onKeyDown={blockEnterSubmit}
             placeholder="Chapter 3 — first read"
           />
         </div>
@@ -182,6 +185,7 @@ export function ReadingSessionForm({
             id="rs-language"
             value={language}
             onChange={e => setLanguage(e.target.value)}
+            onKeyDown={blockEnterSubmit}
           />
         </div>
       </div>
@@ -192,6 +196,7 @@ export function ReadingSessionForm({
           id="rs-page"
           value={page}
           onChange={e => setPage(e.target.value)}
+          onKeyDown={blockEnterSubmit}
           placeholder="p. 12–13, ch. 3, …"
         />
       </div>
