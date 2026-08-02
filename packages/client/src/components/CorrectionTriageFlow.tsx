@@ -7,6 +7,7 @@ import { isCorrectionBucket, TRIAGE_TREE } from "@sentence-bank/types";
 
 import { RuleTagPicker } from "@/components/RuleTagPicker";
 import { SentenceTranslationReveal } from "@/components/SentenceTranslationReveal";
+import { ShowOriginalToggle } from "@/components/ShowOriginalToggle";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -66,6 +67,9 @@ export function CorrectionTriageFlow({
   const [answers, setAnswers] = useState<Answer[]>([]);
   const [ruleTag, setRuleTag] = useState<RuleTagSelection | null>(null);
   const [scene, setScene] = useState("");
+  // Triage leads with the fix; the learner's original is opt-in (this component remounts per
+  // correction via its `key`, so this resets for each one).
+  const [showOriginal, setShowOriginal] = useState(false);
 
   // Reset the flow whenever we advance to a new correction.
   useEffect(() => {
@@ -156,18 +160,7 @@ export function CorrectionTriageFlow({
       </CardHeader>
       <CardContent className="space-y-5">
         <div className="space-y-1 rounded-md bg-muted/50 p-3 text-sm">
-          <p>
-            <span className="text-muted-foreground">
-              {correction.corrected ? "Wrote: " : "Sentence: "}
-            </span>
-            <span
-              className={correction.corrected
-                ? "text-lg font-medium line-through decoration-destructive/60"
-                : "text-lg font-medium"}
-            >
-              {correction.original}
-            </span>
-          </p>
+          {/* Lead with the fix (or the sentence itself when there's no correction). */}
           {correction.corrected
             ? (
               <p>
@@ -175,7 +168,12 @@ export function CorrectionTriageFlow({
                 <span className="text-lg font-medium">{correction.corrected}</span>
               </p>
             )
-            : null}
+            : (
+              <p>
+                <span className="text-muted-foreground">Sentence: </span>
+                <span className="text-lg font-medium">{correction.original}</span>
+              </p>
+            )}
           {/* The intended English meaning, blurred by default (hover to peek, click to reveal). */}
           <SentenceTranslationReveal
             translation={correction.context}
@@ -186,6 +184,32 @@ export function CorrectionTriageFlow({
               <p className="text-muted-foreground">
                 {correction.correctorNote}
               </p>
+            )
+            : null}
+          {/* The learner's original is opt-in, to help place the mistake without leading with it. */}
+          {correction.corrected
+            ? (
+              <div className="space-y-1 pt-1">
+                <ShowOriginalToggle
+                  open={showOriginal}
+                  onToggle={() => setShowOriginal(v => !v)}
+                />
+                {showOriginal
+                  ? (
+                    <p>
+                      <span className="text-muted-foreground">Wrote: </span>
+                      <span
+                        className="
+                          text-lg font-medium line-through
+                          decoration-destructive/60
+                        "
+                      >
+                        {correction.original}
+                      </span>
+                    </p>
+                  )
+                  : null}
+              </div>
             )
             : null}
         </div>
