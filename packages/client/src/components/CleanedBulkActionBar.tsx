@@ -32,12 +32,12 @@ export function CleanedBulkActionBar({
     <div
       className={`
         sticky top-2 z-10 flex flex-wrap items-center gap-2 rounded-md border
-        border-blue-300 bg-blue-50 p-2 text-sm
+        border-primary/30 bg-primary/10 p-2 text-sm
         ${selectedCount > 0 ? "visible" : "invisible"}
       `}
       aria-hidden={selectedCount === 0}
     >
-      <span className="font-medium text-blue-900">
+      <span className="font-medium text-foreground">
         {selectedCount}
         {" "}
         selected

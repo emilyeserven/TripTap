@@ -6,7 +6,7 @@ import { SourcePicker } from "./SourcePicker";
 import { useCreateCapture } from "../hooks/useCaptures";
 
 const fieldClass
-  = "mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none";
+  = "mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:border-ring focus:outline-none";
 
 /**
  * Save-capture form. Persists the OCR result (text + per-block detail) plus its image and metadata
@@ -56,7 +56,7 @@ export function CaptureForm({
         void submit(event);
       }}
     >
-      <label className="block text-sm font-medium text-slate-700">
+      <label className="block text-sm font-medium text-foreground">
         Title (optional)
         <input
           className={fieldClass}
@@ -71,7 +71,7 @@ export function CaptureForm({
         onChange={setSourceId}
       />
 
-      <label className="block text-sm font-medium text-slate-700">
+      <label className="block text-sm font-medium text-foreground">
         Page / location
         <input
           className={fieldClass}
@@ -80,7 +80,7 @@ export function CaptureForm({
         />
       </label>
 
-      <label className="block text-sm font-medium text-slate-700">
+      <label className="block text-sm font-medium text-foreground">
         Notes
         <textarea
           className={fieldClass}
@@ -94,16 +94,16 @@ export function CaptureForm({
         type="submit"
         disabled={createCapture.isPending || !text.trim()}
         className="
-          justify-self-start rounded-md bg-blue-600 px-4 py-2 text-sm
-          font-medium text-white
-          hover:bg-blue-700
+          justify-self-start rounded-md bg-primary px-4 py-2 text-sm font-medium
+          text-primary-foreground
+          hover:bg-primary/90
           disabled:opacity-50
         "
       >
         {createCapture.isPending ? "Saving…" : "Save capture"}
       </button>
       {createCapture.isError
-        ? <p className="text-sm text-red-600">{createCapture.error?.message}</p>
+        ? <p className="text-sm text-destructive">{createCapture.error?.message}</p>
         : null}
     </form>
   );

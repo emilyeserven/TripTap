@@ -51,7 +51,7 @@ export function CaptureTextCard({
           className="
             max-h-[70vh] w-full rounded-md border border-input bg-transparent
             px-3 py-2 font-sans text-sm whitespace-pre-wrap
-            focus:border-blue-500 focus:outline-none
+            focus:border-ring focus:outline-none
           "
           rows={16}
           value={cleaned}
@@ -79,7 +79,17 @@ export function CaptureTextCard({
           >
             Reset to source
           </Button>
-          {saved && !dirty ? <span className="text-sm text-green-700">Saved.</span> : null}
+          {saved && !dirty
+            ? (
+              <span
+                className="
+                  text-sm text-green-600
+                  dark:text-green-400
+                "
+              >Saved.
+              </span>
+            )
+            : null}
           {updateCapture.isError ? <span className="text-sm text-destructive">Could not save.</span> : null}
         </div>
         <details className="text-sm">

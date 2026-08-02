@@ -47,7 +47,7 @@ export function CleanedItemsPreview({
         {preview.sentences.length > 0
           ? (
             <div className="space-y-2">
-              <h3 className="text-sm font-semibold text-slate-700">
+              <h3 className="text-sm font-semibold text-foreground">
                 Sentences —
                 {" "}
                 {preview.sentences.length}
@@ -67,8 +67,8 @@ export function CleanedItemsPreview({
                       <span
                         key={id}
                         className="
-                          rounded-full bg-blue-50 px-2 py-0.5 text-xs
-                          text-blue-700
+                          rounded-full bg-primary/10 px-2 py-0.5 text-xs
+                          text-foreground
                         "
                       >
                         {vocabName(id)}
@@ -84,7 +84,7 @@ export function CleanedItemsPreview({
         {preview.vocab.length > 0
           ? (
             <div className="space-y-2">
-              <h3 className="text-sm font-semibold text-slate-700">
+              <h3 className="text-sm font-semibold text-foreground">
                 Vocab —
                 {" "}
                 {preview.vocab.length}
@@ -117,7 +117,17 @@ export function CleanedItemsPreview({
           )
           : null}
 
-        {done ? <p className="text-sm font-medium text-green-700">{done}</p> : null}
+        {done
+          ? (
+            <p
+              className="
+                text-sm font-medium text-green-600
+                dark:text-green-400
+              "
+            >{done}
+            </p>
+          )
+          : null}
         {hasError
           ? <p className="text-sm text-destructive">Could not create items.</p>
           : null}

@@ -291,7 +291,10 @@ export function CleanedBlocksWorkspace({
 
           <CleanedBulkActionBar
             selectedCount={selected.size}
-            onStitch={() => setDraft(d => stitchLines(d, selectedIds()))}
+            onStitch={() => {
+              setDraft(d => stitchLines(d, selectedIds()));
+              clearSelection();
+            }}
             onUnstitch={() => setDraft(d => unstitchLines(d, selectedIds()))}
             onLink={() => setDraft(d => linkGroups(d, selectedIds()))}
             onUnlink={() => setDraft(d => unlinkGroups(d, selectedIds()))}
@@ -377,7 +380,15 @@ export function CleanedBlocksWorkspace({
               Reset
             </Button>
             {!dirty && !updateCapture.isPending
-              ? <span className="text-sm text-green-700">Grouping saved.</span>
+              ? (
+                <span
+                  className="
+                    text-sm text-green-600
+                    dark:text-green-400
+                  "
+                >Grouping saved.
+                </span>
+              )
               : null}
           </div>
         </CardContent>

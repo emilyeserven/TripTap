@@ -1,7 +1,7 @@
 import { SourcePicker } from "@/components/SourcePicker";
 
 const fieldClass
-  = "mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none";
+  = "mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:border-ring focus:outline-none";
 
 /**
  * The "shared values" grid used by both capture workbenches (parse + cleaned blocks): source, page,
@@ -44,7 +44,7 @@ export function SharedCaptureFields({
         value={sourceId}
         onChange={onSourceIdChange}
       />
-      <label className="block text-sm font-medium text-slate-700">
+      <label className="block text-sm font-medium text-foreground">
         Page / location (shared)
         <input
           className={fieldClass}
@@ -52,7 +52,7 @@ export function SharedCaptureFields({
           onChange={e => onPageChange(e.target.value)}
         />
       </label>
-      <label className="block text-sm font-medium text-slate-700">
+      <label className="block text-sm font-medium text-foreground">
         {languageLabel}
         <input
           className={fieldClass}
@@ -60,7 +60,7 @@ export function SharedCaptureFields({
           onChange={e => onLanguageChange(e.target.value)}
         />
       </label>
-      <label className="block text-sm font-medium text-slate-700">
+      <label className="block text-sm font-medium text-foreground">
         Tags (shared)
         <input
           className={fieldClass}
@@ -70,7 +70,7 @@ export function SharedCaptureFields({
       </label>
       <label
         className="
-          block text-sm font-medium text-slate-700
+          block text-sm font-medium text-foreground
           sm:col-span-2
         "
       >

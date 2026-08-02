@@ -2,7 +2,7 @@ import type { CleanedLineRole } from "@sentence-bank/types";
 
 /** Compact input/select styling shared by the cleaned-blocks editor controls. */
 export const INLINE_FIELD_CLASS
-  = "rounded-md border border-slate-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none";
+  = "rounded-md border border-input bg-background px-2 py-1 text-sm focus:border-ring focus:outline-none";
 
 /** The selectable per-line roles, in menu order. */
 export const ROLES: { value: CleanedLineRole;

@@ -88,7 +88,7 @@ export function CaptureImagePicker({
           onDragLeave={onDragLeave}
           className={cn(
             "space-y-3 rounded-md border-2 border-dashed p-4 transition-colors",
-            dragging ? "border-blue-500 bg-blue-50/60" : "border-input",
+            dragging ? "border-ring bg-accent" : "border-input",
           )}
         >
           <div className="flex flex-wrap items-center gap-2">

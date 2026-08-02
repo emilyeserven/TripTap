@@ -66,7 +66,7 @@ export function CleanedLineRow({
         flex flex-wrap items-center gap-1.5 rounded-md border border-l-4
         border-input bg-card p-1.5
         ${tintClass}
-        ${checked ? "ring-2 ring-blue-400" : ""}
+        ${checked ? "ring-2 ring-primary" : ""}
         ${dimmed ? "opacity-50" : ""}
       `}
     >

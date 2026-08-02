@@ -235,7 +235,7 @@ export function CaptureParseWorkspace({
             : null}
 
           {/* Working text */}
-          <label className="block text-sm font-medium text-slate-700">
+          <label className="block text-sm font-medium text-foreground">
             Text to parse
             <textarea
               className={`
@@ -251,7 +251,7 @@ export function CaptureParseWorkspace({
           {/* Section divider (merged only) */}
           {mode === "merged"
             ? (
-              <label className="block text-sm font-medium text-slate-700">
+              <label className="block text-sm font-medium text-foreground">
                 Section divider (sentences above, vocab below)
                 <input
                   className={`
@@ -295,7 +295,7 @@ export function CaptureParseWorkspace({
 
           {/* Boundary */}
           <div className="flex flex-wrap items-center gap-4 text-sm">
-            <span className="font-medium text-slate-700">Items:</span>
+            <span className="font-medium text-foreground">Items:</span>
             {(["fixed", "blank"] as const).map(b => (
               <label
                 key={b}
@@ -356,7 +356,7 @@ export function CaptureParseWorkspace({
               <div className="space-y-2">
                 {mode === "merged"
                   ? (
-                    <h3 className="text-sm font-semibold text-slate-700">
+                    <h3 className="text-sm font-semibold text-foreground">
                       Sentences —
                       {" "}
                       {sentenceValid}
@@ -382,7 +382,7 @@ export function CaptureParseWorkspace({
               <div className="space-y-2">
                 {mode === "merged"
                   ? (
-                    <h3 className="text-sm font-semibold text-slate-700">
+                    <h3 className="text-sm font-semibold text-foreground">
                       Vocab —
                       {" "}
                       {vocabValid}
@@ -400,7 +400,17 @@ export function CaptureParseWorkspace({
             )
             : null}
 
-          {done ? <p className="text-sm font-medium text-green-700">{done}</p> : null}
+          {done
+            ? (
+              <p
+                className="
+                  text-sm font-medium text-green-600
+                  dark:text-green-400
+                "
+              >{done}
+              </p>
+            )
+            : null}
           {createSentences.isError || createVocab.isError
             ? <p className="text-sm text-destructive">Could not create items.</p>
             : null}
