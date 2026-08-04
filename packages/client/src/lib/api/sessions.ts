@@ -1,11 +1,17 @@
-/** Study-session APIs: listening, reading, shadowing, and drill sessions + the reason taxonomy. */
+/**
+ * Study-session APIs: listening, reading, shadowing, dialogues, and drill sessions + the reason
+ * taxonomy.
+ */
 import type {
+  CreateDialogueInput,
   CreateListeningSessionInput,
   CreateReadingSessionInput,
   CreateShadowingSessionInput,
+  Dialogue,
   ListeningSession,
   ReadingSession,
   ShadowingSession,
+  UpdateDialogueInput,
   UpdateListeningSessionInput,
   UpdateReadingSessionInput,
   UpdateShadowingSessionInput,
@@ -45,6 +51,24 @@ export const listeningSessionsApi = {
       body: JSON.stringify(input),
     }),
   remove: (id: string) => request<undefined>(`/listening-sessions/${id}`, {
+    method: "DELETE",
+  }),
+};
+
+export const dialoguesApi = {
+  list: () => request<Dialogue[]>("/dialogues"),
+  get: (id: string) => request<Dialogue>(`/dialogues/${id}`),
+  create: (input: CreateDialogueInput) =>
+    request<Dialogue>("/dialogues", {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+  update: (id: string, input: UpdateDialogueInput) =>
+    request<Dialogue>(`/dialogues/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    }),
+  remove: (id: string) => request<undefined>(`/dialogues/${id}`, {
     method: "DELETE",
   }),
 };

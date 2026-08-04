@@ -34,7 +34,7 @@ async function vocabCountMap(ids: string[]): Promise<Map<string, number>> {
  * Reading overrides for the furigana analyzer, sourced from the vocab bank: any vocab with a reading
  * wins over the analyzer's guess (so users fix names/mis-reads once, in vocab, and it applies here).
  */
-async function getFuriganaOverrides(): Promise<Map<string, string>> {
+export async function getFuriganaOverrides(): Promise<Map<string, string>> {
   const rows = await db.select({
     term: vocab.term,
     reading: vocab.reading,

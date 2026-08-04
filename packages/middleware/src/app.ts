@@ -12,6 +12,7 @@ import { chunkCardsRoutes } from "@/routes/chunk-cards";
 import { correctionsRoutes } from "@/routes/corrections";
 import { dictionaryRoutes } from "@/routes/dictionary";
 import { tatoebaRoutes } from "@/routes/tatoeba";
+import { dialoguesRoutes } from "@/routes/dialogues";
 import { drillReasonCategoryRoutes } from "@/routes/drill-reason-categories";
 import { drillSessionRoutes } from "@/routes/drill-sessions";
 import { grammarNoteRoutes } from "@/routes/grammar-notes";
@@ -94,6 +95,10 @@ export async function buildApp(): Promise<FastifyInstance> {
         {
           name: "listening-sessions",
           description: "Listen and Shadow sessions — video + timestamped notes",
+        },
+        {
+          name: "dialogues",
+          description: "Multi-speaker scripts rendered as chat transcripts",
         },
         {
           name: "migaku-import",
@@ -235,6 +240,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(questionSheetRoutes);
   await app.register(answerSheetRoutes);
   await app.register(listeningSessionsRoutes);
+  await app.register(dialoguesRoutes);
   await app.register(shadowingSessionsRoutes);
   await app.register(shadowingListRoutes);
   await app.register(readingSessionsRoutes);

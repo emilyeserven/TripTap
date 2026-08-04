@@ -16,6 +16,7 @@ import {
   LanguagesIcon,
   LayersIcon,
   LightbulbIcon,
+  MessagesSquareIcon,
   NotebookPenIcon,
   PencilRulerIcon,
   PenLineIcon,
@@ -114,6 +115,12 @@ const sections: readonly TileSection[] = [
         to: "/shadowing",
         icon: Repeat2Icon,
         description: "Repeat audio to sharpen pronunciation and rhythm.",
+      },
+      {
+        title: "Dialogues",
+        to: "/dialogues",
+        icon: MessagesSquareIcon,
+        description: "Multi-speaker scripts as a chat transcript you can practise against.",
       },
       {
         title: "Reading Session",
