@@ -12,6 +12,7 @@ export const XP_FEATURE_LABELS: Record<XpFeature, string> = {
   bookExercises: "Book exercise",
   listening: "Listening",
   shadowing: "Shadowing",
+  dialogues: "Dialogue",
   drills: "Drills",
   lessons: "Lesson",
   theoryStudy: "Theory study",

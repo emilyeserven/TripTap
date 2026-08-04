@@ -7,6 +7,7 @@ import type {
   ContrastPair,
   CorrectionImportRef,
   CorrectionSource,
+  DialogueLine,
   DrillMistake,
   DrillMistakeReasonRef,
   DrillReason,
@@ -465,6 +466,41 @@ export const listeningSessions = pgTable("listening_sessions", {
 
 export type ListeningSessionRow = typeof listeningSessions.$inferSelect;
 export type NewListeningSessionRow = typeof listeningSessions.$inferInsert;
+
+/**
+ * `dialogues` — a multi-speaker script rendered as a chat transcript. `script` is the raw pasted text
+ * and the source of truth for the dialogue's structure; `lines` is its parsed form, kept in the row
+ * because per-line furigana (generated on write) and translations (learner-entered) hang off it.
+ * Re-parsing on a `script` edit preserves translations, so the two never drift apart.
+ *
+ * `counts_toward_xp` is off by default: a dialogue copied out of a textbook is *sourced*, not
+ * produced, so it earns nothing until the learner marks it as their own writing.
+ */
+export const dialogues = pgTable("dialogues", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  /** The calendar day (YYYY-MM-DD) this dialogue belongs to, for grouping activity by day. */
+  date: date("date", {
+    mode: "string",
+  }).notNull(),
+  title: text("title").notNull(),
+  language: text("language").notNull(),
+  script: text("script").notNull(),
+  lines: jsonb("lines").$type<DialogueLine[]>(),
+  // Extra speaker labels to render on the right, on top of the built-in "私"/"Me".
+  selfSpeakers: jsonb("self_speakers").$type<string[]>(),
+  countsTowardXp: boolean("counts_toward_xp").notNull().default(false),
+  // Which area the XP credits when `counts_toward_xp` is on; null falls back to Speaking.
+  learningArea: text("learning_area").$type<LearningArea>(),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+});
+
+export type DialogueRow = typeof dialogues.$inferSelect;
+export type NewDialogueRow = typeof dialogues.$inferInsert;
 
 /**
  * `shadowing_sessions` — a shadowing practice session: a YouTube video plus a list of `segments` that

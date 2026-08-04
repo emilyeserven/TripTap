@@ -1,5 +1,6 @@
 import type {
   AnswerSheetEntry,
+  DialogueLine,
   DrillMistake,
   DrillType,
   LearnerGoal,
@@ -23,6 +24,7 @@ import { DEFAULT_XP_RATES, LEARNING_AREAS } from "@sentence-bank/types";
 import { db } from "@/db";
 import {
   answerSheets,
+  dialogues,
   drillSessions,
   lessons,
   listeningSessions,
@@ -412,6 +414,40 @@ export function shadowingXp(rows: ShadowingXpRow[], rates: XpRates = DEFAULT_XP_
     : []));
 }
 
+interface DialogueXpRow {
+  id: string;
+  title: string;
+  date: string;
+  lines: DialogueLine[] | null;
+  countsTowardXp: boolean;
+  learningArea: LearningArea | null;
+}
+
+/**
+ * 1xp per line → the dialogue's own learning area (Speaking by default). Only self-authored dialogues
+ * count: a script copied out of a textbook was sourced, not produced, so it stays at zero until the
+ * learner marks it as theirs.
+ */
+export function dialoguesXp(rows: DialogueXpRow[], rates: XpRates = DEFAULT_XP_RATES): XpGrant[] {
+  return rows.flatMap((row) => {
+    const lines = row.lines?.length ?? 0;
+    if (!row.countsTowardXp || lines === 0) return [];
+    return [{
+      area: row.learningArea ?? ("Speaking" as const),
+      feature: "dialogues" as const,
+      xp: lines * rates.dialogueLine,
+      at: new Date(row.date),
+      dateOnly: row.date,
+      sourceId: row.id,
+      title: row.title,
+      to: "/dialogues/$id",
+      params: {
+        id: row.id,
+      },
+    }];
+  });
+}
+
 interface DrillXpRow {
   id: string;
   title: string | null;
@@ -787,6 +823,7 @@ export async function loadXpGrants(): Promise<XpGrant[]> {
     answerRows,
     listeningRows,
     shadowingRows,
+    dialogueRows,
     drillRows,
     lessonRows,
     theoryRows,
@@ -853,6 +890,14 @@ export async function loadXpGrants(): Promise<XpGrant[]> {
       createdAt: shadowingSessions.createdAt,
     }).from(shadowingSessions),
     db.select({
+      id: dialogues.id,
+      title: dialogues.title,
+      date: dialogues.date,
+      lines: dialogues.lines,
+      countsTowardXp: dialogues.countsTowardXp,
+      learningArea: dialogues.learningArea,
+    }).from(dialogues),
+    db.select({
       id: drillSessions.id,
       title: drillSessions.title,
       date: drillSessions.date,
@@ -888,6 +933,7 @@ export async function loadXpGrants(): Promise<XpGrant[]> {
     ...bookExercisesXp(sheetRows as QuestionSheetXpRow[], answerRows, rates),
     ...listeningXp(listeningRows, rates),
     ...shadowingXp(shadowingRows, rates),
+    ...dialoguesXp(dialogueRows, rates),
     ...drillXp(drillRows, rates),
     ...lessonXp(lessonRows, rates),
     ...theoryStudyXp(theoryRows, rates),

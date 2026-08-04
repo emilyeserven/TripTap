@@ -8,6 +8,7 @@ import { HubSection } from "@/components/HubSection";
 import { ResourceRow } from "@/components/ResourceRow";
 import { Button } from "@/components/ui/button";
 import { useBookmarkResources } from "@/hooks/useBookmarks";
+import { useDialogues } from "@/hooks/useDialogues";
 import { useListeningSessions } from "@/hooks/useListeningSessions";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useBookmarksSettings } from "@/hooks/useSettings";
@@ -43,6 +44,7 @@ function SpeakingListeningPage() {
   const settings = useBookmarksSettings();
   const listeningSessions = useListeningSessions();
   const shadowingSessions = useShadowingSessions();
+  const dialogues = useDialogues();
 
   const [mediaKind, setMediaKind] = useState<ResourceMediaKind>("all");
 
@@ -109,6 +111,14 @@ function SpeakingListeningPage() {
   const shadowingViewAll = (
     <Link
       to="/shadowing"
+      className={VIEW_ALL_CLASS}
+    >
+      View all →
+    </Link>
+  );
+  const dialoguesViewAll = (
+    <Link
+      to="/dialogues"
       className={VIEW_ALL_CLASS}
     >
       View all →
@@ -189,6 +199,34 @@ function SpeakingListeningPage() {
                     "
                   >
                     {ss.title}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+      </HubSection>
+
+      <HubSection
+        title="Dialogues"
+        action={dialoguesViewAll}
+      >
+        {(dialogues.data ?? []).length === 0
+          ? <p className="text-sm text-muted-foreground">No dialogues yet.</p>
+          : (
+            <ul className="space-y-1.5">
+              {(dialogues.data ?? []).slice(0, PREVIEW_LIMIT).map(d => (
+                <li key={d.id}>
+                  <Link
+                    to="/dialogues/$id"
+                    params={{
+                      id: d.id,
+                    }}
+                    className="
+                      block truncate text-sm
+                      hover:underline
+                    "
+                  >
+                    {d.title}
                   </Link>
                 </li>
               ))}

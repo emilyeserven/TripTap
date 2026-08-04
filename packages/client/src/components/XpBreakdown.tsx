@@ -16,6 +16,7 @@ const FEATURE_LABELS: Record<XpFeature, string> = {
   bookExercises: "Book exercises",
   listening: "Listening",
   shadowing: "Shadowing",
+  dialogues: "Dialogues",
   drills: "Drills",
   lessons: "Lessons",
   theoryStudy: "Theory study",

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import type { ReadingLine } from "@sentence-bank/types";
+import type { DialogueLine, ReadingLine } from "@sentence-bank/types";
 import { DEFAULT_XP_RATES } from "@sentence-bank/types";
 import { buildApp } from "@/app";
 import { parseXpRateOverrides } from "@/services/settings";
@@ -9,6 +9,7 @@ import {
   bookExercisesXp,
   ceilToQuarter,
   countSentences,
+  dialoguesXp,
   drillXp,
   isFilledWordNote,
   lessonXp,
@@ -1100,4 +1101,85 @@ test("summarizeGrants surfaces the goal-alignment bonus per area and overall", (
   assert.equal(summary.today.areas.find(a => a.area === "Reading")?.goalBonusXp, 1);
   // Areas with no bonus omit the field entirely.
   assert.equal(summary.areas.find(a => a.area === "Writing")?.goalBonusXp, undefined);
+});
+
+/** Three dialogue lines, enough to check the per-line rate. */
+function dialogueLines(count: number): DialogueLine[] {
+  return Array.from({
+    length: count,
+  }, (_, i) => ({
+    id: `l${i}`,
+    speaker: i % 2 === 0 ? "田中さん" : "私",
+    text: "こんにちは",
+    reading: null,
+    readingError: null,
+    translation: null,
+  }));
+}
+
+test("dialoguesXp earns nothing for a dialogue the learner only sourced", () => {
+  const grants = dialoguesXp([{
+    id: "dl1",
+    title: "Genki L3",
+    date: "2026-07-19",
+    lines: dialogueLines(4),
+    countsTowardXp: false,
+    learningArea: "Speaking",
+  }]);
+  assert.deepEqual(grants, []);
+});
+
+test("dialoguesXp grants 1xp per line for a self-written dialogue", () => {
+  const [grant] = dialoguesXp([{
+    id: "dl1",
+    title: "My own conversation",
+    date: "2026-07-19",
+    lines: dialogueLines(4),
+    countsTowardXp: true,
+    learningArea: "Speaking",
+  }]);
+  assert.equal(grant.xp, 4 * DEFAULT_XP_RATES.dialogueLine);
+  assert.equal(grant.area, "Speaking");
+  assert.equal(grant.feature, "dialogues");
+  assert.equal(grant.dateOnly, "2026-07-19");
+  assert.equal(grant.to, "/dialogues/$id");
+  assert.deepEqual(grant.params, {
+    id: "dl1",
+  });
+});
+
+test("dialoguesXp honours the dialogue's own learning area, defaulting to Speaking", () => {
+  const [writing] = dialoguesXp([{
+    id: "dl1",
+    title: "Written scene",
+    date: "2026-07-19",
+    lines: dialogueLines(2),
+    countsTowardXp: true,
+    learningArea: "Writing",
+  }]);
+  assert.equal(writing.area, "Writing");
+
+  const [fallback] = dialoguesXp([{
+    id: "dl2",
+    title: "Unlabelled",
+    date: "2026-07-19",
+    lines: dialogueLines(2),
+    countsTowardXp: true,
+    learningArea: null,
+  }]);
+  assert.equal(fallback.area, "Speaking");
+});
+
+test("dialoguesXp ignores a counted dialogue with no lines", () => {
+  assert.deepEqual(
+    dialoguesXp([{
+      id: "dl1",
+      title: "Empty",
+      date: "2026-07-19",
+      lines: null,
+      countsTowardXp: true,
+      learningArea: "Speaking",
+    }]),
+    [],
+  );
 });

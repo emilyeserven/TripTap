@@ -14,6 +14,7 @@ import {
   DrillIcon,
   HeadphonesIcon,
   ListPlusIcon,
+  MessagesSquareIcon,
   PenLineIcon,
   RefreshCwIcon,
   Repeat2Icon,
@@ -110,6 +111,11 @@ const QUICK_STARTS = [
     title: "Shadowing",
     to: "/shadowing/new",
     icon: Repeat2Icon,
+  },
+  {
+    title: "Dialogue",
+    to: "/dialogues/new",
+    icon: MessagesSquareIcon,
   },
 ] as const;
 
