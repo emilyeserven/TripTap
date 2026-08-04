@@ -32,6 +32,7 @@ function line(overrides: Partial<DialogueLine> & { id: string }): DialogueLine {
     reading: null,
     readingError: null,
     translation: null,
+    hint: null,
     ...overrides,
   };
 }
@@ -191,4 +192,30 @@ test("reconcile drops a translation whose line is gone", () => {
   assert.equal(next.length, 1);
   assert.equal(next[0].id, "new-1");
   assert.equal(next[0].translation, null);
+});
+
+test("reconcile carries a practice hint across a script edit", () => {
+  const previous = [
+    line({
+      id: "a",
+      speaker: "私",
+      text: "はい、元気です。",
+      translation: "Yes, I'm well.",
+      hint: "say you're fine and ask back",
+    }),
+  ];
+  // Insert a line above it: the hint must follow its own line, not stay at index 0.
+  const next = reconcileDialogueLines(
+    "田中さん：こんにちは\n私：はい、元気です。",
+    previous,
+    counter(),
+  );
+  assert.equal(next[0].hint, null);
+  assert.equal(next[1].hint, "say you're fine and ask back");
+  assert.equal(next[1].translation, "Yes, I'm well.");
+});
+
+test("reconcile starts a brand-new line with no hint", () => {
+  const [only] = reconcileDialogueLines("私：はじめまして", [], counter());
+  assert.equal(only.hint, null);
 });

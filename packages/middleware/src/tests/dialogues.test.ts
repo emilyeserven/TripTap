@@ -97,6 +97,7 @@ test("POST /api/dialogues accepts a full valid payload", async () => {
           speaker: "田中さん",
           text: "こんにちは",
           translation: "Hello",
+          hint: "greet him and ask how he is",
           reading: [{
             t: "こんにちは",
             r: null,
@@ -117,6 +118,29 @@ test("GET /api/dialogues/:id rejects a non-uuid id", async () => {
   const res = await app.inject({
     method: "GET",
     url: "/api/dialogues/not-a-uuid",
+  });
+  assert.equal(res.statusCode, 400);
+  await app.close();
+});
+
+test("POST /api/dialogues rejects a hint that isn't text", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/dialogues",
+    payload: {
+      ...VALID,
+      lines: [
+        {
+          id: "l1",
+          speaker: "私",
+          text: "はい",
+          hint: {
+            nested: "object",
+          },
+        },
+      ],
+    },
   });
   assert.equal(res.statusCode, 400);
   await app.close();
