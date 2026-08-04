@@ -502,8 +502,15 @@
     {
       "idx": 71,
       "version": "7",
-      "when": 1785858612378,
-      "tag": "0071_unknown_talisman",
+      "when": 1785857841085,
+      "tag": "0071_kind_toad_men",
+      "breakpoints": true
+    },
+    {
+      "idx": 72,
+      "version": "7",
+      "when": 1785860446137,
+      "tag": "0072_cuddly_yellow_claw",
       "breakpoints": true
     }
   ]

@@ -1,11 +1,13 @@
 import type { Vocab } from "@sentence-bank/types";
 
 import { Link } from "@tanstack/react-router";
-import { Camera } from "lucide-react";
+import { Camera, Star } from "lucide-react";
 
 import { AddToBasketButton } from "@/components/AddToBasketButton";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { VocabBankCardMedia } from "@/components/VocabBankCardMedia";
+import { useUpdateVocab } from "@/hooks/useVocab";
 
 interface VocabBankCardProps {
   vocab: Vocab;
@@ -20,6 +22,7 @@ interface VocabBankCardProps {
 export function VocabBankCard({
   vocab: v, sourceName, onDelete,
 }: VocabBankCardProps) {
+  const updateVocab = useUpdateVocab();
   const meta = [sourceName, v.page ? `p. ${v.page}` : null]
     .filter(Boolean)
     .join(" · ");
@@ -32,6 +35,28 @@ export function VocabBankCard({
             <div className="flex items-start justify-between gap-2">
               <p className="text-lg font-semibold">{v.term}</p>
               <div className="flex shrink-0 items-center gap-2">
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="ghost"
+                  className="size-7"
+                  aria-pressed={v.starred}
+                  aria-label={v.starred ? "Unstar this vocab" : "Star this vocab"}
+                  title="Starred vocab shows in your practice reminder"
+                  disabled={updateVocab.isPending}
+                  onClick={() => updateVocab.mutate({
+                    id: v.id,
+                    input: {
+                      starred: !v.starred,
+                    },
+                  })}
+                >
+                  <Star
+                    className={v.starred
+                      ? "size-4 fill-amber-400 text-amber-400"
+                      : "size-4 text-muted-foreground"}
+                  />
+                </Button>
                 <AddToBasketButton
                   item={{
                     kind: "vocab",

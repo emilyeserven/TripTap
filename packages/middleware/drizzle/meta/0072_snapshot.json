@@ -1,6 +1,6 @@
 {
-  "id": "155702d4-e349-4344-b50d-2467e2f9b0fd",
-  "prevId": "27ad45d8-dc64-4308-adab-65e0db4055be",
+  "id": "1880c567-7ec4-4e39-aca2-a14c58f5203e",
+  "prevId": "155702d4-e349-4344-b50d-2467e2f9b0fd",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -953,6 +953,89 @@
           "onUpdate": "no action"
         }
       },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.dialogues": {
+      "name": "dialogues",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "date": {
+          "name": "date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "language": {
+          "name": "language",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "script": {
+          "name": "script",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "lines": {
+          "name": "lines",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "self_speakers": {
+          "name": "self_speakers",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "counts_toward_xp": {
+          "name": "counts_toward_xp",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "learning_area": {
+          "name": "learning_area",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},

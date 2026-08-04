@@ -3,7 +3,7 @@ import type { VocabItem, VocabRenshuuUpdate } from "@sentence-bank/types";
 
 import { useState } from "react";
 
-import { Volume2 } from "lucide-react";
+import { Star, Volume2 } from "lucide-react";
 
 import { AddToBasketButton } from "../AddToBasketButton";
 import { AiLessonBadge } from "./AiLessonBadge";
@@ -126,12 +126,22 @@ function RenshuuFooter({
   const [open, setOpen] = useState(false);
   const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
 
-  // Read-only: only surface a badge when it's actually tracked.
+  // Read-only: only surface a badge when it's actually tracked or starred.
   if (!onRenshuuChange) {
-    if (!v.renshuuAdded) return null;
+    if (!v.renshuuAdded && !v.starred) return null;
     return (
-      <div className="border-t px-4 py-2">
-        <Badge variant="secondary">{v.renshuuList ? `Renshuu · ${v.renshuuList}` : "Renshuu"}</Badge>
+      <div className="flex items-center gap-2 border-t px-4 py-2">
+        {v.starred
+          ? (
+            <Star
+              className="size-4 fill-amber-400 text-amber-400"
+              aria-label="Starred"
+            />
+          )
+          : null}
+        {v.renshuuAdded
+          ? <Badge variant="secondary">{v.renshuuList ? `Renshuu · ${v.renshuuList}` : "Renshuu"}</Badge>
+          : null}
       </div>
     );
   }
@@ -142,6 +152,24 @@ function RenshuuFooter({
       onClick={stop}
       onKeyDown={stop}
     >
+      <Button
+        type="button"
+        size="icon"
+        variant="ghost"
+        className="size-6"
+        aria-pressed={v.starred}
+        aria-label={v.starred ? "Unstar this vocab" : "Star this vocab"}
+        title="Starred vocab shows in your practice reminder"
+        onClick={() => onRenshuuChange({
+          starred: !v.starred,
+        })}
+      >
+        <Star
+          className={v.starred
+            ? "size-4 fill-amber-400 text-amber-400"
+            : "size-4 text-muted-foreground"}
+        />
+      </Button>
       <Label className="flex items-center gap-2 text-xs font-normal">
         <Checkbox
           checked={v.renshuuAdded}

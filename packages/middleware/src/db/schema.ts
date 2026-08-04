@@ -132,6 +132,8 @@ export const vocab = pgTable("vocab", {
   page: text("page"),
   tags: text("tags"),
   notes: text("notes"),
+  // Starred vocab is surfaced as a practice reminder (e.g. the My Writing starred-practice panel).
+  starred: boolean("starred").notNull().default(false),
   // The capture this was mined from, for traceability. Nulled (not deleted) if the capture is removed.
   captureId: uuid("capture_id").references((): AnyPgColumn => captures.id, {
     onDelete: "set null",
@@ -947,6 +949,8 @@ export const aiLessonVocab = pgTable("ai_lesson_vocab", {
   // User annotation (not part of the import contract): Renshuu tracking.
   renshuuAdded: boolean("renshuu_added").notNull().default(false),
   renshuuList: text("renshuu_list"),
+  // Starred for practice — surfaced as a reminder (e.g. the My Writing starred-practice panel).
+  starred: boolean("starred").notNull().default(false),
 });
 
 /** `ai_lesson_grammar` — grammar patterns; examples embedded as JSONB. */

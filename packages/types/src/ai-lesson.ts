@@ -268,6 +268,8 @@ type Persisted<T> = T & { id: string;
 export type VocabItem = Persisted<VocabInput> & {
   renshuuAdded: boolean;
   renshuuList: string | null;
+  /** Starred for practice — surfaced as a reminder (e.g. the My Writing starred-practice panel). */
+  starred: boolean;
 };
 export type CategoryItem = Persisted<CategoryInput>;
 /**
@@ -287,6 +289,7 @@ export type CultureItem = Persisted<CultureInput>;
 export interface VocabRenshuuUpdate {
   renshuuAdded?: boolean;
   renshuuList?: string | null;
+  starred?: boolean;
 }
 
 /** Payload for updating the Grammar source tags on an AI Lesson grammar item or source sentence. */

@@ -152,6 +152,8 @@ export interface Vocab {
   page: string | null;
   tags: string | null;
   notes: string | null;
+  /** Starred for practice — surfaced as a reminder (e.g. the My Writing starred-practice panel). */
+  starred: boolean;
   /** The capture this vocab was mined from, or null. */
   captureId: string | null;
   /** True when an audio clip is stored for this vocab item (fetch from `/api/vocab/:id/audio`). */
@@ -171,6 +173,7 @@ export interface CreateVocabInput {
   page?: string | null;
   tags?: string | null;
   notes?: string | null;
+  starred?: boolean;
   captureId?: string | null;
 }
 
