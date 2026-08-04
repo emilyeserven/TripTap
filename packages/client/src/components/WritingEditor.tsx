@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from "react";
 
 import { Check, LightbulbIcon, SparklesIcon } from "lucide-react";
 
-import { ForcedReusePanel } from "./ForcedReusePanel";
+import { ShowOriginalToggle } from "./ShowOriginalToggle";
+import { StarredPracticePanel } from "./StarredPracticePanel";
 import { TermPicker } from "./TermPicker";
 import { WritingCorrections } from "./WritingCorrections";
 import { useUpdateWriting } from "../hooks/useWritings";
@@ -68,8 +69,8 @@ export function WritingEditor({
   const [draft, setDraft] = useState<Draft>(() => toDraft(writing));
   const [status, setStatus] = useState("");
   const [correcting, setCorrecting] = useState(false);
-  // Forced-reuse gate: until the requirement is met, "Ready to review" can't be switched on.
-  const [reuseMet, setReuseMet] = useState(true);
+  // When corrections exist the corrected version leads; the original writing is opt-in (and editable).
+  const [showOriginal, setShowOriginal] = useState(false);
   const dirty = useRef(false);
 
   // Debounced autosave — mirrors PracticeSentenceEditor. Corrections aren't in the draft, so this
@@ -110,6 +111,19 @@ export function WritingEditor({
     set("terms", [...draft.terms.filter(t => (t.category ?? "vocabulary") !== cat), ...next]);
 
   const correctionCount = writing.corrections?.length ?? 0;
+
+  const yourWritingField = (
+    <div className="space-y-1.5">
+      <Label className="text-sm">Your writing</Label>
+      <Textarea
+        value={draft.text}
+        onChange={e => set("text", e.target.value)}
+        placeholder="自由に書いてみましょう。今日あったことや、思ったことなど。"
+        className="text-lg"
+        rows={5}
+      />
+    </div>
+  );
 
   return (
     <div className="space-y-4">
@@ -163,10 +177,7 @@ export function WritingEditor({
         )
         : (
           <div className="space-y-3">
-            <ForcedReusePanel
-              current={writing}
-              onMetChange={setReuseMet}
-            />
+            <StarredPracticePanel />
             {writing.promptText
               ? (
                 <div
@@ -188,27 +199,26 @@ export function WritingEditor({
               : null}
             {correctionCount > 0
               ? (
-                <div className="space-y-1.5">
-                  <Label className="text-sm">Corrected version</Label>
-                  <div
-                    className="
-                      rounded-md border bg-muted/30 p-3 text-lg
-                      whitespace-pre-wrap
-                    "
-                  >
-                    {fullyCorrectedText(writing)}
+                <>
+                  <div className="space-y-1.5">
+                    <Label className="text-sm">Corrected version</Label>
+                    <div
+                      className="
+                        rounded-md border bg-muted/30 p-3 text-lg
+                        whitespace-pre-wrap
+                      "
+                    >
+                      {fullyCorrectedText(writing)}
+                    </div>
                   </div>
-                </div>
+                  <ShowOriginalToggle
+                    open={showOriginal}
+                    onToggle={() => setShowOriginal(o => !o)}
+                  />
+                  {showOriginal ? yourWritingField : null}
+                </>
               )
-              : null}
-            <Label className="text-sm">Your writing</Label>
-            <Textarea
-              value={draft.text}
-              onChange={e => set("text", e.target.value)}
-              placeholder="自由に書いてみましょう。今日あったことや、思ったことなど。"
-              className="text-lg"
-              rows={5}
-            />
+              : yourWritingField}
           </div>
         )}
 
@@ -279,19 +289,10 @@ export function WritingEditor({
           <label className="flex items-center gap-2 text-sm">
             <Switch
               checked={draft.readyToReview}
-              // Can't mark ready until the forced-reuse requirement is met (turning it off is always allowed).
-              disabled={!reuseMet && !draft.readyToReview}
               onCheckedChange={checked => set("readyToReview", checked)}
               aria-label="Ready to review"
             />
             Ready to review
-            {!reuseMet && !draft.readyToReview
-              ? (
-                <span className="text-xs text-muted-foreground">
-                  (reuse your last draft first)
-                </span>
-              )
-              : null}
           </label>
           <label className="flex items-center gap-2 text-sm">
             <Switch

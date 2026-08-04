@@ -54,6 +54,9 @@ const createVocabBody = {
     notes: {
       type: ["string", "null"],
     },
+    starred: {
+      type: "boolean",
+    },
     captureId: {
       type: ["string", "null"],
       format: "uuid",

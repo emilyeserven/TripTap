@@ -17,6 +17,7 @@ export function toVocab(row: VocabRow): Vocab {
     page: row.page,
     tags: row.tags,
     notes: row.notes,
+    starred: row.starred,
     captureId: row.captureId,
     hasAudio: row.audioKey != null,
     hasImage: row.imageKey != null,
@@ -35,6 +36,7 @@ function toInsert(input: CreateVocabInput) {
     page: input.page ?? null,
     tags: input.tags ?? null,
     notes: input.notes ?? null,
+    starred: input.starred ?? false,
     captureId: input.captureId ?? null,
   };
 }
