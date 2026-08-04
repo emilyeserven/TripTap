@@ -5,14 +5,21 @@ import { describe, expect, it } from "vitest";
 
 import { DialogueTranscript } from "./DialogueTranscript";
 
-function line(id: string, speaker: string | null, text: string, translation?: string): DialogueLine {
+function line(
+  id: string,
+  speaker: string | null,
+  text: string,
+  extra: { translation?: string;
+    hint?: string; } = {},
+): DialogueLine {
   return {
     id,
     speaker,
     text,
     reading: null,
     readingError: null,
-    translation: translation ?? null,
+    translation: extra.translation ?? null,
+    hint: extra.hint ?? null,
   };
 }
 
@@ -136,7 +143,9 @@ describe("DialogueTranscript", () => {
   });
 
   it("blurs translations until they are turned on", () => {
-    const withTranslation = [line("1", "田中さん", "こんにちは", "Hello")];
+    const withTranslation = [line("1", "田中さん", "こんにちは", {
+      translation: "Hello",
+    })];
     const {
       rerender,
     } = render(<DialogueTranscript lines={withTranslation} />);
@@ -156,5 +165,82 @@ describe("DialogueTranscript", () => {
     render(<DialogueTranscript lines={null} />);
 
     expect(screen.getByText(/Nothing to show yet/)).toBeInTheDocument();
+  });
+
+  it("shows a hidden line's hint in place of the words", () => {
+    render(
+      <DialogueTranscript
+        lines={[
+          line("1", "田中さん", "こんにちは、元気ですか？"),
+          line("2", "私", "はい、元気です。", {
+            hint: "say you're fine and ask back",
+          }),
+        ]}
+        hiddenSpeakers={["私"]}
+      />,
+    );
+
+    // The hint stands in for the line, so the learner knows what the turn is for...
+    expect(screen.getByText("say you're fine and ask back")).toBeInTheDocument();
+    // ...without the words themselves being anywhere in the DOM.
+    expect(screen.queryByText("はい、元気です。")).not.toBeInTheDocument();
+  });
+
+  it("falls back to dots for a hidden line with no hint", () => {
+    render(
+      <DialogueTranscript
+        lines={[line("1", "私", "はい、元気です。")]}
+        hiddenSpeakers={["私"]}
+      />,
+    );
+
+    expect(screen.getByRole("button", {
+      name: "Reveal 私's line",
+    }).textContent).toBe("•••");
+  });
+
+  it("names the hint in the reveal button's label, for screen readers", () => {
+    render(
+      <DialogueTranscript
+        lines={[line("1", "私", "はい。", {
+          hint: "agree",
+        })]}
+        hiddenSpeakers={["私"]}
+      />,
+    );
+
+    expect(screen.getByRole("button", {
+      name: "Reveal 私's line — agree",
+    })).toBeInTheDocument();
+  });
+
+  it("revealing a hinted line swaps the hint for the words", () => {
+    render(
+      <DialogueTranscript
+        lines={[line("1", "私", "はい、元気です。", {
+          hint: "say you're fine",
+        })]}
+        hiddenSpeakers={["私"]}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", {
+      name: /^Reveal 私's line/,
+    }));
+
+    expect(screen.getByText("はい、元気です。")).toBeInTheDocument();
+    expect(screen.queryByText("say you're fine")).not.toBeInTheDocument();
+  });
+
+  it("keeps a hint out of the way while the line is visible", () => {
+    render(
+      <DialogueTranscript
+        lines={[line("1", "私", "はい。", {
+          hint: "agree",
+        })]}
+      />,
+    );
+
+    expect(screen.queryByText("agree")).not.toBeInTheDocument();
   });
 });

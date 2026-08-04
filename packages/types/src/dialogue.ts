@@ -46,9 +46,16 @@ export interface DialogueLine {
   readingError: string | null;
   /** The learner's English translation of this line; null until they write one. */
   translation: string | null;
+  /**
+   * A short cue shown *in place of* the line when its speaker is hidden for practice — "greet him and
+   * ask how he is", "say you're fine and ask back". Without one a hidden line is a blank wall; with
+   * one the learner still knows what this turn is meant to do, which is what makes hiding their own
+   * speaker a usable drill rather than a memory test. Null when the line has no hint.
+   */
+  hint: string | null;
 }
 
-/** A line as it comes out of {@link parseDialogueScript} — before furigana or translations exist. */
+/** A line as it comes out of {@link parseDialogueScript} — before furigana or annotations exist. */
 export interface ParsedDialogueLine {
   speaker: string | null;
   text: string;
@@ -64,7 +71,7 @@ export interface Dialogue {
   language: string;
   /** The raw pasted script — the source of truth for the dialogue's structure. */
   script: string;
-  /** The parsed script, carrying per-line furigana and translations; null when the script is empty. */
+  /** The parsed script, carrying per-line furigana, translations, and hints; null when empty. */
   lines: DialogueLine[] | null;
   /**
    * Extra speaker labels to treat as the learner (shown on the right), on top of the built-in
@@ -92,7 +99,7 @@ export interface CreateDialogueInput {
   date: string;
   language: string;
   script: string;
-  /** Per-line translations to keep; speakers and text are always re-derived from `script`. */
+  /** Per-line annotations to keep; speakers and text are always re-derived from `script`. */
   lines?: DialogueLine[] | null;
   selfSpeakers?: string[] | null;
   countsTowardXp?: boolean;
@@ -187,16 +194,16 @@ function lineKey(speaker: string | null, text: string): string {
 }
 
 /**
- * Re-parse `script` into stored lines, carrying each surviving line's id, reading, and translation
- * across from `previous`.
+ * Re-parse `script` into stored lines, carrying each surviving line's id, reading, translation, and
+ * hint across from `previous`.
  *
  * A line is matched to its old self by position first (the common case — nothing moved), then by
  * speaker+text anywhere in the old list (something was inserted or removed above it). Each old line
- * is consumed at most once, so a repeated utterance doesn't hand the same translation to every copy.
+ * is consumed at most once, so a repeated utterance doesn't hand the same annotations to every copy.
  * Anything unmatched is genuinely new: it gets a fresh id and a null reading, which is the signal to
  * the API that furigana still needs generating for it.
  *
- * Shared by both sides on purpose — the client runs it to preview an edit and to send translations
+ * Shared by both sides on purpose — the client runs it to preview an edit and to send annotations
  * back, and the API runs it again authoritatively on write, so the two can never disagree about
  * which line is which.
  */
@@ -246,6 +253,7 @@ export function reconcileDialogueLines(
       reading: null,
       readingError: null,
       translation: null,
+      hint: null,
     };
   });
 }

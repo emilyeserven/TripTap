@@ -1114,6 +1114,7 @@ function dialogueLines(count: number): DialogueLine[] {
     reading: null,
     readingError: null,
     translation: null,
+    hint: null,
   }));
 }
 

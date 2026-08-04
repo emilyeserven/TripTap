@@ -21,8 +21,9 @@ const dialogueParams = {
 } as const;
 
 /**
- * Lines are accepted so the client can send back edited translations. Their `speaker`/`text` are
- * re-derived from `script` on write, so what arrives here only ever contributes translations.
+ * Lines are accepted so the client can send back edited translations and practice hints. Their
+ * `speaker`/`text` are re-derived from `script` on write, so what arrives here only ever contributes
+ * those annotations.
  */
 const linesSchema = {
   type: ["array", "null"],
@@ -60,6 +61,9 @@ const linesSchema = {
         type: ["string", "null"],
       },
       translation: {
+        type: ["string", "null"],
+      },
+      hint: {
         type: ["string", "null"],
       },
     },

@@ -26,9 +26,9 @@ import { cn } from "@/lib/utils";
  * Create/edit form for a dialogue. Passing `dialogue` puts it in edit mode.
  *
  * The script box is the whole feature: everything below it — the speaker list, the "these are me"
- * toggles, the transcript preview, the per-line translation boxes — is derived from what's typed,
- * live, using the same reconciler the API runs on save. So what the learner sees while typing is
- * exactly what gets stored.
+ * toggles, the transcript preview, the per-line translation and hint boxes — is derived from what's
+ * typed, live, using the same reconciler the API runs on save. So what the learner sees while typing
+ * is exactly what gets stored.
  */
 export function DialogueForm({
   dialogue,
@@ -60,16 +60,22 @@ export function DialogueForm({
     setLines(prev => reconcileDialogueLines(next, prev, () => crypto.randomUUID()));
   };
 
-  const editTranslation = (id: string, value: string) => {
-    setLines(prev =>
-      prev.map(line =>
-        (line.id === id
-          ? {
-            ...line,
-            translation: value.trim().length > 0 ? value : null,
-          }
-          : line)));
+  /** Patch one line's annotations; a field blanked out is stored as null rather than "". */
+  const editLine = (id: string, patch: Partial<Pick<DialogueLine, "translation" | "hint">>) => {
+    setLines(prev => prev.map(line => (line.id === id
+      ? {
+        ...line,
+        ...patch,
+      }
+      : line)));
   };
+  const blankToNull = (value: string) => (value.trim().length > 0 ? value : null);
+  const editTranslation = (id: string, value: string) => editLine(id, {
+    translation: blankToNull(value),
+  });
+  const editHint = (id: string, value: string) => editLine(id, {
+    hint: blankToNull(value),
+  });
 
   const pending = create.isPending || update.isPending;
   const canSubmit = title.trim().length > 0 && script.trim().length > 0 && !pending;
@@ -279,21 +285,28 @@ export function DialogueForm({
           </div>
 
           <div className="space-y-2">
-            <p className="text-sm font-medium">Translations</p>
+            <p className="text-sm font-medium">Translations &amp; hints</p>
             <p className="text-xs text-muted-foreground">
-              Optional. Each one stays attached to its line as you edit the script above.
+              Both optional, and both stay attached to their line as you edit the script above. A
+              hint is shown in place of the line when its speaker is hidden for practice, so you
+              still know what the turn is meant to do — &ldquo;say you&rsquo;re fine and ask
+              back&rdquo;.
             </p>
-            <div className="space-y-2">
+            <div className="space-y-3">
               {lines.map(line => (
                 <div
                   key={line.id}
                   className="
                     grid gap-1
-                    sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] sm:items-center
-                    sm:gap-3
+                    sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] sm:gap-3
                   "
                 >
-                  <span className="truncate text-sm">
+                  <span
+                    className="
+                      truncate text-sm
+                      sm:row-span-2 sm:self-center
+                    "
+                  >
                     <span className="text-muted-foreground">{line.speaker ?? "—"}</span>
                     {" "}
                     {line.text}
@@ -303,6 +316,12 @@ export function DialogueForm({
                     aria-label={`Translation for "${line.text}"`}
                     placeholder="English"
                     onChange={e => editTranslation(line.id, e.target.value)}
+                  />
+                  <Input
+                    value={line.hint ?? ""}
+                    aria-label={`Practice hint for "${line.text}"`}
+                    placeholder="Hint shown while hidden"
+                    onChange={e => editHint(line.id, e.target.value)}
                   />
                 </div>
               ))}
