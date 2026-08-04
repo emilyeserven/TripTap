@@ -6,14 +6,21 @@ import { Button } from "@/components/ui/button";
  * The "show your original" switch shared by the correction surfaces (My Sentences, Answer Sheets,
  * My Writing). Deliberately quiet: the corrected sentence is what should be read, and the learner's
  * original is a supporting detail they opt into, so it sits well below the real actions in weight.
- * Callers own the revealed panel, which differs slightly between surfaces.
+ * Callers own the revealed panel, which differs slightly between surfaces. The labels default to the
+ * "show your original" wording but can be overridden for other opt-in reveals (e.g. "Show changes").
  */
 export function ShowOriginalToggle({
   open,
   onToggle,
+  showLabel = "Show your original",
+  hideLabel = "Hide original",
 }: {
   open: boolean;
   onToggle: () => void;
+  /** Label when collapsed. */
+  showLabel?: string;
+  /** Label when expanded. */
+  hideLabel?: string;
 }) {
   return (
     <Button
@@ -27,7 +34,7 @@ export function ShowOriginalToggle({
       "
     >
       {open ? <EyeOff className="size-3" /> : <Eye className="size-3" />}
-      {open ? "Hide original" : "Show your original"}
+      {open ? hideLabel : showLabel}
     </Button>
   );
 }

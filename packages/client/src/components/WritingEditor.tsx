@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { Check, LightbulbIcon, SparklesIcon } from "lucide-react";
 
+import { CorrectedVersionView } from "./CorrectedVersionView";
 import { ShowOriginalToggle } from "./ShowOriginalToggle";
 import { StarredPracticePanel } from "./StarredPracticePanel";
 import { TermPicker } from "./TermPicker";
@@ -16,7 +17,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { fullyCorrectedText } from "@/lib/writing-corrections";
 
 /** The autosaved fields of a writing (corrections are managed separately in correction mode). */
 interface Draft {
@@ -200,17 +200,7 @@ export function WritingEditor({
             {correctionCount > 0
               ? (
                 <>
-                  <div className="space-y-1.5">
-                    <Label className="text-sm">Corrected version</Label>
-                    <div
-                      className="
-                        rounded-md border bg-muted/30 p-3 text-lg
-                        whitespace-pre-wrap
-                      "
-                    >
-                      {fullyCorrectedText(writing)}
-                    </div>
-                  </div>
+                  <CorrectedVersionView writing={writing} />
                   <ShowOriginalToggle
                     open={showOriginal}
                     onToggle={() => setShowOriginal(o => !o)}
