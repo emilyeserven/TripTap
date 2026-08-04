@@ -90,6 +90,7 @@ export const aiLessonDetailFixture: AiLessonDetail = {
     sortOrder: i,
     renshuuAdded: false,
     renshuuList: null,
+    starred: false,
   })),
   grammar: aiLessonImportFixture.grammar.map((g, i) => ({
     ...g,

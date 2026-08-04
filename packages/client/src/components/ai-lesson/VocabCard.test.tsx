@@ -15,6 +15,7 @@ const vocab: VocabItem = {
   cat: "lodging",
   renshuuAdded: false,
   renshuuList: null,
+  starred: false,
 };
 
 describe("VocabCard renshuu annotation", () => {

@@ -84,6 +84,7 @@ function toVocab(row: AiLessonVocabRow): VocabItem {
     cat: row.cat,
     renshuuAdded: row.renshuuAdded,
     renshuuList: row.renshuuList,
+    starred: row.starred,
   };
 }
 
@@ -339,9 +340,11 @@ export async function updateVocabRenshuu(
   patch: VocabRenshuuUpdate,
 ): Promise<VocabItem | null> {
   const set: Partial<{ renshuuAdded: boolean;
-    renshuuList: string | null; }> = {};
+    renshuuList: string | null;
+    starred: boolean; }> = {};
   if (patch.renshuuAdded !== undefined) set.renshuuAdded = patch.renshuuAdded;
   if (patch.renshuuList !== undefined) set.renshuuList = patch.renshuuList;
+  if (patch.starred !== undefined) set.starred = patch.starred;
   if (Object.keys(set).length === 0) {
     const [row] = await db.select().from(aiLessonVocab).where(eq(aiLessonVocab.id, id));
     return row ? toVocab(row) : null;

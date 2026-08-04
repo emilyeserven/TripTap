@@ -17,5 +17,6 @@ export function vocabToCardItem(v: Vocab): VocabItem {
     sortOrder: 0,
     renshuuAdded: false,
     renshuuList: null,
+    starred: v.starred,
   };
 }

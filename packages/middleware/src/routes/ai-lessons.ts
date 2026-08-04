@@ -45,6 +45,9 @@ const vocabRenshuuBody = {
     renshuuList: {
       type: ["string", "null"],
     },
+    starred: {
+      type: "boolean",
+    },
   },
 } as const;
 
