@@ -23,11 +23,14 @@ const KIND_LABELS: Record<CorrectionImportKind, string> = {
   my_sentence: "My Sentences",
   writing: "Writing",
   answer_sheet: "Answer Sheets",
+  reading_session: "Reading",
+  practice_sentence: "Practice",
 };
 
 /**
- * Pull corrected output already living in My Sentences / Writing / Answer Sheets into the triage
- * Inbox. Candidates already imported are filtered out server-side, so nothing double-imports.
+ * Pull corrected output already living in another feature into the triage Inbox — every place the
+ * app records "this was wrong, here's the fix". Candidates already imported are filtered out
+ * server-side, so nothing double-imports.
  */
 export function CorrectionImportDialog() {
   const [open, setOpen] = useState(false);

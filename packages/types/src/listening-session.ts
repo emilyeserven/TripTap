@@ -7,7 +7,8 @@
  * Consumed by both the Fastify API and the React client.
  */
 
-import type { BookmarkSectionRef, SentenceTermRef } from "./index.js";
+import type { SentenceTermRef } from "./index.js";
+import type { BookmarkRef, SessionXp, SessionXpInput } from "./session.js";
 
 /**
  * One timestamped note within a session. `timestampMs` is the playback (or stopwatch) position in
@@ -33,7 +34,7 @@ export interface ListeningEntry {
 }
 
 /** A listen-and-shadow session. */
-export interface ListeningSession {
+export interface ListeningSession extends SessionXp, BookmarkRef {
   id: string;
   /** ISO date (YYYY-MM-DD) the session happened, for grouping activity by day. */
   date: string;
@@ -42,14 +43,6 @@ export interface ListeningSession {
   videoUrl: string | null;
   /** Target language, e.g. "Japanese". */
   language: string;
-  /** The associated bookmark's id in the external bookmarks app, or null. */
-  bookmarkId: string | null;
-  /** The associated bookmark's title captured at selection time, or null. */
-  bookmarkTitle: string | null;
-  /** The associated bookmark's URL captured at selection time, or null. */
-  bookmarkUrl: string | null;
-  /** The specific section of {@link bookmarkId} this session focuses on; null when none. */
-  section: BookmarkSectionRef | null;
   /** The timestamped notes taken during the session; null if none. */
   entries: ListeningEntry[] | null;
   /**
@@ -68,16 +61,12 @@ export interface ListeningSession {
 }
 
 /** Payload for creating a listening session. `title`, `language`, and `date` are required. */
-export interface CreateListeningSessionInput {
+export interface CreateListeningSessionInput extends SessionXpInput, Partial<BookmarkRef> {
   title: string;
   language: string;
   /** ISO date (YYYY-MM-DD) the session happened. */
   date: string;
   videoUrl?: string | null;
-  bookmarkId?: string | null;
-  bookmarkTitle?: string | null;
-  bookmarkUrl?: string | null;
-  section?: BookmarkSectionRef | null;
   entries?: ListeningEntry[] | null;
   passive?: boolean;
   durationMinutes?: number;

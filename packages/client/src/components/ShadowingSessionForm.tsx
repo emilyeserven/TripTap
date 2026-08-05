@@ -1,11 +1,12 @@
 import type { PlayerHandle } from "@/lib/player";
-import type { BookmarkSectionRef, ShadowingSegment, ShadowingSession } from "@sentence-bank/types";
+import type { BookmarkSectionRef, LearningArea, ShadowingSegment, ShadowingSession } from "@sentence-bank/types";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { AudioFilePlayer } from "@/components/AudioFilePlayer";
 import { BookmarkPicker } from "@/components/BookmarkPicker";
 import { SegmentEditor } from "@/components/SegmentEditor";
+import { SessionXpFields } from "@/components/SessionXpFields";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -92,6 +93,11 @@ export function ShadowingSessionForm({
   const audioSource: File | string | null = audioFile ?? storedAudioUrl;
   const hasMediaPlayer = audioPlayerSrc !== null || videoId !== null;
 
+  const [learningArea, setLearningArea] = useState<LearningArea | null>(
+    session?.learningArea ?? null,
+  );
+  const [countsTowardXp, setCountsTowardXp] = useState(session?.countsTowardXp ?? true);
+
   const pending = create.isPending || update.isPending || uploadAudio.isPending;
   const canSubmit = title.trim().length > 0 && language.trim().length > 0 && !pending;
 
@@ -106,6 +112,8 @@ export function ShadowingSessionForm({
   const submit = async () => {
     if (!canSubmit) return;
     const input = {
+      learningArea: countsTowardXp ? learningArea : null,
+      countsTowardXp,
       date,
       title: title.trim(),
       language: language.trim(),
@@ -294,6 +302,16 @@ export function ShadowingSessionForm({
         audioSource={audioSource}
         videoUrl={videoUrl}
         language={language}
+      />
+
+      <SessionXpFields
+        learningArea={learningArea}
+        onLearningAreaChange={setLearningArea}
+        countsTowardXp={countsTowardXp}
+        onCountsTowardXpChange={setCountsTowardXp}
+        defaultArea="Speaking"
+        noun="shadowing session"
+        idPrefix="ss"
       />
 
       <div className="flex items-center gap-2">

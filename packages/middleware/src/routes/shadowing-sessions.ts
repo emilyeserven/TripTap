@@ -19,6 +19,7 @@ import {
   fetchCaptionSegments,
 } from "@/services/youtube-captions";
 import { termsSchema } from "@/routes/schemas/terms";
+import { LEARNING_AREAS } from "@sentence-bank/types";
 
 /** An uploaded audio file can be large, but well under a `.apkg` — cap at 100 MiB. */
 const MAX_AUDIO_BYTES = 100 * 1024 * 1024;
@@ -180,6 +181,13 @@ const createShadowingSessionBody = {
     segments: segmentsSchema,
     entries: entriesSchema,
     terms: termsSchema,
+    learningArea: {
+      type: ["string", "null"],
+      enum: [...LEARNING_AREAS, null],
+    },
+    countsTowardXp: {
+      type: "boolean",
+    },
   },
 } as const;
 

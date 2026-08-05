@@ -140,7 +140,21 @@ export const DEFAULT_RECURRENCE_GATE = 2;
 export const BATCH_CARD_CAP = 3;
 
 /** The kind of existing entity a correction was imported from (spec §M2). */
-export type CorrectionImportKind = "my_sentence" | "writing" | "answer_sheet";
+export type CorrectionImportKind
+  = | "my_sentence"
+    | "writing"
+    | "answer_sheet"
+    | "reading_session"
+    | "practice_sentence";
+
+/** The importable sources, for iterating in schemas and the import dialog's tabs. */
+export const CORRECTION_IMPORT_KINDS: readonly CorrectionImportKind[] = [
+  "my_sentence",
+  "writing",
+  "answer_sheet",
+  "reading_session",
+  "practice_sentence",
+];
 
 /** Provenance for a correction pulled from an existing embedded-correction entity. */
 export interface CorrectionImportRef {
