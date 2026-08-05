@@ -6,6 +6,7 @@ import { useEffect } from "react";
 import { Outlet, createRootRouteWithContext } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 
+import { FuriganaScope } from "@/components/ai-lesson/FuriganaScope";
 import { AppSidebar } from "@/components/app-sidebar";
 import { Basket } from "@/components/Basket";
 import { DisplayOptions } from "@/components/DisplayOptions";
@@ -61,40 +62,44 @@ function RootComponent() {
   const hideSidebar = focusMode || superFocus || slideMode;
 
   return (
-    <SidebarProvider>
-      {hideSidebar ? null : <AppSidebar />}
-      <SidebarInset>
-        <header
-          className="
-            sticky top-0 z-30 flex h-12 shrink-0 items-center gap-2 border-b
-            bg-background px-4
-          "
-        >
-          {hideSidebar ? null : <SidebarTrigger className="-ml-1" />}
-          <span className="truncate text-lg font-semibold">{pageTitle || "sentence-bank"}</span>
-          <div className="ml-auto flex items-center gap-2">
-            <RefreshButton />
-            <DisplayOptions />
+    // Mounted once here rather than per-page: any surface rendering `SentenceText` honours the
+    // furigana toggle, instead of silently defaulting to "on" wherever nobody remembered a scope.
+    <FuriganaScope>
+      <SidebarProvider>
+        {hideSidebar ? null : <AppSidebar />}
+        <SidebarInset>
+          <header
+            className="
+              sticky top-0 z-30 flex h-12 shrink-0 items-center gap-2 border-b
+              bg-background px-4
+            "
+          >
+            {hideSidebar ? null : <SidebarTrigger className="-ml-1" />}
+            <span className="truncate text-lg font-semibold">{pageTitle || "sentence-bank"}</span>
+            <div className="ml-auto flex items-center gap-2">
+              <RefreshButton />
+              <DisplayOptions />
+            </div>
+          </header>
+          <div
+            data-text-size={textSize}
+            data-container-width={containerWidth}
+            data-super-focus={superFocus ? "on" : undefined}
+            data-super-focus-space={superFocus ? superFocusSpace : undefined}
+            data-slide-mode={slideMode ? "on" : undefined}
+            className={cn(
+              "mx-auto w-full px-4 py-8",
+              containerWidth === "wide" ? "max-w-none" : "max-w-6xl",
+            )}
+          >
+            <Outlet />
           </div>
-        </header>
-        <div
-          data-text-size={textSize}
-          data-container-width={containerWidth}
-          data-super-focus={superFocus ? "on" : undefined}
-          data-super-focus-space={superFocus ? superFocusSpace : undefined}
-          data-slide-mode={slideMode ? "on" : undefined}
-          className={cn(
-            "mx-auto w-full px-4 py-8",
-            containerWidth === "wide" ? "max-w-none" : "max-w-6xl",
-          )}
-        >
-          <Outlet />
-        </div>
-      </SidebarInset>
-      <SlideMode />
-      <Basket />
-      <Toaster />
-      {import.meta.env.DEV ? <TanStackRouterDevtools /> : null}
-    </SidebarProvider>
+        </SidebarInset>
+        <SlideMode />
+        <Basket />
+        <Toaster />
+        {import.meta.env.DEV ? <TanStackRouterDevtools /> : null}
+      </SidebarProvider>
+    </FuriganaScope>
   );
 }
