@@ -10,6 +10,7 @@ import {
   listReadingSessions,
   updateReadingSession,
 } from "@/services/reading-sessions";
+import { termsSchema } from "@/routes/schemas/terms";
 
 const readingSessionParams = {
   type: "object",
@@ -55,34 +56,7 @@ const linesSchema = {
         type: "boolean",
       },
       grammarTerms: {
-        type: ["array", "null"],
-        items: {
-          type: "object",
-          additionalProperties: false,
-          required: ["id", "name", "kind", "sourceId", "sourceLabel"],
-          properties: {
-            id: {
-              type: "string",
-            },
-            name: {
-              type: "string",
-            },
-            kind: {
-              type: "string",
-              enum: ["tag", "taxonomy"],
-            },
-            sourceId: {
-              type: "string",
-            },
-            sourceLabel: {
-              type: "string",
-            },
-            category: {
-              type: "string",
-              enum: ["vocabulary", "grammar", "general", "resource"],
-            },
-          },
-        },
+        ...termsSchema,
       },
     },
   },

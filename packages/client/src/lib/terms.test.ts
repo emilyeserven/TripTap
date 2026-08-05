@@ -11,6 +11,8 @@ import {
   termsChanged,
 } from "./terms";
 
+import { dedupeTerms, grammarTermsOf } from "@sentence-bank/types";
+
 function term(id: string, category?: string): SentenceTermRef {
   return {
     id,
@@ -107,5 +109,47 @@ describe("replaceCategory", () => {
   it("treats a term with no category as vocabulary, so a grammar edit leaves it alone", () => {
     const next = replaceCategory([term("legacy")], "grammar", [term("g1", "grammar")]);
     expect(next?.map(t => t.id).sort()).toEqual(["g1", "legacy"]);
+  });
+});
+
+describe("grammarTermsOf", () => {
+  it("reads the grammar channel out of an all-channels terms list", () => {
+    const entity = {
+      terms: [term("v1", "vocabulary"), term("g1", "grammar"), term("g2", "grammar")],
+    };
+    expect(grammarTermsOf(entity).map(t => t.id)).toEqual(["g1", "g2"]);
+  });
+
+  it("reads a pre-split grammarTerms list as-is", () => {
+    const entity = {
+      grammarTerms: [term("g1", "grammar"), term("g2")],
+    };
+    expect(grammarTermsOf(entity).map(t => t.id)).toEqual(["g1", "g2"]);
+  });
+
+  it("prefers grammarTerms when an entity somehow carries both", () => {
+    const entity = {
+      terms: [term("g1", "grammar")],
+      grammarTerms: [term("g2", "grammar")],
+    };
+    expect(grammarTermsOf(entity).map(t => t.id)).toEqual(["g2"]);
+  });
+
+  it("returns an empty list for an untagged entity, whichever field is absent", () => {
+    expect(grammarTermsOf({})).toEqual([]);
+    expect(grammarTermsOf({
+      terms: null,
+    })).toEqual([]);
+    expect(grammarTermsOf({
+      grammarTerms: [],
+      terms: [term("v1", "vocabulary")],
+    })).toEqual([]);
+  });
+});
+
+describe("dedupeTerms", () => {
+  it("keeps the first ref per id and sorts by name", () => {
+    const deduped = dedupeTerms([term("b"), term("a"), term("b")]);
+    expect(deduped.map(t => t.id)).toEqual(["a", "b"]);
   });
 });

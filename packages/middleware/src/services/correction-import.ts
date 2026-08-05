@@ -6,13 +6,16 @@ import type {
   CorrectionImportRef,
   SentenceTermRef,
 } from "@sentence-bank/types";
+import { grammarTermsOf } from "@sentence-bank/types";
 import { db } from "@/db";
 import { answerSheets, corrections, mySentences, questionSheets, writings } from "@/db/schema";
 import { createCorrection } from "@/services/corrections";
 
-/** The Grammar-channel tags among a term list (older rows without a category default to Vocabulary). */
-function grammarTermsOf(terms: SentenceTermRef[] | null | undefined): SentenceTermRef[] {
-  return (terms ?? []).filter(t => (t.category ?? "vocabulary") === "grammar");
+/** The Grammar-channel tags on a term list stored in the all-channels shape. */
+function grammarTermsIn(terms: SentenceTermRef[] | null | undefined): SentenceTermRef[] {
+  return grammarTermsOf({
+    terms,
+  });
 }
 
 /**
@@ -75,7 +78,7 @@ async function mySentenceCandidates(): Promise<CorrectionImportCandidate[]> {
       correctorNote: row.explanation ?? null,
       context: row.translation ?? null,
       label: null,
-      grammarTerms: grammarTermsOf(row.terms),
+      grammarTerms: grammarTermsIn(row.terms),
     });
   }
   return out;
@@ -86,7 +89,7 @@ async function writingCandidates(): Promise<CorrectionImportCandidate[]> {
   const out: CorrectionImportCandidate[] = [];
   for (const row of rows) {
     // A writing's grammar tags apply to the whole piece, so surface them on each of its lines.
-    const grammarTerms = grammarTermsOf(row.terms);
+    const grammarTerms = grammarTermsIn(row.terms);
     const correctedOriginals = new Set<string>();
     for (const correction of row.corrections ?? []) {
       if (!correction.original?.trim() || !correction.corrected?.trim()) continue;
@@ -136,7 +139,7 @@ async function answerSheetCandidates(): Promise<CorrectionImportCandidate[]> {
     }).from(questionSheets),
   ]);
   // An answer sheet's grammar tags live on its parent question sheet.
-  const grammarByQuestionSheet = new Map(sheets.map(s => [s.id, grammarTermsOf(s.grammarTerms)]));
+  const grammarByQuestionSheet = new Map(sheets.map(s => [s.id, grammarTermsIn(s.grammarTerms)]));
   const out: CorrectionImportCandidate[] = [];
   for (const row of rows) {
     const grammarTerms = grammarByQuestionSheet.get(row.questionSheetId) ?? [];

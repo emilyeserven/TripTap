@@ -42,7 +42,7 @@ import type {
   WordNote,
   WritingCorrection,
 } from "@sentence-bank/types";
-import { type AnyPgColumn, boolean, customType, date, integer, jsonb, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import { type AnyPgColumn, boolean, customType, date, index, integer, jsonb, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 
 /** Postgres `bytea` column mapped to a Node {@link Buffer}. */
 const bytea = customType<{ data: Buffer }>({
@@ -114,7 +114,7 @@ export const sentences = pgTable("sentences", {
   createdAt: timestamp("created_at", {
     withTimezone: true,
   }).notNull().defaultNow(),
-});
+}, t => [index("sentences_terms_gin").using("gin", t.terms)]);
 
 export type SentenceRow = typeof sentences.$inferSelect;
 export type NewSentenceRow = typeof sentences.$inferInsert;
@@ -227,7 +227,7 @@ export const practiceSentences = pgTable("practice_sentences", {
   createdAt: timestamp("created_at", {
     withTimezone: true,
   }).notNull().defaultNow(),
-});
+}, t => [index("practice_sentences_terms_gin").using("gin", t.terms)]);
 
 export type PracticeSentenceRow = typeof practiceSentences.$inferSelect;
 export type NewPracticeSentenceRow = typeof practiceSentences.$inferInsert;
@@ -321,7 +321,7 @@ export const mySentences = pgTable("my_sentences", {
   createdAt: timestamp("created_at", {
     withTimezone: true,
   }).notNull().defaultNow(),
-});
+}, t => [index("my_sentences_terms_gin").using("gin", t.terms), index("my_sentences_incorrect_grammar_terms_gin").using("gin", t.incorrectGrammarTerms)]);
 
 export type MySentenceRow = typeof mySentences.$inferSelect;
 export type NewMySentenceRow = typeof mySentences.$inferInsert;
@@ -356,7 +356,7 @@ export const writings = pgTable("writings", {
   updatedAt: timestamp("updated_at", {
     withTimezone: true,
   }).notNull().defaultNow(),
-});
+}, t => [index("writings_terms_gin").using("gin", t.terms)]);
 
 export type WritingRow = typeof writings.$inferSelect;
 export type NewWritingRow = typeof writings.$inferInsert;
@@ -398,7 +398,7 @@ export const questionSheets = pgTable("question_sheets", {
   updatedAt: timestamp("updated_at", {
     withTimezone: true,
   }).notNull().defaultNow(),
-});
+}, t => [index("question_sheets_grammar_terms_gin").using("gin", t.grammarTerms)]);
 
 export type QuestionSheetRow = typeof questionSheets.$inferSelect;
 export type NewQuestionSheetRow = typeof questionSheets.$inferInsert;
@@ -462,7 +462,7 @@ export const listeningSessions = pgTable("listening_sessions", {
   updatedAt: timestamp("updated_at", {
     withTimezone: true,
   }).notNull().defaultNow(),
-});
+}, t => [index("listening_sessions_terms_gin").using("gin", t.terms)]);
 
 export type ListeningSessionRow = typeof listeningSessions.$inferSelect;
 export type NewListeningSessionRow = typeof listeningSessions.$inferInsert;
@@ -539,7 +539,7 @@ export const shadowingSessions = pgTable("shadowing_sessions", {
   updatedAt: timestamp("updated_at", {
     withTimezone: true,
   }).notNull().defaultNow(),
-});
+}, t => [index("shadowing_sessions_terms_gin").using("gin", t.terms)]);
 
 export type ShadowingSessionRow = typeof shadowingSessions.$inferSelect;
 export type NewShadowingSessionRow = typeof shadowingSessions.$inferInsert;
@@ -970,7 +970,7 @@ export const aiLessonGrammar = pgTable("ai_lesson_grammar", {
   sortOrder: integer("sort_order").notNull(),
   // App-set annotation (not part of the import contract): associated Grammar source tags.
   grammarTerms: jsonb("grammar_terms").$type<SentenceTermRef[]>(),
-});
+}, t => [index("ai_lesson_grammar_terms_gin").using("gin", t.grammarTerms)]);
 
 /** `ai_lesson_source_sentences` — real sentences with per-sentence breakdown (JSONB). */
 export const aiLessonSourceSentences = pgTable("ai_lesson_source_sentences", {
@@ -992,7 +992,7 @@ export const aiLessonSourceSentences = pgTable("ai_lesson_source_sentences", {
   sortOrder: integer("sort_order").notNull(),
   // App-set annotation (not part of the import contract): associated Grammar source tags.
   grammarTerms: jsonb("grammar_terms").$type<SentenceTermRef[]>(),
-});
+}, t => [index("ai_lesson_source_sentences_grammar_terms_gin").using("gin", t.grammarTerms)]);
 
 /** `ai_lesson_culture` — short cultural-context cards; terms embedded as JSONB. */
 export const aiLessonCulture = pgTable("ai_lesson_culture", {
