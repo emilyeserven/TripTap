@@ -11,6 +11,7 @@ import {
   updateListeningSession,
 } from "@/services/listening-sessions";
 import { termsSchema } from "@/routes/schemas/terms";
+import { LEARNING_AREAS } from "@sentence-bank/types";
 
 const listeningSessionParams = {
   type: "object",
@@ -119,6 +120,13 @@ const createListeningSessionBody = {
       minimum: 0,
     },
     terms: termsSchema,
+    learningArea: {
+      type: ["string", "null"],
+      enum: [...LEARNING_AREAS, null],
+    },
+    countsTowardXp: {
+      type: "boolean",
+    },
   },
 } as const;
 

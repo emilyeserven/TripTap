@@ -8,6 +8,7 @@
  */
 
 import type { WordNoteStatus } from "./reading-session.js";
+import type { SessionXp, SessionXpInput } from "./session.js";
 
 /**
  * One note logged while listening during a lesson. Unlike a listening-session entry there's no
@@ -45,7 +46,7 @@ export interface LessonWordNote {
 }
 
 /** A tutoring lesson. */
-export interface Lesson {
+export interface Lesson extends SessionXp {
   id: string;
   /** Optional title; the UI falls back to a date-based label when absent. */
   title: string | null;
@@ -72,7 +73,7 @@ export interface Lesson {
 }
 
 /** Payload for creating a lesson. Only `date` is required. */
-export interface CreateLessonInput {
+export interface CreateLessonInput extends SessionXpInput {
   date: string;
   language?: string;
   title?: string | null;

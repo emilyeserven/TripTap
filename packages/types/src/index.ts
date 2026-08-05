@@ -26,6 +26,7 @@ export * from "./question-sheet.js";
 export * from "./reading-session.js";
 export * from "./rule-tag.js";
 export * from "./sentence-mark.js";
+export * from "./session.js";
 export * from "./shadowing-list.js";
 export * from "./shadowing-session.js";
 export * from "./term-usage.js";

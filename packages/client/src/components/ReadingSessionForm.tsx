@@ -1,5 +1,6 @@
 import type {
   BookmarkSectionRef,
+  LearningArea,
   ReadingDifficulty,
   ReadingLine,
   ReadingSession,
@@ -14,6 +15,7 @@ import { BookmarkPicker } from "@/components/BookmarkPicker";
 import { ReadingDifficultyPicker } from "@/components/ReadingDifficultyPicker";
 import { ReadingLineEditor } from "@/components/ReadingLineEditor";
 import { ReadingWordNotesEditor } from "@/components/ReadingWordNotesEditor";
+import { SessionXpFields } from "@/components/SessionXpFields";
 import { TranslationVerdictPicker } from "@/components/TranslationVerdictPicker";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -97,6 +99,11 @@ export function ReadingSessionForm({
     session?.section ?? initialSection ?? null,
   );
 
+  const [learningArea, setLearningArea] = useState<LearningArea | null>(
+    session?.learningArea ?? null,
+  );
+  const [countsTowardXp, setCountsTowardXp] = useState(session?.countsTowardXp ?? true);
+
   const pending = create.isPending || update.isPending;
   const canSubmit = title.trim().length > 0 && language.trim().length > 0 && !pending;
 
@@ -117,6 +124,8 @@ export function ReadingSessionForm({
         meaning: w.meaning?.trim() || null,
       }));
     const input = {
+      learningArea: countsTowardXp ? learningArea : null,
+      countsTowardXp,
       date,
       title: title.trim(),
       language: language.trim(),
@@ -373,6 +382,16 @@ export function ReadingSessionForm({
           language={language}
         />
       )}
+
+      <SessionXpFields
+        learningArea={learningArea}
+        onLearningAreaChange={setLearningArea}
+        countsTowardXp={countsTowardXp}
+        onCountsTowardXpChange={setCountsTowardXp}
+        defaultArea="Reading"
+        noun="reading session"
+        idPrefix="rs"
+      />
 
       <div className="flex items-center gap-2">
         <Button

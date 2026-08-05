@@ -456,6 +456,10 @@ export const listeningSessions = pgTable("listening_sessions", {
   passive: boolean("passive").notNull().default(false),
   durationMinutes: integer("duration_minutes").notNull().default(0),
   terms: jsonb("terms").$type<SentenceTermRef[]>(),
+  // Learner-chosen area this session's XP feeds; null falls back to the feature's default area.
+  learningArea: text("learning_area").$type<LearningArea>(),
+  // When false the session earns no XP — sourced rather than produced work.
+  countsTowardXp: boolean("counts_toward_xp").notNull().default(true),
   createdAt: timestamp("created_at", {
     withTimezone: true,
   }).notNull().defaultNow(),
@@ -533,6 +537,10 @@ export const shadowingSessions = pgTable("shadowing_sessions", {
   segments: jsonb("segments").$type<ShadowingSegment[]>(),
   entries: jsonb("entries").$type<ListeningEntry[]>(),
   terms: jsonb("terms").$type<SentenceTermRef[]>(),
+  // Learner-chosen area this session's XP feeds; null falls back to the feature's default area.
+  learningArea: text("learning_area").$type<LearningArea>(),
+  // When false the session earns no XP — sourced rather than produced work.
+  countsTowardXp: boolean("counts_toward_xp").notNull().default(true),
   createdAt: timestamp("created_at", {
     withTimezone: true,
   }).notNull().defaultNow(),
@@ -581,6 +589,10 @@ export const readingSessions = pgTable("reading_sessions", {
   bookmarkTitle: text("bookmark_title"),
   bookmarkUrl: text("bookmark_url"),
   section: jsonb("section").$type<BookmarkSectionRef>(),
+  // Learner-chosen area this session's XP feeds; null falls back to the feature's default area.
+  learningArea: text("learning_area").$type<LearningArea>(),
+  // When false the session earns no XP — sourced rather than produced work.
+  countsTowardXp: boolean("counts_toward_xp").notNull().default(true),
   createdAt: timestamp("created_at", {
     withTimezone: true,
   }).notNull().defaultNow(),
@@ -685,6 +697,10 @@ export const lessons = pgTable("lessons", {
   answerSheetIds: jsonb("answer_sheet_ids").$type<string[]>(),
   // Tutoring-session length in minutes; earns per-minute XP across Speaking/Listening/Grammar.
   durationMinutes: integer("duration_minutes").notNull().default(0),
+  // Learner-chosen area this session's XP feeds; null falls back to the feature's default area.
+  learningArea: text("learning_area").$type<LearningArea>(),
+  // When false the session earns no XP — sourced rather than produced work.
+  countsTowardXp: boolean("counts_toward_xp").notNull().default(true),
   createdAt: timestamp("created_at", {
     withTimezone: true,
   }).notNull().defaultNow(),

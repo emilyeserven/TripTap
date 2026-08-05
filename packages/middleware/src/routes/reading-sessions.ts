@@ -11,6 +11,7 @@ import {
   updateReadingSession,
 } from "@/services/reading-sessions";
 import { termsSchema } from "@/routes/schemas/terms";
+import { LEARNING_AREAS } from "@sentence-bank/types";
 
 const readingSessionParams = {
   type: "object",
@@ -189,6 +190,13 @@ const createReadingSessionBody = {
       type: ["string", "null"],
     },
     section: bookmarkSectionRefSchema,
+    learningArea: {
+      type: ["string", "null"],
+      enum: [...LEARNING_AREAS, null],
+    },
+    countsTowardXp: {
+      type: "boolean",
+    },
   },
 } as const;
 

@@ -34,6 +34,8 @@ function toShadowingSession(row: ShadowingSessionRow): ShadowingSession {
     segments: row.segments ?? null,
     entries: row.entries ?? null,
     terms: row.terms ?? null,
+    learningArea: row.learningArea ?? null,
+    countsTowardXp: row.countsTowardXp,
     createdAt:
       row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
     updatedAt:
@@ -58,6 +60,8 @@ function toInsert(input: CreateShadowingSessionInput) {
     segments: input.segments ?? null,
     entries: input.entries ?? null,
     terms: input.terms ?? null,
+    learningArea: input.learningArea ?? null,
+    countsTowardXp: input.countsTowardXp ?? true,
   };
 }
 

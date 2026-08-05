@@ -38,6 +38,8 @@ function toReadingSession(row: ReadingSessionRow): ReadingSession {
     bookmarkTitle: row.bookmarkTitle ?? null,
     bookmarkUrl: row.bookmarkUrl ?? null,
     section: row.section ?? null,
+    learningArea: row.learningArea ?? null,
+    countsTowardXp: row.countsTowardXp,
     createdAt:
       row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
     updatedAt:
@@ -69,6 +71,8 @@ function toInsert(input: CreateReadingSessionInput) {
     bookmarkTitle: input.bookmarkTitle ?? null,
     bookmarkUrl: input.bookmarkUrl ?? null,
     section: input.section ?? null,
+    learningArea: input.learningArea ?? null,
+    countsTowardXp: input.countsTowardXp ?? true,
   };
 }
 
