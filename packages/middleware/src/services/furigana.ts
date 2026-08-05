@@ -181,3 +181,50 @@ export async function generateFurigana(
     };
   }
 }
+
+/**
+ * The furigana columns for one piece of text, with the learner's vocab overrides applied — the shape
+ * every sentence-ish table stores. Callers spread this into an insert/update rather than repeating
+ * the generate-then-name-the-columns dance per table.
+ */
+export async function furiganaColumns(text: string): Promise<{
+  reading: FuriToken[] | null;
+  readingError: string | null;
+}> {
+  const {
+    tokens, error,
+  } = await generateFurigana(text, await getFuriganaOverrides());
+  return {
+    reading: tokens,
+    readingError: error,
+  };
+}
+
+/**
+ * {@link furiganaColumns} for many texts, loading the overrides once and analyzing in parallel.
+ * Analysis happens up front, never inside a transaction.
+ */
+export async function furiganaColumnsMany(texts: string[]): Promise<{
+  reading: FuriToken[] | null;
+  readingError: string | null;
+}[]> {
+  const overrides = await getFuriganaOverrides();
+  const results = await Promise.all(texts.map(t => generateFurigana(t, overrides)));
+  return results.map(({
+    tokens, error,
+  }) => ({
+    reading: tokens,
+    readingError: error,
+  }));
+}
+
+/**
+ * The furigana columns to include in an update: regenerated when the text changed, and nothing at
+ * all when it didn't — editing a translation shouldn't re-run the analyzer.
+ */
+export async function furiganaColumnsOnEdit(text: string | undefined): Promise<{
+  reading?: FuriToken[] | null;
+  readingError?: string | null;
+}> {
+  return text === undefined ? {} : furiganaColumns(text);
+}

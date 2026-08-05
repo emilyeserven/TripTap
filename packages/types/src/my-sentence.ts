@@ -10,7 +10,7 @@
 
 // Type-only import (erased at build) — `SentenceTermRef` lives in the barrel; no runtime cycle.
 import type { DrillMistakeReasonRef } from "./drill-session.js";
-import type { SentenceTermRef } from "./index.js";
+import type { FuriToken, SentenceTermRef } from "./index.js";
 import type { SentenceMark } from "./sentence-mark.js";
 
 /** A learner-produced sentence, awaiting correction. */
@@ -21,6 +21,10 @@ export interface MySentence {
   /** The intended meaning — what the learner meant to say; null if none. */
   translation: string | null;
   /** Target language, e.g. "Japanese". */
+  /** Auto-generated furigana segmentation of {@link text}; null until generated. */
+  reading: FuriToken[] | null;
+  /** Why furigana generation failed, when it did; null on success. */
+  readingError: string | null;
   language: string;
   /** The practice sentence this was produced from, or null. */
   practiceSentenceId: string | null;

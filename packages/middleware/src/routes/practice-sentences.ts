@@ -8,7 +8,7 @@ import { practiceSentenceImportJsonSchema } from "@sentence-bank/types";
 import {
   getVocabForPracticeSentence,
   setVocabForPracticeSentence,
-} from "@/services/practice-sentence-vocab";
+} from "@/services/vocab-links";
 import {
   createPracticeSentence,
   createPracticeSentencesMany,
@@ -30,7 +30,7 @@ function importToCreateInput(input: PracticeSentenceImportInput): CreatePractice
   return {
     text: input.text,
     language: input.language?.trim() || "Japanese",
-    reading: input.reading ?? null,
+    readingNote: input.readingNote ?? null,
     translation: input.translation ?? null,
     target: input.target ?? null,
     targetKind: input.targetKind ?? null,
@@ -126,7 +126,7 @@ const createPracticeSentenceBody = {
       type: "string",
       minLength: 1,
     },
-    reading: {
+    readingNote: {
       type: ["string", "null"],
     },
     translation: {

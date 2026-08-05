@@ -179,3 +179,38 @@ test("POST /api/my-sentences rejects an incorrectGrammarTerms entry missing its 
   assert.equal(res.statusCode, 400);
   await app.close();
 });
+
+test("POST /api/my-sentences accepts a payload without a reading (it is generated server-side)", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/my-sentences",
+    payload: {
+      text: "毎朝コーヒーを飲みます。",
+      language: "Japanese",
+    },
+  });
+  // Furigana is derived from `text`, never accepted from the client — so a bare payload is valid.
+  assert.notEqual(res.statusCode, 400);
+  await app.close();
+});
+
+test("a client-supplied reading is stripped rather than trusted", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/my-sentences",
+    payload: {
+      text: "毎朝コーヒーを飲みます。",
+      language: "Japanese",
+      reading: [{
+        t: "毎朝",
+        r: "ウソ",
+      }],
+    },
+  });
+  // `reading` is not in the body schema and `additionalProperties: false` makes Fastify drop it, so
+  // the value never reaches the service — the stored reading is always the generated one.
+  assert.notEqual(res.statusCode, 400);
+  await app.close();
+});

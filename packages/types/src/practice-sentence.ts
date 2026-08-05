@@ -9,7 +9,7 @@
  */
 
 // Type-only import (erased at build) — `SentenceTermRef` lives in the barrel; no runtime cycle.
-import type { SentenceTermRef } from "./index.js";
+import type { FuriToken, SentenceTermRef } from "./index.js";
 
 import { z } from "zod";
 
@@ -51,8 +51,12 @@ export interface PracticeSentence {
   id: string;
   /** The sentence in the target language, copied exactly from the source. */
   text: string;
-  /** Free-text reading of the tricky parts (worksheet-style, not generated furigana); null if none. */
-  reading: string | null;
+  /** The learner's own note on how to read the tricky parts (worksheet-style); null if none. */
+  readingNote: string | null;
+  /** Auto-generated furigana segmentation of {@link text}; null until generated. */
+  reading: FuriToken[] | null;
+  /** Why furigana generation failed, when it did; null on success. */
+  readingError: string | null;
   /** Natural translation in the user's language; null until added. */
   translation: string | null;
   /** Target language, e.g. "Japanese". */
@@ -101,7 +105,7 @@ export interface PracticeSentence {
 export interface CreatePracticeSentenceInput {
   text: string;
   language: string;
-  reading?: string | null;
+  readingNote?: string | null;
   translation?: string | null;
   target?: string | null;
   targetKind?: PracticeTargetKind | null;
@@ -139,8 +143,8 @@ export const practiceSentenceImportSchema = z.strictObject({
   text: z.string().min(1),
   /** Target language; defaults to "Japanese" on import when omitted. */
   language: z.string().optional(),
-  /** Free-text reading of the tricky parts (not full furigana). */
-  reading: z.string().optional().nullable(),
+  /** The learner's own note on how to read the tricky parts (not generated furigana). */
+  readingNote: z.string().optional().nullable(),
   /** Natural translation. */
   translation: z.string().optional().nullable(),
   /** The single thing this sentence teaches. */

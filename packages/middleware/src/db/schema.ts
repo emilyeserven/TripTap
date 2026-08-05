@@ -183,8 +183,14 @@ export type SentenceVocabRow = typeof sentenceVocab.$inferSelect;
 export const practiceSentences = pgTable("practice_sentences", {
   id: uuid("id").primaryKey().defaultRandom(),
   text: text("text").notNull(),
-  // Free-text reading of the tricky parts (worksheet-style), not generated furigana. Null if none.
-  reading: text("reading"),
+  // The learner's own note on how to read the tricky parts (worksheet-style). Keeps the original
+  // `reading` column — only the TS/wire name changed, so no data migration — while `reading` below
+  // takes over the name everywhere else in the app: generated furigana.
+  readingNote: text("reading"),
+  // Auto-generated furigana segmentation of `text`, same shape as on `sentences`. Null until generated.
+  reading: jsonb("reading_tokens").$type<FuriToken[]>(),
+  // Why generation failed, when it did; null on success.
+  readingError: text("reading_error"),
   translation: text("translation"),
   language: text("language").notNull(),
   // The single thing this sentence teaches (the "one target") and what kind it is. Free-text on
@@ -288,6 +294,9 @@ export const mySentences = pgTable("my_sentences", {
   text: text("text").notNull(),
   // What the learner meant to say (the intended meaning).
   translation: text("translation"),
+  // Auto-generated furigana segmentation of `text`, same shape as on `sentences`. Null until generated.
+  reading: jsonb("reading").$type<FuriToken[]>(),
+  readingError: text("reading_error"),
   language: text("language").notNull(),
   practiceSentenceId: uuid("practice_sentence_id").references((): AnyPgColumn => practiceSentences.id, {
     onDelete: "set null",

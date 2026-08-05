@@ -6,6 +6,7 @@ import { ArrowLeft, Pencil, TriangleAlert, Volume2 } from "lucide-react";
 
 import { speak } from "./ai-lesson/speak";
 
+import { SentenceText } from "@/components/SentenceText";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -112,9 +113,17 @@ export function PracticeSentenceView({
             >
               <Volume2 className="size-5" />
             </Button>
-            <p className="text-2xl font-semibold">{ps.text}</p>
+            <p
+              className="text-2xl font-semibold"
+              lang="ja"
+            >
+              <SentenceText
+                text={ps.text}
+                reading={ps.reading}
+              />
+            </p>
           </div>
-          {ps.reading ? <p className="text-sm text-muted-foreground">{ps.reading}</p> : null}
+          {ps.readingNote ? <p className="text-sm text-muted-foreground">{ps.readingNote}</p> : null}
         </div>
 
         <div

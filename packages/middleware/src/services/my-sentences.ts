@@ -6,6 +6,7 @@ import type {
 } from "@sentence-bank/types";
 import { db } from "@/db";
 import { mySentences, type MySentenceRow } from "@/db/schema";
+import { furiganaColumns, furiganaColumnsMany, furiganaColumnsOnEdit } from "@/services/furigana";
 
 /** Map a DB row to the shared `MySentence` wire type. */
 function toMySentence(row: MySentenceRow): MySentence {
@@ -13,6 +14,8 @@ function toMySentence(row: MySentenceRow): MySentence {
     id: row.id,
     text: row.text,
     translation: row.translation,
+    reading: row.reading ?? null,
+    readingError: row.readingError ?? null,
     language: row.language,
     practiceSentenceId: row.practiceSentenceId,
     writingId: row.writingId,
@@ -80,7 +83,11 @@ export async function getMySentence(id: string): Promise<MySentence | null> {
 }
 
 export async function createMySentence(input: CreateMySentenceInput): Promise<MySentence> {
-  const [row] = await db.insert(mySentences).values(toInsert(input)).returning();
+  // Generated the same way as a bank sentence — furigana is a property of Japanese text, not of one table.
+  const [row] = await db.insert(mySentences).values({
+    ...toInsert(input),
+    ...(await furiganaColumns(input.text)),
+  }).returning();
   return toMySentence(row);
 }
 
@@ -89,7 +96,14 @@ export async function createMySentencesMany(
   inputs: CreateMySentenceInput[],
 ): Promise<MySentence[]> {
   if (inputs.length === 0) return [];
-  const rows = await db.insert(mySentences).values(inputs.map(toInsert)).returning();
+  const furigana = await furiganaColumnsMany(inputs.map(i => i.text));
+  const rows = await db
+    .insert(mySentences)
+    .values(inputs.map((input, i) => ({
+      ...toInsert(input),
+      ...furigana[i],
+    })))
+    .returning();
   return rows.map(toMySentence);
 }
 
@@ -97,9 +111,13 @@ export async function updateMySentence(
   id: string,
   input: UpdateMySentenceInput,
 ): Promise<MySentence | null> {
+  const furigana = await furiganaColumnsOnEdit(input.text);
   const [row] = await db
     .update(mySentences)
-    .set(input)
+    .set({
+      ...input,
+      ...furigana,
+    })
     .where(eq(mySentences.id, id))
     .returning();
   return row ? toMySentence(row) : null;

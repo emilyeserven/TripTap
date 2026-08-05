@@ -2,7 +2,12 @@ import { and, asc, count, desc, eq, inArray, isNull } from "drizzle-orm";
 import type { CreateSentenceInput, Sentence, UpdateSentenceInput } from "@sentence-bank/types";
 import { db } from "@/db";
 import { sentences, sentenceVocab, type SentenceRow } from "@/db/schema";
-import { generateFurigana, getFuriganaOverrides } from "@/services/furigana";
+import {
+  furiganaColumns,
+  furiganaColumnsMany,
+  generateFurigana,
+  getFuriganaOverrides,
+} from "@/services/furigana";
 import { deleteMedia, getMedia, type StoredMedia } from "@/services/media";
 
 /** Number of vocab items linked to one sentence. */
@@ -131,14 +136,11 @@ function linkRows(sentenceId: string, vocabIds: string[] | undefined) {
 
 export async function createSentence(input: CreateSentenceInput): Promise<Sentence> {
   // Generate furigana before the transaction so analysis never holds a DB lock open.
-  const {
-    tokens, error,
-  } = await generateFurigana(input.text, await getFuriganaOverrides());
+  const furigana = await furiganaColumns(input.text);
   return db.transaction(async (tx) => {
     const [row] = await tx.insert(sentences).values({
       ...toInsert(input),
-      reading: tokens,
-      readingError: error,
+      ...furigana,
     }).returning();
     const links = linkRows(row.id, input.vocabIds);
     if (links.length > 0) await tx.insert(sentenceVocab).values(links);
@@ -149,15 +151,13 @@ export async function createSentence(input: CreateSentenceInput): Promise<Senten
 /** Create many sentences (and their vocab links) in a single transaction. */
 export async function createSentencesMany(inputs: CreateSentenceInput[]): Promise<Sentence[]> {
   if (inputs.length === 0) return [];
-  const overrides = await getFuriganaOverrides();
-  const results = await Promise.all(inputs.map(i => generateFurigana(i.text, overrides)));
+  const furigana = await furiganaColumnsMany(inputs.map(i => i.text));
   return db.transaction(async (tx) => {
     const rows = await tx
       .insert(sentences)
       .values(inputs.map((input, i) => ({
         ...toInsert(input),
-        reading: results[i].tokens,
-        readingError: results[i].error,
+        ...furigana[i],
       })))
       .returning();
     const links = rows.flatMap((row, i) => linkRows(row.id, inputs[i].vocabIds));
