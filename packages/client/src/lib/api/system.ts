@@ -21,6 +21,7 @@ import type {
   RenshuuSettings,
   SentenceTermCategory,
   TagTermOption,
+  TermUsageSummary,
   UpdateBookmarksSettingsInput,
   UpdateDictionarySettingsInput,
   UpdateOcrSettingsInput,
@@ -142,4 +143,10 @@ export const renshuuApi = {
     request<RenshuuExampleSentence[]>(
       `/renshuu/search?query=${encodeURIComponent(query)}&limit=${limit}`,
     ),
+};
+
+/** Cross-feature usage of one borrowed taxonomy term — "what have I done with this tag?". */
+export const termsApi = {
+  usages: (termId: string) =>
+    request<TermUsageSummary>(`/terms/${encodeURIComponent(termId)}/usages`),
 };

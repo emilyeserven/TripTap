@@ -8,8 +8,8 @@
  * aggregated into statistics over time. Consumed by both the Fastify API and the React client.
  */
 
-import type { BookmarkSectionRef } from "./index.js";
 import type { LearningArea } from "./question-sheet.js";
+import type { BookmarkRef } from "./session.js";
 
 /* ── Drill type ───────────────────────────────────────────────────────────────────────────────── */
 
@@ -95,7 +95,7 @@ export interface DrillMistake {
 }
 
 /** A logged drill session: a date, optional title/notes, and the list of mistakes made. */
-export interface DrillSession {
+export interface DrillSession extends BookmarkRef {
   id: string;
   /** ISO date (YYYY-MM-DD) the drilling happened. */
   date: string;
@@ -108,12 +108,6 @@ export interface DrillSession {
   type: DrillType | null;
   /** The learning area this session's XP counts toward; null falls back to Grammar. */
   learningArea: LearningArea | null;
-  /** The bookmark resource this drilling was based on, if any (denormalized for display). */
-  bookmarkId: string | null;
-  bookmarkTitle: string | null;
-  bookmarkUrl: string | null;
-  /** A specific section of the linked bookmark, when the drilling targeted one; else null. */
-  section: BookmarkSectionRef | null;
   /** ISO-8601 timestamp of when the session was added. */
   createdAt: string;
   /** ISO-8601 timestamp of the last update. */
@@ -121,7 +115,7 @@ export interface DrillSession {
 }
 
 /** Payload for creating a drill session. Only `date` is required. */
-export interface CreateDrillSessionInput {
+export interface CreateDrillSessionInput extends Partial<BookmarkRef> {
   date: string;
   title?: string | null;
   notes?: string | null;
@@ -129,10 +123,6 @@ export interface CreateDrillSessionInput {
   questions?: number;
   type?: DrillType | null;
   learningArea?: LearningArea | null;
-  bookmarkId?: string | null;
-  bookmarkTitle?: string | null;
-  bookmarkUrl?: string | null;
-  section?: BookmarkSectionRef | null;
 }
 
 /** Payload for partially updating a drill session. */

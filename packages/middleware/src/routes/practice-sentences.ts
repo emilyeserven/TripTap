@@ -20,6 +20,7 @@ import {
   setPracticeSentenceImage,
   updatePracticeSentence,
 } from "@/services/practice-sentences";
+import { termsSchema } from "@/routes/schemas/terms";
 
 /** A context screenshot is capped well below a capture image — 15 MiB. */
 const MAX_IMAGE_BYTES = 15 * 1024 * 1024;
@@ -108,37 +109,6 @@ const passesSchema = {
     },
     card: {
       type: "boolean",
-    },
-  },
-} as const;
-
-const termsSchema = {
-  type: ["array", "null"],
-  items: {
-    type: "object",
-    additionalProperties: false,
-    required: ["id", "name", "kind", "sourceId", "sourceLabel"],
-    properties: {
-      id: {
-        type: "string",
-      },
-      name: {
-        type: "string",
-      },
-      kind: {
-        type: "string",
-        enum: ["tag", "taxonomy"],
-      },
-      sourceId: {
-        type: "string",
-      },
-      sourceLabel: {
-        type: "string",
-      },
-      category: {
-        type: "string",
-        enum: ["vocabulary", "grammar", "general", "resource"],
-      },
     },
   },
 } as const;

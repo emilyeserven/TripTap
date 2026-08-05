@@ -10,6 +10,7 @@ import {
   listLessons,
   updateLesson,
 } from "@/services/lessons";
+import { LEARNING_AREAS } from "@sentence-bank/types";
 
 const lessonParams = {
   type: "object",
@@ -122,6 +123,13 @@ const createLessonBody = {
     durationMinutes: {
       type: "integer",
       minimum: 0,
+    },
+    learningArea: {
+      type: ["string", "null"],
+      enum: [...LEARNING_AREAS, null],
+    },
+    countsTowardXp: {
+      type: "boolean",
     },
   },
 } as const;

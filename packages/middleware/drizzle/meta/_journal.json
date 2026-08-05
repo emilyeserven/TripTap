@@ -512,6 +512,20 @@
       "when": 1785860446137,
       "tag": "0072_cuddly_yellow_claw",
       "breakpoints": true
+    },
+    {
+      "idx": 73,
+      "version": "7",
+      "when": 1785952934206,
+      "tag": "0073_wide_vector",
+      "breakpoints": true
+    },
+    {
+      "idx": 74,
+      "version": "7",
+      "when": 1785958875755,
+      "tag": "0074_wild_iron_monger",
+      "breakpoints": true
     }
   ]
 }

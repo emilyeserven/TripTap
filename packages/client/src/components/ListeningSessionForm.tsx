@@ -1,10 +1,11 @@
-import type { BookmarkSectionRef, ListeningSession, SentenceTermRef } from "@sentence-bank/types";
+import type { BookmarkSectionRef, LearningArea, ListeningSession, SentenceTermRef } from "@sentence-bank/types";
 
 import { useState } from "react";
 
 import { termCategory } from "../lib/terms";
 
 import { BookmarkPicker } from "@/components/BookmarkPicker";
+import { SessionXpFields } from "@/components/SessionXpFields";
 import { TermPicker } from "@/components/TermPicker";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -56,6 +57,11 @@ export function ListeningSessionForm({
     initialTerms.filter(t => termCategory(t) === "grammar"),
   );
 
+  const [learningArea, setLearningArea] = useState<LearningArea | null>(
+    session?.learningArea ?? null,
+  );
+  const [countsTowardXp, setCountsTowardXp] = useState(session?.countsTowardXp ?? true);
+
   const pending = create.isPending || update.isPending;
   const canSubmit = title.trim().length > 0 && language.trim().length > 0 && !pending;
 
@@ -63,6 +69,8 @@ export function ListeningSessionForm({
     if (!canSubmit) return;
     const terms = [...vocabTerms, ...grammarTerms];
     const input = {
+      learningArea: countsTowardXp ? learningArea : null,
+      countsTowardXp,
       date,
       title: title.trim(),
       language: language.trim(),
@@ -214,6 +222,16 @@ export function ListeningSessionForm({
           onChange={setGrammarTerms}
         />
       </div>
+
+      <SessionXpFields
+        learningArea={learningArea}
+        onLearningAreaChange={setLearningArea}
+        countsTowardXp={countsTowardXp}
+        onCountsTowardXpChange={setCountsTowardXp}
+        defaultArea="Listening"
+        noun="listening session"
+        idPrefix="ls"
+      />
 
       <div className="flex items-center gap-2">
         <Button

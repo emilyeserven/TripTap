@@ -8,6 +8,7 @@ import {
   listMySentences,
   updateMySentence,
 } from "@/services/my-sentences";
+import { termsSchema } from "@/routes/schemas/terms";
 
 const mySentenceParams = {
   type: "object",
@@ -50,37 +51,6 @@ const reasonsSchema = {
       },
       reasonId: {
         type: ["string", "null"],
-      },
-    },
-  },
-} as const;
-
-const termsSchema = {
-  type: ["array", "null"],
-  items: {
-    type: "object",
-    additionalProperties: false,
-    required: ["id", "name", "kind", "sourceId", "sourceLabel"],
-    properties: {
-      id: {
-        type: "string",
-      },
-      name: {
-        type: "string",
-      },
-      kind: {
-        type: "string",
-        enum: ["tag", "taxonomy"],
-      },
-      sourceId: {
-        type: "string",
-      },
-      sourceLabel: {
-        type: "string",
-      },
-      category: {
-        type: "string",
-        enum: ["vocabulary", "grammar", "general", "resource"],
       },
     },
   },

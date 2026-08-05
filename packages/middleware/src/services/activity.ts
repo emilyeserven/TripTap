@@ -1,11 +1,6 @@
 import type { ActivityDay, ActivityItem } from "@sentence-bank/types";
-import { loadXpGrants, localDateString, type XpGrant } from "@/services/xp";
+import { loadXpGrants, localDateString, roundXp, type XpGrant } from "@/services/xp";
 import { getLearnerProfile } from "@/services/settings";
-
-/** Round away float noise from fractional rates without hiding quarter points (mirrors xp.ts). */
-function roundXp(xp: number): number {
-  return Math.round(xp * 100) / 100;
-}
 
 /**
  * Fold a flat grant list into a per-day activity feed, newest day first. A grant's day is its
