@@ -103,6 +103,8 @@ export function MySentenceCard({
                 <ExplainedSentence
                   text={explained}
                   explanation={ms.explanation}
+                  // Generated from `text`, so it only aligns when the correction isn't being shown.
+                  reading={corrected ? null : ms.reading}
                   className="text-lg font-semibold"
                 />
               )

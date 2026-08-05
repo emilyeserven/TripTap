@@ -101,3 +101,87 @@ describe("ExplainedSentence", () => {
     expect(trigger.className).not.toContain("bg-primary/15");
   });
 });
+
+describe("ExplainedSentence furigana", () => {
+  /** 昨日(きのう)は友達(ともだち)と映画(えいが)を見(み)ました。 */
+  const READING = [
+    {
+      t: "昨日",
+      r: "きのう",
+    },
+    {
+      t: "は",
+      r: null,
+    },
+    {
+      t: "友達",
+      r: "ともだち",
+    },
+    {
+      t: "と",
+      r: null,
+    },
+    {
+      t: "映画",
+      r: "えいが",
+    },
+    {
+      t: "を",
+      r: null,
+    },
+    {
+      t: "見",
+      r: "み",
+    },
+    {
+      t: "ました。",
+      r: null,
+    },
+  ];
+
+  it("renders ruby without altering the sentence text", () => {
+    const {
+      container,
+    } = render(
+      <ExplainedSentence
+        text={SENTENCE}
+        explanation={null}
+        reading={READING}
+      />,
+    );
+    // The visible characters are unchanged; the readings are additive <rt> content.
+    expect(container.querySelector("p")?.textContent).toContain(SENTENCE.slice(0, 2));
+    expect(container.querySelectorAll("ruby").length).toBeGreaterThan(0);
+    expect([...container.querySelectorAll("rt")].map(rt => rt.textContent)).toContain("きのう");
+  });
+
+  it("keeps ruby on a referenced phrase, so a hover card and furigana coexist", () => {
+    const {
+      container,
+    } = render(
+      <ExplainedSentence
+        text={SENTENCE}
+        explanation="友達: the person you went with"
+        reading={READING}
+      />,
+    );
+    expect(triggers(container)).toHaveLength(1);
+    const trigger = triggers(container)[0] as HTMLElement;
+    expect(trigger.textContent).toContain("友達");
+    // The referenced run carries its own slice of the readings rather than losing them.
+    expect([...trigger.querySelectorAll("rt")].map(rt => rt.textContent)).toContain("ともだち");
+  });
+
+  it("renders plain when no reading is supplied", () => {
+    const {
+      container,
+    } = render(
+      <ExplainedSentence
+        text={SENTENCE}
+        explanation="友達: note"
+      />,
+    );
+    expect(container.querySelectorAll("ruby")).toHaveLength(0);
+    expect(container.textContent).toBe(SENTENCE);
+  });
+});

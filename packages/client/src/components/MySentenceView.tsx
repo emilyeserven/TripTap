@@ -56,6 +56,8 @@ export function MySentenceView({
           <ExplainedSentence
             text={explained}
             explanation={ms.explanation}
+            // The stored reading was generated from `text`, so it only aligns when that's what's shown.
+            reading={corrected ? null : ms.reading}
             className="text-2xl font-semibold"
             highlightSnippet={hoveredSnippet}
           />

@@ -1,11 +1,14 @@
 import type { ExplanationSegment } from "@/lib/explanationRefs";
+import type { FuriToken } from "@sentence-bank/types";
 
 import { useMemo } from "react";
 
 import { Markdown } from "@/components/Markdown";
+import { SentenceText } from "@/components/SentenceText";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { REFERENCE_HIGHLIGHT, REFERENCE_UNDERLINE } from "@/lib/explanation-styles";
 import { annotateSentence, parseExplanationRefs } from "@/lib/explanationRefs";
+import { sliceFuriTokens } from "@/lib/furigana-slice";
 import { cn } from "@/lib/utils";
 
 /**
@@ -15,9 +18,12 @@ import { cn } from "@/lib/utils";
  */
 function ReferenceSpan({
   segment,
+  reading,
   highlighted,
 }: {
   segment: ExplanationSegment;
+  /** This run's slice of the sentence's furigana, or null when there is none. */
+  reading: FuriToken[] | null;
   highlighted: boolean;
 }) {
   return (
@@ -43,7 +49,10 @@ function ReferenceSpan({
             highlighted && REFERENCE_HIGHLIGHT,
           )}
         >
-          {segment.text}
+          <SentenceText
+            text={segment.text}
+            reading={reading}
+          />
         </span>
       </HoverCardTrigger>
       <HoverCardContent className="w-72 space-y-2">
@@ -72,11 +81,17 @@ function ReferenceSpan({
 export function ExplainedSentence({
   text,
   explanation,
+  reading,
   className,
   highlightSnippet,
 }: {
   text: string;
   explanation: string | null | undefined;
+  /**
+   * Generated furigana for {@link text}. Sliced per run so ruby survives the split into referenced
+   * and un-referenced segments; omit it (or pass null) to render the sentence plain.
+   */
+  reading?: FuriToken[] | null;
   className?: string;
   /** The phrase to highlight in the sentence (from hovering its note in `ExplanationBody`). */
   highlightSnippet?: string | null;
@@ -86,19 +101,42 @@ export function ExplainedSentence({
     [text, explanation],
   );
 
+  // Segments are contiguous and in order, so a running offset recovers each one's span in `text` —
+  // which is what the token slice has to match.
+  const withReadings = useMemo(() => {
+    let offset = 0;
+    return segments.map((segment) => {
+      const start = offset;
+      offset += segment.text.length;
+      return {
+        segment,
+        reading: sliceFuriTokens(reading, start, offset),
+      };
+    });
+  }, [segments, reading]);
+
   return (
     <p className={className}>
-      {segments.map((segment, i) =>
+      {withReadings.map(({
+        segment, reading: segmentReading,
+      }, i) =>
         (segment.refs.length > 0
           ? (
             <ReferenceSpan
               key={i}
               segment={segment}
+              reading={segmentReading}
               highlighted={Boolean(highlightSnippet)
                 && segment.refs.some(ref => ref.snippet === highlightSnippet)}
             />
           )
-          : <span key={i}>{segment.text}</span>))}
+          : (
+            <SentenceText
+              key={i}
+              text={segment.text}
+              reading={segmentReading}
+            />
+          )))}
     </p>
   );
 }
