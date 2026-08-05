@@ -8,8 +8,7 @@ import type {
 import { reconcileDialogueLines } from "@sentence-bank/types";
 import { db } from "@/db";
 import { type DialogueRow, dialogues } from "@/db/schema";
-import { generateFurigana } from "@/services/furigana";
-import { getFuriganaOverrides } from "@/services/sentences";
+import { generateFurigana, getFuriganaOverrides } from "@/services/furigana";
 
 /**
  * A dialogue's `script` is the source of truth for its structure, but its `lines` carry two things the

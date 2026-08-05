@@ -9,15 +9,24 @@ import { useQueryClient } from "@tanstack/react-query";
  * when next viewed.
  *
  * Use in a hook whose entity has a `[...baseKey, id]` detail query: `create`/`update` → `seed`,
- * bulk `createMany` → `seedMany`, `delete` → `invalidate`.
+ * bulk `createMany` → `seedMany`, `delete` → `invalidate`. Entities with no detail query still use
+ * this for `invalidate`, so every hook invalidates the same way.
+ *
+ * `alsoInvalidate` lists other base keys whose cached data embeds this entity — e.g. a source's name
+ * is rendered on sentences, captures and vocab, so saving one must refresh those too.
  */
-export function useEntityCacheSync(baseKey: readonly unknown[]) {
+export function useEntityCacheSync(
+  baseKey: readonly unknown[],
+  alsoInvalidate: readonly (readonly unknown[])[] = [],
+) {
   const queryClient = useQueryClient();
 
   const invalidate = () => {
-    queryClient.invalidateQueries({
-      queryKey: baseKey,
-    });
+    for (const queryKey of [baseKey, ...alsoInvalidate]) {
+      queryClient.invalidateQueries({
+        queryKey,
+      });
+    }
   };
 
   const seed = <T extends { id: string }>(entity: T) => {

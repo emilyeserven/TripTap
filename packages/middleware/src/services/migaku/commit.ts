@@ -14,7 +14,7 @@ import { deckTag } from "@sentence-bank/types";
 import { db } from "@/db";
 import { sentences, sentenceVocab, vocab } from "@/db/schema";
 import { newId } from "@/lib/id";
-import { generateFurigana } from "@/services/furigana";
+import { generateFurigana, getFuriganaOverrides } from "@/services/furigana";
 import { MEDIA_PREFIX, putMedia } from "@/services/media";
 import { extractApkgMedia, mimeForFilename } from "@/services/migaku/apkg";
 import { getExistingIdsForLanguage, getExistingKeysForLanguage } from "@/services/migaku/dedup";
@@ -108,6 +108,9 @@ async function commitFlat(
   // Authoritative dedup: never create a row whose text/term already exists for this language. The sets
   // grow as we insert, so duplicates within this same batch are also collapsed.
   const existing = await getExistingKeysForLanguage(input.language);
+  // Loaded once for the whole batch: imported sentences get the same vocab reading overrides that
+  // sentences created through the bank do.
+  const overrides = await getFuriganaOverrides();
 
   let sentencesCreated = 0;
   let vocabCreated = 0;
@@ -138,7 +141,7 @@ async function commitFlat(
       let reading: FuriToken[] | null = source?.reading?.length ? source.reading : null;
       let readingError: string | null = null;
       if (!reading) {
-        const generated = await generateFurigana(item.text);
+        const generated = await generateFurigana(item.text, overrides);
         reading = generated.tokens;
         readingError = generated.error;
       }
@@ -232,6 +235,9 @@ async function commitMigakuGroups(
   // `existing` (sets) drives the default skip; `existingIds` resolves a "link to existing" target.
   const existing = await getExistingKeysForLanguage(input.language);
   const existingIds = await getExistingIdsForLanguage(input.language);
+  // Loaded once for the whole batch: imported sentences get the same vocab reading overrides that
+  // sentences created through the bank do.
+  const overrides = await getFuriganaOverrides();
 
   let sentencesCreated = 0;
   let vocabCreated = 0;
@@ -312,7 +318,7 @@ async function commitMigakuGroups(
         let reading: FuriToken[] | null = sentence.reading?.length ? sentence.reading : null;
         let readingError: string | null = null;
         if (!reading) {
-          const generated = await generateFurigana(item.text);
+          const generated = await generateFurigana(item.text, overrides);
           reading = generated.tokens;
           readingError = generated.error;
         }

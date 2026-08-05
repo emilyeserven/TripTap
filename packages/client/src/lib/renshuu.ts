@@ -1,3 +1,5 @@
+import { field, hasSentencePair } from "./export-format";
+
 /** A row eligible for Renshuu export needs both a Japanese line and an English translation. */
 export interface RenshuuRow {
   text: string;
@@ -6,18 +8,19 @@ export interface RenshuuRow {
 
 /** True when a sentence has both columns Renshuu's bulk sentence import needs. */
 export function isRenshuuEligible(row: RenshuuRow): boolean {
-  return Boolean(row.text.trim() && row.translation && row.translation.trim());
+  return hasSentencePair(row);
 }
 
 /**
  * Format sentences as Renshuu bulk-import lines — one `<japanese>\t<english>` per line. Rows without
- * a translation are skipped (Renshuu needs both columns).
+ * a translation are skipped (Renshuu needs both columns). Fields are normalized so an embedded line
+ * break can't split one entry across two import rows.
  */
 export function toRenshuuText(rows: RenshuuRow[]): string {
   const lines: string[] = [];
   for (const row of rows) {
-    const jp = row.text.trim();
-    const en = row.translation?.trim();
+    const jp = field(row.text);
+    const en = field(row.translation);
     if (jp && en) lines.push(`${jp}\t${en}`);
   }
   return lines.join("\n");
@@ -37,9 +40,9 @@ export interface RenshuuVocabRow {
 export function toRenshuuVocabText(rows: RenshuuVocabRow[]): string {
   const lines: string[] = [];
   for (const row of rows) {
-    const term = row.term.trim();
+    const term = field(row.term);
     if (!term) continue;
-    const reading = row.reading?.trim();
+    const reading = field(row.reading);
     lines.push(reading ? `${term}/${reading}` : term);
   }
   return lines.join("\n");

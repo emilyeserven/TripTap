@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { Check, Copy } from "lucide-react";
 
@@ -12,28 +12,23 @@ import {
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useCopyToClipboard } from "@/hooks/useCopyToClipboard";
 
 /** Builds a copyable prompt that activates the sentence-bank-breakdown skill for one sentence. */
 export function PracticeBreakdownPromptGenerator() {
   const [sentence, setSentence] = useState("");
-  const [copied, setCopied] = useState(false);
+  const outputRef = useRef<HTMLTextAreaElement>(null);
+  const {
+    copied, copy,
+  } = useCopyToClipboard({
+    resetAfterMs: 1500,
+  });
 
   const target = sentence.trim() || "<paste the Japanese sentence>";
   const prompt
     = "Use the sentence-bank-breakdown skill. Break this sentence down and output only the JSON:\n\n"
       + `${target}\n\n`
       + "If I've attached a screenshot, use it for context (who's speaking, the situation).";
-
-  async function copy() {
-    try {
-      await navigator.clipboard.writeText(prompt);
-      setCopied(true);
-      globalThis.setTimeout(() => setCopied(false), 1500);
-    }
-    catch {
-      // Clipboard may be unavailable; the textarea is selectable as a fallback.
-    }
-  }
 
   return (
     <Card>
@@ -56,6 +51,7 @@ export function PracticeBreakdownPromptGenerator() {
           />
         </div>
         <Textarea
+          ref={outputRef}
           readOnly
           value={prompt}
           rows={5}
@@ -64,7 +60,7 @@ export function PracticeBreakdownPromptGenerator() {
         />
         <Button
           variant="outline"
-          onClick={copy}
+          onClick={() => void copy(prompt, outputRef.current)}
         >
           {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
           {copied ? "Copied" : "Copy prompt"}

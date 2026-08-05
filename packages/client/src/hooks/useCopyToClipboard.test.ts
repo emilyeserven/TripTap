@@ -66,4 +66,53 @@ describe("useCopyToClipboard", () => {
 
     expect(result.current.copied).toBe(false);
   });
+
+  it("clears copied after resetAfterMs for callers that flash the flag", async () => {
+    vi.useFakeTimers();
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    vi.stubGlobal("navigator", {
+      clipboard: {
+        writeText,
+      },
+    });
+
+    const {
+      result,
+    } = renderHook(() => useCopyToClipboard({
+      resetAfterMs: 1500,
+    }));
+    await act(async () => {
+      await result.current.copy("hello");
+    });
+    expect(result.current.copied).toBe(true);
+
+    act(() => {
+      vi.advanceTimersByTime(1500);
+    });
+    expect(result.current.copied).toBe(false);
+
+    vi.useRealTimers();
+  });
+
+  it("clears copied on demand via reset", async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    vi.stubGlobal("navigator", {
+      clipboard: {
+        writeText,
+      },
+    });
+
+    const {
+      result,
+    } = renderHook(() => useCopyToClipboard());
+    await act(async () => {
+      await result.current.copy("hello");
+    });
+    expect(result.current.copied).toBe(true);
+
+    act(() => {
+      result.current.reset();
+    });
+    expect(result.current.copied).toBe(false);
+  });
 });

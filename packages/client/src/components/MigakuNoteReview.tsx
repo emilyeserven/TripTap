@@ -151,7 +151,10 @@ function ItemReviewHeader({
           : null}
       </div>
 
-      <MigakuReadingPreview reading={candidate.reading} />
+      <MigakuReadingPreview
+        text={candidate.text}
+        reading={candidate.reading}
+      />
     </>
   );
 }

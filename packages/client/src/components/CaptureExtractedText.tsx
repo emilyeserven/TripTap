@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef } from "react";
 
 import { Check, Copy, Save, ScanText } from "lucide-react";
 
@@ -12,6 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { useCopyToClipboard } from "@/hooks/useCopyToClipboard";
 
 /**
  * The extracted-text card of the capture page: OCR progress/error states, the editable text, the
@@ -35,20 +36,14 @@ export function CaptureExtractedText({
   canSave: boolean;
   onSave: () => void;
 }) {
-  const [copied, setCopied] = useState(false);
+  const textRef = useRef<HTMLTextAreaElement>(null);
+  const {
+    copied, copy,
+  } = useCopyToClipboard({
+    resetAfterMs: 1500,
+  });
 
   if (!pending && !errorMessage && !text) return null;
-
-  async function copy() {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      globalThis.setTimeout(() => setCopied(false), 1500);
-    }
-    catch {
-      // Clipboard may be unavailable; the textarea is selectable as a fallback.
-    }
-  }
 
   return (
     <Card>
@@ -73,6 +68,7 @@ export function CaptureExtractedText({
         {text && (
           <>
             <Textarea
+              ref={textRef}
               value={text}
               onChange={e => onTextChange(e.target.value)}
               rows={8}
@@ -81,7 +77,7 @@ export function CaptureExtractedText({
             <div className="flex flex-wrap items-center gap-2">
               <Button
                 variant="outline"
-                onClick={copy}
+                onClick={() => void copy(text, textRef.current)}
               >
                 {copied
                   ? <Check className="size-4" />

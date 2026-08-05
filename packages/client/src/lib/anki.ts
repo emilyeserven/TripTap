@@ -1,12 +1,8 @@
 import type { ChunkCard, ContrastPair, FuriToken } from "@sentence-bank/types";
 
-/**
- * Anki's default text import is tab-separated, one note per line. Collapse any internal tabs or
- * newlines in a field so a stray line break can't split one note across rows (or shift columns).
- */
-function field(value: string | null | undefined): string {
-  return (value ?? "").replace(/\s+/g, " ").trim();
-}
+import { field, hasSentencePair } from "./export-format";
+
+/** Anki's default text import is tab-separated, one note per line. */
 
 /** Concatenate a furigana segmentation into a plain kana reading (ruby where present, base otherwise). */
 export function furiganaReading(tokens: FuriToken[] | null): string {
@@ -24,7 +20,7 @@ export interface AnkiSentenceRow {
 /** True when a sentence has both the expression and meaning an Anki front/back note needs. */
 export function isAnkiSentenceEligible(row: { text: string;
   translation: string | null; }): boolean {
-  return Boolean(row.text.trim() && row.translation && row.translation.trim());
+  return hasSentencePair(row);
 }
 
 /**

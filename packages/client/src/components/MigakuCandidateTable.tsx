@@ -195,7 +195,10 @@ export function MigakuCandidateTable({
                       : null}
                   </div>
 
-                  <MigakuReadingPreview reading={c.reading} />
+                  <MigakuReadingPreview
+                    text={c.text}
+                    reading={c.reading}
+                  />
 
                   <div
                     className="

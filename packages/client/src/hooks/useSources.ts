@@ -1,8 +1,10 @@
 import type { CreateSourceInput, UpdateSourceInput } from "@sentence-bank/types";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
 import { sourcesApi } from "../lib/api";
+
+import { useEntityCacheSync } from "@/hooks/useEntityCacheSync";
 
 const SOURCES_KEY = ["sources"] as const;
 
@@ -15,14 +17,10 @@ export function useSources() {
 
 /** Invalidate sources plus everything that displays a source name / reference. */
 function useSourceInvalidator() {
-  const queryClient = useQueryClient();
-  return () => {
-    for (const key of [SOURCES_KEY, ["sentences"], ["captures"], ["vocab"]]) {
-      queryClient.invalidateQueries({
-        queryKey: key,
-      });
-    }
-  };
+  const {
+    invalidate,
+  } = useEntityCacheSync(SOURCES_KEY, [["sentences"], ["captures"], ["vocab"]]);
+  return invalidate;
 }
 
 export function useCreateSource() {

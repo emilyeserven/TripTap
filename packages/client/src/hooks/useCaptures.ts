@@ -5,6 +5,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { capturesApi } from "../lib/api";
 
+import { useEntityCacheSync } from "@/hooks/useEntityCacheSync";
+
 const CAPTURES_KEY = ["captures"] as const;
 
 export function useCaptures() {
@@ -71,46 +73,39 @@ export function useReorderCaptureSentences(captureId: string) {
 }
 
 export function useCreateCapture() {
-  const queryClient = useQueryClient();
+  const {
+    seed,
+  } = useEntityCacheSync(CAPTURES_KEY);
   return useMutation({
     mutationFn: ({
       input, image,
     }: { input: CreateCaptureInput;
       image: Blob | null; }) =>
       capturesApi.create(input, image),
-    onSuccess: (capture) => {
-      queryClient.setQueryData([...CAPTURES_KEY, capture.id], capture);
-      queryClient.invalidateQueries({
-        queryKey: CAPTURES_KEY,
-      });
-    },
+    onSuccess: seed,
   });
 }
 
 export function useUpdateCapture() {
-  const queryClient = useQueryClient();
+  const {
+    seed,
+  } = useEntityCacheSync(CAPTURES_KEY);
   return useMutation({
     mutationFn: ({
       id, input,
     }: { id: string;
       input: UpdateCaptureInput; }) =>
       capturesApi.update(id, input),
-    onSuccess: (capture) => {
-      // Seed the detail cache so the just-saved capture shows immediately, then refresh the list.
-      queryClient.setQueryData([...CAPTURES_KEY, capture.id], capture);
-      queryClient.invalidateQueries({
-        queryKey: CAPTURES_KEY,
-      });
-    },
+    onSuccess: seed,
   });
 }
 
 export function useDeleteCapture() {
-  const queryClient = useQueryClient();
+  const {
+    invalidate,
+  } = useEntityCacheSync(CAPTURES_KEY);
   return useMutation({
     mutationFn: (id: string) => capturesApi.remove(id),
-    onSuccess: () => queryClient.invalidateQueries({
-      queryKey: CAPTURES_KEY,
-    }),
+    onSuccess: invalidate,
   });
 }
