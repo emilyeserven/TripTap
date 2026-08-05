@@ -30,6 +30,7 @@ export * from "./shadowing-list.js";
 export * from "./shadowing-session.js";
 export * from "./term-usage.js";
 export * from "./terms.js";
+export * from "./text-segments.js";
 export * from "./theory-session.js";
 export * from "./renshuu.js";
 export * from "./tatoeba.js";
