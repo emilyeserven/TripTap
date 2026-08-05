@@ -14,6 +14,7 @@ import {
 import { Combobox } from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { useCopyToClipboard } from "@/hooks/useCopyToClipboard";
 
 /**
  * One selectable row, mode-agnostic. `secondary`/`tertiary` are the export's extra columns
@@ -74,8 +75,10 @@ export function ExportPanel({
   const [ids, setIds] = useState<string[]>(() => loadIds(storageKey));
   const [search, setSearch] = useState("");
   const [sourceFilter, setSourceFilter] = useState("all");
-  const [copied, setCopied] = useState(false);
   const outputRef = useRef<HTMLTextAreaElement>(null);
+  const {
+    copied, copy, reset: resetCopied,
+  } = useCopyToClipboard();
 
   useEffect(() => {
     try {
@@ -110,44 +113,19 @@ export function ExportPanel({
 
   function add(id: string) {
     setIds(prev => (prev.includes(id) ? prev : [...prev, id]));
-    setCopied(false);
+    resetCopied();
   }
   function addAll() {
     setIds(prev => [...prev, ...addableIds.filter(id => !prev.includes(id))]);
-    setCopied(false);
+    resetCopied();
   }
   function removeId(id: string) {
     setIds(prev => prev.filter(x => x !== id));
-    setCopied(false);
+    resetCopied();
   }
   function removeAll() {
     setIds([]);
-    setCopied(false);
-  }
-
-  async function copy() {
-    try {
-      if (globalThis.navigator?.clipboard?.writeText) {
-        await globalThis.navigator.clipboard.writeText(output);
-        setCopied(true);
-        return;
-      }
-    }
-    catch {
-      // fall through to the execCommand path below (needed on plain HTTP)
-    }
-    const el = outputRef.current;
-    if (el) {
-      el.focus();
-      el.select();
-      try {
-        globalThis.document.execCommand("copy");
-        setCopied(true);
-      }
-      catch {
-        setCopied(false);
-      }
-    }
+    resetCopied();
   }
 
   return (
@@ -285,7 +263,7 @@ export function ExportPanel({
           <div className="flex flex-wrap items-center gap-2">
             <Button
               type="button"
-              onClick={() => void copy()}
+              onClick={() => void copy(output, outputRef.current)}
               disabled={output.length === 0}
             >
               {copied ? "Copied!" : "Copy"}

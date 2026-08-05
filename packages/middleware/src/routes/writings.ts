@@ -7,6 +7,7 @@ import {
   listWritings,
   updateWriting,
 } from "@/services/writings";
+import { termsSchema } from "@/routes/schemas/terms";
 
 const writingParams = {
   type: "object",
@@ -15,37 +16,6 @@ const writingParams = {
     id: {
       type: "string",
       format: "uuid",
-    },
-  },
-} as const;
-
-const termsSchema = {
-  type: ["array", "null"],
-  items: {
-    type: "object",
-    additionalProperties: false,
-    required: ["id", "name", "kind", "sourceId", "sourceLabel"],
-    properties: {
-      id: {
-        type: "string",
-      },
-      name: {
-        type: "string",
-      },
-      kind: {
-        type: "string",
-        enum: ["tag", "taxonomy"],
-      },
-      sourceId: {
-        type: "string",
-      },
-      sourceLabel: {
-        type: "string",
-      },
-      category: {
-        type: "string",
-        enum: ["vocabulary", "grammar", "general", "resource"],
-      },
     },
   },
 } as const;

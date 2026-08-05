@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef } from "react";
 
 import { Check, Copy, Download } from "lucide-react";
 
@@ -13,21 +13,16 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 // The skill's markdown, imported raw so the textarea can never drift from the file.
 import skillMd from "@/content/practice-breakdown-skill.md?raw";
+import { useCopyToClipboard } from "@/hooks/useCopyToClipboard";
 
 /** Shows the sentence-breakdown skill in a copyable textarea, with its install path. */
 export function PracticeBreakdownSkillCard() {
-  const [copied, setCopied] = useState(false);
-
-  async function copy() {
-    try {
-      await navigator.clipboard.writeText(skillMd);
-      setCopied(true);
-      globalThis.setTimeout(() => setCopied(false), 1500);
-    }
-    catch {
-      // Clipboard may be unavailable; the textarea is selectable as a fallback.
-    }
-  }
+  const outputRef = useRef<HTMLTextAreaElement>(null);
+  const {
+    copied, copy,
+  } = useCopyToClipboard({
+    resetAfterMs: 1500,
+  });
 
   function download() {
     const blob = new Blob([skillMd], {
@@ -57,6 +52,7 @@ export function PracticeBreakdownSkillCard() {
       </CardHeader>
       <CardContent className="space-y-3">
         <Textarea
+          ref={outputRef}
           readOnly
           value={skillMd}
           rows={12}
@@ -66,7 +62,7 @@ export function PracticeBreakdownSkillCard() {
         <div className="flex flex-wrap gap-2">
           <Button
             variant="outline"
-            onClick={copy}
+            onClick={() => void copy(skillMd, outputRef.current)}
           >
             {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
             {copied ? "Copied" : "Copy SKILL.md"}

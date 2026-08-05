@@ -3,20 +3,20 @@ import type {
   UpdateDrillReasonCategoryInput,
 } from "@sentence-bank/types";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { drillReasonCategoriesApi } from "../lib/api";
 
+import { useEntityCacheSync } from "@/hooks/useEntityCacheSync";
+
 const DRILL_REASON_CATEGORIES_KEY = ["drill-reason-categories"] as const;
 
 function useDrillReasonCategoryInvalidator() {
-  const queryClient = useQueryClient();
-  return () => {
-    queryClient.invalidateQueries({
-      queryKey: DRILL_REASON_CATEGORIES_KEY,
-    });
-  };
+  const {
+    invalidate,
+  } = useEntityCacheSync(DRILL_REASON_CATEGORIES_KEY);
+  return invalidate;
 }
 
 export function useDrillReasonCategories() {

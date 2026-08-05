@@ -42,7 +42,7 @@ import type {
   WordNote,
   WritingCorrection,
 } from "@sentence-bank/types";
-import { type AnyPgColumn, boolean, customType, date, integer, jsonb, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import { type AnyPgColumn, boolean, customType, date, index, integer, jsonb, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 
 /** Postgres `bytea` column mapped to a Node {@link Buffer}. */
 const bytea = customType<{ data: Buffer }>({
@@ -114,7 +114,7 @@ export const sentences = pgTable("sentences", {
   createdAt: timestamp("created_at", {
     withTimezone: true,
   }).notNull().defaultNow(),
-});
+}, t => [index("sentences_terms_gin").using("gin", t.terms)]);
 
 export type SentenceRow = typeof sentences.$inferSelect;
 export type NewSentenceRow = typeof sentences.$inferInsert;
@@ -227,7 +227,7 @@ export const practiceSentences = pgTable("practice_sentences", {
   createdAt: timestamp("created_at", {
     withTimezone: true,
   }).notNull().defaultNow(),
-});
+}, t => [index("practice_sentences_terms_gin").using("gin", t.terms)]);
 
 export type PracticeSentenceRow = typeof practiceSentences.$inferSelect;
 export type NewPracticeSentenceRow = typeof practiceSentences.$inferInsert;
@@ -321,7 +321,7 @@ export const mySentences = pgTable("my_sentences", {
   createdAt: timestamp("created_at", {
     withTimezone: true,
   }).notNull().defaultNow(),
-});
+}, t => [index("my_sentences_terms_gin").using("gin", t.terms), index("my_sentences_incorrect_grammar_terms_gin").using("gin", t.incorrectGrammarTerms)]);
 
 export type MySentenceRow = typeof mySentences.$inferSelect;
 export type NewMySentenceRow = typeof mySentences.$inferInsert;
@@ -356,7 +356,7 @@ export const writings = pgTable("writings", {
   updatedAt: timestamp("updated_at", {
     withTimezone: true,
   }).notNull().defaultNow(),
-});
+}, t => [index("writings_terms_gin").using("gin", t.terms)]);
 
 export type WritingRow = typeof writings.$inferSelect;
 export type NewWritingRow = typeof writings.$inferInsert;
@@ -398,7 +398,7 @@ export const questionSheets = pgTable("question_sheets", {
   updatedAt: timestamp("updated_at", {
     withTimezone: true,
   }).notNull().defaultNow(),
-});
+}, t => [index("question_sheets_grammar_terms_gin").using("gin", t.grammarTerms)]);
 
 export type QuestionSheetRow = typeof questionSheets.$inferSelect;
 export type NewQuestionSheetRow = typeof questionSheets.$inferInsert;
@@ -456,13 +456,17 @@ export const listeningSessions = pgTable("listening_sessions", {
   passive: boolean("passive").notNull().default(false),
   durationMinutes: integer("duration_minutes").notNull().default(0),
   terms: jsonb("terms").$type<SentenceTermRef[]>(),
+  // Learner-chosen area this session's XP feeds; null falls back to the feature's default area.
+  learningArea: text("learning_area").$type<LearningArea>(),
+  // When false the session earns no XP — sourced rather than produced work.
+  countsTowardXp: boolean("counts_toward_xp").notNull().default(true),
   createdAt: timestamp("created_at", {
     withTimezone: true,
   }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", {
     withTimezone: true,
   }).notNull().defaultNow(),
-});
+}, t => [index("listening_sessions_terms_gin").using("gin", t.terms)]);
 
 export type ListeningSessionRow = typeof listeningSessions.$inferSelect;
 export type NewListeningSessionRow = typeof listeningSessions.$inferInsert;
@@ -533,13 +537,17 @@ export const shadowingSessions = pgTable("shadowing_sessions", {
   segments: jsonb("segments").$type<ShadowingSegment[]>(),
   entries: jsonb("entries").$type<ListeningEntry[]>(),
   terms: jsonb("terms").$type<SentenceTermRef[]>(),
+  // Learner-chosen area this session's XP feeds; null falls back to the feature's default area.
+  learningArea: text("learning_area").$type<LearningArea>(),
+  // When false the session earns no XP — sourced rather than produced work.
+  countsTowardXp: boolean("counts_toward_xp").notNull().default(true),
   createdAt: timestamp("created_at", {
     withTimezone: true,
   }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", {
     withTimezone: true,
   }).notNull().defaultNow(),
-});
+}, t => [index("shadowing_sessions_terms_gin").using("gin", t.terms)]);
 
 export type ShadowingSessionRow = typeof shadowingSessions.$inferSelect;
 export type NewShadowingSessionRow = typeof shadowingSessions.$inferInsert;
@@ -581,6 +589,10 @@ export const readingSessions = pgTable("reading_sessions", {
   bookmarkTitle: text("bookmark_title"),
   bookmarkUrl: text("bookmark_url"),
   section: jsonb("section").$type<BookmarkSectionRef>(),
+  // Learner-chosen area this session's XP feeds; null falls back to the feature's default area.
+  learningArea: text("learning_area").$type<LearningArea>(),
+  // When false the session earns no XP — sourced rather than produced work.
+  countsTowardXp: boolean("counts_toward_xp").notNull().default(true),
   createdAt: timestamp("created_at", {
     withTimezone: true,
   }).notNull().defaultNow(),
@@ -685,6 +697,10 @@ export const lessons = pgTable("lessons", {
   answerSheetIds: jsonb("answer_sheet_ids").$type<string[]>(),
   // Tutoring-session length in minutes; earns per-minute XP across Speaking/Listening/Grammar.
   durationMinutes: integer("duration_minutes").notNull().default(0),
+  // Learner-chosen area this session's XP feeds; null falls back to the feature's default area.
+  learningArea: text("learning_area").$type<LearningArea>(),
+  // When false the session earns no XP — sourced rather than produced work.
+  countsTowardXp: boolean("counts_toward_xp").notNull().default(true),
   createdAt: timestamp("created_at", {
     withTimezone: true,
   }).notNull().defaultNow(),
@@ -970,7 +986,7 @@ export const aiLessonGrammar = pgTable("ai_lesson_grammar", {
   sortOrder: integer("sort_order").notNull(),
   // App-set annotation (not part of the import contract): associated Grammar source tags.
   grammarTerms: jsonb("grammar_terms").$type<SentenceTermRef[]>(),
-});
+}, t => [index("ai_lesson_grammar_terms_gin").using("gin", t.grammarTerms)]);
 
 /** `ai_lesson_source_sentences` — real sentences with per-sentence breakdown (JSONB). */
 export const aiLessonSourceSentences = pgTable("ai_lesson_source_sentences", {
@@ -992,7 +1008,7 @@ export const aiLessonSourceSentences = pgTable("ai_lesson_source_sentences", {
   sortOrder: integer("sort_order").notNull(),
   // App-set annotation (not part of the import contract): associated Grammar source tags.
   grammarTerms: jsonb("grammar_terms").$type<SentenceTermRef[]>(),
-});
+}, t => [index("ai_lesson_source_sentences_grammar_terms_gin").using("gin", t.grammarTerms)]);
 
 /** `ai_lesson_culture` — short cultural-context cards; terms embedded as JSONB. */
 export const aiLessonCulture = pgTable("ai_lesson_culture", {

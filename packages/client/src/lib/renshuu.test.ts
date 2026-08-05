@@ -48,6 +48,21 @@ describe("toRenshuuText", () => {
       translation: null,
     }])).toBe("");
   });
+
+  it("collapses embedded newlines and tabs so one row can't split into two", () => {
+    const text = toRenshuuText([
+      {
+        text: "毎朝\nコーヒーを飲む",
+        translation: "I drink\tcoffee",
+      },
+      {
+        text: "犬",
+        translation: "dog",
+      },
+    ]);
+    expect(text).toBe("毎朝 コーヒーを飲む\tI drink coffee\n犬\tdog");
+    expect(text.split("\n")).toHaveLength(2);
+  });
 });
 
 describe("toRenshuuVocabText", () => {
@@ -71,5 +86,16 @@ describe("toRenshuuVocabText", () => {
       },
     ]);
     expect(text).toBe("行く/いく\n犬\n好き/すき");
+  });
+
+  it("collapses embedded newlines so one term can't split into two rows", () => {
+    const text = toRenshuuVocabText([
+      {
+        term: "食べ\nる",
+        reading: "たべる",
+      },
+    ]);
+    expect(text).toBe("食べ る/たべる");
+    expect(text.split("\n")).toHaveLength(1);
   });
 });

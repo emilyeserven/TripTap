@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 
+import { FuriganaScope } from "@/components/ai-lesson/FuriganaScope";
 import { MigakuCandidateTable } from "@/components/MigakuCandidateTable";
 import { MigakuNoteReview } from "@/components/MigakuNoteReview";
 import { Button } from "@/components/ui/button";
@@ -40,9 +41,13 @@ function MigakuImportReviewPage() {
         ? <p className="text-muted-foreground">This import has already been committed.</p>
         : null}
       {detail && detail.status === "parsed"
-        ? (detail.format === "migaku"
-          ? <MigakuNoteReview detail={detail} />
-          : <MigakuCandidateTable detail={detail} />)
+        ? (
+          <FuriganaScope>
+            {detail.format === "migaku"
+              ? <MigakuNoteReview detail={detail} />
+              : <MigakuCandidateTable detail={detail} />}
+          </FuriganaScope>
+        )
         : null}
     </section>
   );

@@ -4,6 +4,7 @@ import swagger from "@fastify/swagger";
 import swaggerUi from "@fastify/swagger-ui";
 import Fastify, { type FastifyInstance } from "fastify";
 import { activityRoutes } from "@/routes/activity";
+import { termUsageRoutes } from "@/routes/term-usage";
 import { aiLessonRoutes } from "@/routes/ai-lessons";
 import { answerSheetRoutes } from "@/routes/answer-sheets";
 import { bookmarksRoutes } from "@/routes/bookmarks";
@@ -220,6 +221,10 @@ export async function buildApp(): Promise<FastifyInstance> {
           name: "activity",
           description: "Daily activity feed derived from learner XP",
         },
+        {
+          name: "terms",
+          description: "Cross-feature usage of a borrowed taxonomy term (tag)",
+        },
       ],
     },
   });
@@ -265,6 +270,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(settingsRoutes);
   await app.register(xpRoutes);
   await app.register(activityRoutes);
+  await app.register(termUsageRoutes);
 
   return app;
 }

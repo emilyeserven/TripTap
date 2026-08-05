@@ -10,6 +10,7 @@ import { AiLessonBadge } from "@/components/ai-lesson/AiLessonBadge";
 import { ConstructionBlocks } from "@/components/ConstructionBlocks";
 import { GrammarFailureBadge } from "@/components/GrammarFailureBadge";
 import { Markdown } from "@/components/Markdown";
+import { TermUsagesPanel } from "@/components/TermUsagesPanel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAiLessonContent } from "@/hooks/useAiLessons";
@@ -396,6 +397,8 @@ export function GrammarNoteView({
           </Section>
         )
         : null}
+
+      <TermUsagesPanel termId={note.tagId} />
 
       {usages.length > 0
         ? (

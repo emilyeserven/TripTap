@@ -1,22 +1,19 @@
 import type { CreateVocabInput, UpdateVocabInput } from "@sentence-bank/types";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
 import { vocabApi } from "../lib/api";
+
+import { useEntityCacheSync } from "@/hooks/useEntityCacheSync";
 
 const VOCAB_KEY = ["vocab"] as const;
 
 /** Invalidate both the vocab list and any capture-scoped vocab lists. */
 function useVocabInvalidator() {
-  const queryClient = useQueryClient();
-  return () => {
-    queryClient.invalidateQueries({
-      queryKey: VOCAB_KEY,
-    });
-    queryClient.invalidateQueries({
-      queryKey: ["captures"],
-    });
-  };
+  const {
+    invalidate,
+  } = useEntityCacheSync(VOCAB_KEY, [["captures"]]);
+  return invalidate;
 }
 
 export function useVocab() {

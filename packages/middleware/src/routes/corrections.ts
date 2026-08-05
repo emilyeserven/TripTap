@@ -6,6 +6,7 @@ import type {
   TriageCorrectionInput,
   UpdateCorrectionInput,
 } from "@sentence-bank/types";
+import { CORRECTION_IMPORT_KINDS } from "@sentence-bank/types";
 import {
   importCorrections,
   listImportCandidates,
@@ -78,7 +79,7 @@ const importedFromSchema = {
   properties: {
     kind: {
       type: "string",
-      enum: ["my_sentence", "writing", "answer_sheet"],
+      enum: [...CORRECTION_IMPORT_KINDS],
     },
     id: {
       type: "string",
@@ -178,7 +179,8 @@ const grammarStatsQuery = {
   },
 } as const;
 
-const importKindEnum = ["my_sentence", "writing", "answer_sheet"] as const;
+// The importable sources come from the shared contract, so adding one is a types-only change.
+const importKindEnum = [...CORRECTION_IMPORT_KINDS];
 
 const importableQuery = {
   type: "object",

@@ -5,6 +5,7 @@ import {
   resolveTriagePath,
   TRIAGE_TREE,
 } from "@sentence-bank/types";
+import { CORRECTION_IMPORT_KINDS } from "@sentence-bank/types";
 import { buildApp } from "@/app";
 
 // These tests use Fastify's `inject` + JSON-schema validation and the pure triage tree, so they run
@@ -224,6 +225,20 @@ test("GET /api/corrections/importable requires a known kind", async () => {
     url: "/api/corrections/importable?kind=robots",
   });
   assert.equal(bad.statusCode, 400);
+  await app.close();
+});
+
+test("GET /api/corrections/importable accepts every shared import kind", async () => {
+  const app = await buildApp();
+  for (const kind of CORRECTION_IMPORT_KINDS) {
+    const res = await app.inject({
+      method: "GET",
+      url: `/api/corrections/importable?kind=${kind}`,
+    });
+    // Without a database the handler errors at query time; the point is that the schema accepts the
+    // kind, i.e. reading sessions and practice sentences are importable and not just declared.
+    assert.notEqual(res.statusCode, 400, `${kind} should be an accepted import kind`);
+  }
   await app.close();
 });
 

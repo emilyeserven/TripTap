@@ -19,11 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useCreateDrillSession, useUpdateDrillSession } from "@/hooks/useDrillSessions";
-
-/** Today's date as `YYYY-MM-DD`, for the default session date. */
-function todayIso(): string {
-  return new Date().toISOString().slice(0, 10);
-}
+import { todayDateString } from "@/lib/daily-lineup";
 
 /** A suggested session title built from the attached resource (and section, when one is chosen). */
 function drillTitleFor(bookmarkTitle: string | null, section: BookmarkSectionRef | null): string {
@@ -53,7 +49,7 @@ export function DrillSessionForm({
   const update = useUpdateDrillSession();
   const editing = session !== undefined;
 
-  const [date, setDate] = useState(session?.date ?? todayIso());
+  const [date, setDate] = useState(session?.date ?? todayDateString(new Date()));
   const [title, setTitle] = useState(session?.title ?? "");
   const [notes, setNotes] = useState(session?.notes ?? "");
   const [mistakes, setMistakes] = useState<DrillMistake[]>(session?.mistakes ?? []);

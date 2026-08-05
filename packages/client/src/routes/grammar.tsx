@@ -11,6 +11,7 @@ import { Accordion } from "@/components/ui/accordion";
 import { Combobox } from "@/components/ui/combobox";
 import { useAiLessonContent } from "@/hooks/useAiLessons";
 import { useGrammarNotes } from "@/hooks/useGrammarNotes";
+import { useMySentences } from "@/hooks/useMySentences";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useSentences } from "@/hooks/useSentences";
 import { dedupeGrammarTags, sentencesByGrammarTagId } from "@/lib/grammar-links";
@@ -31,6 +32,9 @@ function GrammarPage() {
   const {
     data: grammarNotes,
   } = useGrammarNotes();
+  const {
+    data: mySentences,
+  } = useMySentences();
   const [aiLesson, setAiLesson] = useState("all");
   const [grammarTag, setGrammarTag] = useState("all");
 
@@ -73,10 +77,11 @@ function GrammarPage() {
     ];
   }, [items]);
 
-  // Cross-link: grammar-tag id → sentences (manual + AI-Lesson-mined) that carry the same tag.
+  // Cross-link: grammar-tag id → sentences (manual + AI-Lesson-mined + the learner's own) that carry
+  // the same tag. The My Sentences arm is what `GrammarNoteView` already shows.
   const linkMap = useMemo(
-    () => sentencesByGrammarTagId(manualSentences ?? [], data?.sentences ?? []),
-    [manualSentences, data],
+    () => sentencesByGrammarTagId(manualSentences ?? [], data?.sentences ?? [], mySentences ?? []),
+    [manualSentences, data, mySentences],
   );
 
   const filtered = items.filter((g) => {

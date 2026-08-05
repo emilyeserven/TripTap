@@ -6,7 +6,7 @@
  */
 
 import type { RenshuuExampleSentence } from "@sentence-bank/types";
-import { generateFurigana } from "@/services/furigana";
+import { generateFurigana, getFuriganaOverrides } from "@/services/furigana";
 import { fetchJsonWithTimeout } from "@/services/http";
 import { RenshuuNotConfiguredError, RenshuuUnavailableError } from "@/services/renshuu/errors";
 import { normalizeJapaneseOrthography } from "@/services/renshuu/orthography";
@@ -88,12 +88,14 @@ export async function searchExampleSentences(
     .map(toExampleSentence)
     .filter((s): s is RenshuuExampleSentence => s !== null);
 
-  // Generate ruby furigana over the normalized text so results render like bank sentences. Best-effort:
-  // a generation failure just leaves that sentence without furigana (never fails the whole search).
+  // Generate ruby furigana over the normalized text so results render like bank sentences — including
+  // the learner's vocab reading overrides. Best-effort: a generation failure just leaves that sentence
+  // without furigana (never fails the whole search).
+  const overrides = await getFuriganaOverrides();
   return Promise.all(mapped.map(async (s) => {
     const {
       tokens,
-    } = await generateFurigana(s.text);
+    } = await generateFurigana(s.text, overrides);
     return {
       ...s,
       reading: tokens,

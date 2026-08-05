@@ -1,12 +1,11 @@
 import type {
   MySentence,
   Sentence,
-  SentenceTermRef,
   SourceSentenceItem,
   WithAiLesson,
 } from "@sentence-bank/types";
 
-import { groupTermsByCategory } from "./terms";
+import { grammarTermsOf } from "@sentence-bank/types";
 
 /** A sentence linked to a grammar item because they share a Grammar source tag. */
 export interface LinkedSentence {
@@ -19,21 +18,15 @@ export interface LinkedSentence {
   mine?: boolean;
 }
 
-/** The grammar-channel term refs on a manual/bank sentence. */
-export function grammarTermsOf(sentence: Sentence): SentenceTermRef[] {
-  return groupTermsByCategory(sentence.terms ?? []).grammar;
-}
-
-/** Dedupe a flat list of term refs by id, sorted by name — for filter options. */
-export function dedupeGrammarTags(terms: SentenceTermRef[]): SentenceTermRef[] {
-  const byId = new Map<string, SentenceTermRef>();
-  for (const t of terms) if (!byId.has(t.id)) byId.set(t.id, t);
-  return [...byId.values()].sort((a, b) => a.name.localeCompare(b.name));
-}
+export { dedupeTerms as dedupeGrammarTags, grammarTermsOf } from "@sentence-bank/types";
 
 /**
  * Map each grammar-tag id → the sentences (bank + AI-Lesson-mined + the learner's own) carrying that
  * tag. Used to render "Sentences using this grammar" under a grammar item that shares the tag.
+ *
+ * Every arm reads its tags through the shared {@link grammarTermsOf}, which handles both the
+ * all-channels `terms` list and the pre-split `grammarTerms` list — so adding another tagged entity
+ * here needs no new unpacking logic.
  */
 export function sentencesByGrammarTagId(
   manual: Sentence[],
@@ -56,7 +49,7 @@ export function sentencesByGrammarTagId(
     }
   }
   for (const s of aiLessonSentences) {
-    for (const t of s.grammarTerms ?? []) {
+    for (const t of grammarTermsOf(s)) {
       push(t.id, {
         id: s.id,
         text: s.jp,
@@ -66,7 +59,7 @@ export function sentencesByGrammarTagId(
     }
   }
   for (const s of mySentences) {
-    for (const t of groupTermsByCategory(s.terms ?? []).grammar) {
+    for (const t of grammarTermsOf(s)) {
       push(t.id, {
         id: s.id,
         text: s.correction?.trim() ? s.correction : s.text,

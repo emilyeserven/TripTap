@@ -107,6 +107,28 @@ export function isFilledWordNote(note: LessonWordNote): boolean {
   return Boolean(note.word?.trim() && note.reading?.trim() && note.meaning?.trim());
 }
 
+/**
+ * The area a session's XP credits: the learner's choice when they made one, else the feature's
+ * default. Before this, the default was the only option for reading, listening, shadowing and
+ * lessons — their areas were hardcoded at the grant site, so a listening session spent on grammar
+ * still credited Listening.
+ */
+function sessionArea<A extends LearningArea>(
+  row: { learningArea?: LearningArea | null },
+  fallback: A,
+): LearningArea {
+  return row.learningArea ?? fallback;
+}
+
+/**
+ * Whether a session earns XP at all. Sourced-not-produced work opts out — the rationale dialogues
+ * already used ("a script copied out of a textbook was sourced, not produced"), now available to
+ * every session type.
+ */
+function earnsXp(row: { countsTowardXp?: boolean }): boolean {
+  return row.countsTowardXp !== false;
+}
+
 /** Attribute `xp` to a sheet's learning areas, split evenly; sheets with none fall back to Grammar. */
 function splitAcrossAreas(
   areas: LearningArea[] | null,
@@ -140,6 +162,10 @@ interface ReadingXpRow {
   wordNotes: WordNote[] | null;
   date: string;
   createdAt: Date;
+  /** Learner-chosen area; absent/null falls back to the feature's default. */
+  learningArea?: LearningArea | null;
+  /** Absent is treated as true — only an explicit false opts the row out. */
+  countsTowardXp?: boolean;
 }
 
 /** A translation earns only this fraction of the full rate when it wasn't verified as correct. */
@@ -209,10 +235,10 @@ export function readingXp(rows: ReadingXpRow[], rates: XpRates = DEFAULT_XP_RATE
       const bankedWords = (row.wordNotes ?? []).filter(note => note.mySentenceId).length;
       base = translatedXp + bankedWords * rates.readingWordNote;
     }
-    const xp = base * readingDifficultyMultiplier(row.difficulty);
+    const xp = earnsXp(row) ? base * readingDifficultyMultiplier(row.difficulty) : 0;
     return xp > 0
       ? [{
-        area: "Reading" as const,
+        area: sessionArea(row, "Reading"),
         feature: "reading" as const,
         xp,
         at: new Date(row.date),
@@ -358,6 +384,10 @@ interface ListeningXpRow {
   durationMinutes: number;
   date: string;
   createdAt: Date;
+  /** Learner-chosen area; absent/null falls back to the feature's default. */
+  learningArea?: LearningArea | null;
+  /** Absent is treated as true — only an explicit false opts the row out. */
+  countsTowardXp?: boolean;
 }
 
 /**
@@ -366,12 +396,13 @@ interface ListeningXpRow {
  */
 export function listeningXp(rows: ListeningXpRow[], rates: XpRates = DEFAULT_XP_RATES): XpGrant[] {
   return rows.flatMap((row) => {
-    const xp = row.passive
+    const base = row.passive
       ? row.durationMinutes * rates.listeningPassiveMinute
       : (row.entries?.length ?? 0) * rates.listeningEntry;
+    const xp = earnsXp(row) ? base : 0;
     return xp > 0
       ? [{
-        area: "Listening" as const,
+        area: sessionArea(row, "Listening"),
         feature: "listening" as const,
         xp,
         at: new Date(row.date),
@@ -393,13 +424,17 @@ interface ShadowingXpRow {
   completedLoops: number;
   date: string;
   createdAt: Date;
+  /** Learner-chosen area; absent/null falls back to the feature's default. */
+  learningArea?: LearningArea | null;
+  /** Absent is treated as true — only an explicit false opts the row out. */
+  countsTowardXp?: boolean;
 }
 
 /** 0.25xp per completed segment loop → Speaking. */
 export function shadowingXp(rows: ShadowingXpRow[], rates: XpRates = DEFAULT_XP_RATES): XpGrant[] {
-  return rows.flatMap(row => (row.completedLoops > 0
+  return rows.flatMap(row => (row.completedLoops > 0 && earnsXp(row)
     ? [{
-      area: "Speaking" as const,
+      area: sessionArea(row, "Speaking"),
       feature: "shadowing" as const,
       xp: row.completedLoops * rates.shadowingLoop,
       at: new Date(row.date),
@@ -431,9 +466,9 @@ interface DialogueXpRow {
 export function dialoguesXp(rows: DialogueXpRow[], rates: XpRates = DEFAULT_XP_RATES): XpGrant[] {
   return rows.flatMap((row) => {
     const lines = row.lines?.length ?? 0;
-    if (!row.countsTowardXp || lines === 0) return [];
+    if (!earnsXp(row) || lines === 0) return [];
     return [{
-      area: row.learningArea ?? ("Speaking" as const),
+      area: sessionArea(row, "Speaking"),
       feature: "dialogues" as const,
       xp: lines * rates.dialogueLine,
       at: new Date(row.date),
@@ -481,7 +516,7 @@ export function drillXp(rows: DrillXpRow[], rates: XpRates = DEFAULT_XP_RATES): 
       0,
     );
     return [{
-      area: row.learningArea ?? ("Grammar" as const),
+      area: sessionArea(row, "Grammar"),
       feature: "drills" as const,
       xp: questionXp + mistakeXp,
       at: new Date(row.date),
@@ -503,6 +538,10 @@ interface LessonXpRow {
   listeningNotes: LessonListeningNote[] | null;
   wordNotes: LessonWordNote[] | null;
   durationMinutes: number;
+  /** Learner-chosen area; absent/null falls back to the feature's default. */
+  learningArea?: LearningArea | null;
+  /** Absent is treated as true — only an explicit false opts the row out. */
+  countsTowardXp?: boolean;
 }
 
 /** Areas a tutoring session's minutes count toward — each earns the per-minute rate independently. */
@@ -511,9 +550,15 @@ const LESSON_MINUTE_AREAS = ["Speaking", "Listening", "Grammar"] as const;
 /**
  * 1xp per line → Listening; 0.5xp per fully-filled word note → Vocabulary; plus the session's minutes
  * earn `lessonMinute` xp each toward every {@link LESSON_MINUTE_AREAS} area (Speaking/Listening/Grammar).
+ *
+ * When the learner picks an area for the lesson, the minutes credit that area alone instead of being
+ * spread across all three — a lesson spent entirely on grammar shouldn't also bank Speaking time.
+ * The per-line and per-word-note grants keep their intrinsic areas, since those measure what the
+ * note *is* rather than how the hour was spent.
  */
 export function lessonXp(rows: LessonXpRow[], rates: XpRates = DEFAULT_XP_RATES): XpGrant[] {
   return rows.flatMap((row) => {
+    if (!earnsXp(row)) return [];
     const at = new Date(row.date);
     const meta = {
       sourceId: row.id,
@@ -547,7 +592,8 @@ export function lessonXp(rows: LessonXpRow[], rates: XpRates = DEFAULT_XP_RATES)
       });
     }
     if (row.durationMinutes > 0) {
-      for (const area of LESSON_MINUTE_AREAS) {
+      const minuteAreas = row.learningArea ? [row.learningArea] : LESSON_MINUTE_AREAS;
+      for (const area of minuteAreas) {
         grants.push({
           area,
           feature: "lessons",
@@ -603,7 +649,7 @@ export function theoryStudyXp(rows: TheoryStudyXpRow[], rates: XpRates = DEFAULT
     const xp = base + (row.notesCount ?? 0) * rates.theoryStudyNote;
     return xp > 0
       ? [{
-        area: row.learningArea ?? ("Grammar" as const),
+        area: sessionArea(row, "Grammar"),
         feature: "theoryStudy" as const,
         xp,
         at: new Date(row.date),
@@ -620,7 +666,7 @@ export function theoryStudyXp(rows: TheoryStudyXpRow[], rates: XpRates = DEFAULT
 }
 
 /** Round away float noise from fractional rates (0.25/0.5) without hiding quarter points. */
-function roundXp(xp: number): number {
+export function roundXp(xp: number): number {
   return Math.round(xp * 100) / 100;
 }
 
@@ -844,6 +890,8 @@ export async function loadXpGrants(): Promise<XpGrant[]> {
       lines: readingSessions.lines,
       wordNotes: readingSessions.wordNotes,
       date: readingSessions.date,
+      learningArea: readingSessions.learningArea,
+      countsTowardXp: readingSessions.countsTowardXp,
       createdAt: readingSessions.createdAt,
     }).from(readingSessions),
     db.select({
@@ -880,6 +928,8 @@ export async function loadXpGrants(): Promise<XpGrant[]> {
       passive: listeningSessions.passive,
       durationMinutes: listeningSessions.durationMinutes,
       date: listeningSessions.date,
+      learningArea: listeningSessions.learningArea,
+      countsTowardXp: listeningSessions.countsTowardXp,
       createdAt: listeningSessions.createdAt,
     }).from(listeningSessions),
     db.select({
@@ -887,6 +937,8 @@ export async function loadXpGrants(): Promise<XpGrant[]> {
       title: shadowingSessions.title,
       completedLoops: shadowingSessions.completedLoops,
       date: shadowingSessions.date,
+      learningArea: shadowingSessions.learningArea,
+      countsTowardXp: shadowingSessions.countsTowardXp,
       createdAt: shadowingSessions.createdAt,
     }).from(shadowingSessions),
     db.select({
@@ -913,6 +965,8 @@ export async function loadXpGrants(): Promise<XpGrant[]> {
       listeningNotes: lessons.listeningNotes,
       wordNotes: lessons.wordNotes,
       durationMinutes: lessons.durationMinutes,
+      learningArea: lessons.learningArea,
+      countsTowardXp: lessons.countsTowardXp,
     }).from(lessons),
     db.select({
       id: theorySessions.id,

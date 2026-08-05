@@ -13,6 +13,7 @@ import {
   updateSentence,
 } from "@/services/sentences";
 import { MediaNotConfiguredError, MediaUnavailableError } from "@/services/media";
+import { termsSchema } from "@/routes/schemas/terms";
 
 const sentenceParams = {
   type: "object",
@@ -58,34 +59,7 @@ const createSentenceBody = {
       type: ["string", "null"],
     },
     terms: {
-      type: ["array", "null"],
-      items: {
-        type: "object",
-        additionalProperties: false,
-        required: ["id", "name", "kind", "sourceId", "sourceLabel"],
-        properties: {
-          id: {
-            type: "string",
-          },
-          name: {
-            type: "string",
-          },
-          kind: {
-            type: "string",
-            enum: ["tag", "taxonomy"],
-          },
-          sourceId: {
-            type: "string",
-          },
-          sourceLabel: {
-            type: "string",
-          },
-          category: {
-            type: "string",
-            enum: ["vocabulary", "grammar", "general", "resource"],
-          },
-        },
-      },
+      ...termsSchema,
     },
     captureId: {
       type: ["string", "null"],

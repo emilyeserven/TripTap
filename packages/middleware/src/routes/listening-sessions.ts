@@ -10,6 +10,8 @@ import {
   listListeningSessions,
   updateListeningSession,
 } from "@/services/listening-sessions";
+import { termsSchema } from "@/routes/schemas/terms";
+import { LEARNING_AREAS } from "@sentence-bank/types";
 
 const listeningSessionParams = {
   type: "object",
@@ -18,37 +20,6 @@ const listeningSessionParams = {
     id: {
       type: "string",
       format: "uuid",
-    },
-  },
-} as const;
-
-const termsSchema = {
-  type: ["array", "null"],
-  items: {
-    type: "object",
-    additionalProperties: false,
-    required: ["id", "name", "kind", "sourceId", "sourceLabel"],
-    properties: {
-      id: {
-        type: "string",
-      },
-      name: {
-        type: "string",
-      },
-      kind: {
-        type: "string",
-        enum: ["tag", "taxonomy"],
-      },
-      sourceId: {
-        type: "string",
-      },
-      sourceLabel: {
-        type: "string",
-      },
-      category: {
-        type: "string",
-        enum: ["vocabulary", "grammar", "general", "resource"],
-      },
     },
   },
 } as const;
@@ -149,6 +120,13 @@ const createListeningSessionBody = {
       minimum: 0,
     },
     terms: termsSchema,
+    learningArea: {
+      type: ["string", "null"],
+      enum: [...LEARNING_AREAS, null],
+    },
+    countsTowardXp: {
+      type: "boolean",
+    },
   },
 } as const;
 

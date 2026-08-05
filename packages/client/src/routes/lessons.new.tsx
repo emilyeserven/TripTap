@@ -8,17 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useCreateLesson } from "@/hooks/useLessons";
 import { usePageTitle } from "@/hooks/usePageTitle";
+import { todayDateString } from "@/lib/daily-lineup";
 
 export const Route = createFileRoute("/lessons/new")({
   component: NewLessonPage,
 });
-
-/** Today as a "YYYY-MM-DD" string (local time) for the default lesson date. */
-function todayIso(): string {
-  const now = new Date();
-  const offsetMs = now.getTimezoneOffset() * 60_000;
-  return new Date(now.getTime() - offsetMs).toISOString().slice(0, 10);
-}
 
 /**
  * Minimal create step: a lesson is created immediately (so it gets an id) with just a date, then the
@@ -28,7 +22,7 @@ function NewLessonPage() {
   usePageTitle("New lesson");
   const navigate = useNavigate();
   const create = useCreateLesson();
-  const [date, setDate] = useState(todayIso());
+  const [date, setDate] = useState(todayDateString(new Date()));
 
   const submit = async () => {
     if (!date || create.isPending) return;

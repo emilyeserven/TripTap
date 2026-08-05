@@ -179,12 +179,27 @@ export function GrammarItemRow({
                     key={s.id}
                     className="space-y-0.5 border-l-2 pl-3 text-sm"
                   >
-                    <p>{s.text}</p>
+                    {s.mine
+                      ? (
+                        <Link
+                          to="/my-sentences/$id"
+                          params={{
+                            id: s.id,
+                          }}
+                          className="hover:underline"
+                        >
+                          {s.text}
+                        </Link>
+                      )
+                      : <p>{s.text}</p>}
                     {s.translation
                       ? <p className="text-muted-foreground">{s.translation}</p>
                       : null}
                     {s.aiLessonTitle
                       ? <p className="text-xs text-muted-foreground">{s.aiLessonTitle}</p>
+                      : null}
+                    {s.mine
+                      ? <p className="text-xs text-muted-foreground">Your sentence</p>
                       : null}
                   </li>
                 ))}

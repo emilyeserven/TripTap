@@ -1184,3 +1184,113 @@ test("dialoguesXp ignores a counted dialogue with no lines", () => {
     [],
   );
 });
+
+/* ── Learner-chosen area and XP opt-out (shared session fields) ─────────────────────────────────── */
+
+test("a session's XP credits the learner's chosen area instead of the feature default", () => {
+  const [listening] = listeningXp([{
+    id: "l1",
+    title: "Grammar drills on video",
+    date: "2026-07-20",
+    entries: null,
+    passive: true,
+    durationMinutes: 10,
+    createdAt: new Date("2026-07-20T00:00:00Z"),
+    learningArea: "Grammar",
+  }]);
+  assert.equal(listening.area, "Grammar");
+
+  const [shadowing] = shadowingXp([{
+    id: "s1",
+    title: "S",
+    date: "2026-07-20",
+    completedLoops: 4,
+    createdAt: new Date("2026-07-20T00:00:00Z"),
+    learningArea: "Listening",
+  }]);
+  assert.equal(shadowing.area, "Listening");
+
+  const [reading] = readingXp([{
+    id: "r1",
+    title: "R",
+    mode: "freeform",
+    difficulty: null,
+    passive: true,
+    timeSpentMinutes: 20,
+    freeformTranslation: null,
+    freeformCorrection: null,
+    freeformNote: null,
+    freeformVerdict: null,
+    lines: null,
+    wordNotes: null,
+    date: "2026-07-20",
+    createdAt: new Date("2026-07-20T00:00:00Z"),
+    learningArea: "Vocabulary",
+  }]);
+  assert.equal(reading.area, "Vocabulary");
+});
+
+test("a session with no chosen area still credits the feature default", () => {
+  const [listening] = listeningXp([{
+    id: "l1",
+    title: "L",
+    date: "2026-07-20",
+    entries: null,
+    passive: true,
+    durationMinutes: 10,
+    createdAt: new Date("2026-07-20T00:00:00Z"),
+  }]);
+  assert.equal(listening.area, "Listening");
+});
+
+test("a session marked as not counting toward XP earns nothing", () => {
+  assert.deepEqual(
+    listeningXp([{
+      id: "l1",
+      title: "L",
+      date: "2026-07-20",
+      entries: null,
+      passive: true,
+      durationMinutes: 10,
+      createdAt: new Date("2026-07-20T00:00:00Z"),
+      countsTowardXp: false,
+    }]),
+    [],
+  );
+  assert.deepEqual(
+    shadowingXp([{
+      id: "s1",
+      title: "S",
+      date: "2026-07-20",
+      completedLoops: 4,
+      createdAt: new Date("2026-07-20T00:00:00Z"),
+      countsTowardXp: false,
+    }]),
+    [],
+  );
+});
+
+test("a lesson's minutes credit only the chosen area instead of splitting three ways", () => {
+  const split = lessonXp([{
+    id: "x1",
+    title: "L",
+    date: "2026-07-20",
+    listeningNotes: null,
+    wordNotes: null,
+    durationMinutes: 60,
+  }]);
+  assert.deepEqual(split.map(g => g.area).sort(), ["Grammar", "Listening", "Speaking"]);
+
+  const focused = lessonXp([{
+    id: "x2",
+    title: "L",
+    date: "2026-07-20",
+    listeningNotes: null,
+    wordNotes: null,
+    durationMinutes: 60,
+    learningArea: "Grammar",
+  }]);
+  assert.deepEqual(focused.map(g => g.area), ["Grammar"]);
+  // The hour is credited once, not three times over.
+  assert.equal(focused.length, 1);
+});

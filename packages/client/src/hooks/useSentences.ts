@@ -1,23 +1,20 @@
 import type { CreateSentenceInput, Sentence, UpdateSentenceInput } from "@sentence-bank/types";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { sentencesApi } from "../lib/api";
+
+import { useEntityCacheSync } from "@/hooks/useEntityCacheSync";
 
 const SENTENCES_KEY = ["sentences"] as const;
 
 /** Invalidate both the sentence list and any capture-scoped sentence lists. */
 function useSentenceInvalidator() {
-  const queryClient = useQueryClient();
-  return () => {
-    queryClient.invalidateQueries({
-      queryKey: SENTENCES_KEY,
-    });
-    queryClient.invalidateQueries({
-      queryKey: ["captures"],
-    });
-  };
+  const {
+    invalidate,
+  } = useEntityCacheSync(SENTENCES_KEY, [["captures"]]);
+  return invalidate;
 }
 
 /** Toast if any created/updated sentence came back with a furigana generation error. */

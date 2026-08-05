@@ -3,6 +3,9 @@ import type { FuriToken } from "@sentence-bank/types";
 import KuroshiroImport from "kuroshiro";
 import KuromojiAnalyzerImport from "kuroshiro-analyzer-kuromoji";
 
+import { db } from "@/db";
+import { vocab } from "@/db/schema";
+
 // CJS→ESM interop is inconsistent across these two packages: kuroshiro's real class hides under
 // `.default`, the analyzer's does not. Unwrap defensively.
 const Kuroshiro = (KuroshiroImport as unknown as { default?: typeof KuroshiroImport }).default
@@ -110,6 +113,28 @@ export function applyOverrides(tokens: FuriToken[], overrides: Map<string, strin
     }
   }
   return out;
+}
+
+/**
+ * Reading overrides for the furigana analyzer, sourced from the vocab bank: any vocab with a reading
+ * wins over the analyzer's guess (so users fix names/mis-reads once, in vocab, and it applies here).
+ *
+ * Lives here rather than with the sentence service so every generation path can reach it — the
+ * Migaku and Renshuu importers previously generated readings without overrides simply because the
+ * loader was not importable from where they sat.
+ */
+export async function getFuriganaOverrides(): Promise<Map<string, string>> {
+  const rows = await db.select({
+    term: vocab.term,
+    reading: vocab.reading,
+  }).from(vocab);
+  const map = new Map<string, string>();
+  for (const row of rows) {
+    const term = row.term.trim();
+    const reading = row.reading?.trim();
+    if (term && reading) map.set(term, reading);
+  }
+  return map;
 }
 
 /** Outcome of a furigana generation attempt. `error` is set only when the analyzer threw. */

@@ -1,8 +1,8 @@
 import { and, asc, count, desc, eq, inArray, isNull } from "drizzle-orm";
 import type { CreateSentenceInput, Sentence, UpdateSentenceInput } from "@sentence-bank/types";
 import { db } from "@/db";
-import { sentences, sentenceVocab, type SentenceRow, vocab } from "@/db/schema";
-import { generateFurigana } from "@/services/furigana";
+import { sentences, sentenceVocab, type SentenceRow } from "@/db/schema";
+import { generateFurigana, getFuriganaOverrides } from "@/services/furigana";
 import { deleteMedia, getMedia, type StoredMedia } from "@/services/media";
 
 /** Number of vocab items linked to one sentence. */
@@ -28,24 +28,6 @@ async function vocabCountMap(ids: string[]): Promise<Map<string, number>> {
     .where(inArray(sentenceVocab.sentenceId, ids))
     .groupBy(sentenceVocab.sentenceId);
   return new Map(rows.map(r => [r.sentenceId, Number(r.n)]));
-}
-
-/**
- * Reading overrides for the furigana analyzer, sourced from the vocab bank: any vocab with a reading
- * wins over the analyzer's guess (so users fix names/mis-reads once, in vocab, and it applies here).
- */
-export async function getFuriganaOverrides(): Promise<Map<string, string>> {
-  const rows = await db.select({
-    term: vocab.term,
-    reading: vocab.reading,
-  }).from(vocab);
-  const map = new Map<string, string>();
-  for (const row of rows) {
-    const term = row.term.trim();
-    const reading = row.reading?.trim();
-    if (term && reading) map.set(term, reading);
-  }
-  return map;
 }
 
 /** Map a DB row to the shared `Sentence` wire type. `vocabCount` is supplied by the caller. */
