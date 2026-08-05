@@ -75,6 +75,22 @@ export default [
     },
   },
   {
+    // `crypto.randomUUID` only exists in a secure context, so it's undefined when the app is
+    // served over plain HTTP (e.g. a LAN/Tailnet host). Client code must use `newId()` instead,
+    // which falls back to `getRandomValues`. `lib/id.ts` is the one place allowed to call it.
+    files: ["packages/client/src/**/*.{ts,tsx}"],
+    ignores: ["packages/client/src/lib/id.ts", "packages/client/src/**/*.test.{ts,tsx}"],
+    rules: {
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "MemberExpression[property.name='randomUUID']",
+          message: "crypto.randomUUID is undefined over plain HTTP — use newId() from @/lib/id.",
+        },
+      ],
+    },
+  },
+  {
     // The shared config's Tailwind entry point ("./src/index.css") is resolved from the repo
     // root, where lint runs, so it never resolves and custom @theme tokens (e.g. bg-sidebar)
     // are flagged as unknown. Point it at the client's actual CSS entry point.

@@ -20,6 +20,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useCreateDialogue, useUpdateDialogue } from "@/hooks/useDialogues";
 import { todayDateString } from "@/lib/daily-lineup";
 import { speakerAccent } from "@/lib/dialogue";
+import { newId } from "@/lib/id";
 import { cn } from "@/lib/utils";
 
 /**
@@ -57,7 +58,7 @@ export function DialogueForm({
 
   const editScript = (next: string) => {
     setScript(next);
-    setLines(prev => reconcileDialogueLines(next, prev, () => crypto.randomUUID()));
+    setLines(prev => reconcileDialogueLines(next, prev, newId));
   };
 
   /** Patch one line's annotations; a field blanked out is stored as null rather than "". */
