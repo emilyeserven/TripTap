@@ -6,13 +6,16 @@ import type {
 } from "@sentence-bank/types";
 import { db } from "@/db";
 import { practiceSentenceImages, practiceSentences, type PracticeSentenceRow } from "@/db/schema";
+import { furiganaColumns, furiganaColumnsMany, furiganaColumnsOnEdit } from "@/services/furigana";
 
 /** Map a DB row to the shared `PracticeSentence` wire type. */
 function toPracticeSentence(row: PracticeSentenceRow, hasImage: boolean): PracticeSentence {
   return {
     id: row.id,
     text: row.text,
-    reading: row.reading,
+    readingNote: row.readingNote,
+    reading: row.reading ?? null,
+    readingError: row.readingError ?? null,
     translation: row.translation,
     language: row.language,
     target: row.target,
@@ -63,7 +66,7 @@ async function sentenceHasImage(id: string): Promise<boolean> {
 function toInsert(input: CreatePracticeSentenceInput) {
   return {
     text: input.text,
-    reading: input.reading ?? null,
+    readingNote: input.readingNote ?? null,
     translation: input.translation ?? null,
     language: input.language,
     target: input.target ?? null,
@@ -104,7 +107,11 @@ export async function getPracticeSentence(id: string): Promise<PracticeSentence 
 export async function createPracticeSentence(
   input: CreatePracticeSentenceInput,
 ): Promise<PracticeSentence> {
-  const [row] = await db.insert(practiceSentences).values(toInsert(input)).returning();
+  // Generated the same way as a bank sentence, so practice cards render ruby like everything else.
+  const [row] = await db.insert(practiceSentences).values({
+    ...toInsert(input),
+    ...(await furiganaColumns(input.text)),
+  }).returning();
   // Freshly created — a screenshot is attached afterwards via the image upload endpoint.
   return toPracticeSentence(row, false);
 }
@@ -114,7 +121,14 @@ export async function createPracticeSentencesMany(
   inputs: CreatePracticeSentenceInput[],
 ): Promise<PracticeSentence[]> {
   if (inputs.length === 0) return [];
-  const rows = await db.insert(practiceSentences).values(inputs.map(toInsert)).returning();
+  const furigana = await furiganaColumnsMany(inputs.map(i => i.text));
+  const rows = await db
+    .insert(practiceSentences)
+    .values(inputs.map((input, i) => ({
+      ...toInsert(input),
+      ...furigana[i],
+    })))
+    .returning();
   return rows.map(row => toPracticeSentence(row, false));
 }
 
@@ -122,9 +136,13 @@ export async function updatePracticeSentence(
   id: string,
   input: UpdatePracticeSentenceInput,
 ): Promise<PracticeSentence | null> {
+  const furigana = await furiganaColumnsOnEdit(input.text);
   const [row] = await db
     .update(practiceSentences)
-    .set(input)
+    .set({
+      ...input,
+      ...furigana,
+    })
     .where(eq(practiceSentences.id, id))
     .returning();
   if (!row) return null;

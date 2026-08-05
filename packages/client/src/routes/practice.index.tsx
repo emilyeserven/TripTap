@@ -88,7 +88,7 @@ function PracticePage() {
     () =>
       all.filter(ps =>
         (comprehensionFilter === "all" || ps.comprehension === comprehensionFilter)
-        && matchesSearch(search, ps.text, ps.translation, ps.target, ps.reading)),
+        && matchesSearch(search, ps.text, ps.translation, ps.target, ps.readingNote)),
     [all, search, comprehensionFilter],
   );
 

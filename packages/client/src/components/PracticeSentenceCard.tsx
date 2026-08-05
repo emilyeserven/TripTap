@@ -98,7 +98,7 @@ export function PracticeSentenceCard({
           </div>
         </div>
 
-        {ps.reading ? <p className="text-sm text-muted-foreground">{ps.reading}</p> : null}
+        {ps.readingNote ? <p className="text-sm text-muted-foreground">{ps.readingNote}</p> : null}
 
         <SentenceTranslationReveal
           translation={ps.translation}

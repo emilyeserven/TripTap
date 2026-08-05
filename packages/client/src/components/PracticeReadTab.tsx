@@ -77,8 +77,8 @@ export function PracticeReadTab({
           hint="only the parts you weren't sure of"
         >
           <Input
-            value={draft.reading}
-            onChange={e => set("reading", e.target.value)}
+            value={draft.readingNote}
+            onChange={e => set("readingNote", e.target.value)}
             placeholder="あたまがいたい"
           />
         </PracticeField>

@@ -83,7 +83,7 @@ export const emptyGrammar = (): PracticeGrammar => ({
 export interface PracticeDraft {
   text: string;
   language: string;
-  reading: string;
+  readingNote: string;
   translation: string;
   target: string;
   targetKind: PracticeTargetKind;
@@ -107,7 +107,7 @@ export function toDraft(ps: PracticeSentence): PracticeDraft {
   return {
     text: ps.text,
     language: ps.language,
-    reading: ps.reading ?? "",
+    readingNote: ps.readingNote ?? "",
     translation: ps.translation ?? "",
     target: ps.target ?? "",
     targetKind: ps.targetKind ?? "word",
@@ -132,7 +132,7 @@ export function toInput(draft: PracticeDraft): CreatePracticeSentenceInput {
   return {
     text: draft.text,
     language: draft.language,
-    reading: draft.reading || null,
+    readingNote: draft.readingNote || null,
     translation: draft.translation || null,
     target: draft.target || null,
     targetKind: draft.target ? draft.targetKind : null,

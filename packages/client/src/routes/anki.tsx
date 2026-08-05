@@ -80,8 +80,8 @@ function AnkiPage() {
     label: p.text,
     sublabel: p.translation ?? "",
     secondary: p.translation,
-    // Practice `reading` is already a plain string (not FuriToken[]), so no conversion is needed.
-    tertiary: p.reading,
+    // Practice sentences now carry generated furigana like the bank does, so the same flattener applies.
+    tertiary: furiganaReading(p.reading),
     eligible: isAnkiSentenceEligible(p),
     sourceId: p.sourceId,
     searchExtra: [p.target, p.nuance],

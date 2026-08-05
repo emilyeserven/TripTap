@@ -9,7 +9,7 @@ function practiceSentence(over: Partial<PracticeSentence>): PracticeSentence {
   return {
     id: "ps-1",
     text: "頭が痛い",
-    reading: null,
+    readingNote: null,
     translation: null,
     language: "Japanese",
     target: null,
@@ -36,7 +36,7 @@ function practiceSentence(over: Partial<PracticeSentence>): PracticeSentence {
 describe("toDraft", () => {
   it("maps nulls to editable empties and seeds one blank word/grammar row", () => {
     const draft = toDraft(practiceSentence({}));
-    expect(draft.reading).toBe("");
+    expect(draft.readingNote).toBe("");
     expect(draft.register).toBe(NONE);
     expect(draft.targetKind).toBe("word");
     expect(draft.words).toEqual([{
@@ -69,7 +69,7 @@ describe("toInput", () => {
     expect(input.words).toBeNull();
     expect(input.grammar).toBeNull();
     expect(input.terms).toBeNull();
-    expect(input.reading).toBeNull();
+    expect(input.readingNote).toBeNull();
     expect(input.register).toBeNull();
     expect(input.targetKind).toBeNull();
   });
@@ -98,7 +98,7 @@ describe("toInput", () => {
 
   it("round-trips a fully-filled sentence", () => {
     const ps = practiceSentence({
-      reading: "あたまがいたい",
+      readingNote: "あたまがいたい",
       translation: "My head hurts",
       register: "slang",
       target: "頭が痛い",
@@ -106,7 +106,7 @@ describe("toInput", () => {
       comprehension: "ready",
     });
     const input = toInput(toDraft(ps));
-    expect(input.reading).toBe("あたまがいたい");
+    expect(input.readingNote).toBe("あたまがいたい");
     expect(input.translation).toBe("My head hurts");
     expect(input.register).toBe("slang");
     expect(input.comprehension).toBe("ready");

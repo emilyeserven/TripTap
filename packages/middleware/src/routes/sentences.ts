@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import type { CreateSentenceInput, UpdateSentenceInput } from "@sentence-bank/types";
-import { getVocabForSentence, setVocabForSentence } from "@/services/sentence-vocab";
+import { getVocabForSentence, setVocabForSentence } from "@/services/vocab-links";
 import {
   backfillFurigana,
   createSentence,
