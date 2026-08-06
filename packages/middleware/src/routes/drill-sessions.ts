@@ -1,4 +1,6 @@
 import type { FastifyInstance } from "fastify";
+import { idOf, notFound } from "@/routes/handlers";
+import { idParams, updateBodyOf } from "@/routes/schemas/params";
 import type {
   CreateDrillSessionInput,
   UpdateDrillSessionInput,
@@ -11,17 +13,6 @@ import {
   listDrillSessions,
   updateDrillSession,
 } from "@/services/drill-sessions";
-
-const sessionParams = {
-  type: "object",
-  required: ["id"],
-  properties: {
-    id: {
-      type: "string",
-      format: "uuid",
-    },
-  },
-} as const;
 
 const mistakesSchema = {
   type: ["array", "null"],
@@ -137,13 +128,7 @@ const createSessionBody = {
   },
 } as const;
 
-const updateSessionBody = {
-  type: "object",
-  additionalProperties: false,
-  properties: {
-    ...createSessionBody.properties,
-  },
-} as const;
+const updateSessionBody = updateBodyOf(createSessionBody);
 
 /** CRUD routes for Drill Buddy sessions (mistake logs), mounted under `/api/drill-sessions`. */
 export async function drillSessionRoutes(app: FastifyInstance): Promise<void> {
@@ -156,16 +141,11 @@ export async function drillSessionRoutes(app: FastifyInstance): Promise<void> {
   app.get("/api/drill-sessions/:id", {
     schema: {
       tags: ["drill-sessions"],
-      params: sessionParams,
+      params: idParams,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const session = await getDrillSession(id);
-    if (!session) return reply.code(404).send({
-      message: "Drill session not found",
-    });
+    const session = await getDrillSession(idOf(req));
+    if (!session) return notFound(reply, "Drill session");
     return session;
   });
 
@@ -183,33 +163,23 @@ export async function drillSessionRoutes(app: FastifyInstance): Promise<void> {
   app.patch("/api/drill-sessions/:id", {
     schema: {
       tags: ["drill-sessions"],
-      params: sessionParams,
+      params: idParams,
       body: updateSessionBody,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const updated = await updateDrillSession(id, req.body as UpdateDrillSessionInput);
-    if (!updated) return reply.code(404).send({
-      message: "Drill session not found",
-    });
+    const updated = await updateDrillSession(idOf(req), req.body as UpdateDrillSessionInput);
+    if (!updated) return notFound(reply, "Drill session");
     return updated;
   });
 
   app.delete("/api/drill-sessions/:id", {
     schema: {
       tags: ["drill-sessions"],
-      params: sessionParams,
+      params: idParams,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const deleted = await deleteDrillSession(id);
-    if (!deleted) return reply.code(404).send({
-      message: "Drill session not found",
-    });
+    const deleted = await deleteDrillSession(idOf(req));
+    if (!deleted) return notFound(reply, "Drill session");
     return reply.code(204).send();
   });
 }

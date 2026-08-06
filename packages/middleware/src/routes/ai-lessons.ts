@@ -1,4 +1,6 @@
 import type { FastifyInstance } from "fastify";
+import { idOf, notFound } from "@/routes/handlers";
+import { idParams } from "@/routes/schemas/params";
 import { aiLessonImportJsonSchema, type AiLessonImportInput } from "@sentence-bank/types";
 import type { GrammarTermsUpdate, VocabRenshuuUpdate } from "@sentence-bank/types";
 import {
@@ -21,17 +23,6 @@ const slugParams = {
     slug: {
       type: "string",
       minLength: 1,
-    },
-  },
-} as const;
-
-const idParams = {
-  type: "object",
-  required: ["id"],
-  properties: {
-    id: {
-      type: "string",
-      format: "uuid",
     },
   },
 } as const;
@@ -88,9 +79,7 @@ export async function aiLessonRoutes(app: FastifyInstance): Promise<void> {
       slug,
     } = req.params as { slug: string };
     const lesson = await getAiLessonBySlug(slug);
-    if (!lesson) return reply.code(404).send({
-      message: "AI Lesson not found",
-    });
+    if (!lesson) return notFound(reply, "AI Lesson");
     return lesson;
   });
 
@@ -122,13 +111,8 @@ export async function aiLessonRoutes(app: FastifyInstance): Promise<void> {
       body: vocabRenshuuBody,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const updated = await updateVocabRenshuu(id, req.body as VocabRenshuuUpdate);
-    if (!updated) return reply.code(404).send({
-      message: "Vocab item not found",
-    });
+    const updated = await updateVocabRenshuu(idOf(req), req.body as VocabRenshuuUpdate);
+    if (!updated) return notFound(reply, "Vocab item");
     return updated;
   });
 
@@ -141,15 +125,10 @@ export async function aiLessonRoutes(app: FastifyInstance): Promise<void> {
     },
   }, async (req, reply) => {
     const {
-      id,
-    } = req.params as { id: string };
-    const {
       grammarTerms,
     } = req.body as GrammarTermsUpdate;
-    const updated = await updateAiLessonGrammarTerms(id, grammarTerms);
-    if (!updated) return reply.code(404).send({
-      message: "Grammar item not found",
-    });
+    const updated = await updateAiLessonGrammarTerms(idOf(req), grammarTerms);
+    if (!updated) return notFound(reply, "Grammar item");
     return updated;
   });
 
@@ -162,15 +141,10 @@ export async function aiLessonRoutes(app: FastifyInstance): Promise<void> {
     },
   }, async (req, reply) => {
     const {
-      id,
-    } = req.params as { id: string };
-    const {
       grammarTerms,
     } = req.body as GrammarTermsUpdate;
-    const updated = await updateSourceSentenceTerms(id, grammarTerms);
-    if (!updated) return reply.code(404).send({
-      message: "Source sentence not found",
-    });
+    const updated = await updateSourceSentenceTerms(idOf(req), grammarTerms);
+    if (!updated) return notFound(reply, "Source sentence");
     return updated;
   });
 
@@ -180,13 +154,8 @@ export async function aiLessonRoutes(app: FastifyInstance): Promise<void> {
       params: idParams,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const deleted = await deleteAiLesson(id);
-    if (!deleted) return reply.code(404).send({
-      message: "AI Lesson not found",
-    });
+    const deleted = await deleteAiLesson(idOf(req));
+    if (!deleted) return notFound(reply, "AI Lesson");
     return reply.code(204).send();
   });
 }

@@ -1,4 +1,6 @@
 import type { FastifyInstance } from "fastify";
+import { idOf, notFound } from "@/routes/handlers";
+import { idParams, updateBodyOf } from "@/routes/schemas/params";
 import type {
   CreateQuestionSheetInput,
   UpdateQuestionSheetInput,
@@ -12,17 +14,6 @@ import {
   updateQuestionSheet,
 } from "@/services/question-sheets";
 import { termsSchema } from "@/routes/schemas/terms";
-
-const questionSheetParams = {
-  type: "object",
-  required: ["id"],
-  properties: {
-    id: {
-      type: "string",
-      format: "uuid",
-    },
-  },
-} as const;
 
 /**
  * A question-sheet part, defined as a shared schema so it can reference itself: parts nest recursively
@@ -182,13 +173,7 @@ const createQuestionSheetBody = {
   },
 } as const;
 
-const updateQuestionSheetBody = {
-  type: "object",
-  additionalProperties: false,
-  properties: {
-    ...createQuestionSheetBody.properties,
-  },
-} as const;
+const updateQuestionSheetBody = updateBodyOf(createQuestionSheetBody);
 
 /** CRUD routes for question sheets (reusable exercise templates), mounted under `/api/question-sheets`. */
 export async function questionSheetRoutes(app: FastifyInstance): Promise<void> {
@@ -203,16 +188,11 @@ export async function questionSheetRoutes(app: FastifyInstance): Promise<void> {
   app.get("/api/question-sheets/:id", {
     schema: {
       tags: ["question-sheets"],
-      params: questionSheetParams,
+      params: idParams,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const sheet = await getQuestionSheet(id);
-    if (!sheet) return reply.code(404).send({
-      message: "Question sheet not found",
-    });
+    const sheet = await getQuestionSheet(idOf(req));
+    if (!sheet) return notFound(reply, "Question sheet");
     return sheet;
   });
 
@@ -230,33 +210,23 @@ export async function questionSheetRoutes(app: FastifyInstance): Promise<void> {
   app.patch("/api/question-sheets/:id", {
     schema: {
       tags: ["question-sheets"],
-      params: questionSheetParams,
+      params: idParams,
       body: updateQuestionSheetBody,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const updated = await updateQuestionSheet(id, req.body as UpdateQuestionSheetInput);
-    if (!updated) return reply.code(404).send({
-      message: "Question sheet not found",
-    });
+    const updated = await updateQuestionSheet(idOf(req), req.body as UpdateQuestionSheetInput);
+    if (!updated) return notFound(reply, "Question sheet");
     return updated;
   });
 
   app.delete("/api/question-sheets/:id", {
     schema: {
       tags: ["question-sheets"],
-      params: questionSheetParams,
+      params: idParams,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const deleted = await deleteQuestionSheet(id);
-    if (!deleted) return reply.code(404).send({
-      message: "Question sheet not found",
-    });
+    const deleted = await deleteQuestionSheet(idOf(req));
+    if (!deleted) return notFound(reply, "Question sheet");
     return reply.code(204).send();
   });
 }

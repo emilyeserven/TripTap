@@ -1,4 +1,6 @@
 import type { FastifyInstance } from "fastify";
+import { idOf, notFound } from "@/routes/handlers";
+import { idParams, updateBodyOf } from "@/routes/schemas/params";
 import type {
   CreateShadowingListInput,
   UpdateShadowingListInput,
@@ -10,17 +12,6 @@ import {
   listShadowingLists,
   updateShadowingList,
 } from "@/services/shadowing-lists";
-
-const shadowingListParams = {
-  type: "object",
-  required: ["id"],
-  properties: {
-    id: {
-      type: "string",
-      format: "uuid",
-    },
-  },
-} as const;
 
 const idArray = {
   type: "array",
@@ -47,13 +38,7 @@ const createShadowingListBody = {
   },
 } as const;
 
-const updateShadowingListBody = {
-  type: "object",
-  additionalProperties: false,
-  properties: {
-    ...createShadowingListBody.properties,
-  },
-} as const;
+const updateShadowingListBody = updateBodyOf(createShadowingListBody);
 
 /** CRUD routes for shadowing lists (named collections of shadowing candidates), under `/api/shadowing-lists`. */
 export async function shadowingListRoutes(app: FastifyInstance): Promise<void> {
@@ -66,16 +51,11 @@ export async function shadowingListRoutes(app: FastifyInstance): Promise<void> {
   app.get("/api/shadowing-lists/:id", {
     schema: {
       tags: ["shadowing-lists"],
-      params: shadowingListParams,
+      params: idParams,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const list = await getShadowingList(id);
-    if (!list) return reply.code(404).send({
-      message: "Shadowing list not found",
-    });
+    const list = await getShadowingList(idOf(req));
+    if (!list) return notFound(reply, "Shadowing list");
     return list;
   });
 
@@ -93,33 +73,23 @@ export async function shadowingListRoutes(app: FastifyInstance): Promise<void> {
   app.patch("/api/shadowing-lists/:id", {
     schema: {
       tags: ["shadowing-lists"],
-      params: shadowingListParams,
+      params: idParams,
       body: updateShadowingListBody,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const updated = await updateShadowingList(id, req.body as UpdateShadowingListInput);
-    if (!updated) return reply.code(404).send({
-      message: "Shadowing list not found",
-    });
+    const updated = await updateShadowingList(idOf(req), req.body as UpdateShadowingListInput);
+    if (!updated) return notFound(reply, "Shadowing list");
     return updated;
   });
 
   app.delete("/api/shadowing-lists/:id", {
     schema: {
       tags: ["shadowing-lists"],
-      params: shadowingListParams,
+      params: idParams,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const deleted = await deleteShadowingList(id);
-    if (!deleted) return reply.code(404).send({
-      message: "Shadowing list not found",
-    });
+    const deleted = await deleteShadowingList(idOf(req));
+    if (!deleted) return notFound(reply, "Shadowing list");
     return reply.code(204).send();
   });
 }

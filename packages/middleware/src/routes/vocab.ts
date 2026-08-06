@@ -1,4 +1,6 @@
 import type { FastifyInstance } from "fastify";
+import { idOf, notFound } from "@/routes/handlers";
+import { idParams } from "@/routes/schemas/params";
 import type { CreateVocabInput, UpdateVocabInput } from "@sentence-bank/types";
 import {
   createVocab,
@@ -10,17 +12,6 @@ import {
   updateVocab,
 } from "@/services/vocab";
 import { handleUpstreamError } from "@/routes/upstream-errors";
-
-const vocabParams = {
-  type: "object",
-  required: ["id"],
-  properties: {
-    id: {
-      type: "string",
-      format: "uuid",
-    },
-  },
-} as const;
 
 const createVocabBody = {
   type: "object",
@@ -94,14 +85,11 @@ export async function vocabRoutes(app: FastifyInstance): Promise<void> {
     app.get(`/api/vocab/:id/${which}`, {
       schema: {
         tags: ["vocab"],
-        params: vocabParams,
+        params: idParams,
       },
     }, async (req, reply) => {
-      const {
-        id,
-      } = req.params as { id: string };
       try {
-        const media = await getVocabMedia(id, which);
+        const media = await getVocabMedia(idOf(req), which);
         if (!media) return reply.code(404).send({
           message: `No ${which} for this vocab item`,
         });
@@ -141,45 +129,32 @@ export async function vocabRoutes(app: FastifyInstance): Promise<void> {
   app.get("/api/vocab/:id/sentences", {
     schema: {
       tags: ["vocab"],
-      params: vocabParams,
+      params: idParams,
     },
   }, async (req) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    return getSentencesForVocab(id);
+    return getSentencesForVocab(idOf(req));
   });
 
   app.patch("/api/vocab/:id", {
     schema: {
       tags: ["vocab"],
-      params: vocabParams,
+      params: idParams,
       body: updateVocabBody,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const updated = await updateVocab(id, req.body as UpdateVocabInput);
-    if (!updated) return reply.code(404).send({
-      message: "Vocab not found",
-    });
+    const updated = await updateVocab(idOf(req), req.body as UpdateVocabInput);
+    if (!updated) return notFound(reply, "Vocab");
     return updated;
   });
 
   app.delete("/api/vocab/:id", {
     schema: {
       tags: ["vocab"],
-      params: vocabParams,
+      params: idParams,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const deleted = await deleteVocab(id);
-    if (!deleted) return reply.code(404).send({
-      message: "Vocab not found",
-    });
+    const deleted = await deleteVocab(idOf(req));
+    if (!deleted) return notFound(reply, "Vocab");
     return reply.code(204).send();
   });
 }

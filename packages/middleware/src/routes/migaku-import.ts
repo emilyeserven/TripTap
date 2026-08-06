@@ -1,4 +1,6 @@
 import type { FastifyInstance, FastifyReply } from "fastify";
+import { idOf, notFound } from "@/routes/handlers";
+import { idParams } from "@/routes/schemas/params";
 import type { CommitMigakuImportInput } from "@sentence-bank/types";
 import { handleUpstreamError } from "@/routes/upstream-errors";
 import {
@@ -16,17 +18,6 @@ import {
 
 /** `.apkg` uploads bundle a media collection, so allow a much larger body than the 10 MiB default. */
 const MAX_APKG_BYTES = 250 * 1024 * 1024;
-
-const importParams = {
-  type: "object",
-  required: ["id"],
-  properties: {
-    id: {
-      type: "string",
-      format: "uuid",
-    },
-  },
-} as const;
 
 const mediaParams = {
   type: "object",
@@ -165,16 +156,11 @@ export async function migakuImportRoutes(app: FastifyInstance): Promise<void> {
   app.get("/api/migaku-imports/:id", {
     schema: {
       tags: ["migaku-import"],
-      params: importParams,
+      params: idParams,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const detail = await getImport(id);
-    if (!detail) return reply.code(404).send({
-      message: "Import not found",
-    });
+    const detail = await getImport(idOf(req));
+    if (!detail) return notFound(reply, "Import");
     return detail;
   });
 
@@ -207,15 +193,12 @@ export async function migakuImportRoutes(app: FastifyInstance): Promise<void> {
   app.post("/api/migaku-imports/:id/commit", {
     schema: {
       tags: ["migaku-import"],
-      params: importParams,
+      params: idParams,
       body: commitBody,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
     try {
-      const result = await commitImport(id, req.body as CommitMigakuImportInput);
+      const result = await commitImport(idOf(req), req.body as CommitMigakuImportInput);
       return result;
     }
     catch (err) {
@@ -253,16 +236,11 @@ export async function migakuImportRoutes(app: FastifyInstance): Promise<void> {
   app.delete("/api/migaku-imports/:id", {
     schema: {
       tags: ["migaku-import"],
-      params: importParams,
+      params: idParams,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const deleted = await discardImport(id);
-    if (!deleted) return reply.code(404).send({
-      message: "Import not found",
-    });
+    const deleted = await discardImport(idOf(req));
+    if (!deleted) return notFound(reply, "Import");
     return reply.code(204).send();
   });
 
@@ -270,16 +248,11 @@ export async function migakuImportRoutes(app: FastifyInstance): Promise<void> {
   app.delete("/api/migaku-imports/:id/cards", {
     schema: {
       tags: ["migaku-import"],
-      params: importParams,
+      params: idParams,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const result = await deleteImportedDeck(id);
-    if (!result) return reply.code(404).send({
-      message: "Import not found",
-    });
+    const result = await deleteImportedDeck(idOf(req));
+    if (!result) return notFound(reply, "Import");
     return result;
   });
 }

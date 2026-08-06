@@ -1,5 +1,7 @@
 import type { FastifyInstance } from "fastify";
+import { idOf, notFound } from "@/routes/handlers";
 import type { CreateSentenceInput, UpdateSentenceInput } from "@sentence-bank/types";
+import { idParams } from "@/routes/schemas/params";
 import { getVocabForSentence, setVocabForSentence } from "@/services/vocab-links";
 import {
   backfillFurigana,
@@ -14,17 +16,6 @@ import {
 } from "@/services/sentences";
 import { handleUpstreamError } from "@/routes/upstream-errors";
 import { termsSchema } from "@/routes/schemas/terms";
-
-const sentenceParams = {
-  type: "object",
-  required: ["id"],
-  properties: {
-    id: {
-      type: "string",
-      format: "uuid",
-    },
-  },
-} as const;
 
 const createSentenceBody = {
   type: "object",
@@ -143,16 +134,11 @@ export async function sentenceRoutes(app: FastifyInstance): Promise<void> {
   app.get("/api/sentences/:id", {
     schema: {
       tags: ["sentences"],
-      params: sentenceParams,
+      params: idParams,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const sentence = await getSentence(id);
-    if (!sentence) return reply.code(404).send({
-      message: "Sentence not found",
-    });
+    const sentence = await getSentence(idOf(req));
+    if (!sentence) return notFound(reply, "Sentence");
     return sentence;
   });
 
@@ -160,14 +146,11 @@ export async function sentenceRoutes(app: FastifyInstance): Promise<void> {
     app.get(`/api/sentences/:id/${which}`, {
       schema: {
         tags: ["sentences"],
-        params: sentenceParams,
+        params: idParams,
       },
     }, async (req, reply) => {
-      const {
-        id,
-      } = req.params as { id: string };
       try {
-        const media = await getSentenceMedia(id, which);
+        const media = await getSentenceMedia(idOf(req), which);
         if (!media) return reply.code(404).send({
           message: `No ${which} for this sentence`,
         });
@@ -214,48 +197,35 @@ export async function sentenceRoutes(app: FastifyInstance): Promise<void> {
   app.post("/api/sentences/:id/furigana", {
     schema: {
       tags: ["sentences"],
-      params: sentenceParams,
+      params: idParams,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const sentence = await regenerateSentenceFurigana(id);
-    if (!sentence) return reply.code(404).send({
-      message: "Sentence not found",
-    });
+    const sentence = await regenerateSentenceFurigana(idOf(req));
+    if (!sentence) return notFound(reply, "Sentence");
     return sentence;
   });
 
   app.get("/api/sentences/:id/vocab", {
     schema: {
       tags: ["sentences"],
-      params: sentenceParams,
+      params: idParams,
     },
   }, async (req) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    return getVocabForSentence(id);
+    return getVocabForSentence(idOf(req));
   });
 
   app.put("/api/sentences/:id/vocab", {
     schema: {
       tags: ["sentences"],
-      params: sentenceParams,
+      params: idParams,
       body: setVocabBody,
     },
   }, async (req, reply) => {
     const {
-      id,
-    } = req.params as { id: string };
-    const {
       vocabIds,
     } = req.body as { vocabIds: string[] };
-    const linked = await setVocabForSentence(id, vocabIds);
-    if (!linked) return reply.code(404).send({
-      message: "Sentence not found",
-    });
+    const linked = await setVocabForSentence(idOf(req), vocabIds);
+    if (!linked) return notFound(reply, "Sentence");
     return linked;
   });
 
@@ -264,18 +234,13 @@ export async function sentenceRoutes(app: FastifyInstance): Promise<void> {
     {
       schema: {
         tags: ["sentences"],
-        params: sentenceParams,
+        params: idParams,
         body: updateSentenceBody,
       },
     },
     async (req, reply) => {
-      const {
-        id,
-      } = req.params as { id: string };
-      const sentence = await updateSentence(id, req.body as UpdateSentenceInput);
-      if (!sentence) return reply.code(404).send({
-        message: "Sentence not found",
-      });
+      const sentence = await updateSentence(idOf(req), req.body as UpdateSentenceInput);
+      if (!sentence) return notFound(reply, "Sentence");
       return sentence;
     },
   );
@@ -283,16 +248,11 @@ export async function sentenceRoutes(app: FastifyInstance): Promise<void> {
   app.delete("/api/sentences/:id", {
     schema: {
       tags: ["sentences"],
-      params: sentenceParams,
+      params: idParams,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const deleted = await deleteSentence(id);
-    if (!deleted) return reply.code(404).send({
-      message: "Sentence not found",
-    });
+    const deleted = await deleteSentence(idOf(req));
+    if (!deleted) return notFound(reply, "Sentence");
     return reply.code(204).send();
   });
 }

@@ -1,4 +1,6 @@
 import type { FastifyInstance } from "fastify";
+import { idOf, notFound } from "@/routes/handlers";
+import { idParams, updateBodyOf } from "@/routes/schemas/params";
 import type {
   CreateReadingSessionInput,
   UpdateReadingSessionInput,
@@ -12,17 +14,6 @@ import {
 } from "@/services/reading-sessions";
 import { termsSchema } from "@/routes/schemas/terms";
 import { LEARNING_AREAS } from "@sentence-bank/types";
-
-const readingSessionParams = {
-  type: "object",
-  required: ["id"],
-  properties: {
-    id: {
-      type: "string",
-      format: "uuid",
-    },
-  },
-} as const;
 
 const linesSchema = {
   type: ["array", "null"],
@@ -200,13 +191,7 @@ const createReadingSessionBody = {
   },
 } as const;
 
-const updateReadingSessionBody = {
-  type: "object",
-  additionalProperties: false,
-  properties: {
-    ...createReadingSessionBody.properties,
-  },
-} as const;
+const updateReadingSessionBody = updateBodyOf(createReadingSessionBody);
 
 /** CRUD routes for reading sessions, mounted under `/api/reading-sessions`. */
 export async function readingSessionsRoutes(app: FastifyInstance): Promise<void> {
@@ -219,16 +204,11 @@ export async function readingSessionsRoutes(app: FastifyInstance): Promise<void>
   app.get("/api/reading-sessions/:id", {
     schema: {
       tags: ["reading-sessions"],
-      params: readingSessionParams,
+      params: idParams,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const session = await getReadingSession(id);
-    if (!session) return reply.code(404).send({
-      message: "Reading session not found",
-    });
+    const session = await getReadingSession(idOf(req));
+    if (!session) return notFound(reply, "Reading session");
     return session;
   });
 
@@ -248,18 +228,13 @@ export async function readingSessionsRoutes(app: FastifyInstance): Promise<void>
     {
       schema: {
         tags: ["reading-sessions"],
-        params: readingSessionParams,
+        params: idParams,
         body: updateReadingSessionBody,
       },
     },
     async (req, reply) => {
-      const {
-        id,
-      } = req.params as { id: string };
-      const updated = await updateReadingSession(id, req.body as UpdateReadingSessionInput);
-      if (!updated) return reply.code(404).send({
-        message: "Reading session not found",
-      });
+      const updated = await updateReadingSession(idOf(req), req.body as UpdateReadingSessionInput);
+      if (!updated) return notFound(reply, "Reading session");
       return updated;
     },
   );
@@ -267,16 +242,11 @@ export async function readingSessionsRoutes(app: FastifyInstance): Promise<void>
   app.delete("/api/reading-sessions/:id", {
     schema: {
       tags: ["reading-sessions"],
-      params: readingSessionParams,
+      params: idParams,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const deleted = await deleteReadingSession(id);
-    if (!deleted) return reply.code(404).send({
-      message: "Reading session not found",
-    });
+    const deleted = await deleteReadingSession(idOf(req));
+    if (!deleted) return notFound(reply, "Reading session");
     return reply.code(204).send();
   });
 }

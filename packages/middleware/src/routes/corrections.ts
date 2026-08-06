@@ -1,4 +1,6 @@
 import type { FastifyInstance } from "fastify";
+import { idOf, notFound } from "@/routes/handlers";
+import { idParams, updateBodyOf } from "@/routes/schemas/params";
 import type {
   CorrectionImportKind,
   CreateCorrectionInput,
@@ -22,17 +24,6 @@ import {
   TriageValidationError,
   updateCorrection,
 } from "@/services/corrections";
-
-const correctionParams = {
-  type: "object",
-  required: ["id"],
-  properties: {
-    id: {
-      type: "string",
-      format: "uuid",
-    },
-  },
-} as const;
 
 /** The four triage buckets. */
 const bucketEnum = ["slip", "rule_gap", "collocation", "register"] as const;
@@ -122,13 +113,7 @@ const createCorrectionBody = {
   },
 } as const;
 
-const updateCorrectionBody = {
-  type: "object",
-  additionalProperties: false,
-  properties: {
-    ...createCorrectionBody.properties,
-  },
-} as const;
+const updateCorrectionBody = updateBodyOf(createCorrectionBody);
 
 const triageBody = {
   type: "object",
@@ -292,16 +277,11 @@ export async function correctionsRoutes(app: FastifyInstance): Promise<void> {
   app.get("/api/corrections/:id", {
     schema: {
       tags: ["corrections"],
-      params: correctionParams,
+      params: idParams,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const correction = await getCorrection(id);
-    if (!correction) return reply.code(404).send({
-      message: "Correction not found",
-    });
+    const correction = await getCorrection(idOf(req));
+    if (!correction) return notFound(reply, "Correction");
     return correction;
   });
 
@@ -319,18 +299,13 @@ export async function correctionsRoutes(app: FastifyInstance): Promise<void> {
   app.post("/api/corrections/:id/triage", {
     schema: {
       tags: ["corrections"],
-      params: correctionParams,
+      params: idParams,
       body: triageBody,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
     try {
-      const result = await triageCorrection(id, req.body as TriageCorrectionInput);
-      if (result === null) return reply.code(404).send({
-        message: "Correction not found",
-      });
+      const result = await triageCorrection(idOf(req), req.body as TriageCorrectionInput);
+      if (result === null) return notFound(reply, "Correction");
       if ("deleted" in result) return reply.code(204).send();
       return result;
     }
@@ -347,18 +322,13 @@ export async function correctionsRoutes(app: FastifyInstance): Promise<void> {
     {
       schema: {
         tags: ["corrections"],
-        params: correctionParams,
+        params: idParams,
         body: updateCorrectionBody,
       },
     },
     async (req, reply) => {
-      const {
-        id,
-      } = req.params as { id: string };
-      const updated = await updateCorrection(id, req.body as UpdateCorrectionInput);
-      if (!updated) return reply.code(404).send({
-        message: "Correction not found",
-      });
+      const updated = await updateCorrection(idOf(req), req.body as UpdateCorrectionInput);
+      if (!updated) return notFound(reply, "Correction");
       return updated;
     },
   );
@@ -366,16 +336,11 @@ export async function correctionsRoutes(app: FastifyInstance): Promise<void> {
   app.delete("/api/corrections/:id", {
     schema: {
       tags: ["corrections"],
-      params: correctionParams,
+      params: idParams,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const deleted = await deleteCorrection(id);
-    if (!deleted) return reply.code(404).send({
-      message: "Correction not found",
-    });
+    const deleted = await deleteCorrection(idOf(req));
+    if (!deleted) return notFound(reply, "Correction");
     return reply.code(204).send();
   });
 }

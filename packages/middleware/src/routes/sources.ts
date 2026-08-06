@@ -1,5 +1,7 @@
 import type { FastifyInstance } from "fastify";
+import { idOf, notFound } from "@/routes/handlers";
 import type { CreateSourceInput, UpdateSourceInput } from "@sentence-bank/types";
+import { idParams } from "@/routes/schemas/params";
 import { createSource, deleteSource, listSources, updateSource } from "@/services/sources";
 
 const sourceFields = {
@@ -34,17 +36,6 @@ const updateSourceBody = {
   properties: sourceFields,
 } as const;
 
-const sourceParams = {
-  type: "object",
-  required: ["id"],
-  properties: {
-    id: {
-      type: "string",
-      format: "uuid",
-    },
-  },
-} as const;
-
 /** Routes for the source taxonomy, mounted under `/api/sources`. */
 export async function sourceRoutes(app: FastifyInstance): Promise<void> {
   app.get("/api/sources", {
@@ -66,33 +57,23 @@ export async function sourceRoutes(app: FastifyInstance): Promise<void> {
   app.patch("/api/sources/:id", {
     schema: {
       tags: ["sources"],
-      params: sourceParams,
+      params: idParams,
       body: updateSourceBody,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const source = await updateSource(id, req.body as UpdateSourceInput);
-    if (!source) return reply.code(404).send({
-      message: "Source not found",
-    });
+    const source = await updateSource(idOf(req), req.body as UpdateSourceInput);
+    if (!source) return notFound(reply, "Source");
     return source;
   });
 
   app.delete("/api/sources/:id", {
     schema: {
       tags: ["sources"],
-      params: sourceParams,
+      params: idParams,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const ok = await deleteSource(id);
-    if (!ok) return reply.code(404).send({
-      message: "Source not found",
-    });
+    const ok = await deleteSource(idOf(req));
+    if (!ok) return notFound(reply, "Source");
     return reply.code(204).send();
   });
 }

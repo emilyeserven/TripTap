@@ -1,4 +1,5 @@
 import type { FastifyInstance } from "fastify";
+import { notFound } from "@/routes/handlers";
 import type { UpsertRuleTagInput } from "@sentence-bank/types";
 import { getRuleTag, listRuleTags, upsertRuleTag } from "@/services/rule-tags";
 
@@ -52,9 +53,7 @@ export async function ruleTagsRoutes(app: FastifyInstance): Promise<void> {
       key,
     } = req.params as { key: string };
     const tag = await getRuleTag(key);
-    if (!tag) return reply.code(404).send({
-      message: "Rule tag not found",
-    });
+    if (!tag) return notFound(reply, "Rule tag");
     return tag;
   });
 

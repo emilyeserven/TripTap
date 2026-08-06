@@ -1,4 +1,6 @@
 import type { FastifyInstance } from "fastify";
+import { idOf, notFound } from "@/routes/handlers";
+import { idParams, updateBodyOf } from "@/routes/schemas/params";
 import type {
   CreateShadowingSessionInput,
   UpdateShadowingSessionInput,
@@ -23,17 +25,6 @@ import { LEARNING_AREAS } from "@sentence-bank/types";
 
 /** An uploaded audio file can be large, but well under a `.apkg` — cap at 100 MiB. */
 const MAX_AUDIO_BYTES = 100 * 1024 * 1024;
-
-const shadowingSessionParams = {
-  type: "object",
-  required: ["id"],
-  properties: {
-    id: {
-      type: "string",
-      format: "uuid",
-    },
-  },
-} as const;
 
 const entriesSchema = {
   type: ["array", "null"],
@@ -184,13 +175,7 @@ const createShadowingSessionBody = {
   },
 } as const;
 
-const updateShadowingSessionBody = {
-  type: "object",
-  additionalProperties: false,
-  properties: {
-    ...createShadowingSessionBody.properties,
-  },
-} as const;
+const updateShadowingSessionBody = updateBodyOf(createShadowingSessionBody);
 
 const captionsQuery = {
   type: "object",
@@ -245,16 +230,11 @@ export async function shadowingSessionsRoutes(app: FastifyInstance): Promise<voi
   app.get("/api/shadowing-sessions/:id", {
     schema: {
       tags: ["shadowing-sessions"],
-      params: shadowingSessionParams,
+      params: idParams,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const session = await getShadowingSession(id);
-    if (!session) return reply.code(404).send({
-      message: "Shadowing session not found",
-    });
+    const session = await getShadowingSession(idOf(req));
+    if (!session) return notFound(reply, "Shadowing session");
     return session;
   });
 
@@ -262,13 +242,10 @@ export async function shadowingSessionsRoutes(app: FastifyInstance): Promise<voi
   app.post("/api/shadowing-sessions/:id/audio", {
     schema: {
       tags: ["shadowing-sessions"],
-      params: shadowingSessionParams,
+      params: idParams,
       consumes: ["multipart/form-data"],
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
     const file = await req.file({
       limits: {
         fileSize: MAX_AUDIO_BYTES,
@@ -285,14 +262,12 @@ export async function shadowingSessionsRoutes(app: FastifyInstance): Promise<voi
     }
     try {
       const updated = await setShadowingSessionAudio(
-        id,
+        idOf(req),
         buffer,
         file.filename,
         file.mimetype || "application/octet-stream",
       );
-      if (!updated) return reply.code(404).send({
-        message: "Shadowing session not found",
-      });
+      if (!updated) return notFound(reply, "Shadowing session");
       return updated;
     }
     catch (err) {
@@ -304,14 +279,11 @@ export async function shadowingSessionsRoutes(app: FastifyInstance): Promise<voi
   app.get("/api/shadowing-sessions/:id/audio", {
     schema: {
       tags: ["shadowing-sessions"],
-      params: shadowingSessionParams,
+      params: idParams,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
     try {
-      const media = await getShadowingSessionMedia(id);
+      const media = await getShadowingSessionMedia(idOf(req));
       if (!media) return reply.code(404).send({
         message: "No audio for this session",
       });
@@ -340,18 +312,13 @@ export async function shadowingSessionsRoutes(app: FastifyInstance): Promise<voi
     {
       schema: {
         tags: ["shadowing-sessions"],
-        params: shadowingSessionParams,
+        params: idParams,
         body: updateShadowingSessionBody,
       },
     },
     async (req, reply) => {
-      const {
-        id,
-      } = req.params as { id: string };
-      const updated = await updateShadowingSession(id, req.body as UpdateShadowingSessionInput);
-      if (!updated) return reply.code(404).send({
-        message: "Shadowing session not found",
-      });
+      const updated = await updateShadowingSession(idOf(req), req.body as UpdateShadowingSessionInput);
+      if (!updated) return notFound(reply, "Shadowing session");
       return updated;
     },
   );
@@ -359,16 +326,11 @@ export async function shadowingSessionsRoutes(app: FastifyInstance): Promise<voi
   app.delete("/api/shadowing-sessions/:id", {
     schema: {
       tags: ["shadowing-sessions"],
-      params: shadowingSessionParams,
+      params: idParams,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const deleted = await deleteShadowingSession(id);
-    if (!deleted) return reply.code(404).send({
-      message: "Shadowing session not found",
-    });
+    const deleted = await deleteShadowingSession(idOf(req));
+    if (!deleted) return notFound(reply, "Shadowing session");
     return reply.code(204).send();
   });
 }
