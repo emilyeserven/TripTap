@@ -1,4 +1,5 @@
 import type { FastifyInstance } from "fastify";
+import { idOf } from "@/routes/handlers";
 import { getTermUsages } from "@/services/term-usage";
 
 const termParams = {
@@ -26,9 +27,6 @@ export async function termUsageRoutes(app: FastifyInstance): Promise<void> {
       params: termParams,
     },
   }, async (req) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    return getTermUsages(id);
+    return getTermUsages(idOf(req));
   });
 }

@@ -1,4 +1,6 @@
 import type { FastifyInstance } from "fastify";
+import { idOf, notFound } from "@/routes/handlers";
+import { idParams, updateBodyOf } from "@/routes/schemas/params";
 import type { CreateWritingPromptInput, UpdateWritingPromptInput } from "@sentence-bank/types";
 import { WRITING_PROMPT_DIFFICULTIES } from "@sentence-bank/types";
 import {
@@ -9,17 +11,6 @@ import {
   listWritingPrompts,
   updateWritingPrompt,
 } from "@/services/writing-prompts";
-
-const writingPromptParams = {
-  type: "object",
-  required: ["id"],
-  properties: {
-    id: {
-      type: "string",
-      format: "uuid",
-    },
-  },
-} as const;
 
 const createWritingPromptBody = {
   type: "object",
@@ -46,13 +37,7 @@ const createWritingPromptBody = {
   },
 } as const;
 
-const updateWritingPromptBody = {
-  type: "object",
-  additionalProperties: false,
-  properties: {
-    ...createWritingPromptBody.properties,
-  },
-} as const;
+const updateWritingPromptBody = updateBodyOf(createWritingPromptBody);
 
 const bulkWritingPromptsBody = {
   type: "object",
@@ -77,16 +62,11 @@ export async function writingPromptRoutes(app: FastifyInstance): Promise<void> {
   app.get("/api/writing-prompts/:id", {
     schema: {
       tags: ["writing-prompts"],
-      params: writingPromptParams,
+      params: idParams,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const prompt = await getWritingPrompt(id);
-    if (!prompt) return reply.code(404).send({
-      message: "Writing prompt not found",
-    });
+    const prompt = await getWritingPrompt(idOf(req));
+    if (!prompt) return notFound(reply, "Writing prompt");
     return prompt;
   });
 
@@ -119,18 +99,13 @@ export async function writingPromptRoutes(app: FastifyInstance): Promise<void> {
     {
       schema: {
         tags: ["writing-prompts"],
-        params: writingPromptParams,
+        params: idParams,
         body: updateWritingPromptBody,
       },
     },
     async (req, reply) => {
-      const {
-        id,
-      } = req.params as { id: string };
-      const updated = await updateWritingPrompt(id, req.body as UpdateWritingPromptInput);
-      if (!updated) return reply.code(404).send({
-        message: "Writing prompt not found",
-      });
+      const updated = await updateWritingPrompt(idOf(req), req.body as UpdateWritingPromptInput);
+      if (!updated) return notFound(reply, "Writing prompt");
       return updated;
     },
   );
@@ -138,16 +113,11 @@ export async function writingPromptRoutes(app: FastifyInstance): Promise<void> {
   app.delete("/api/writing-prompts/:id", {
     schema: {
       tags: ["writing-prompts"],
-      params: writingPromptParams,
+      params: idParams,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const deleted = await deleteWritingPrompt(id);
-    if (!deleted) return reply.code(404).send({
-      message: "Writing prompt not found",
-    });
+    const deleted = await deleteWritingPrompt(idOf(req));
+    if (!deleted) return notFound(reply, "Writing prompt");
     return reply.code(204).send();
   });
 }

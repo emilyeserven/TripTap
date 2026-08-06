@@ -1,4 +1,6 @@
 import type { FastifyInstance } from "fastify";
+import { idOf, notFound } from "@/routes/handlers";
+import { idParams, updateBodyOf } from "@/routes/schemas/params";
 import type {
   CreateTheorySessionInput,
   UpdateTheorySessionInput,
@@ -11,17 +13,6 @@ import {
   listTheorySessions,
   updateTheorySession,
 } from "@/services/theory-sessions";
-
-const sessionParams = {
-  type: "object",
-  required: ["id"],
-  properties: {
-    id: {
-      type: "string",
-      format: "uuid",
-    },
-  },
-} as const;
 
 const createSessionBody = {
   type: "object",
@@ -65,13 +56,7 @@ const createSessionBody = {
   },
 } as const;
 
-const updateSessionBody = {
-  type: "object",
-  additionalProperties: false,
-  properties: {
-    ...createSessionBody.properties,
-  },
-} as const;
+const updateSessionBody = updateBodyOf(createSessionBody);
 
 /** CRUD routes for Theory study sessions, mounted under `/api/theory-sessions`. */
 export async function theorySessionRoutes(app: FastifyInstance): Promise<void> {
@@ -84,16 +69,11 @@ export async function theorySessionRoutes(app: FastifyInstance): Promise<void> {
   app.get("/api/theory-sessions/:id", {
     schema: {
       tags: ["theory-sessions"],
-      params: sessionParams,
+      params: idParams,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const session = await getTheorySession(id);
-    if (!session) return reply.code(404).send({
-      message: "Theory session not found",
-    });
+    const session = await getTheorySession(idOf(req));
+    if (!session) return notFound(reply, "Theory session");
     return session;
   });
 
@@ -111,33 +91,23 @@ export async function theorySessionRoutes(app: FastifyInstance): Promise<void> {
   app.patch("/api/theory-sessions/:id", {
     schema: {
       tags: ["theory-sessions"],
-      params: sessionParams,
+      params: idParams,
       body: updateSessionBody,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const updated = await updateTheorySession(id, req.body as UpdateTheorySessionInput);
-    if (!updated) return reply.code(404).send({
-      message: "Theory session not found",
-    });
+    const updated = await updateTheorySession(idOf(req), req.body as UpdateTheorySessionInput);
+    if (!updated) return notFound(reply, "Theory session");
     return updated;
   });
 
   app.delete("/api/theory-sessions/:id", {
     schema: {
       tags: ["theory-sessions"],
-      params: sessionParams,
+      params: idParams,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const deleted = await deleteTheorySession(id);
-    if (!deleted) return reply.code(404).send({
-      message: "Theory session not found",
-    });
+    const deleted = await deleteTheorySession(idOf(req));
+    if (!deleted) return notFound(reply, "Theory session");
     return reply.code(204).send();
   });
 }

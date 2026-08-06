@@ -1,4 +1,6 @@
 import type { FastifyInstance } from "fastify";
+import { idOf, notFound } from "@/routes/handlers";
+import { idParams, updateBodyOf } from "@/routes/schemas/params";
 import type { CreateWritingInput, UpdateWritingInput } from "@sentence-bank/types";
 import {
   createWriting,
@@ -8,17 +10,6 @@ import {
   updateWriting,
 } from "@/services/writings";
 import { termsSchema } from "@/routes/schemas/terms";
-
-const writingParams = {
-  type: "object",
-  required: ["id"],
-  properties: {
-    id: {
-      type: "string",
-      format: "uuid",
-    },
-  },
-} as const;
 
 const correctionsSchema = {
   type: ["array", "null"],
@@ -101,13 +92,7 @@ const createWritingBody = {
   },
 } as const;
 
-const updateWritingBody = {
-  type: "object",
-  additionalProperties: false,
-  properties: {
-    ...createWritingBody.properties,
-  },
-} as const;
+const updateWritingBody = updateBodyOf(createWritingBody);
 
 /** CRUD routes for writings (free-form learner writing), mounted under `/api/writings`. */
 export async function writingRoutes(app: FastifyInstance): Promise<void> {
@@ -120,16 +105,11 @@ export async function writingRoutes(app: FastifyInstance): Promise<void> {
   app.get("/api/writings/:id", {
     schema: {
       tags: ["writings"],
-      params: writingParams,
+      params: idParams,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const writing = await getWriting(id);
-    if (!writing) return reply.code(404).send({
-      message: "Writing not found",
-    });
+    const writing = await getWriting(idOf(req));
+    if (!writing) return notFound(reply, "Writing");
     return writing;
   });
 
@@ -149,18 +129,13 @@ export async function writingRoutes(app: FastifyInstance): Promise<void> {
     {
       schema: {
         tags: ["writings"],
-        params: writingParams,
+        params: idParams,
         body: updateWritingBody,
       },
     },
     async (req, reply) => {
-      const {
-        id,
-      } = req.params as { id: string };
-      const updated = await updateWriting(id, req.body as UpdateWritingInput);
-      if (!updated) return reply.code(404).send({
-        message: "Writing not found",
-      });
+      const updated = await updateWriting(idOf(req), req.body as UpdateWritingInput);
+      if (!updated) return notFound(reply, "Writing");
       return updated;
     },
   );
@@ -168,16 +143,11 @@ export async function writingRoutes(app: FastifyInstance): Promise<void> {
   app.delete("/api/writings/:id", {
     schema: {
       tags: ["writings"],
-      params: writingParams,
+      params: idParams,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const deleted = await deleteWriting(id);
-    if (!deleted) return reply.code(404).send({
-      message: "Writing not found",
-    });
+    const deleted = await deleteWriting(idOf(req));
+    if (!deleted) return notFound(reply, "Writing");
     return reply.code(204).send();
   });
 }

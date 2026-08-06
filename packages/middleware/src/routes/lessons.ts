@@ -1,4 +1,6 @@
 import type { FastifyInstance } from "fastify";
+import { idOf, notFound } from "@/routes/handlers";
+import { idParams, updateBodyOf } from "@/routes/schemas/params";
 import type {
   CreateLessonInput,
   UpdateLessonInput,
@@ -11,17 +13,6 @@ import {
   updateLesson,
 } from "@/services/lessons";
 import { LEARNING_AREAS } from "@sentence-bank/types";
-
-const lessonParams = {
-  type: "object",
-  required: ["id"],
-  properties: {
-    id: {
-      type: "string",
-      format: "uuid",
-    },
-  },
-} as const;
 
 const listQuery = {
   type: "object",
@@ -134,13 +125,7 @@ const createLessonBody = {
   },
 } as const;
 
-const updateLessonBody = {
-  type: "object",
-  additionalProperties: false,
-  properties: {
-    ...createLessonBody.properties,
-  },
-} as const;
+const updateLessonBody = updateBodyOf(createLessonBody);
 
 /** CRUD routes for lessons (tutoring sessions), mounted under `/api/lessons`. */
 export async function lessonRoutes(app: FastifyInstance): Promise<void> {
@@ -159,16 +144,11 @@ export async function lessonRoutes(app: FastifyInstance): Promise<void> {
   app.get("/api/lessons/:id", {
     schema: {
       tags: ["lessons"],
-      params: lessonParams,
+      params: idParams,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const lesson = await getLesson(id);
-    if (!lesson) return reply.code(404).send({
-      message: "Lesson not found",
-    });
+    const lesson = await getLesson(idOf(req));
+    if (!lesson) return notFound(reply, "Lesson");
     return lesson;
   });
 
@@ -186,33 +166,23 @@ export async function lessonRoutes(app: FastifyInstance): Promise<void> {
   app.patch("/api/lessons/:id", {
     schema: {
       tags: ["lessons"],
-      params: lessonParams,
+      params: idParams,
       body: updateLessonBody,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const updated = await updateLesson(id, req.body as UpdateLessonInput);
-    if (!updated) return reply.code(404).send({
-      message: "Lesson not found",
-    });
+    const updated = await updateLesson(idOf(req), req.body as UpdateLessonInput);
+    if (!updated) return notFound(reply, "Lesson");
     return updated;
   });
 
   app.delete("/api/lessons/:id", {
     schema: {
       tags: ["lessons"],
-      params: lessonParams,
+      params: idParams,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const deleted = await deleteLesson(id);
-    if (!deleted) return reply.code(404).send({
-      message: "Lesson not found",
-    });
+    const deleted = await deleteLesson(idOf(req));
+    if (!deleted) return notFound(reply, "Lesson");
     return reply.code(204).send();
   });
 }

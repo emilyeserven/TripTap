@@ -1,4 +1,6 @@
 import type { FastifyInstance } from "fastify";
+import { idOf, notFound } from "@/routes/handlers";
+import { idParams } from "@/routes/schemas/params";
 import type { CreateRuleGroupInput, UpdateRuleGroupInput } from "@sentence-bank/types";
 import { MAX_GROUP_PAIRS, MIN_GROUP_PAIRS } from "@sentence-bank/types";
 import {
@@ -11,17 +13,6 @@ import {
   RecurrenceGateError,
   updateRuleGroup,
 } from "@/services/rule-groups";
-
-const ruleGroupParams = {
-  type: "object",
-  required: ["id"],
-  properties: {
-    id: {
-      type: "string",
-      format: "uuid",
-    },
-  },
-} as const;
 
 const contrastSideSchema = {
   type: "object",
@@ -133,16 +124,11 @@ export async function ruleGroupsRoutes(app: FastifyInstance): Promise<void> {
   app.get("/api/rule-groups/:id", {
     schema: {
       tags: ["rule-groups"],
-      params: ruleGroupParams,
+      params: idParams,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const group = await getRuleGroup(id);
-    if (!group) return reply.code(404).send({
-      message: "Rule group not found",
-    });
+    const group = await getRuleGroup(idOf(req));
+    if (!group) return notFound(reply, "Rule group");
     return group;
   });
 
@@ -172,18 +158,13 @@ export async function ruleGroupsRoutes(app: FastifyInstance): Promise<void> {
   app.patch("/api/rule-groups/:id", {
     schema: {
       tags: ["rule-groups"],
-      params: ruleGroupParams,
+      params: idParams,
       body: updateRuleGroupBody,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
     try {
-      const updated = await updateRuleGroup(id, req.body as UpdateRuleGroupInput);
-      if (!updated) return reply.code(404).send({
-        message: "Rule group not found",
-      });
+      const updated = await updateRuleGroup(idOf(req), req.body as UpdateRuleGroupInput);
+      if (!updated) return notFound(reply, "Rule group");
       return updated;
     }
     catch (err) {
@@ -197,16 +178,11 @@ export async function ruleGroupsRoutes(app: FastifyInstance): Promise<void> {
   app.delete("/api/rule-groups/:id", {
     schema: {
       tags: ["rule-groups"],
-      params: ruleGroupParams,
+      params: idParams,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const deleted = await deleteRuleGroup(id);
-    if (!deleted) return reply.code(404).send({
-      message: "Rule group not found",
-    });
+    const deleted = await deleteRuleGroup(idOf(req));
+    if (!deleted) return notFound(reply, "Rule group");
     return reply.code(204).send();
   });
 }

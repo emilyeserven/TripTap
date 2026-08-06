@@ -1,4 +1,6 @@
 import type { FastifyInstance } from "fastify";
+import { idOf, notFound } from "@/routes/handlers";
+import { idParams } from "@/routes/schemas/params";
 import type {
   CreateGrammarNoteInput,
   UpdateGrammarNoteInput,
@@ -12,17 +14,6 @@ import {
   listGrammarNotes,
   updateGrammarNote,
 } from "@/services/grammar-notes";
-
-const grammarNoteParams = {
-  type: "object",
-  required: ["id"],
-  properties: {
-    id: {
-      type: "string",
-      format: "uuid",
-    },
-  },
-} as const;
 
 const byTagParams = {
   type: "object",
@@ -291,25 +282,18 @@ export async function grammarNoteRoutes(app: FastifyInstance): Promise<void> {
       tagId,
     } = req.params as { tagId: string };
     const note = await getGrammarNoteByTagId(tagId);
-    if (!note) return reply.code(404).send({
-      message: "Grammar note not found",
-    });
+    if (!note) return notFound(reply, "Grammar note");
     return note;
   });
 
   app.get("/api/grammar-notes/:id", {
     schema: {
       tags: ["grammar-notes"],
-      params: grammarNoteParams,
+      params: idParams,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const note = await getGrammarNote(id);
-    if (!note) return reply.code(404).send({
-      message: "Grammar note not found",
-    });
+    const note = await getGrammarNote(idOf(req));
+    if (!note) return notFound(reply, "Grammar note");
     return note;
   });
 
@@ -337,33 +321,23 @@ export async function grammarNoteRoutes(app: FastifyInstance): Promise<void> {
   app.patch("/api/grammar-notes/:id", {
     schema: {
       tags: ["grammar-notes"],
-      params: grammarNoteParams,
+      params: idParams,
       body: updateGrammarNoteBody,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const updated = await updateGrammarNote(id, req.body as UpdateGrammarNoteInput);
-    if (!updated) return reply.code(404).send({
-      message: "Grammar note not found",
-    });
+    const updated = await updateGrammarNote(idOf(req), req.body as UpdateGrammarNoteInput);
+    if (!updated) return notFound(reply, "Grammar note");
     return updated;
   });
 
   app.delete("/api/grammar-notes/:id", {
     schema: {
       tags: ["grammar-notes"],
-      params: grammarNoteParams,
+      params: idParams,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const deleted = await deleteGrammarNote(id);
-    if (!deleted) return reply.code(404).send({
-      message: "Grammar note not found",
-    });
+    const deleted = await deleteGrammarNote(idOf(req));
+    if (!deleted) return notFound(reply, "Grammar note");
     return reply.code(204).send();
   });
 }

@@ -1,4 +1,5 @@
 import { handleUpstreamError } from "@/routes/upstream-errors";
+import { idOf, notFound } from "@/routes/handlers";
 import type { FastifyInstance } from "fastify";
 import type { SentenceTermCategory } from "@sentence-bank/types";
 import {
@@ -147,11 +148,8 @@ export async function bookmarksRoutes(app: FastifyInstance): Promise<void> {
       params: taxonomyParams,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
     try {
-      return await fetchTerms(id);
+      return await fetchTerms(idOf(req));
     }
     catch (err) {
       return handleUpstreamError(err, reply);
@@ -303,14 +301,9 @@ export async function bookmarksRoutes(app: FastifyInstance): Promise<void> {
       params: recordParams,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
     try {
-      const record = await getBookmark(id);
-      if (!record) return reply.code(404).send({
-        message: "Bookmark not found",
-      });
+      const record = await getBookmark(idOf(req));
+      if (!record) return notFound(reply, "Bookmark");
       return record;
     }
     catch (err) {

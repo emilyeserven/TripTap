@@ -1,4 +1,6 @@
 import type { FastifyInstance } from "fastify";
+import { idOf, notFound } from "@/routes/handlers";
+import { idParams, updateBodyOf } from "@/routes/schemas/params";
 import type { CreateDialogueInput, UpdateDialogueInput } from "@sentence-bank/types";
 import { LEARNING_AREAS } from "@sentence-bank/types";
 import {
@@ -8,17 +10,6 @@ import {
   listDialogues,
   updateDialogue,
 } from "@/services/dialogues";
-
-const dialogueParams = {
-  type: "object",
-  required: ["id"],
-  properties: {
-    id: {
-      type: "string",
-      format: "uuid",
-    },
-  },
-} as const;
 
 /**
  * Lines are accepted so the client can send back edited translations and practice hints. Their
@@ -143,13 +134,7 @@ const createDialogueBody = {
   },
 } as const;
 
-const updateDialogueBody = {
-  type: "object",
-  additionalProperties: false,
-  properties: {
-    ...createDialogueBody.properties,
-  },
-} as const;
+const updateDialogueBody = updateBodyOf(createDialogueBody);
 
 /** CRUD routes for chat-transcript dialogues, mounted under `/api/dialogues`. */
 export async function dialoguesRoutes(app: FastifyInstance): Promise<void> {
@@ -162,16 +147,11 @@ export async function dialoguesRoutes(app: FastifyInstance): Promise<void> {
   app.get("/api/dialogues/:id", {
     schema: {
       tags: ["dialogues"],
-      params: dialogueParams,
+      params: idParams,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const dialogue = await getDialogue(id);
-    if (!dialogue) return reply.code(404).send({
-      message: "Dialogue not found",
-    });
+    const dialogue = await getDialogue(idOf(req));
+    if (!dialogue) return notFound(reply, "Dialogue");
     return dialogue;
   });
 
@@ -188,33 +168,23 @@ export async function dialoguesRoutes(app: FastifyInstance): Promise<void> {
   app.patch("/api/dialogues/:id", {
     schema: {
       tags: ["dialogues"],
-      params: dialogueParams,
+      params: idParams,
       body: updateDialogueBody,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const updated = await updateDialogue(id, req.body as UpdateDialogueInput);
-    if (!updated) return reply.code(404).send({
-      message: "Dialogue not found",
-    });
+    const updated = await updateDialogue(idOf(req), req.body as UpdateDialogueInput);
+    if (!updated) return notFound(reply, "Dialogue");
     return updated;
   });
 
   app.delete("/api/dialogues/:id", {
     schema: {
       tags: ["dialogues"],
-      params: dialogueParams,
+      params: idParams,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const deleted = await deleteDialogue(id);
-    if (!deleted) return reply.code(404).send({
-      message: "Dialogue not found",
-    });
+    const deleted = await deleteDialogue(idOf(req));
+    if (!deleted) return notFound(reply, "Dialogue");
     return reply.code(204).send();
   });
 }

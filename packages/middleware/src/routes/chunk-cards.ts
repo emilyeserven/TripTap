@@ -1,4 +1,6 @@
 import type { FastifyInstance } from "fastify";
+import { idOf, notFound } from "@/routes/handlers";
+import { idParams } from "@/routes/schemas/params";
 import type { CreateChunkCardInput, UpdateChunkCardInput } from "@sentence-bank/types";
 import {
   createChunkCard,
@@ -8,17 +10,6 @@ import {
   updateChunkCard,
   VolumeCapError,
 } from "@/services/chunk-cards";
-
-const chunkCardParams = {
-  type: "object",
-  required: ["id"],
-  properties: {
-    id: {
-      type: "string",
-      format: "uuid",
-    },
-  },
-} as const;
 
 const formatEnum = ["situation_production", "cloze"] as const;
 
@@ -125,16 +116,11 @@ export async function chunkCardsRoutes(app: FastifyInstance): Promise<void> {
   app.get("/api/chunk-cards/:id", {
     schema: {
       tags: ["chunk-cards"],
-      params: chunkCardParams,
+      params: idParams,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const card = await getChunkCard(id);
-    if (!card) return reply.code(404).send({
-      message: "Chunk card not found",
-    });
+    const card = await getChunkCard(idOf(req));
+    if (!card) return notFound(reply, "Chunk card");
     return card;
   });
 
@@ -159,33 +145,23 @@ export async function chunkCardsRoutes(app: FastifyInstance): Promise<void> {
   app.patch("/api/chunk-cards/:id", {
     schema: {
       tags: ["chunk-cards"],
-      params: chunkCardParams,
+      params: idParams,
       body: updateChunkCardBody,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const updated = await updateChunkCard(id, req.body as UpdateChunkCardInput);
-    if (!updated) return reply.code(404).send({
-      message: "Chunk card not found",
-    });
+    const updated = await updateChunkCard(idOf(req), req.body as UpdateChunkCardInput);
+    if (!updated) return notFound(reply, "Chunk card");
     return updated;
   });
 
   app.delete("/api/chunk-cards/:id", {
     schema: {
       tags: ["chunk-cards"],
-      params: chunkCardParams,
+      params: idParams,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const deleted = await deleteChunkCard(id);
-    if (!deleted) return reply.code(404).send({
-      message: "Chunk card not found",
-    });
+    const deleted = await deleteChunkCard(idOf(req));
+    if (!deleted) return notFound(reply, "Chunk card");
     return reply.code(204).send();
   });
 }

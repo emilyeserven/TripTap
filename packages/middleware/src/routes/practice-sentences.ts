@@ -1,4 +1,6 @@
 import type { FastifyInstance } from "fastify";
+import { idOf, notFound } from "@/routes/handlers";
+import { idParams, updateBodyOf } from "@/routes/schemas/params";
 import type {
   CreatePracticeSentenceInput,
   PracticeSentenceImportInput,
@@ -42,17 +44,6 @@ function importToCreateInput(input: PracticeSentenceImportInput): CreatePractice
     grammar: input.grammar ?? null,
   };
 }
-
-const practiceSentenceParams = {
-  type: "object",
-  required: ["id"],
-  properties: {
-    id: {
-      type: "string",
-      format: "uuid",
-    },
-  },
-} as const;
 
 const wordsSchema = {
   type: ["array", "null"],
@@ -178,13 +169,7 @@ const createPracticeSentenceBody = {
   },
 } as const;
 
-const updatePracticeSentenceBody = {
-  type: "object",
-  additionalProperties: false,
-  properties: {
-    ...createPracticeSentenceBody.properties,
-  },
-} as const;
+const updatePracticeSentenceBody = updateBodyOf(createPracticeSentenceBody);
 
 const bulkPracticeSentencesBody = {
   type: "object",
@@ -224,16 +209,11 @@ export async function practiceSentenceRoutes(app: FastifyInstance): Promise<void
   app.get("/api/practice-sentences/:id", {
     schema: {
       tags: ["practice-sentences"],
-      params: practiceSentenceParams,
+      params: idParams,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const practiceSentence = await getPracticeSentence(id);
-    if (!practiceSentence) return reply.code(404).send({
-      message: "Practice sentence not found",
-    });
+    const practiceSentence = await getPracticeSentence(idOf(req));
+    if (!practiceSentence) return notFound(reply, "Practice sentence");
     return practiceSentence;
   });
 
@@ -278,13 +258,10 @@ export async function practiceSentenceRoutes(app: FastifyInstance): Promise<void
   app.post("/api/practice-sentences/:id/image", {
     schema: {
       tags: ["practice-sentences"],
-      params: practiceSentenceParams,
+      params: idParams,
       consumes: ["multipart/form-data"],
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
     const file = await req.file({
       limits: {
         fileSize: MAX_IMAGE_BYTES,
@@ -298,28 +275,23 @@ export async function practiceSentenceRoutes(app: FastifyInstance): Promise<void
       message: "The image is too large to upload",
     });
     const stored = await setPracticeSentenceImage(
-      id,
+      idOf(req),
       buffer,
       file.mimetype || "application/octet-stream",
     );
-    if (!stored) return reply.code(404).send({
-      message: "Practice sentence not found",
-    });
+    if (!stored) return notFound(reply, "Practice sentence");
     // Return the sentence (now `hasImage: true`) so the client can refresh its cache.
-    return getPracticeSentence(id);
+    return getPracticeSentence(idOf(req));
   });
 
   // Stream the context screenshot for the <img>.
   app.get("/api/practice-sentences/:id/image", {
     schema: {
       tags: ["practice-sentences"],
-      params: practiceSentenceParams,
+      params: idParams,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const img = await getPracticeSentenceImage(id);
+    const img = await getPracticeSentenceImage(idOf(req));
     if (!img) return reply.code(404).send({
       message: "No screenshot for this practice sentence",
     });
@@ -331,13 +303,10 @@ export async function practiceSentenceRoutes(app: FastifyInstance): Promise<void
   app.delete("/api/practice-sentences/:id/image", {
     schema: {
       tags: ["practice-sentences"],
-      params: practiceSentenceParams,
+      params: idParams,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const deleted = await deletePracticeSentenceImage(id);
+    const deleted = await deletePracticeSentenceImage(idOf(req));
     if (!deleted) return reply.code(404).send({
       message: "No screenshot for this practice sentence",
     });
@@ -347,32 +316,24 @@ export async function practiceSentenceRoutes(app: FastifyInstance): Promise<void
   app.get("/api/practice-sentences/:id/vocab", {
     schema: {
       tags: ["practice-sentences"],
-      params: practiceSentenceParams,
+      params: idParams,
     },
   }, async (req) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    return getVocabForPracticeSentence(id);
+    return getVocabForPracticeSentence(idOf(req));
   });
 
   app.put("/api/practice-sentences/:id/vocab", {
     schema: {
       tags: ["practice-sentences"],
-      params: practiceSentenceParams,
+      params: idParams,
       body: setVocabBody,
     },
   }, async (req, reply) => {
     const {
-      id,
-    } = req.params as { id: string };
-    const {
       vocabIds,
     } = req.body as { vocabIds: string[] };
-    const linked = await setVocabForPracticeSentence(id, vocabIds);
-    if (!linked) return reply.code(404).send({
-      message: "Practice sentence not found",
-    });
+    const linked = await setVocabForPracticeSentence(idOf(req), vocabIds);
+    if (!linked) return notFound(reply, "Practice sentence");
     return linked;
   });
 
@@ -381,18 +342,13 @@ export async function practiceSentenceRoutes(app: FastifyInstance): Promise<void
     {
       schema: {
         tags: ["practice-sentences"],
-        params: practiceSentenceParams,
+        params: idParams,
         body: updatePracticeSentenceBody,
       },
     },
     async (req, reply) => {
-      const {
-        id,
-      } = req.params as { id: string };
-      const updated = await updatePracticeSentence(id, req.body as UpdatePracticeSentenceInput);
-      if (!updated) return reply.code(404).send({
-        message: "Practice sentence not found",
-      });
+      const updated = await updatePracticeSentence(idOf(req), req.body as UpdatePracticeSentenceInput);
+      if (!updated) return notFound(reply, "Practice sentence");
       return updated;
     },
   );
@@ -400,16 +356,11 @@ export async function practiceSentenceRoutes(app: FastifyInstance): Promise<void
   app.delete("/api/practice-sentences/:id", {
     schema: {
       tags: ["practice-sentences"],
-      params: practiceSentenceParams,
+      params: idParams,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const deleted = await deletePracticeSentence(id);
-    if (!deleted) return reply.code(404).send({
-      message: "Practice sentence not found",
-    });
+    const deleted = await deletePracticeSentence(idOf(req));
+    if (!deleted) return notFound(reply, "Practice sentence");
     return reply.code(204).send();
   });
 }
