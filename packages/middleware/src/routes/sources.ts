@@ -1,6 +1,12 @@
 import type { FastifyInstance } from "fastify";
 import type { CreateSourceInput, UpdateSourceInput } from "@sentence-bank/types";
-import { createSource, deleteSource, listSources, updateSource } from "@/services/sources";
+import {
+  createSource,
+  deleteSource,
+  InvalidSourceParentError,
+  listSources,
+  updateSource,
+} from "@/services/sources";
 
 const sourceFields = {
   name: {
@@ -18,6 +24,11 @@ const sourceFields = {
   },
   notes: {
     type: ["string", "null"],
+  },
+  /** The source this one nests inside (a page under an issue, an issue under a magazine). */
+  parentId: {
+    type: ["string", "null"],
+    format: "uuid",
   },
 } as const;
 
@@ -59,8 +70,18 @@ export async function sourceRoutes(app: FastifyInstance): Promise<void> {
       body: createSourceBody,
     },
   }, async (req, reply) => {
-    const source = await createSource(req.body as CreateSourceInput);
-    return reply.code(201).send(source);
+    try {
+      const source = await createSource(req.body as CreateSourceInput);
+      return reply.code(201).send(source);
+    }
+    catch (err) {
+      if (err instanceof InvalidSourceParentError) {
+        return reply.code(400).send({
+          message: err.message,
+        });
+      }
+      throw err;
+    }
   });
 
   app.patch("/api/sources/:id", {
@@ -73,11 +94,21 @@ export async function sourceRoutes(app: FastifyInstance): Promise<void> {
     const {
       id,
     } = req.params as { id: string };
-    const source = await updateSource(id, req.body as UpdateSourceInput);
-    if (!source) return reply.code(404).send({
-      message: "Source not found",
-    });
-    return source;
+    try {
+      const source = await updateSource(id, req.body as UpdateSourceInput);
+      if (!source) return reply.code(404).send({
+        message: "Source not found",
+      });
+      return source;
+    }
+    catch (err) {
+      if (err instanceof InvalidSourceParentError) {
+        return reply.code(400).send({
+          message: err.message,
+        });
+      }
+      throw err;
+    }
   });
 
   app.delete("/api/sources/:id", {

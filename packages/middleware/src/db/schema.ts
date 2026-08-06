@@ -55,6 +55,10 @@ const bytea = customType<{ data: Buffer }>({
  * `sources` — a reusable taxonomy of where sentences come from (a book, show, article, …). Sentences
  * reference a source via `sentences.source_id`; the per-sentence location (page number, chapter) lives
  * on the sentence, not here, since one source spans many sentences.
+ *
+ * Sources nest through `parent_id`: a magazine, its issues, and the individual pages a few captures
+ * each came from are all rows here, linked parent-to-child. Every tier keeps its own `url`, so the
+ * magazine's site and one page's reader link coexist.
  */
 export const sources = pgTable("sources", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -64,6 +68,11 @@ export const sources = pgTable("sources", {
   author: text("author"),
   url: text("url"),
   notes: text("notes"),
+  // Self-reference: null for a top-level source. `set null` (not cascade) so deleting a magazine
+  // leaves its pages — and everything mined from them — standing as roots.
+  parentId: uuid("parent_id").references((): AnyPgColumn => sources.id, {
+    onDelete: "set null",
+  }),
   createdAt: timestamp("created_at", {
     withTimezone: true,
   }).notNull().defaultNow(),

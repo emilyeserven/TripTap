@@ -1,7 +1,10 @@
 import { useState } from "react";
 
+import { flattenSourceTree } from "@sentence-bank/types";
+
 import { useCreateSource, useSources } from "../hooks/useSources";
 
+import { SourceParentSelect } from "@/components/SourceParentSelect";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,16 +15,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { sourceMenuIndent } from "@/lib/source-options";
 
 // Radix Select forbids empty-string item values, so map "no source" to a sentinel.
 const NONE = "__none";
 const NEW = "__new";
 
 /**
- * Chooses the taxonomy source a sentence belongs to. Users either pick an existing source or switch
- * to a small inline form to create one; on create it is selected immediately. `value` is the selected
- * `source_id` (or null for "no source"). Built from the shared UI kit so it matches the surrounding
- * form fields and adapts to light/dark themes.
+ * Chooses the taxonomy source a sentence or capture belongs to. Users either pick an existing source
+ * or switch to a small inline form to create one; on create it is selected immediately. `value` is
+ * the selected `source_id` (or null for "no source"). Built from the shared UI kit so it matches the
+ * surrounding form fields and adapts to light/dark themes.
+ *
+ * Sources nest, so the menu shows the whole tree indented, and the inline form starts out nesting the
+ * new source under whatever is currently selected — scanning three pages of one magazine issue means
+ * creating three children of that issue, and this makes that the path of least resistance.
  */
 export function SourcePicker({
   value,
@@ -39,6 +47,12 @@ export function SourcePicker({
   const [type, setType] = useState("");
   const [author, setAuthor] = useState("");
   const [url, setUrl] = useState("");
+  const [parentId, setParentId] = useState<string | null>(null);
+
+  function startCreating() {
+    setParentId(value);
+    setCreating(true);
+  }
 
   async function saveNew() {
     if (!name.trim()) return;
@@ -47,12 +61,14 @@ export function SourcePicker({
       type: type.trim() || null,
       author: author.trim() || null,
       url: url.trim() || null,
+      parentId,
     });
     onChange(created.id);
     setName("");
     setType("");
     setAuthor("");
     setUrl("");
+    setParentId(null);
     setCreating(false);
   }
 
@@ -86,10 +102,15 @@ export function SourcePicker({
           />
         </div>
         <Input
-          placeholder="URL"
+          placeholder="URL (e.g. https://app.renshuu.org/text/70231/0)"
           aria-label="Source URL"
           value={url}
           onChange={e => setUrl(e.target.value)}
+        />
+        <SourceParentSelect
+          id="new-source-parent"
+          value={parentId}
+          onChange={setParentId}
         />
         <div className="flex items-center gap-2">
           <Button
@@ -123,7 +144,7 @@ export function SourcePicker({
         value={value ?? NONE}
         onValueChange={(next) => {
           if (next === NEW) {
-            setCreating(true);
+            startCreating();
             return;
           }
           onChange(next === NONE ? null : next);
@@ -137,12 +158,14 @@ export function SourcePicker({
         </SelectTrigger>
         <SelectContent>
           <SelectItem value={NONE}>No source</SelectItem>
-          {(sources ?? []).map(s => (
+          {flattenSourceTree(sources ?? []).map(({
+            source, depth,
+          }) => (
             <SelectItem
-              key={s.id}
-              value={s.id}
+              key={source.id}
+              value={source.id}
             >
-              {s.name}
+              {`${sourceMenuIndent(depth)}${source.name}`}
             </SelectItem>
           ))}
           <SelectItem value={NEW}>+ New source…</SelectItem>

@@ -6,6 +6,7 @@ import { CaptureParseWorkspace } from "@/components/CaptureParseWorkspace";
 import { CaptureSourceReference } from "@/components/CaptureSourceReference";
 import { CaptureTextCard } from "@/components/CaptureTextCard";
 import { CleanedBlocksWorkspace } from "@/components/CleanedBlocksWorkspace";
+import { SourceTrail } from "@/components/SourceTrail";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,7 +17,6 @@ import {
 } from "@/components/ui/tabs";
 import { useCapture, useDeleteCapture } from "@/hooks/useCaptures";
 import { usePageTitle } from "@/hooks/usePageTitle";
-import { useSources } from "@/hooks/useSources";
 
 export const Route = createFileRoute("/captures/$id")({
   component: CaptureDetailPage,
@@ -30,14 +30,7 @@ function CaptureDetailPage() {
   const {
     data: capture, isLoading, error,
   } = useCapture(id);
-  const {
-    data: sources,
-  } = useSources();
   const deleteCapture = useDeleteCapture();
-
-  const sourceName = capture?.sourceId
-    ? sources?.find(s => s.id === capture.sourceId)?.name ?? null
-    : null;
 
   usePageTitle(capture ? (capture.title || "Untitled capture") : "");
 
@@ -88,9 +81,8 @@ function CaptureDetailPage() {
                 <Badge variant={capture.status === "parsed" ? "secondary" : "outline"}>
                   {capture.status}
                 </Badge>
-                {[sourceName, capture.page ? `p. ${capture.page}` : null]
-                  .filter(Boolean)
-                  .map(part => <span key={part}>{part}</span>)}
+                <SourceTrail sourceId={capture.sourceId} />
+                {capture.page ? <span>{`p. ${capture.page}`}</span> : null}
                 {capture.engines.map(engine => (
                   <Badge
                     key={engine}
