@@ -184,6 +184,141 @@ describe("DialogueStepper", () => {
     expect(speak).toHaveBeenCalledWith("こんにちは、元気ですか？");
   });
 
+  it("hides a hidden speaker's line until it is revealed", () => {
+    render(
+      <DialogueStepper
+        lines={LINES}
+        hiddenSpeakers={["私"]}
+      />,
+    );
+    advance();
+
+    expect(screen.queryByText("はい、元気です。")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", {
+      name: "Reveal 私's line",
+    }));
+    expect(screen.getByText("はい、元気です。")).toBeInTheDocument();
+  });
+
+  it("shows a hidden line's hint in place of the words", () => {
+    render(
+      <DialogueStepper
+        lines={[line("1", "私", "はい、元気です。", {
+          hint: "say you're fine",
+        })]}
+        hiddenSpeakers={["私"]}
+      />,
+    );
+
+    expect(screen.getByText("say you're fine")).toBeInTheDocument();
+    expect(screen.queryByText("はい、元気です。")).not.toBeInTheDocument();
+  });
+
+  it("keeps a hidden line hidden once it slides into the prior slot", () => {
+    render(
+      <DialogueStepper
+        lines={LINES}
+        hiddenSpeakers={["私"]}
+      />,
+    );
+    advance();
+    advance();
+
+    expect(screen.queryByText("はい、元気です。")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", {
+      name: "Reveal 私's line",
+    })).toBeInTheDocument();
+  });
+
+  it("re-hides revealed lines when the hidden set changes", () => {
+    const {
+      rerender,
+    } = render(
+      <DialogueStepper
+        lines={[line("1", "私", "はい、元気です。")]}
+        hiddenSpeakers={["私"]}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", {
+      name: "Reveal 私's line",
+    }));
+    expect(screen.getByText("はい、元気です。")).toBeInTheDocument();
+
+    rerender(
+      <DialogueStepper
+        lines={[line("1", "私", "はい、元気です。")]}
+        hiddenSpeakers={[]}
+      />,
+    );
+    rerender(
+      <DialogueStepper
+        lines={[line("1", "私", "はい、元気です。")]}
+        hiddenSpeakers={["私"]}
+      />,
+    );
+
+    expect(screen.queryByText("はい、元気です。")).not.toBeInTheDocument();
+  });
+
+  it("waits for the reveal before reading a hidden line aloud", () => {
+    render(
+      <DialogueStepper
+        lines={LINES}
+        hiddenSpeakers={["田中さん"]}
+        autoRead
+      />,
+    );
+
+    // Speaking a hidden line would hand over the answer the learner is meant to produce.
+    expect(speak).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("button", {
+      name: "Reveal 田中さん's line",
+    }));
+    expect(speak).toHaveBeenCalledWith("こんにちは、元気ですか？");
+  });
+
+  it("floats the bubbles up when advancing and down when stepping back", () => {
+    render(<DialogueStepper lines={LINES} />);
+    advance();
+
+    expect(wrapperFor("はい、元気です。").className).toContain("slide-in-from-bottom-4");
+    expect(wrapperFor("こんにちは、元気ですか？").className).toContain("slide-in-from-bottom-4");
+
+    fireEvent.click(screen.getByRole("button", {
+      name: "Back",
+    }));
+    expect(wrapperFor("こんにちは、元気ですか？").className).toContain("slide-in-from-top-4");
+    expect(wrapperFor("こんにちは、元気ですか？").className).not.toContain("slide-in-from-bottom-4");
+  });
+
+  it("remounts both bubbles on a step, so the float animation replays on each", () => {
+    render(<DialogueStepper lines={LINES} />);
+    advance();
+    const wasCurrent = wrapperFor("はい、元気です。");
+    const wasPrior = wrapperFor("こんにちは、元気ですか？");
+
+    advance();
+
+    // A CSS enter animation only replays on a fresh element. The line that moves from the current
+    // slot to the prior one has to be a new node too, or it would sit still while the new line
+    // floated past it.
+    expect(wrapperFor("はい、元気です。")).not.toBe(wasCurrent);
+    expect(wrapperFor("はい、元気です。")).not.toBe(wasPrior);
+  });
+
+  it("floats down on Start over, since it travels backwards", () => {
+    render(<DialogueStepper lines={LINES} />);
+    advance();
+    advance();
+    fireEvent.click(screen.getByRole("button", {
+      name: "Start over",
+    }));
+
+    expect(wrapperFor("こんにちは、元気ですか？").className).toContain("slide-in-from-top-4");
+  });
+
   it("renders nothing for an empty dialogue", () => {
     const {
       container,

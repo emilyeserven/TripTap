@@ -110,8 +110,18 @@ function DialogueViewPage() {
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        {lineByLine
-          ? (
+        {/*
+          Hiding a speaker is a property of the practice run, not of one view, so the chips stay put
+          when the learner switches into line-by-line — the stepper honours the same hidden set.
+        */}
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <DialogueSpeakerFilter
+            lines={data.lines}
+            selfSpeakers={data.selfSpeakers}
+            hiddenSpeakers={hiddenSpeakers}
+            onChange={setHiddenSpeakers}
+          />
+          {lineByLine && (
             <label className="flex items-center gap-2 text-sm">
               <Checkbox
                 checked={autoRead}
@@ -120,15 +130,8 @@ function DialogueViewPage() {
               />
               Read other speakers aloud
             </label>
-          )
-          : (
-            <DialogueSpeakerFilter
-              lines={data.lines}
-              selfSpeakers={data.selfSpeakers}
-              hiddenSpeakers={hiddenSpeakers}
-              onChange={setHiddenSpeakers}
-            />
           )}
+        </div>
         <div className="flex flex-wrap items-center gap-2">
           {hasTranslations && (
             <Button
@@ -160,6 +163,7 @@ function DialogueViewPage() {
           <DialogueStepper
             lines={lines}
             selfSpeakers={data.selfSpeakers}
+            hiddenSpeakers={hiddenSpeakers}
             autoRead={autoRead}
             showTranslations={showTranslations}
           />
