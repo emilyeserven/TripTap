@@ -6,8 +6,6 @@ import {
   BookMarkedIcon,
   BookOpenIcon,
   CameraIcon,
-  ClipboardCheckIcon,
-  ClipboardListIcon,
   DatabaseIcon,
   GraduationCapIcon,
   HeadphonesIcon,
@@ -87,22 +85,10 @@ const sections: readonly TileSection[] = [
         description: "The sentences you've written yourself.",
       },
       {
-        title: "Book Exercises",
-        to: "/book-exercises",
+        title: "Exercises",
+        to: "/exercises",
         icon: BookMarkedIcon,
-        description: "Work through textbook and worksheet exercises.",
-      },
-      {
-        title: "Question Sheets",
-        to: "/question-sheets",
-        icon: ClipboardListIcon,
-        description: "Question sets to answer.",
-      },
-      {
-        title: "Answer Sheets",
-        to: "/answer-sheets",
-        icon: ClipboardCheckIcon,
-        description: "Your recorded answers.",
+        description: "Work through textbook and worksheet exercises, questions and answers in one place.",
       },
       {
         title: "Listening Sessions",
@@ -196,7 +182,7 @@ const sections: readonly TileSection[] = [
       },
       {
         title: "Grammar",
-        to: "/grammar",
+        to: "/grammar-notes",
         icon: LanguagesIcon,
         description: "Grammar points and patterns.",
       },

@@ -34,7 +34,10 @@ function EditAnswerSheetPage() {
   const remove = () => {
     deleteAnswerSheet.mutate(id, {
       onSuccess: () => navigate({
-        to: "/answer-sheets",
+        to: "/exercises",
+        search: {
+          tab: "answers",
+        },
       }),
     });
   };

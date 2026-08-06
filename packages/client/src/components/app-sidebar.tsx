@@ -12,8 +12,6 @@ import {
   ChartColumnIcon,
   ChevronDownIcon,
   ChevronRightIcon,
-  ClipboardCheckIcon,
-  ClipboardListIcon,
   DatabaseIcon,
   DrillIcon,
   FolderTreeIcon,
@@ -21,7 +19,6 @@ import {
   HeadphonesIcon,
   ImagesIcon,
   LandmarkIcon,
-  LanguagesIcon,
   LayersIcon,
   ListChecksIcon,
   LibraryIcon,
@@ -116,11 +113,6 @@ const libraryItems = [
     icon: BookOpenIcon,
   },
   {
-    title: "Grammar",
-    to: "/grammar",
-    icon: LanguagesIcon,
-  },
-  {
     title: "Sentences",
     to: "/sentences",
     icon: ScrollTextIcon,
@@ -167,21 +159,9 @@ const actionItems = [
     ],
   },
   {
-    title: "Book Exercises",
-    to: "/book-exercises",
+    title: "Exercises",
+    to: "/exercises",
     icon: BookMarkedIcon,
-    children: [
-      {
-        title: "Question Sheets",
-        to: "/question-sheets",
-        icon: ClipboardListIcon,
-      },
-      {
-        title: "Answer Sheets",
-        to: "/answer-sheets",
-        icon: ClipboardCheckIcon,
-      },
-    ],
   },
   {
     title: "Speaking & Listening",

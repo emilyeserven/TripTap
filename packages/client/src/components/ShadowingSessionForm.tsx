@@ -22,7 +22,7 @@ import { todayDateString } from "@/lib/daily-lineup";
 import { sectionRefToSegment } from "@/lib/sections";
 import { parseYouTubeId } from "@/lib/time";
 
-/** A bookmark used to seed a brand-new session (e.g. from the Find a Resource page). */
+/** A bookmark used to seed a brand-new session (e.g. from the Resources page). */
 interface SeedBookmark {
   id: string;
   title: string;
@@ -59,7 +59,7 @@ export function ShadowingSessionForm({
 }: {
   session?: ShadowingSession;
   onSuccess?: (id: string) => void;
-  /** Seed a brand-new session from a bookmark (e.g. from the Find a Resource page); ignored when editing. */
+  /** Seed a brand-new session from a bookmark (e.g. from the Resources page); ignored when editing. */
   initialBookmark?: SeedBookmark;
   /** Link a brand-new session to a shadowing list to practise from; ignored when editing. */
   initialListId?: string;

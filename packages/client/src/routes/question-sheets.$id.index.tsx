@@ -30,7 +30,12 @@ function ViewQuestionSheetPage() {
           variant="ghost"
           size="sm"
         >
-          <Link to="/question-sheets">
+          <Link
+            to="/exercises"
+            search={{
+              tab: "questions",
+            }}
+          >
             <ArrowLeft className="size-4" />
             All question sheets
           </Link>
