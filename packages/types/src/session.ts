@@ -15,7 +15,7 @@ import type { LearningArea } from "./question-sheet.js";
 /**
  * A session's link back to the external bookmark it was based on, denormalized at selection time so
  * display never needs a live bookmarks call. Repeated verbatim on drill, listening, shadowing and
- * reading sessions (and, pluralized, on question sheets).
+ * reading sessions and on dialogues (and, pluralized, on question sheets).
  */
 export interface BookmarkRef {
   /** The bookmark's id in the external bookmarks app. */

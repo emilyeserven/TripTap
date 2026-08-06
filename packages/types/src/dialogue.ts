@@ -13,6 +13,7 @@
 
 import type { FuriToken } from "./index.js";
 import type { LearningArea } from "./question-sheet.js";
+import type { BookmarkRef } from "./session.js";
 
 /** Both the full-width (Japanese) and ASCII colons are accepted as the speaker separator. */
 const SPEAKER_SEPARATORS = ["：", ":"];
@@ -61,8 +62,11 @@ export interface ParsedDialogueLine {
   text: string;
 }
 
-/** A dialogue: the raw script plus its parsed lines. */
-export interface Dialogue {
+/**
+ * A dialogue: the raw script plus its parsed lines. The {@link BookmarkRef} half links the dialogue
+ * back to the textbook/resource (and section) it came from, denormalized at selection time.
+ */
+export interface Dialogue extends BookmarkRef {
   id: string;
   /** ISO date (YYYY-MM-DD) the dialogue was written or studied, for grouping activity by day. */
   date: string;
@@ -93,7 +97,7 @@ export interface Dialogue {
 }
 
 /** Payload for creating a dialogue. `title`, `date`, `language`, and `script` are required. */
-export interface CreateDialogueInput {
+export interface CreateDialogueInput extends Partial<BookmarkRef> {
   title: string;
   /** ISO date (YYYY-MM-DD). */
   date: string;
@@ -107,7 +111,7 @@ export interface CreateDialogueInput {
 }
 
 /** Payload for updating a dialogue; every field is optional. */
-export interface UpdateDialogueInput {
+export interface UpdateDialogueInput extends Partial<BookmarkRef> {
   title?: string;
   date?: string;
   language?: string;
