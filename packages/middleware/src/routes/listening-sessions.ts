@@ -1,4 +1,6 @@
 import type { FastifyInstance } from "fastify";
+import { idOf, notFound } from "@/routes/handlers";
+import { idParams, updateBodyOf } from "@/routes/schemas/params";
 import type {
   CreateListeningSessionInput,
   UpdateListeningSessionInput,
@@ -12,17 +14,6 @@ import {
 } from "@/services/listening-sessions";
 import { termsSchema } from "@/routes/schemas/terms";
 import { LEARNING_AREAS } from "@sentence-bank/types";
-
-const listeningSessionParams = {
-  type: "object",
-  required: ["id"],
-  properties: {
-    id: {
-      type: "string",
-      format: "uuid",
-    },
-  },
-} as const;
 
 const entriesSchema = {
   type: ["array", "null"],
@@ -130,13 +121,7 @@ const createListeningSessionBody = {
   },
 } as const;
 
-const updateListeningSessionBody = {
-  type: "object",
-  additionalProperties: false,
-  properties: {
-    ...createListeningSessionBody.properties,
-  },
-} as const;
+const updateListeningSessionBody = updateBodyOf(createListeningSessionBody);
 
 /** CRUD routes for listening (Listen and Shadow) sessions, mounted under `/api/listening-sessions`. */
 export async function listeningSessionsRoutes(app: FastifyInstance): Promise<void> {
@@ -149,16 +134,11 @@ export async function listeningSessionsRoutes(app: FastifyInstance): Promise<voi
   app.get("/api/listening-sessions/:id", {
     schema: {
       tags: ["listening-sessions"],
-      params: listeningSessionParams,
+      params: idParams,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const session = await getListeningSession(id);
-    if (!session) return reply.code(404).send({
-      message: "Listening session not found",
-    });
+    const session = await getListeningSession(idOf(req));
+    if (!session) return notFound(reply, "Listening session");
     return session;
   });
 
@@ -178,18 +158,13 @@ export async function listeningSessionsRoutes(app: FastifyInstance): Promise<voi
     {
       schema: {
         tags: ["listening-sessions"],
-        params: listeningSessionParams,
+        params: idParams,
         body: updateListeningSessionBody,
       },
     },
     async (req, reply) => {
-      const {
-        id,
-      } = req.params as { id: string };
-      const updated = await updateListeningSession(id, req.body as UpdateListeningSessionInput);
-      if (!updated) return reply.code(404).send({
-        message: "Listening session not found",
-      });
+      const updated = await updateListeningSession(idOf(req), req.body as UpdateListeningSessionInput);
+      if (!updated) return notFound(reply, "Listening session");
       return updated;
     },
   );
@@ -197,16 +172,11 @@ export async function listeningSessionsRoutes(app: FastifyInstance): Promise<voi
   app.delete("/api/listening-sessions/:id", {
     schema: {
       tags: ["listening-sessions"],
-      params: listeningSessionParams,
+      params: idParams,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const deleted = await deleteListeningSession(id);
-    if (!deleted) return reply.code(404).send({
-      message: "Listening session not found",
-    });
+    const deleted = await deleteListeningSession(idOf(req));
+    if (!deleted) return notFound(reply, "Listening session");
     return reply.code(204).send();
   });
 }

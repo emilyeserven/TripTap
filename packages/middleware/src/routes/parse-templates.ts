@@ -1,21 +1,12 @@
 import type { FastifyInstance } from "fastify";
+import { idOf, notFound } from "@/routes/handlers";
+import { idParams } from "@/routes/schemas/params";
 import type { CreateParseTemplateInput } from "@sentence-bank/types";
 import {
   createParseTemplate,
   deleteParseTemplate,
   listParseTemplates,
 } from "@/services/parse-templates";
-
-const templateParams = {
-  type: "object",
-  required: ["id"],
-  properties: {
-    id: {
-      type: "string",
-      format: "uuid",
-    },
-  },
-} as const;
 
 const createTemplateBody = {
   type: "object",
@@ -64,16 +55,11 @@ export async function parseTemplateRoutes(app: FastifyInstance): Promise<void> {
   app.delete("/api/parse-templates/:id", {
     schema: {
       tags: ["parse-templates"],
-      params: templateParams,
+      params: idParams,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const deleted = await deleteParseTemplate(id);
-    if (!deleted) return reply.code(404).send({
-      message: "Template not found",
-    });
+    const deleted = await deleteParseTemplate(idOf(req));
+    if (!deleted) return notFound(reply, "Template");
     return reply.code(204).send();
   });
 }

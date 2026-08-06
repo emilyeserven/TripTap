@@ -1,4 +1,6 @@
 import type { FastifyInstance } from "fastify";
+import { idOf, notFound } from "@/routes/handlers";
+import { idParams, updateBodyOf } from "@/routes/schemas/params";
 import type {
   CreateDrillReasonCategoryInput,
   UpdateDrillReasonCategoryInput,
@@ -10,17 +12,6 @@ import {
   listDrillReasonCategories,
   updateDrillReasonCategory,
 } from "@/services/drill-reason-categories";
-
-const categoryParams = {
-  type: "object",
-  required: ["id"],
-  properties: {
-    id: {
-      type: "string",
-      format: "uuid",
-    },
-  },
-} as const;
 
 const reasonsSchema = {
   type: "array",
@@ -77,13 +68,7 @@ const createCategoryBody = {
   },
 } as const;
 
-const updateCategoryBody = {
-  type: "object",
-  additionalProperties: false,
-  properties: {
-    ...createCategoryBody.properties,
-  },
-} as const;
+const updateCategoryBody = updateBodyOf(createCategoryBody);
 
 /** CRUD routes for the Drill Buddy reason taxonomy, mounted under `/api/drill-reason-categories`. */
 export async function drillReasonCategoryRoutes(app: FastifyInstance): Promise<void> {
@@ -96,16 +81,11 @@ export async function drillReasonCategoryRoutes(app: FastifyInstance): Promise<v
   app.get("/api/drill-reason-categories/:id", {
     schema: {
       tags: ["drill-reason-categories"],
-      params: categoryParams,
+      params: idParams,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const category = await getDrillReasonCategory(id);
-    if (!category) return reply.code(404).send({
-      message: "Reason category not found",
-    });
+    const category = await getDrillReasonCategory(idOf(req));
+    if (!category) return notFound(reply, "Reason category");
     return category;
   });
 
@@ -123,33 +103,23 @@ export async function drillReasonCategoryRoutes(app: FastifyInstance): Promise<v
   app.patch("/api/drill-reason-categories/:id", {
     schema: {
       tags: ["drill-reason-categories"],
-      params: categoryParams,
+      params: idParams,
       body: updateCategoryBody,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const updated = await updateDrillReasonCategory(id, req.body as UpdateDrillReasonCategoryInput);
-    if (!updated) return reply.code(404).send({
-      message: "Reason category not found",
-    });
+    const updated = await updateDrillReasonCategory(idOf(req), req.body as UpdateDrillReasonCategoryInput);
+    if (!updated) return notFound(reply, "Reason category");
     return updated;
   });
 
   app.delete("/api/drill-reason-categories/:id", {
     schema: {
       tags: ["drill-reason-categories"],
-      params: categoryParams,
+      params: idParams,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const deleted = await deleteDrillReasonCategory(id);
-    if (!deleted) return reply.code(404).send({
-      message: "Reason category not found",
-    });
+    const deleted = await deleteDrillReasonCategory(idOf(req));
+    if (!deleted) return notFound(reply, "Reason category");
     return reply.code(204).send();
   });
 }

@@ -3,6 +3,8 @@ import type {
   CreateTutorInput,
   UpdateTutorInput,
 } from "@sentence-bank/types";
+import { idOf, notFound } from "@/routes/handlers";
+import { idParams, updateBodyOf } from "@/routes/schemas/params";
 import {
   createTutor,
   deleteTutor,
@@ -10,17 +12,6 @@ import {
   listTutors,
   updateTutor,
 } from "@/services/tutors";
-
-const tutorParams = {
-  type: "object",
-  required: ["id"],
-  properties: {
-    id: {
-      type: "string",
-      format: "uuid",
-    },
-  },
-} as const;
 
 const createTutorBody = {
   type: "object",
@@ -37,13 +28,7 @@ const createTutorBody = {
   },
 } as const;
 
-const updateTutorBody = {
-  type: "object",
-  additionalProperties: false,
-  properties: {
-    ...createTutorBody.properties,
-  },
-} as const;
+const updateTutorBody = updateBodyOf(createTutorBody);
 
 /** CRUD routes for tutors (who ran a lesson), mounted under `/api/tutors`. */
 export async function tutorRoutes(app: FastifyInstance): Promise<void> {
@@ -56,16 +41,11 @@ export async function tutorRoutes(app: FastifyInstance): Promise<void> {
   app.get("/api/tutors/:id", {
     schema: {
       tags: ["tutors"],
-      params: tutorParams,
+      params: idParams,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const tutor = await getTutor(id);
-    if (!tutor) return reply.code(404).send({
-      message: "Tutor not found",
-    });
+    const tutor = await getTutor(idOf(req));
+    if (!tutor) return notFound(reply, "Tutor");
     return tutor;
   });
 
@@ -83,33 +63,23 @@ export async function tutorRoutes(app: FastifyInstance): Promise<void> {
   app.patch("/api/tutors/:id", {
     schema: {
       tags: ["tutors"],
-      params: tutorParams,
+      params: idParams,
       body: updateTutorBody,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const updated = await updateTutor(id, req.body as UpdateTutorInput);
-    if (!updated) return reply.code(404).send({
-      message: "Tutor not found",
-    });
+    const updated = await updateTutor(idOf(req), req.body as UpdateTutorInput);
+    if (!updated) return notFound(reply, "Tutor");
     return updated;
   });
 
   app.delete("/api/tutors/:id", {
     schema: {
       tags: ["tutors"],
-      params: tutorParams,
+      params: idParams,
     },
   }, async (req, reply) => {
-    const {
-      id,
-    } = req.params as { id: string };
-    const deleted = await deleteTutor(id);
-    if (!deleted) return reply.code(404).send({
-      message: "Tutor not found",
-    });
+    const deleted = await deleteTutor(idOf(req));
+    if (!deleted) return notFound(reply, "Tutor");
     return reply.code(204).send();
   });
 }
