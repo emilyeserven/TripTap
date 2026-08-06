@@ -1,26 +1,28 @@
-import type { CreateSentenceInput, RenshuuExampleSentence } from "@sentence-bank/types";
+import type { RenshuuExampleSentence, SentenceDraft } from "@sentence-bank/types";
 
 import { SentenceImportDialog } from "@/components/SentenceImportDialog";
 import { useRenshuuExamples } from "@/hooks/useRenshuu";
 
 /**
- * Build a bank sentence from a Renshuu result. The text is already normalized toward the common
- * written form server-side; a `renshuu` tag plus a source note keep imported rows identifiable.
+ * Build a draft from a Renshuu result. The text is already normalized toward the common written
+ * form server-side; the `renshuu` tag plus a source note keep imported rows identifiable — both
+ * bank-only columns, so the picker warns when another destination is chosen.
  */
-function toCreateInput(example: RenshuuExampleSentence): CreateSentenceInput {
+function toDraft(example: RenshuuExampleSentence): SentenceDraft {
   return {
     text: example.text,
     translation: example.translation,
     language: "Japanese",
     tags: "renshuu",
-    notes: `From Renshuu #${example.id}`,
+    provenanceNote: `From Renshuu #${example.id}`,
   };
 }
 
 /**
  * Search Renshuu's example-sentence bank (using the learner's stored API key) and import the chosen
- * sentences straight into the bank. The server-generated furigana previews here; the bank regenerates
- * it (with vocab overrides) on import. Parallels {@link ./TatoebaImportDialog}.
+ * sentences to the destination they pick. The server-generated furigana previews here; the
+ * destination regenerates it (with vocab overrides) on import. Parallels
+ * {@link ./TatoebaImportDialog}.
  */
 export function RenshuuImportDialog(props: {
   /** Control the dialog externally (e.g. from a menu item); omit for the built-in trigger button. */
@@ -32,11 +34,11 @@ export function RenshuuImportDialog(props: {
     <SentenceImportDialog
       {...props}
       title="Import sentences from Renshuu"
-      description="Search Renshuu’s example sentences and add the ones you pick to your bank. Uncommon kanji are normalized to the usual spelling and furigana is generated."
+      description="Search Renshuu’s example sentences and add the ones you pick. Uncommon kanji are normalized to the usual spelling and furigana is generated."
       triggerLabel="Import from Renshuu"
       searchAriaLabel="Renshuu search"
       search={search}
-      toCreateInput={toCreateInput}
+      toDraft={toDraft}
       footer={(
         <p className="text-xs text-muted-foreground">
           Examples from

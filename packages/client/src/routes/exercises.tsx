@@ -4,7 +4,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
 
 import { AnswerSheetCard } from "@/components/AnswerSheetCard";
-import { HubSection } from "@/components/HubSection";
+import { HubSection, VIEW_ALL_CLASS } from "@/components/HubSection";
 import { QuestionSheetResourceGroup } from "@/components/QuestionSheetResourceGroup";
 import { ResourceRow } from "@/components/ResourceRow";
 import { SheetFilters } from "@/components/SheetFilters";
@@ -37,8 +37,6 @@ export const Route = createFileRoute("/exercises")({
   ),
   component: ExercisesPage,
 });
-
-const VIEW_ALL_CLASS = "text-sm font-medium text-primary hover:underline";
 
 /**
  * The single destination for textbook/worksheet exercises, replacing the Book Exercises / Question

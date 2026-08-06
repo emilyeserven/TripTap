@@ -6,6 +6,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { RenshuuImportDialog } from "./RenshuuImportDialog";
 
 const mutateAsync = vi.fn();
+const mineMutateAsync = vi.fn();
+const practiceMutateAsync = vi.fn();
 
 const examples: RenshuuExampleSentence[] = [
   {
@@ -41,6 +43,7 @@ vi.mock("@/hooks/useRenshuu", () => ({
   }),
 }));
 
+// The dialog resolves its destination through all three create-many hooks; stub each one.
 vi.mock("@/hooks/useSentences", () => ({
   useCreateSentencesMany: () => ({
     mutateAsync,
@@ -48,20 +51,38 @@ vi.mock("@/hooks/useSentences", () => ({
   }),
 }));
 
+vi.mock("@/hooks/useMySentences", () => ({
+  useCreateMySentencesMany: () => ({
+    mutateAsync: mineMutateAsync,
+    isPending: false,
+  }),
+}));
+
+vi.mock("@/hooks/usePracticeSentences", () => ({
+  useCreatePracticeSentencesMany: () => ({
+    mutateAsync: practiceMutateAsync,
+    isPending: false,
+  }),
+}));
+
+/** Open the dialog and tick the first result. */
+function openAndSelectFirst() {
+  render(<RenshuuImportDialog />);
+  fireEvent.click(screen.getByRole("button", {
+    name: /Import from Renshuu/,
+  }));
+  fireEvent.click(screen.getAllByRole("checkbox")[0]);
+}
+
 describe("RenshuuImportDialog", () => {
   beforeEach(() => {
     mutateAsync.mockReset();
+    mineMutateAsync.mockReset();
+    practiceMutateAsync.mockReset();
   });
 
   it("imports the selected sentence into the bank with a Renshuu source note", async () => {
-    render(<RenshuuImportDialog />);
-
-    fireEvent.click(screen.getByRole("button", {
-      name: /Import from Renshuu/,
-    }));
-
-    const checkboxes = screen.getAllByRole("checkbox");
-    fireEvent.click(checkboxes[0]);
+    openAndSelectFirst();
 
     fireEvent.click(screen.getByRole("button", {
       name: /^Import 1$/,
@@ -73,10 +94,37 @@ describe("RenshuuImportDialog", () => {
         text: "犬が好きです。",
         translation: "I like dogs.",
         language: "Japanese",
+        terms: null,
         tags: "renshuu",
         notes: "From Renshuu #7",
+        sourceId: null,
+        page: null,
+        captureId: null,
       },
     ]);
+    expect(mineMutateAsync).not.toHaveBeenCalled();
+  });
+
+  it("routes the import to My Sentences when that destination is picked", async () => {
+    openAndSelectFirst();
+
+    fireEvent.click(screen.getByRole("combobox"));
+    fireEvent.click(screen.getByText("My Sentences"));
+
+    fireEvent.click(screen.getByRole("button", {
+      name: /^Import 1$/,
+    }));
+
+    expect(mineMutateAsync).toHaveBeenCalledTimes(1);
+    expect(mineMutateAsync).toHaveBeenCalledWith([
+      {
+        text: "犬が好きです。",
+        translation: "I like dogs.",
+        language: "Japanese",
+        terms: null,
+      },
+    ]);
+    expect(mutateAsync).not.toHaveBeenCalled();
   });
 
   it("renders furigana and keeps the English behind a reveal control", () => {

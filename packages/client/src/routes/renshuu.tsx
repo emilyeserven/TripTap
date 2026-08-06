@@ -119,6 +119,7 @@ function RenshuuPage() {
             items={sentenceItems}
             sources={sources}
             storageKey="renshuu-export"
+            basketKind="sentence"
             pickerHint="Only sentences with a translation can be exported."
             outputHint={OUTPUT_HINT}
             outputLabel="Renshuu export text"
@@ -136,6 +137,7 @@ function RenshuuPage() {
             items={vocabItems}
             sources={sources}
             storageKey="renshuu-export-vocab"
+            basketKind="vocab"
             pickerHint="Exported one per line as term/reading."
             outputHint={OUTPUT_HINT}
             outputLabel="Renshuu export text"
