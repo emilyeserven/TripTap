@@ -1,12 +1,11 @@
-import { desc, eq } from "drizzle-orm";
+import { desc } from "drizzle-orm";
 import type {
   CreateWritingPromptInput,
-  UpdateWritingPromptInput,
   WritingPrompt,
   WritingPromptDifficulty,
 } from "@sentence-bank/types";
-import { db } from "@/db";
 import { writingPrompts, type WritingPromptRow } from "@/db/schema";
+import { crudService } from "@/services/crud";
 import { toIso } from "@/services/rows";
 
 /** Map a DB row to the shared `WritingPrompt` wire type. */
@@ -34,51 +33,17 @@ function toInsert(input: CreateWritingPromptInput) {
   };
 }
 
+const crud = crudService(writingPrompts, {
+  toWire: toWritingPrompt,
+  toInsert,
+  orderBy: [desc(writingPrompts.createdAt)],
+});
+
 /** List writing prompts, newest first. */
-export async function listWritingPrompts(): Promise<WritingPrompt[]> {
-  const rows = await db.select().from(writingPrompts).orderBy(desc(writingPrompts.createdAt));
-  return rows.map(toWritingPrompt);
-}
-
-export async function getWritingPrompt(id: string): Promise<WritingPrompt | null> {
-  const [row] = await db.select().from(writingPrompts).where(eq(writingPrompts.id, id));
-  return row ? toWritingPrompt(row) : null;
-}
-
-export async function createWritingPrompt(
-  input: CreateWritingPromptInput,
-): Promise<WritingPrompt> {
-  const [row] = await db.insert(writingPrompts).values(toInsert(input)).returning();
-  return toWritingPrompt(row);
-}
-
+export const listWritingPrompts = crud.list;
+export const getWritingPrompt = crud.get;
+export const createWritingPrompt = crud.create;
 /** Create many writing prompts in a single insert (used by the bulk-paste import flow). */
-export async function createWritingPromptsMany(
-  inputs: CreateWritingPromptInput[],
-): Promise<WritingPrompt[]> {
-  if (inputs.length === 0) return [];
-  const rows = await db.insert(writingPrompts).values(inputs.map(toInsert)).returning();
-  return rows.map(toWritingPrompt);
-}
-
-export async function updateWritingPrompt(
-  id: string,
-  input: UpdateWritingPromptInput,
-): Promise<WritingPrompt | null> {
-  const [row] = await db
-    .update(writingPrompts)
-    .set({
-      ...input,
-      updatedAt: new Date(),
-    })
-    .where(eq(writingPrompts.id, id))
-    .returning();
-  return row ? toWritingPrompt(row) : null;
-}
-
-export async function deleteWritingPrompt(id: string): Promise<boolean> {
-  const rows = await db.delete(writingPrompts).where(eq(writingPrompts.id, id)).returning({
-    id: writingPrompts.id,
-  });
-  return rows.length > 0;
-}
+export const createWritingPromptsMany = crud.createMany;
+export const updateWritingPrompt = crud.update;
+export const deleteWritingPrompt = crud.remove;

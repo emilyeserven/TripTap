@@ -1,11 +1,10 @@
-import { desc, eq } from "drizzle-orm";
+import { desc } from "drizzle-orm";
 import type {
   CreateTheorySessionInput,
   TheorySession,
-  UpdateTheorySessionInput,
 } from "@sentence-bank/types";
-import { db } from "@/db";
 import { theorySessions, type TheorySessionRow } from "@/db/schema";
+import { crudService } from "@/services/crud";
 import { toIso } from "@/services/rows";
 
 /** Map a DB row to the shared `TheorySession` wire type. */
@@ -41,43 +40,15 @@ function toInsert(input: CreateTheorySessionInput) {
   };
 }
 
+const crud = crudService(theorySessions, {
+  toWire: toTheorySession,
+  toInsert,
+  orderBy: [desc(theorySessions.date), desc(theorySessions.createdAt)],
+});
+
 /** List theory sessions, most recent date first. */
-export async function listTheorySessions(): Promise<TheorySession[]> {
-  const rows = await db
-    .select()
-    .from(theorySessions)
-    .orderBy(desc(theorySessions.date), desc(theorySessions.createdAt));
-  return rows.map(toTheorySession);
-}
-
-export async function getTheorySession(id: string): Promise<TheorySession | null> {
-  const [row] = await db.select().from(theorySessions).where(eq(theorySessions.id, id));
-  return row ? toTheorySession(row) : null;
-}
-
-export async function createTheorySession(input: CreateTheorySessionInput): Promise<TheorySession> {
-  const [row] = await db.insert(theorySessions).values(toInsert(input)).returning();
-  return toTheorySession(row);
-}
-
-export async function updateTheorySession(
-  id: string,
-  input: UpdateTheorySessionInput,
-): Promise<TheorySession | null> {
-  const [row] = await db
-    .update(theorySessions)
-    .set({
-      ...input,
-      updatedAt: new Date(),
-    })
-    .where(eq(theorySessions.id, id))
-    .returning();
-  return row ? toTheorySession(row) : null;
-}
-
-export async function deleteTheorySession(id: string): Promise<boolean> {
-  const rows = await db.delete(theorySessions).where(eq(theorySessions.id, id)).returning({
-    id: theorySessions.id,
-  });
-  return rows.length > 0;
-}
+export const listTheorySessions = crud.list;
+export const getTheorySession = crud.get;
+export const createTheorySession = crud.create;
+export const updateTheorySession = crud.update;
+export const deleteTheorySession = crud.remove;

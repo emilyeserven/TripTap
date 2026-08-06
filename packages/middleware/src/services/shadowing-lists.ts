@@ -1,11 +1,10 @@
-import { desc, eq } from "drizzle-orm";
+import { desc } from "drizzle-orm";
 import type {
   CreateShadowingListInput,
   ShadowingList,
-  UpdateShadowingListInput,
 } from "@sentence-bank/types";
-import { db } from "@/db";
 import { shadowingLists, type ShadowingListRow } from "@/db/schema";
+import { crudService } from "@/services/crud";
 import { toIso } from "@/services/rows";
 
 /** Map a DB row to the shared `ShadowingList` wire type. */
@@ -31,42 +30,15 @@ function toInsert(input: CreateShadowingListInput) {
   };
 }
 
+const crud = crudService(shadowingLists, {
+  toWire: toShadowingList,
+  toInsert,
+  orderBy: [desc(shadowingLists.createdAt)],
+});
+
 /** List shadowing lists, newest first. */
-export async function listShadowingLists(): Promise<ShadowingList[]> {
-  const rows = await db.select().from(shadowingLists).orderBy(desc(shadowingLists.createdAt));
-  return rows.map(toShadowingList);
-}
-
-export async function getShadowingList(id: string): Promise<ShadowingList | null> {
-  const [row] = await db.select().from(shadowingLists).where(eq(shadowingLists.id, id));
-  return row ? toShadowingList(row) : null;
-}
-
-export async function createShadowingList(
-  input: CreateShadowingListInput,
-): Promise<ShadowingList> {
-  const [row] = await db.insert(shadowingLists).values(toInsert(input)).returning();
-  return toShadowingList(row);
-}
-
-export async function updateShadowingList(
-  id: string,
-  input: UpdateShadowingListInput,
-): Promise<ShadowingList | null> {
-  const [row] = await db
-    .update(shadowingLists)
-    .set({
-      ...input,
-      updatedAt: new Date(),
-    })
-    .where(eq(shadowingLists.id, id))
-    .returning();
-  return row ? toShadowingList(row) : null;
-}
-
-export async function deleteShadowingList(id: string): Promise<boolean> {
-  const rows = await db.delete(shadowingLists).where(eq(shadowingLists.id, id)).returning({
-    id: shadowingLists.id,
-  });
-  return rows.length > 0;
-}
+export const listShadowingLists = crud.list;
+export const getShadowingList = crud.get;
+export const createShadowingList = crud.create;
+export const updateShadowingList = crud.update;
+export const deleteShadowingList = crud.remove;

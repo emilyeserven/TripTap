@@ -1,11 +1,10 @@
-import { desc, eq } from "drizzle-orm";
+import { desc } from "drizzle-orm";
 import type {
   CreateDrillSessionInput,
   DrillSession,
-  UpdateDrillSessionInput,
 } from "@sentence-bank/types";
-import { db } from "@/db";
 import { drillSessions, type DrillSessionRow } from "@/db/schema";
+import { crudService } from "@/services/crud";
 import { toIso } from "@/services/rows";
 
 /** Map a DB row to the shared `DrillSession` wire type. */
@@ -45,43 +44,15 @@ function toInsert(input: CreateDrillSessionInput) {
   };
 }
 
+const crud = crudService(drillSessions, {
+  toWire: toDrillSession,
+  toInsert,
+  orderBy: [desc(drillSessions.date), desc(drillSessions.createdAt)],
+});
+
 /** List drill sessions, most recent date first. */
-export async function listDrillSessions(): Promise<DrillSession[]> {
-  const rows = await db
-    .select()
-    .from(drillSessions)
-    .orderBy(desc(drillSessions.date), desc(drillSessions.createdAt));
-  return rows.map(toDrillSession);
-}
-
-export async function getDrillSession(id: string): Promise<DrillSession | null> {
-  const [row] = await db.select().from(drillSessions).where(eq(drillSessions.id, id));
-  return row ? toDrillSession(row) : null;
-}
-
-export async function createDrillSession(input: CreateDrillSessionInput): Promise<DrillSession> {
-  const [row] = await db.insert(drillSessions).values(toInsert(input)).returning();
-  return toDrillSession(row);
-}
-
-export async function updateDrillSession(
-  id: string,
-  input: UpdateDrillSessionInput,
-): Promise<DrillSession | null> {
-  const [row] = await db
-    .update(drillSessions)
-    .set({
-      ...input,
-      updatedAt: new Date(),
-    })
-    .where(eq(drillSessions.id, id))
-    .returning();
-  return row ? toDrillSession(row) : null;
-}
-
-export async function deleteDrillSession(id: string): Promise<boolean> {
-  const rows = await db.delete(drillSessions).where(eq(drillSessions.id, id)).returning({
-    id: drillSessions.id,
-  });
-  return rows.length > 0;
-}
+export const listDrillSessions = crud.list;
+export const getDrillSession = crud.get;
+export const createDrillSession = crud.create;
+export const updateDrillSession = crud.update;
+export const deleteDrillSession = crud.remove;

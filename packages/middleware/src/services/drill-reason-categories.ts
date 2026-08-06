@@ -1,11 +1,10 @@
-import { asc, eq } from "drizzle-orm";
+import { asc } from "drizzle-orm";
 import type {
   CreateDrillReasonCategoryInput,
   DrillReasonCategory,
-  UpdateDrillReasonCategoryInput,
 } from "@sentence-bank/types";
-import { db } from "@/db";
 import { drillReasonCategories, type DrillReasonCategoryRow } from "@/db/schema";
+import { crudService } from "@/services/crud";
 import { toIso } from "@/services/rows";
 
 /** Map a DB row to the shared `DrillReasonCategory` wire type. */
@@ -29,51 +28,15 @@ function toInsert(input: CreateDrillReasonCategoryInput) {
   };
 }
 
+const crud = crudService(drillReasonCategories, {
+  toWire: toDrillReasonCategory,
+  toInsert,
+  orderBy: [asc(drillReasonCategories.name)],
+});
+
 /** List reason categories, alphabetically by name. */
-export async function listDrillReasonCategories(): Promise<DrillReasonCategory[]> {
-  const rows = await db
-    .select()
-    .from(drillReasonCategories)
-    .orderBy(asc(drillReasonCategories.name));
-  return rows.map(toDrillReasonCategory);
-}
-
-export async function getDrillReasonCategory(id: string): Promise<DrillReasonCategory | null> {
-  const [row] = await db
-    .select()
-    .from(drillReasonCategories)
-    .where(eq(drillReasonCategories.id, id));
-  return row ? toDrillReasonCategory(row) : null;
-}
-
-export async function createDrillReasonCategory(
-  input: CreateDrillReasonCategoryInput,
-): Promise<DrillReasonCategory> {
-  const [row] = await db.insert(drillReasonCategories).values(toInsert(input)).returning();
-  return toDrillReasonCategory(row);
-}
-
-export async function updateDrillReasonCategory(
-  id: string,
-  input: UpdateDrillReasonCategoryInput,
-): Promise<DrillReasonCategory | null> {
-  const [row] = await db
-    .update(drillReasonCategories)
-    .set({
-      ...input,
-      updatedAt: new Date(),
-    })
-    .where(eq(drillReasonCategories.id, id))
-    .returning();
-  return row ? toDrillReasonCategory(row) : null;
-}
-
-export async function deleteDrillReasonCategory(id: string): Promise<boolean> {
-  const rows = await db
-    .delete(drillReasonCategories)
-    .where(eq(drillReasonCategories.id, id))
-    .returning({
-      id: drillReasonCategories.id,
-    });
-  return rows.length > 0;
-}
+export const listDrillReasonCategories = crud.list;
+export const getDrillReasonCategory = crud.get;
+export const createDrillReasonCategory = crud.create;
+export const updateDrillReasonCategory = crud.update;
+export const deleteDrillReasonCategory = crud.remove;
