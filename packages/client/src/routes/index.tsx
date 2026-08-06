@@ -157,10 +157,10 @@ const sections: readonly TileSection[] = [
         description: "Everything you've captured, ready to process.",
       },
       {
-        title: "Sources",
+        title: "Sentence Origins",
         to: "/sources",
         icon: DatabaseIcon,
-        description: "Where your material comes from.",
+        description: "Where your sentences come from — books, shows, articles.",
       },
     ],
   },

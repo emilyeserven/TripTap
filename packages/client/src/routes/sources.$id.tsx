@@ -50,7 +50,7 @@ function SourceDetailPage() {
           "
         >
           <ArrowLeft className="size-3.5" />
-          Sources
+          Sentence Origins
         </Link>
       </div>
 

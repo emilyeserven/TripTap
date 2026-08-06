@@ -152,7 +152,7 @@ function SourceForm({
 }
 
 function SourcesPage() {
-  usePageTitle("Sources");
+  usePageTitle("Sentence Origins");
   const {
     data: sources, isLoading, error,
   } = useSources();
@@ -225,7 +225,7 @@ function SourcesPage() {
       {error ? <p className="text-destructive">{error.message}</p> : null}
       {isLoading ? <p className="text-muted-foreground">Loading…</p> : null}
       {!isLoading && sources && sources.length === 0 && !creating
-        ? <p className="text-muted-foreground">No sources yet.</p>
+        ? <p className="text-muted-foreground">No sentence origins yet.</p>
         : null}
 
       <div className="space-y-3">

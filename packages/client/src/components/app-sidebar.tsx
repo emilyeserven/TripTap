@@ -89,7 +89,9 @@ const collectionsItems = [
     icon: ImagesIcon,
   },
   {
-    title: "Sources",
+    // Renamed from "Sources" to stop colliding with the bookmarks "Resources" page above — this is
+    // the local free-text provenance table for sentences, not the remote study-material channel.
+    title: "Sentence Origins",
     to: "/sources",
     icon: DatabaseIcon,
   },
