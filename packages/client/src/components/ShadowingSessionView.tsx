@@ -3,8 +3,9 @@ import type { ListeningEntry, ShadowingSession } from "@sentence-bank/types";
 
 import { useEffect, useRef, useState } from "react";
 
-import { ExternalLink, Play, RotateCcw, SkipForward, Square } from "lucide-react";
+import { ExternalLink, Play, RotateCcw, SkipForward, Square, Volume2 } from "lucide-react";
 
+import { speak } from "@/components/ai-lesson/speak";
 import { AudioFilePlayer } from "@/components/AudioFilePlayer";
 import { KanaEntryToggle } from "@/components/KanaEntryToggle";
 import { PinnablePlayer } from "@/components/PinnablePlayer";
@@ -13,7 +14,10 @@ import { StopwatchPlayer } from "@/components/StopwatchPlayer";
 import { TimestampModeToggle } from "@/components/TimestampModeToggle";
 import { Button } from "@/components/ui/button";
 import { YouTubePlayer } from "@/components/YouTubePlayer";
+import { useMySentences } from "@/hooks/useMySentences";
 import { useSegmentLoop } from "@/hooks/useSegmentLoop";
+import { useSentences } from "@/hooks/useSentences";
+import { useShadowingLists } from "@/hooks/useShadowingLists";
 import { useUpdateShadowingSession } from "@/hooks/useShadowingSessions";
 import { shadowingSessionsApi } from "@/lib/api";
 import { formatTime, parseYouTubeId } from "@/lib/time";
@@ -146,6 +150,10 @@ export function ShadowingSessionView({
         </p>
       )}
 
+      {session.shadowingListId
+        ? <ShadowingScript listId={session.shadowingListId} />
+        : null}
+
       <div className="space-y-3 rounded-md border p-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-lg font-semibold">Segments</h2>
@@ -263,6 +271,95 @@ export function ShadowingSessionView({
         getCurrentTimeMs={() => playerRef.current?.getCurrentTimeMs() ?? 0}
         source={hasMedia ? "video" : "stopwatch"}
       />
+    </div>
+  );
+}
+
+/**
+ * The linked shadowing list's sentences as the session's practice script, resolved client-side the
+ * same way ShadowingListView does (my-sentences prefer their corrected form; ids that no longer
+ * resolve are silently dropped). Rendered only when the session was started from a list.
+ */
+function ShadowingScript({
+  listId,
+}: {
+  listId: string;
+}) {
+  const {
+    data: lists,
+  } = useShadowingLists();
+  const list = lists?.find(l => l.id === listId) ?? null;
+  const {
+    data: sentences,
+  } = useSentences();
+  const {
+    data: mySentences,
+  } = useMySentences();
+
+  if (!list) return null;
+
+  const bankById = new Map((sentences ?? []).map(s => [s.id, s] as const));
+  const mineById = new Map((mySentences ?? []).map(s => [s.id, s] as const));
+  const lines = [
+    ...list.sentenceIds.flatMap((id) => {
+      const s = bankById.get(id);
+      return s
+        ? [{
+          key: `sentence:${s.id}`,
+          text: s.text,
+          translation: s.translation,
+        }]
+        : [];
+    }),
+    ...list.mySentenceIds.flatMap((id) => {
+      const s = mineById.get(id);
+      return s
+        ? [{
+          key: `mySentence:${s.id}`,
+          text: s.correction?.trim() ? s.correction : s.text,
+          translation: s.translation,
+        }]
+        : [];
+    }),
+  ];
+
+  if (lines.length === 0) return null;
+
+  return (
+    <div className="space-y-3 rounded-md border p-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 className="text-lg font-semibold">Practice script</h2>
+        <span className="text-sm text-muted-foreground">{list.name}</span>
+      </div>
+      <ol className="space-y-2">
+        {lines.map(line => (
+          <li
+            key={line.key}
+            className="flex items-start gap-2"
+          >
+            <Button
+              size="icon"
+              variant="ghost"
+              className="size-6 shrink-0 translate-y-0.5"
+              aria-label="Hear"
+              onClick={() => speak(line.text)}
+            >
+              <Volume2 className="size-4" />
+            </Button>
+            <div className="min-w-0">
+              <p
+                className="text-lg font-medium"
+                lang="ja"
+              >
+                {line.text}
+              </p>
+              {line.translation
+                ? <p className="text-sm text-muted-foreground">{line.translation}</p>
+                : null}
+            </div>
+          </li>
+        ))}
+      </ol>
     </div>
   );
 }

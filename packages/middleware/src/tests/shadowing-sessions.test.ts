@@ -164,3 +164,36 @@ test("POST /api/shadowing-sessions accepts a kana entry carrying English context
   assert.notEqual(res.statusCode, 400);
   await app.close();
 });
+
+test("POST /api/shadowing-sessions rejects a non-uuid shadowingListId", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/shadowing-sessions",
+    payload: {
+      title: "List practice",
+      language: "Japanese",
+      date: "2026-08-06",
+      shadowingListId: "not-a-uuid",
+    },
+  });
+  assert.equal(res.statusCode, 400);
+  await app.close();
+});
+
+test("POST /api/shadowing-sessions accepts a shadowing-list link", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/shadowing-sessions",
+    payload: {
+      title: "List practice",
+      language: "Japanese",
+      date: "2026-08-06",
+      shadowingListId: "00000000-0000-4000-8000-000000000001",
+    },
+  });
+  // Without a live DB the handler fails downstream; schema validation must still pass.
+  assert.notEqual(res.statusCode, 400);
+  await app.close();
+});

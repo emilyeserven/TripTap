@@ -533,6 +533,13 @@
       "when": 1785965178846,
       "tag": "0075_young_makkari",
       "breakpoints": true
+    },
+    {
+      "idx": 76,
+      "version": "7",
+      "when": 1785980529091,
+      "tag": "0076_wild_shadow_king",
+      "breakpoints": true
     }
   ]
 }

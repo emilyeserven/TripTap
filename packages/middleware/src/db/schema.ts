@@ -550,6 +550,11 @@ export const shadowingSessions = pgTable("shadowing_sessions", {
   learningArea: text("learning_area").$type<LearningArea>(),
   // When false the session earns no XP — sourced rather than produced work.
   countsTowardXp: boolean("counts_toward_xp").notNull().default(true),
+  // The shadowing list whose sentences serve as this session's practice script; null for ad-hoc
+  // sessions. (Lazy reference: shadowingLists is declared later in this file.)
+  shadowingListId: uuid("shadowing_list_id").references((): AnyPgColumn => shadowingLists.id, {
+    onDelete: "set null",
+  }),
   createdAt: timestamp("created_at", {
     withTimezone: true,
   }).notNull().defaultNow(),

@@ -48,6 +48,8 @@ export interface ShadowingSession extends SessionXp, BookmarkRef {
   entries: ListeningEntry[] | null;
   /** Borrowed bookmark terms tagging this session; null if none. */
   terms: SentenceTermRef[] | null;
+  /** The shadowing list whose sentences serve as this session's practice script; null for ad-hoc sessions. */
+  shadowingListId: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -68,6 +70,8 @@ export interface CreateShadowingSessionInput extends SessionXpInput, Partial<Boo
   segments?: ShadowingSegment[] | null;
   entries?: ListeningEntry[] | null;
   terms?: SentenceTermRef[] | null;
+  /** Links the session to a shadowing list to practise from; null/omitted for ad-hoc sessions. */
+  shadowingListId?: string | null;
 }
 
 /** Payload for partially updating a shadowing session. */

@@ -1,0 +1,2 @@
+ALTER TABLE "shadowing_sessions" ADD COLUMN "shadowing_list_id" uuid;--> statement-breakpoint
+ALTER TABLE "shadowing_sessions" ADD CONSTRAINT "shadowing_sessions_shadowing_list_id_shadowing_lists_id_fk" FOREIGN KEY ("shadowing_list_id") REFERENCES "public"."shadowing_lists"("id") ON DELETE set null ON UPDATE no action;
