@@ -3,9 +3,12 @@ import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
 
+import { GrammarItemRow } from "@/components/ai-lesson/GrammarItemRow";
 import { GrammarNoteCard } from "@/components/GrammarNoteCard";
+import { Accordion } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useAiLessonContent } from "@/hooks/useAiLessons";
 import { useGrammarNotes } from "@/hooks/useGrammarNotes";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { usageLabel } from "@/lib/grammar-notes";
@@ -20,6 +23,17 @@ function GrammarNotesPage() {
     data: notes, isLoading, error,
   } = useGrammarNotes();
   const [search, setSearch] = useState("");
+
+  // The tagging inbox: AI-lesson grammar items with no Grammar-source tag yet. Tagging one (via the
+  // editor inside GrammarItemRow — the only tagging surface for AI-lesson grammar) makes it reachable
+  // from a note and drops it from this inbox on refetch. This absorbed the retired /grammar page.
+  const {
+    data: aiContent,
+  } = useAiLessonContent();
+  const untagged = useMemo(
+    () => (aiContent?.grammar ?? []).filter(g => !g.grammarTerms || g.grammarTerms.length === 0),
+    [aiContent],
+  );
 
   const shown = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -79,6 +93,36 @@ function GrammarNotesPage() {
           />
         ))}
       </div>
+
+      {untagged.length > 0
+        ? (
+          <div className="space-y-2">
+            <div>
+              <h2 className="text-lg font-semibold">Untagged from AI lessons</h2>
+              <p className="text-sm text-muted-foreground">
+                {`${untagged.length} grammar ${untagged.length === 1 ? "pattern" : "patterns"} without
+                a Grammar-source tag yet — tag one to link it into a note.`}
+              </p>
+            </div>
+            <Accordion
+              type="single"
+              collapsible
+              className="w-full"
+            >
+              {untagged.map(g => (
+                <GrammarItemRow
+                  key={g.id}
+                  grammar={g}
+                  aiLesson={{
+                    slug: g.aiLessonSlug,
+                    title: g.aiLessonTitle,
+                  }}
+                />
+              ))}
+            </Accordion>
+          </div>
+        )
+        : null}
     </section>
   );
 }

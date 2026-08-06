@@ -29,7 +29,7 @@ export function ListeningSessionForm({
 }: {
   session?: ListeningSession;
   onSuccess?: (id: string) => void;
-  /** Seed a brand-new session from a bookmark (e.g. from the Find a Resource page); ignored when editing. */
+  /** Seed a brand-new session from a bookmark (e.g. from the Resources page); ignored when editing. */
   initialBookmark?: { id: string;
     title: string;
     url: string | null; };

@@ -1,7 +1,7 @@
 import type { MySentence, Sentence, ShadowingList } from "@sentence-bank/types";
 
 import { Link } from "@tanstack/react-router";
-import { Volume2, X } from "lucide-react";
+import { Repeat2, Volume2, X } from "lucide-react";
 
 import { speak } from "@/components/ai-lesson/speak";
 import { Button } from "@/components/ui/button";
@@ -82,13 +82,30 @@ export function ShadowingListView({
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">{list.name}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {members.length} {members.length === 1 ? "sentence" : "sentences"} to shadow
-        </p>
-        {list.notes
-          ? <p className="mt-2 text-sm whitespace-pre-wrap">{list.notes}</p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold">{list.name}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {members.length} {members.length === 1 ? "sentence" : "sentences"} to shadow
+          </p>
+          {list.notes
+            ? <p className="mt-2 text-sm whitespace-pre-wrap">{list.notes}</p>
+            : null}
+        </div>
+        {members.length > 0
+          ? (
+            <Button asChild>
+              <Link
+                to="/shadowing/new"
+                search={{
+                  listId: list.id,
+                }}
+              >
+                <Repeat2 className="size-4" />
+                Practice this list
+              </Link>
+            </Button>
+          )
           : null}
       </div>
 

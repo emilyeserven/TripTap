@@ -138,3 +138,40 @@ test("GET /api/practice-sentences/:id/image rejects a non-uuid id", async () => 
   assert.equal(res.statusCode, 400);
   await app.close();
 });
+
+test("POST /api/practice-sentences accepts boolean and ISO-timestamp pass values", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/practice-sentences",
+    payload: {
+      text: "猫が寝ている。",
+      language: "Japanese",
+      passes: {
+        read: "2026-08-06T09:00:00.000Z",
+        card: true,
+      },
+    },
+  });
+  // Without a live DB the handler fails downstream; schema validation must still pass.
+  assert.notEqual(res.statusCode, 400);
+  await app.close();
+});
+
+test("POST /api/practice-sentences strips an unknown pass key", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/practice-sentences",
+    payload: {
+      text: "犬が走る。",
+      language: "Japanese",
+      passes: {
+        osmosis: true,
+      },
+    },
+  });
+  // removeAdditional strips the unknown key rather than rejecting, so this passes validation.
+  assert.notEqual(res.statusCode, 400);
+  await app.close();
+});

@@ -505,12 +505,30 @@ export function sessionLinkFor(area: LearningArea | null): { to: string;
       to: "/reading-sessions/new",
       verb: "Read",
     };
+    case "Writing": return {
+      to: "/my-writing",
+      verb: "Write from",
+    };
+    case "Grammar": return {
+      to: "/grammar-notes",
+      verb: "Study",
+    };
+    case "Vocabulary": return {
+      to: "/practice",
+      verb: "Practice",
+    };
     default: return {
       to: "/reading-sessions/new",
       verb: "Study",
     };
   }
 }
+
+/**
+ * Targets with no `validateSearch` for bookmark params — hub pages rather than session forms. Links
+ * to them carry no search so the URL stays clean (TanStack would otherwise pass unknown params through).
+ */
+const PARAMLESS_TARGETS = new Set(["/my-writing", "/grammar-notes", "/practice"]);
 
 /** Link search params prefilling the session form for `to` from a bookmark (and optional section). */
 export function sessionSearch(
@@ -520,6 +538,7 @@ export function sessionSearch(
   bookmarkUrl: string | null,
   section: BookmarkSectionRef | null = null,
 ): Record<string, string> {
+  if (PARAMLESS_TARGETS.has(to)) return {};
   const bookmark = {
     bookmarkId,
     bookmarkTitle,
@@ -784,6 +803,20 @@ export function buildStartSuggestions(input: StartRecommendationInput): StartSug
     .sort((a, b) => (byXp.get(a) ?? 0) - (byXp.get(b) ?? 0));
   rankedAreas.forEach((area, i) => {
     suggestions.push(areaSuggestion(input, area, undefined, undefined, areaReason(input, area, i === 0)));
+  });
+
+  // A standing drill nudge: drills were previously never suggested at all, making the "exclude
+  // drills" lineup option filter nothing. Area Grammar (the drills default) and the drills session
+  // type both gate it via the shared filter below.
+  // TODO: enrich with recurring-mistake data (lib/drill-recurring.ts) once drill sessions are
+  // plumbed into StartRecommendationInput.
+  suggestions.push({
+    id: "drill-nudge",
+    kind: "area",
+    area: "Grammar",
+    title: "Run a quick drill session",
+    description: "Short, targeted reps on what you get wrong.",
+    to: "/drill-sessions/new",
   });
 
   // Track grammar-note ids already used so the starred/goal slots don't repeat an area pick.

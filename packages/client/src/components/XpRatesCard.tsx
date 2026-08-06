@@ -38,6 +38,8 @@ const RATE_LABELS: Record<XpRateKey, string> = {
   theoryStudyPageLight: "Theory study — light page",
   theoryStudyPer250Words: "Theory study — per 250 words",
   theoryStudyNote: "Theory study — note",
+  practicePass: "Practice — study pass completed",
+  correctionTriaged: "Corrections — correction triaged",
 };
 
 /**
@@ -56,6 +58,8 @@ const RATE_AREAS: Partial<Record<XpRateKey, LearningArea>> = {
   lessonLine: "Listening",
   shadowingLoop: "Speaking",
   lessonWordNote: "Vocabulary",
+  practicePass: "Vocabulary",
+  correctionTriaged: "Writing",
 };
 
 /**

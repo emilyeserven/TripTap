@@ -21,6 +21,8 @@ export const XP_FEATURES = [
   "drills",
   "lessons",
   "theoryStudy",
+  "practice",
+  "corrections",
 ] as const;
 
 /** One feature bucket from {@link XP_FEATURES}. */
@@ -56,6 +58,8 @@ export const DEFAULT_XP_RATES = {
   theoryStudyPageLight: 0.5,
   theoryStudyPer250Words: 1,
   theoryStudyNote: 0.25,
+  practicePass: 0.5,
+  correctionTriaged: 0.5,
 } as const;
 
 /** One adjustable rate from {@link DEFAULT_XP_RATES}. */

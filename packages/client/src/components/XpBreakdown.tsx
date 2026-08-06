@@ -20,6 +20,8 @@ const FEATURE_LABELS: Record<XpFeature, string> = {
   drills: "Drills",
   lessons: "Lessons",
   theoryStudy: "Theory study",
+  practice: "Practice sentences",
+  corrections: "Corrections",
 };
 
 /** One learning area's bar with an indented, per-feature row breakdown beneath it. */

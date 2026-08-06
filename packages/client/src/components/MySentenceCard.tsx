@@ -1,9 +1,10 @@
 import type { MySentence } from "@sentence-bank/types";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { Link } from "@tanstack/react-router";
-import { Check, Headphones } from "lucide-react";
+import { Check, Headphones, ScrollText } from "lucide-react";
+import { toast } from "sonner";
 
 import { CorrectionDiff } from "../lib/sentenceDiff";
 
@@ -17,6 +18,7 @@ import { ShowOriginalToggle } from "@/components/ShowOriginalToggle";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useUpdateMySentence } from "@/hooks/useMySentences";
+import { useCreateSentence, useSentences } from "@/hooks/useSentences";
 import { explainSentence } from "@/lib/explanationRefs";
 
 /**
@@ -89,6 +91,40 @@ export function MySentenceCard({
     });
   }
 
+  const {
+    data: bankSentences,
+  } = useSentences();
+  const createSentence = useCreateSentence();
+  const [promoted, setPromoted] = useState(false);
+  // Already in the bank (by exact text) → the promote button disappears; the bank query is cached
+  // app-wide, so this check is free. Covers both prior promotions and post-promote refetches.
+  const alreadyBanked = useMemo(() => {
+    const target = (corrected ?? ms.text).trim();
+    return (bankSentences ?? []).some(s => s.text.trim() === target);
+  }, [bankSentences, corrected, ms.text]);
+
+  function promoteToBank() {
+    createSentence.mutate(
+      {
+        // Only the corrected form is bank-worthy; the button is gated on `corrected` below.
+        text: corrected ?? ms.text,
+        translation: ms.translation,
+        language: ms.language,
+        terms: ms.terms,
+        notes: "Promoted from My Sentences",
+      },
+      {
+        onSuccess: () => {
+          setPromoted(true);
+          toast.success("Added to the sentence bank");
+        },
+        onError: err => toast.error("Couldn't add to the sentence bank", {
+          description: err instanceof Error ? err.message : undefined,
+        }),
+      },
+    );
+  }
+
   return (
     <Card>
       <CardContent className="space-y-3 p-4">
@@ -151,6 +187,25 @@ export function MySentenceCard({
                   kind="mySentence"
                   id={ms.id}
                 />
+              )
+              : null}
+            {!readOnly && corrected && !alreadyBanked
+              ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Promote the corrected sentence to the bank"
+                  title="Promote to bank"
+                  disabled={promoted || createSentence.isPending}
+                  className="
+                    size-8 text-muted-foreground opacity-0 transition-opacity
+                    group-hover:opacity-100
+                  "
+                  onClick={promoteToBank}
+                >
+                  <ScrollText className="size-4" />
+                </Button>
               )
               : null}
             {!readOnly && unreviewed && !correcting

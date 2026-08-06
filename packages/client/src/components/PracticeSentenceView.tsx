@@ -1,8 +1,8 @@
-import type { PracticeSentence, SentenceTermCategory } from "@sentence-bank/types";
+import type { PracticePassKey, PracticeSentence, SentenceTermCategory } from "@sentence-bank/types";
 import type { ReactNode } from "react";
 
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, Pencil, TriangleAlert, Volume2 } from "lucide-react";
+import { ArrowLeft, Check, Pencil, TriangleAlert, Volume2 } from "lucide-react";
 
 import { speak } from "./ai-lesson/speak";
 
@@ -11,13 +11,38 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useMySentencesForPractice } from "@/hooks/useMySentences";
-import { usePracticeSentenceVocab } from "@/hooks/usePracticeSentences";
+import { usePracticeSentenceVocab, useUpdatePracticeSentence } from "@/hooks/usePracticeSentences";
 
 const COMPREHENSION_LABEL = {
   ready: "Ready to card",
   studying: "Studying the parts",
   skip: "Skipped",
 } as const;
+
+/** The study passes in worksheet order (mirrors PracticeSentenceCard's summary chips). */
+const PASS_ITEMS: { key: PracticePassKey;
+  label: string; }[] = [
+  {
+    key: "read",
+    label: "Read aloud",
+  },
+  {
+    key: "guess",
+    label: "Guessed",
+  },
+  {
+    key: "lookup",
+    label: "Looked up",
+  },
+  {
+    key: "produce",
+    label: "Produced",
+  },
+  {
+    key: "card",
+    label: "Carded",
+  },
+];
 
 const TERM_GROUPS: { category: SentenceTermCategory;
   label: string; }[] = [
@@ -57,9 +82,29 @@ export function PracticeSentenceView({
     data: mySentences,
   } = useMySentencesForPractice(ps.id);
 
+  const updateSentence = useUpdatePracticeSentence();
+
   const grammar = ps.grammar ?? [];
   const terms = ps.terms ?? [];
   const pageLabel = ps.page ? `p. ${ps.page}` : null;
+
+  const togglePass = (key: PracticePassKey) => {
+    const current = ps.passes ?? {};
+    // Un-toggling drops the key entirely; toggling on stamps the completion time so the pass's XP
+    // grant lands on the right day.
+    const passes = current[key]
+      ? Object.fromEntries(Object.entries(current).filter(([k]) => k !== key))
+      : {
+        ...current,
+        [key]: new Date().toISOString(),
+      };
+    updateSentence.mutate({
+      id: ps.id,
+      input: {
+        passes,
+      },
+    });
+  };
 
   return (
     <section className="space-y-5">
@@ -170,6 +215,36 @@ export function PracticeSentenceView({
             )
             : null}
           {pageLabel ? <span>{pageLabel}</span> : null}
+        </div>
+
+        {/* Study passes */}
+        <div className="space-y-1.5">
+          <Label className="text-sm">Study passes</Label>
+          <div className="flex flex-wrap gap-1.5">
+            {PASS_ITEMS.map((pass) => {
+              const value = ps.passes?.[pass.key];
+              const doneAt = typeof value === "string" ? new Date(value) : null;
+              return (
+                <Button
+                  key={pass.key}
+                  variant={value ? "default" : "outline"}
+                  size="sm"
+                  className="h-7 gap-1 px-2"
+                  disabled={updateSentence.isPending}
+                  title={doneAt && !Number.isNaN(doneAt.getTime())
+                    ? `Completed ${doneAt.toLocaleDateString()}`
+                    : undefined}
+                  onClick={() => togglePass(pass.key)}
+                >
+                  {value ? <Check className="size-3.5" /> : null}
+                  {pass.label}
+                </Button>
+              );
+            })}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Each completed pass earns Vocabulary XP.
+          </p>
         </div>
 
         <Row

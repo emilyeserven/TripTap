@@ -9,8 +9,6 @@ import {
   BrainIcon,
   CameraIcon,
   ChartColumnIcon,
-  ClipboardCheckIcon,
-  ClipboardListIcon,
   DatabaseIcon,
   DrillIcon,
   FolderTreeIcon,
@@ -18,7 +16,6 @@ import {
   HeadphonesIcon,
   ImagesIcon,
   LandmarkIcon,
-  LanguagesIcon,
   LayersIcon,
   LightbulbIcon,
   ListChecksIcon,
@@ -162,24 +159,10 @@ const inputOutputSection: NavSection = {
       ],
     },
     {
-      title: "Book Exercises",
-      to: "/book-exercises",
+      title: "Exercises",
+      to: "/exercises",
       icon: BookMarkedIcon,
-      description: "Work through textbook and worksheet exercises.",
-      children: [
-        {
-          title: "Question Sheets",
-          to: "/question-sheets",
-          icon: ClipboardListIcon,
-          description: "Question sets to answer.",
-        },
-        {
-          title: "Answer Sheets",
-          to: "/answer-sheets",
-          icon: ClipboardCheckIcon,
-          description: "Your recorded answers.",
-        },
-      ],
+      description: "Work through textbook and worksheet exercises, questions and answers in one place.",
     },
     {
       title: "Speaking & Listening",
@@ -322,10 +305,12 @@ const collectionsSection: NavSection = {
       description: "Everything you've captured, ready to process.",
     },
     {
-      title: "Sources",
+      // Renamed from "Sources" to stop colliding with the bookmarks "Resources" entry above — this
+      // is the local free-text provenance table for sentences, not the remote study-material channel.
+      title: "Sentence Origins",
       to: "/sources",
       icon: DatabaseIcon,
-      description: "Where your material comes from.",
+      description: "Where your sentences come from — books, shows, articles.",
     },
   ],
 };
@@ -352,12 +337,6 @@ const librarySection: NavSection = {
       to: "/vocabulary",
       icon: BookOpenIcon,
       description: "Words you're building fluency with.",
-    },
-    {
-      title: "Grammar",
-      to: "/grammar",
-      icon: LanguagesIcon,
-      description: "Grammar points and patterns.",
     },
     {
       title: "Sentences",

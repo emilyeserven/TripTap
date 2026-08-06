@@ -177,6 +177,10 @@ const createShadowingSessionBody = {
     countsTowardXp: {
       type: "boolean",
     },
+    shadowingListId: {
+      type: ["string", "null"],
+      format: "uuid",
+    },
   },
 } as const;
 

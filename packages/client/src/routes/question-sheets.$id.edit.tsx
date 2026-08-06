@@ -36,7 +36,10 @@ function EditQuestionSheetPage() {
       onDelete={() =>
         remove.mutate(id, {
           onSuccess: () => navigate({
-            to: "/question-sheets",
+            to: "/exercises",
+            search: {
+              tab: "questions",
+            },
           }),
         })}
     >

@@ -58,7 +58,7 @@ const CHANNELS: { category: SentenceTermCategory;
   {
     category: "resource",
     title: "Resources source",
-    hint: "Videos, textbook pages, worksheets, and other resources. Items with a runtime power Find a Resource.",
+    hint: "Videos, textbook pages, worksheets, and other resources. Items with a runtime power the Resources page.",
   },
 ];
 

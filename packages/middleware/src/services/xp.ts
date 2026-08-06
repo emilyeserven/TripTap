@@ -8,10 +8,12 @@ import type {
   LessonListeningNote,
   LessonWordNote,
   ListeningEntry,
+  PracticePasses,
   QuestionSheetLayout,
   ReadingLine,
   TheoryDensity,
   TheoryEntryMode,
+  Triage,
   WordNote,
   WritingCorrection,
   XpAreaSummary,
@@ -24,11 +26,13 @@ import { DEFAULT_XP_RATES, LEARNING_AREAS } from "@sentence-bank/types";
 import { db } from "@/db";
 import {
   answerSheets,
+  corrections,
   dialogues,
   drillSessions,
   lessons,
   listeningSessions,
   mySentences,
+  practiceSentences,
   questionSheets,
   readingSessions,
   shadowingSessions,
@@ -665,6 +669,70 @@ export function theoryStudyXp(rows: TheoryStudyXpRow[], rates: XpRates = DEFAULT
   });
 }
 
+interface PracticePassXpRow {
+  id: string;
+  text: string;
+  passes: PracticePasses | null;
+  createdAt: Date;
+}
+
+/**
+ * Practice-pass XP → Vocabulary (the Start engine's Vocabulary arm points at /practice, so the loop
+ * closes here). One grant per completed study pass; a string pass value is the ISO completion
+ * timestamp, legacy `true` (or an unparsable string) falls back to the sentence's `createdAt`.
+ * Grants share the sentence's `sourceId` so a card's passes merge into one activity item.
+ */
+export function practicePassXp(rows: PracticePassXpRow[], rates: XpRates = DEFAULT_XP_RATES): XpGrant[] {
+  return rows.flatMap((row) => {
+    const passes = row.passes ?? {};
+    return Object.values(passes).flatMap((value) => {
+      if (!value) return [];
+      const stamped = typeof value === "string" ? new Date(value) : row.createdAt;
+      return [{
+        area: "Vocabulary" as const,
+        feature: "practice" as const,
+        xp: rates.practicePass,
+        at: Number.isNaN(stamped.getTime()) ? row.createdAt : stamped,
+        sourceId: row.id,
+        title: row.text,
+        to: "/practice/$id",
+        params: {
+          id: row.id,
+        },
+      }];
+    });
+  });
+}
+
+interface CorrectionTriageXpRow {
+  id: string;
+  original: string;
+  triage: Triage | null;
+}
+
+/**
+ * Correction-triage XP → Writing: working through a correction is where the learning is, so the
+ * triage verdict (not the capture) earns the XP, dated by `triage.triagedAt`. Slip-bucket triage
+ * deletes the row outright (see triageCorrection), so slips intentionally never earn XP — and, per
+ * the derived model, deleting a triaged correction retroactively removes its grant.
+ */
+export function correctionTriageXp(rows: CorrectionTriageXpRow[], rates: XpRates = DEFAULT_XP_RATES): XpGrant[] {
+  return rows.flatMap((row) => {
+    if (!row.triage) return [];
+    const at = new Date(row.triage.triagedAt);
+    if (Number.isNaN(at.getTime())) return [];
+    return [{
+      area: "Writing" as const,
+      feature: "corrections" as const,
+      xp: rates.correctionTriaged,
+      at,
+      sourceId: row.id,
+      title: row.original,
+      to: "/corrections/log",
+    }];
+  });
+}
+
 /** Round away float noise from fractional rates (0.25/0.5) without hiding quarter points. */
 export function roundXp(xp: number): number {
   return Math.round(xp * 100) / 100;
@@ -873,6 +941,8 @@ export async function loadXpGrants(): Promise<XpGrant[]> {
     drillRows,
     lessonRows,
     theoryRows,
+    practiceRows,
+    correctionRows,
   ] = await Promise.all([
     getXpRates(),
     getLearnerProfile(),
@@ -979,6 +1049,17 @@ export async function loadXpGrants(): Promise<XpGrant[]> {
       notesCount: theorySessions.notesCount,
       learningArea: theorySessions.learningArea,
     }).from(theorySessions),
+    db.select({
+      id: practiceSentences.id,
+      text: practiceSentences.text,
+      passes: practiceSentences.passes,
+      createdAt: practiceSentences.createdAt,
+    }).from(practiceSentences),
+    db.select({
+      id: corrections.id,
+      original: corrections.original,
+      triage: corrections.triage,
+    }).from(corrections),
   ]);
 
   const grants = [
@@ -991,6 +1072,8 @@ export async function loadXpGrants(): Promise<XpGrant[]> {
     ...drillXp(drillRows, rates),
     ...lessonXp(lessonRows, rates),
     ...theoryStudyXp(theoryRows, rates),
+    ...practicePassXp(practiceRows, rates),
+    ...correctionTriageXp(correctionRows, rates),
   ];
   return applyGoalBonus(grants, profile.goals);
 }

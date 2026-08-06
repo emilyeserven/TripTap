@@ -17,6 +17,7 @@ import { Route as SentencesRouteImport } from './routes/sentences'
 import { Route as RenshuuRouteImport } from './routes/renshuu'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as GrammarRouteImport } from './routes/grammar'
+import { Route as ExercisesRouteImport } from './routes/exercises'
 import { Route as CultureRouteImport } from './routes/culture'
 import { Route as CaptureRouteImport } from './routes/capture'
 import { Route as AnkiRouteImport } from './routes/anki'
@@ -156,6 +157,11 @@ const ProfileRoute = ProfileRouteImport.update({
 const GrammarRoute = GrammarRouteImport.update({
   id: '/grammar',
   path: '/grammar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExercisesRoute = ExercisesRouteImport.update({
+  id: '/exercises',
+  path: '/exercises',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CultureRoute = CultureRouteImport.update({
@@ -665,6 +671,7 @@ export interface FileRoutesByFullPath {
   '/anki': typeof AnkiRoute
   '/capture': typeof CaptureRoute
   '/culture': typeof CultureRoute
+  '/exercises': typeof ExercisesRoute
   '/grammar': typeof GrammarRoute
   '/profile': typeof ProfileRoute
   '/renshuu': typeof RenshuuRoute
@@ -775,6 +782,7 @@ export interface FileRoutesByTo {
   '/anki': typeof AnkiRoute
   '/capture': typeof CaptureRoute
   '/culture': typeof CultureRoute
+  '/exercises': typeof ExercisesRoute
   '/grammar': typeof GrammarRoute
   '/profile': typeof ProfileRoute
   '/renshuu': typeof RenshuuRoute
@@ -872,6 +880,7 @@ export interface FileRoutesById {
   '/anki': typeof AnkiRoute
   '/capture': typeof CaptureRoute
   '/culture': typeof CultureRoute
+  '/exercises': typeof ExercisesRoute
   '/grammar': typeof GrammarRoute
   '/profile': typeof ProfileRoute
   '/renshuu': typeof RenshuuRoute
@@ -984,6 +993,7 @@ export interface FileRouteTypes {
     | '/anki'
     | '/capture'
     | '/culture'
+    | '/exercises'
     | '/grammar'
     | '/profile'
     | '/renshuu'
@@ -1094,6 +1104,7 @@ export interface FileRouteTypes {
     | '/anki'
     | '/capture'
     | '/culture'
+    | '/exercises'
     | '/grammar'
     | '/profile'
     | '/renshuu'
@@ -1190,6 +1201,7 @@ export interface FileRouteTypes {
     | '/anki'
     | '/capture'
     | '/culture'
+    | '/exercises'
     | '/grammar'
     | '/profile'
     | '/renshuu'
@@ -1301,6 +1313,7 @@ export interface RootRouteChildren {
   AnkiRoute: typeof AnkiRoute
   CaptureRoute: typeof CaptureRoute
   CultureRoute: typeof CultureRoute
+  ExercisesRoute: typeof ExercisesRoute
   GrammarRoute: typeof GrammarRoute
   ProfileRoute: typeof ProfileRoute
   RenshuuRoute: typeof RenshuuRoute
@@ -1435,6 +1448,13 @@ declare module '@tanstack/react-router' {
       path: '/grammar'
       fullPath: '/grammar'
       preLoaderRoute: typeof GrammarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/exercises': {
+      id: '/exercises'
+      path: '/exercises'
+      fullPath: '/exercises'
+      preLoaderRoute: typeof ExercisesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/culture': {
@@ -2336,6 +2356,7 @@ const rootRouteChildren: RootRouteChildren = {
   AnkiRoute: AnkiRoute,
   CaptureRoute: CaptureRoute,
   CultureRoute: CultureRoute,
+  ExercisesRoute: ExercisesRoute,
   GrammarRoute: GrammarRoute,
   ProfileRoute: ProfileRoute,
   RenshuuRoute: RenshuuRoute,

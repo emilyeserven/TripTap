@@ -94,6 +94,8 @@ function PracticePage() {
 
   const nothing = !isLoading && shown.length === 0;
 
+  const readyCount = all.filter(ps => ps.comprehension === "ready").length;
+
   return (
     <section className="space-y-6">
       <div className="flex items-start justify-between gap-4">
@@ -169,6 +171,33 @@ function PracticePage() {
           </SelectContent>
         </Select>
       </div>
+
+      {/* "Ready" is the curation gate's exit: nudge the export so finished cards reach an SRS. */}
+      {readyCount > 0
+        ? (
+          <p className="text-sm text-muted-foreground">
+            <strong>{readyCount}</strong>
+            {" "}
+            {readyCount === 1 ? "sentence is" : "sentences are"}
+            {" "}
+            ready to card —
+            {" "}
+            <Link
+              to="/anki"
+              search={{
+                mode: "practice",
+              }}
+              className="
+                underline underline-offset-2
+                hover:text-foreground
+              "
+            >
+              export them to Anki
+            </Link>
+            .
+          </p>
+        )
+        : null}
 
       <div className="flex flex-wrap items-center gap-2">
         <Input

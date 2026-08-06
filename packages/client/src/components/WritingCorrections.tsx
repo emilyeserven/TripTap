@@ -14,7 +14,8 @@ import { newId } from "@/lib/id";
 import { splitLines } from "@/lib/writing-corrections";
 
 /**
- * Correction mode for a writing — the same track-changes flow as My Sentences and Answer Sheets. Each
+ * Correction mode for a writing — the same track-changes flow as My Sentences. (Answer sheets use
+ * plain textareas, not this corrector.) Each
  * sentence gets a `+` opening the inline {@link SentenceCorrector} (select a span → Correct/Incorrect,
  * derive `{ correction, marks }`, add an explanation), or a ✓ to accept it as already right. Saving
  * creates a My Sentence carrying the correction, marks, and explanation (tagged with the writing's

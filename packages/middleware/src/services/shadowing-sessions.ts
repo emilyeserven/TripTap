@@ -37,6 +37,7 @@ function toShadowingSession(row: ShadowingSessionRow): ShadowingSession {
     terms: row.terms ?? null,
     learningArea: row.learningArea ?? null,
     countsTowardXp: row.countsTowardXp,
+    shadowingListId: row.shadowingListId ?? null,
     createdAt: toIso(row.createdAt),
     updatedAt: toIso(row.updatedAt),
   };
@@ -61,6 +62,7 @@ function toInsert(input: CreateShadowingSessionInput) {
     terms: input.terms ?? null,
     learningArea: input.learningArea ?? null,
     countsTowardXp: input.countsTowardXp ?? true,
+    shadowingListId: input.shadowingListId ?? null,
   };
 }
 

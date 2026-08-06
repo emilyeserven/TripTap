@@ -69,7 +69,12 @@ function NewAnswerSheetPage() {
         variant="ghost"
         size="sm"
       >
-        <Link to="/answer-sheets">
+        <Link
+          to="/exercises"
+          search={{
+            tab: "answers",
+          }}
+        >
           <ArrowLeft className="size-4" />
           All answer sheets
         </Link>

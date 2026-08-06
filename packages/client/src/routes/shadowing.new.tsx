@@ -11,10 +11,12 @@ export const Route = createFileRoute("/shadowing/new")({
     bookmarkId?: string;
     bookmarkTitle?: string;
     bookmarkUrl?: string;
+    listId?: string;
   } => ({
     bookmarkId: typeof search.bookmarkId === "string" ? search.bookmarkId : undefined,
     bookmarkTitle: typeof search.bookmarkTitle === "string" ? search.bookmarkTitle : undefined,
     bookmarkUrl: typeof search.bookmarkUrl === "string" ? search.bookmarkUrl : undefined,
+    listId: typeof search.listId === "string" ? search.listId : undefined,
   }),
 });
 
@@ -22,7 +24,7 @@ function NewShadowingSessionPage() {
   usePageTitle("New shadowing session");
   const navigate = useNavigate();
   const {
-    bookmarkId, bookmarkTitle, bookmarkUrl,
+    bookmarkId, bookmarkTitle, bookmarkUrl, listId,
   } = Route.useSearch();
   const initialBookmark = bookmarkId
     ? {
@@ -51,6 +53,7 @@ function NewShadowingSessionPage() {
       </div>
       <ShadowingSessionForm
         initialBookmark={initialBookmark}
+        initialListId={listId}
         onSuccess={id =>
           navigate({
             to: "/shadowing/$id",

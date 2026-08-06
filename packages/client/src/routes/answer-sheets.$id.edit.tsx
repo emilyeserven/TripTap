@@ -42,7 +42,10 @@ function EditAnswerSheetPage() {
       onDelete={() =>
         remove.mutate(id, {
           onSuccess: () => navigate({
-            to: "/answer-sheets",
+            to: "/exercises",
+            search: {
+              tab: "answers",
+            },
           }),
         })}
     >

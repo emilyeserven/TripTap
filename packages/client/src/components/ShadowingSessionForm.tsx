@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { YouTubePlayer } from "@/components/YouTubePlayer";
+import { useShadowingLists } from "@/hooks/useShadowingLists";
 import {
   useCreateShadowingSession,
   useUpdateShadowingSession,
@@ -21,7 +22,7 @@ import { todayDateString } from "@/lib/daily-lineup";
 import { sectionRefToSegment } from "@/lib/sections";
 import { parseYouTubeId } from "@/lib/time";
 
-/** A bookmark used to seed a brand-new session (e.g. from the Find a Resource page). */
+/** A bookmark used to seed a brand-new session (e.g. from the Resources page). */
 interface SeedBookmark {
   id: string;
   title: string;
@@ -54,11 +55,14 @@ export function ShadowingSessionForm({
   session,
   onSuccess,
   initialBookmark,
+  initialListId,
 }: {
   session?: ShadowingSession;
   onSuccess?: (id: string) => void;
-  /** Seed a brand-new session from a bookmark (e.g. from the Find a Resource page); ignored when editing. */
+  /** Seed a brand-new session from a bookmark (e.g. from the Resources page); ignored when editing. */
   initialBookmark?: SeedBookmark;
+  /** Link a brand-new session to a shadowing list to practise from; ignored when editing. */
+  initialListId?: string;
 }) {
   const create = useCreateShadowingSession();
   const update = useUpdateShadowingSession();
@@ -98,6 +102,24 @@ export function ShadowingSessionForm({
   );
   const [countsTowardXp, setCountsTowardXp] = useState(session?.countsTowardXp ?? true);
 
+  // The linked list is fixed at creation (or carried through an edit); resolve its name for display.
+  const shadowingListId = session?.shadowingListId ?? initialListId ?? null;
+  const {
+    data: shadowingLists,
+  } = useShadowingLists();
+  const linkedList = shadowingListId
+    ? shadowingLists?.find(l => l.id === shadowingListId) ?? null
+    : null;
+
+  // Seed an empty title from the list name once it resolves, so "Practice this list" is one click.
+  useEffect(() => {
+    if (!editing && linkedList && title.trim() === "") {
+      setTitle(`Shadow: ${linkedList.name}`);
+    }
+    // Only when the list first resolves — typing over the seed must not re-trigger it.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [linkedList?.id]);
+
   const pending = create.isPending || update.isPending || uploadAudio.isPending;
   const canSubmit = title.trim().length > 0 && language.trim().length > 0 && !pending;
 
@@ -126,6 +148,7 @@ export function ShadowingSessionForm({
       defaultGapMs,
       segments: segments.length > 0 ? segments : null,
       entries: session?.entries ?? null,
+      shadowingListId,
     };
     const saved = editing
       ? await update.mutateAsync({
@@ -151,6 +174,22 @@ export function ShadowingSessionForm({
         void submit();
       }}
     >
+      {linkedList
+        ? (
+          <p
+            className="
+              rounded-md border bg-muted/30 px-3 py-2 text-sm
+              text-muted-foreground
+            "
+          >
+            Practicing list:
+            {" "}
+            <span className="font-medium text-foreground">{linkedList.name}</span>
+            {" "}
+            — its sentences will show as the practice script on the session.
+          </p>
+        )
+        : null}
       <div
         className="
           space-y-1.5
