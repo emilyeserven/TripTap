@@ -53,6 +53,7 @@ vi.mock("@/hooks/useTatoeba", () => ({
   }),
 }));
 
+// The dialog resolves its destination through all three create-many hooks; stub each one.
 vi.mock("@/hooks/useSentences", () => ({
   useCreateSentencesMany: () => ({
     mutateAsync,
@@ -60,9 +61,34 @@ vi.mock("@/hooks/useSentences", () => ({
   }),
 }));
 
+vi.mock("@/hooks/useMySentences", () => ({
+  useCreateMySentencesMany: () => ({
+    mutateAsync: vi.fn(),
+    isPending: false,
+  }),
+}));
+
+vi.mock("@/hooks/usePracticeSentences", () => ({
+  useCreatePracticeSentencesMany: () => ({
+    mutateAsync: vi.fn(),
+    isPending: false,
+  }),
+}));
+
 describe("TatoebaImportDialog", () => {
   beforeEach(() => {
     mutateAsync.mockReset();
+  });
+
+  it("offers no destination choice, because the licence credit is a bank-only column", () => {
+    render(<TatoebaImportDialog />);
+
+    fireEvent.click(screen.getByRole("button", {
+      name: /Import from Tatoeba/,
+    }));
+    fireEvent.click(screen.getAllByRole("checkbox")[0]);
+
+    expect(screen.queryByRole("combobox")).not.toBeInTheDocument();
   });
 
   it("imports the selected sentences into the bank with Tatoeba attribution", async () => {
@@ -86,8 +112,12 @@ describe("TatoebaImportDialog", () => {
         text: "犬が好きです。",
         translation: "I like dogs.",
         language: "Japanese",
+        terms: null,
         tags: "tatoeba",
         notes: "From Tatoeba #42 (by hanako) · CC BY 2.0 FR",
+        sourceId: null,
+        page: null,
+        captureId: null,
       },
     ]);
   });
@@ -111,8 +141,12 @@ describe("TatoebaImportDialog", () => {
         text: "猫も好きです。",
         translation: null,
         language: "Japanese",
+        terms: null,
         tags: "tatoeba",
         notes: "From Tatoeba #43 (unknown author) · CC BY 2.0 FR",
+        sourceId: null,
+        page: null,
+        captureId: null,
       },
     ]);
   });

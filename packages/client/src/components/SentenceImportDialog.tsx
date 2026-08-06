@@ -1,4 +1,4 @@
-import type { CreateSentenceInput, FuriToken } from "@sentence-bank/types";
+import type { FuriToken, SentenceDestination, SentenceDraft } from "@sentence-bank/types";
 import type { ReactNode } from "react";
 
 import { useState } from "react";
@@ -7,6 +7,7 @@ import { Download, Search } from "lucide-react";
 
 import { FuriganaScope } from "@/components/ai-lesson/FuriganaScope";
 import { BlurReveal } from "@/components/BlurReveal";
+import { SentenceDestinationPicker } from "@/components/SentenceDestinationPicker";
 import { SentenceText } from "@/components/SentenceText";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -19,7 +20,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { useCreateSentencesMany } from "@/hooks/useSentences";
+import { useSentenceDestination } from "@/hooks/useSentenceDestination";
 
 /** The minimal shape an importable example needs to render + be selected. */
 export interface ImportableExample {
@@ -46,10 +47,14 @@ function toggle<T>(set: Set<T>, value: T): Set<T> {
 }
 
 /**
- * Search an external example-sentence provider and import the chosen results straight into the bank.
- * The provider-specific bits — the search hook state, how a result maps to a bank sentence, and the
- * copy/attribution — are injected; the search box, result picker, and import flow are shared. Backs
- * both {@link ./RenshuuImportDialog} and {@link ./TatoebaImportDialog}.
+ * Search an external example-sentence provider and import the chosen results.
+ *
+ * The provider-specific bits — the search hook state, how a result maps to a draft, and the
+ * copy/attribution — are injected; the search box, result picker, destination choice and import
+ * flow are shared. Backs both {@link ./RenshuuImportDialog} and {@link ./TatoebaImportDialog}.
+ *
+ * The destination is the learner's, not the provider's: a good example found here can go to the
+ * bank, to My Sentences, or straight to Practice.
  */
 export function SentenceImportDialog<T extends ImportableExample>({
   open: controlledOpen,
@@ -59,7 +64,9 @@ export function SentenceImportDialog<T extends ImportableExample>({
   triggerLabel,
   searchAriaLabel,
   search,
-  toCreateInput,
+  toDraft,
+  destinations,
+  defaultDestination = "bank",
   footer,
 }: {
   /** Control the dialog externally (e.g. from a menu item); omit for the built-in trigger button. */
@@ -70,7 +77,15 @@ export function SentenceImportDialog<T extends ImportableExample>({
   triggerLabel: string;
   searchAriaLabel: string;
   search: ExampleSearchState<T>;
-  toCreateInput: (example: T) => CreateSentenceInput;
+  toDraft: (example: T) => SentenceDraft;
+  /**
+   * Narrow which destinations this provider offers. Omit for all three. A single-entry list hides
+   * the picker — there is no choice to make — which is how Tatoeba's attribution requirement is
+   * honoured (its licence credit lives in `notes`, a bank-only column).
+   */
+  destinations?: readonly SentenceDestination[];
+  /** Where the picker starts. Providers of reference examples default to the bank. */
+  defaultDestination?: SentenceDestination;
   footer: ReactNode;
 }) {
   const isControlled = controlledOpen !== undefined;
@@ -82,9 +97,11 @@ export function SentenceImportDialog<T extends ImportableExample>({
   };
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [destination, setDestination] = useState<SentenceDestination>(defaultDestination);
 
-  const importMany = useCreateSentencesMany();
+  const importMany = useSentenceDestination(destination);
   const results = search.data ?? [];
+  const drafts = results.filter(r => selected.has(r.id)).map(toDraft);
 
   const run = () => {
     const q = query.trim();
@@ -94,11 +111,8 @@ export function SentenceImportDialog<T extends ImportableExample>({
   };
 
   const submit = async () => {
-    const inputs = results
-      .filter(r => selected.has(r.id))
-      .map(toCreateInput);
-    if (inputs.length === 0) return;
-    await importMany.mutateAsync(inputs);
+    if (drafts.length === 0) return;
+    await importMany.createMany(drafts);
     setOpen(false);
     setSelected(new Set());
   };
@@ -206,14 +220,26 @@ export function SentenceImportDialog<T extends ImportableExample>({
 
           {results.length > 0
             ? (
-              <Button
-                disabled={selected.size === 0 || importMany.isPending}
-                onClick={() => void submit()}
-              >
-                {importMany.isPending
-                  ? "Importing…"
-                  : `Import ${selected.size || ""}`.trim()}
-              </Button>
+              <>
+                {destinations?.length === 1
+                  ? null
+                  : (
+                    <SentenceDestinationPicker
+                      value={destination}
+                      onChange={setDestination}
+                      drafts={drafts}
+                      options={destinations}
+                    />
+                  )}
+                <Button
+                  disabled={selected.size === 0 || importMany.isPending}
+                  onClick={() => void submit()}
+                >
+                  {importMany.isPending
+                    ? "Importing…"
+                    : `Import ${selected.size || ""}`.trim()}
+                </Button>
+              </>
             )
             : null}
 
