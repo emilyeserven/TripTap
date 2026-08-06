@@ -7,6 +7,7 @@ import {
 } from "@sentence-bank/types";
 import { CORRECTION_IMPORT_KINDS } from "@sentence-bank/types";
 import { buildApp } from "@/app";
+import { offerMySentence } from "@/services/correction-import";
 
 // These tests use Fastify's `inject` + JSON-schema validation and the pure triage tree, so they run
 // without a live database. The persistence round-trips (slip-deletes, log grouping) need Postgres and
@@ -267,4 +268,26 @@ test("POST /api/corrections/import rejects a ref with an unknown kind", async ()
   });
   assert.equal(res.statusCode, 400);
   await app.close();
+});
+
+test("offerMySentence skips writing-promoted sentences to prevent cross-tab double-import", () => {
+  // Standalone sentence with text: offered.
+  assert.equal(offerMySentence({
+    text: "学校に行きます",
+    writingId: null,
+  }), true);
+  // Promoted from a writing: its correction is already offered under the Writing tab.
+  assert.equal(offerMySentence({
+    text: "学校を行きます",
+    writingId: "00000000-0000-4000-8000-000000000001",
+  }), false);
+  // No usable text: never offered.
+  assert.equal(offerMySentence({
+    text: "   ",
+    writingId: null,
+  }), false);
+  assert.equal(offerMySentence({
+    text: null,
+    writingId: null,
+  }), false);
 });

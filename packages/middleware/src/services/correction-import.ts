@@ -65,11 +65,24 @@ async function importedIds(kind: CorrectionImportKind): Promise<Set<string>> {
   return ids;
 }
 
+/**
+ * Whether a my-sentence row belongs in the My Sentences import tab. Sentences promoted from a
+ * writing (`writingId` set) are skipped: their correction is already offered from the writing's own
+ * inline corrections, and per-kind dedupe can't link the two refs — offering both would let the same
+ * correction enter the triage inbox twice and double-count toward rule-tag recurrence. (Mirrors the
+ * identical filter in writingXp.)
+ */
+export function offerMySentence(row: { text: string | null;
+  writingId: string | null; }): boolean {
+  if (!row.text?.trim()) return false;
+  return row.writingId == null;
+}
+
 async function mySentenceCandidates(): Promise<CorrectionImportCandidate[]> {
   const rows = await db.select().from(mySentences);
   const out: CorrectionImportCandidate[] = [];
   for (const row of rows) {
-    if (!row.text?.trim()) continue;
+    if (!offerMySentence(row)) continue;
     out.push({
       ref: {
         kind: "my_sentence",
