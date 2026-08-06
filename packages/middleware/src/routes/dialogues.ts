@@ -70,6 +70,31 @@ const linesSchema = {
   },
 } as const;
 
+/** A reference to one section of a bookmark (denormalized), or null. */
+const bookmarkSectionRefSchema = {
+  type: ["object", "null"],
+  additionalProperties: false,
+  required: ["id", "label", "type"],
+  properties: {
+    id: {
+      type: "string",
+    },
+    label: {
+      type: "string",
+    },
+    type: {
+      type: "string",
+      enum: ["name", "url", "page", "timestamp"],
+    },
+    startValue: {
+      type: ["string", "null"],
+    },
+    endValue: {
+      type: ["string", "null"],
+    },
+  },
+} as const;
+
 const createDialogueBody = {
   type: "object",
   required: ["title", "language", "date", "script"],
@@ -92,6 +117,16 @@ const createDialogueBody = {
       minLength: 1,
     },
     lines: linesSchema,
+    bookmarkId: {
+      type: ["string", "null"],
+    },
+    bookmarkTitle: {
+      type: ["string", "null"],
+    },
+    bookmarkUrl: {
+      type: ["string", "null"],
+    },
+    section: bookmarkSectionRefSchema,
     selfSpeakers: {
       type: ["array", "null"],
       items: {
