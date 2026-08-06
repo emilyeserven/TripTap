@@ -3,6 +3,7 @@ import type {
   CreateTutorInput,
   UpdateTutorInput,
 } from "@sentence-bank/types";
+import { createTutorJsonSchema } from "@sentence-bank/types";
 import { idOf, notFound } from "@/routes/handlers";
 import { idParams, updateBodyOf } from "@/routes/schemas/params";
 import {
@@ -13,20 +14,7 @@ import {
   updateTutor,
 } from "@/services/tutors";
 
-const createTutorBody = {
-  type: "object",
-  required: ["name"],
-  additionalProperties: false,
-  properties: {
-    name: {
-      type: "string",
-      minLength: 1,
-    },
-    notes: {
-      type: ["string", "null"],
-    },
-  },
-} as const;
+const createTutorBody = createTutorJsonSchema;
 
 const updateTutorBody = updateBodyOf(createTutorBody);
 

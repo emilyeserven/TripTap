@@ -7,6 +7,10 @@
  * inline as id arrays. Consumed by both the Fastify API and the React client.
  */
 
+import { z } from "zod";
+
+import { objectJsonSchema } from "./json-schema.js";
+
 /** A named list of shadowing-candidate sentences. */
 export interface ShadowingList {
   id: string;
@@ -25,12 +29,17 @@ export interface ShadowingList {
 }
 
 /** Payload for creating a shadowing list. Only `name` is required. */
-export interface CreateShadowingListInput {
-  name: string;
-  notes?: string | null;
-  sentenceIds?: string[];
-  mySentenceIds?: string[];
-}
+export const createShadowingListSchema = z.object({
+  name: z.string().min(1),
+  notes: z.string().nullable().optional(),
+  sentenceIds: z.array(z.guid()).optional(),
+  mySentenceIds: z.array(z.guid()).optional(),
+});
+
+/** JSON Schema (draft-07) for the create payload, used verbatim as the route body. */
+export const createShadowingListJsonSchema = objectJsonSchema(createShadowingListSchema);
+
+export type CreateShadowingListInput = z.infer<typeof createShadowingListSchema>;
 
 /** Payload for partially updating a shadowing list (rename, re-note, or set membership). */
 export type UpdateShadowingListInput = Partial<CreateShadowingListInput>;

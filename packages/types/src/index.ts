@@ -37,6 +37,7 @@ export * from "./text-segments.js";
 export * from "./theory-session.js";
 export * from "./renshuu.js";
 export * from "./tatoeba.js";
+export * from "./json-schema.js";
 export * from "./learner-profile.js";
 export * from "./start.js";
 export * from "./writing.js";
@@ -44,6 +45,10 @@ export * from "./writing-prompt.js";
 export * from "./xp.js";
 
 import type { LearningArea } from "./question-sheet.js";
+
+import { z } from "zod";
+
+import { objectJsonSchema } from "./json-schema.js";
 
 /**
  * A reusable origin for sentences (a book, show, article, …) — the "source taxonomy".
@@ -73,15 +78,21 @@ export interface Source {
   createdAt: string;
 }
 
-/** Payload for creating a source. */
-export interface CreateSourceInput {
-  name: string;
-  type?: string | null;
-  author?: string | null;
-  url?: string | null;
-  notes?: string | null;
-  parentId?: string | null;
-}
+/** Payload for creating a source, declared once for both the TS type and the route's validator. */
+export const createSourceSchema = z.object({
+  name: z.string().min(1),
+  type: z.string().nullable().optional(),
+  author: z.string().nullable().optional(),
+  url: z.string().nullable().optional(),
+  notes: z.string().nullable().optional(),
+  /** The source this one nests inside (a page under an issue, an issue under a magazine). */
+  parentId: z.guid().nullable().optional(),
+});
+
+/** JSON Schema (draft-07) for the create payload, used verbatim as the route body. */
+export const createSourceJsonSchema = objectJsonSchema(createSourceSchema);
+
+export type CreateSourceInput = z.infer<typeof createSourceSchema>;
 
 /** Payload for partially updating a source. */
 export type UpdateSourceInput = Partial<CreateSourceInput>;
@@ -218,14 +229,19 @@ export interface ParseTemplate {
   createdAt: string;
 }
 
-/** Payload for creating a parse template. */
-export interface CreateParseTemplateInput {
-  name: string;
-  target: ParseTarget;
-  body: string;
-  boundary: ParseBoundary;
-  ignoreBlankLines: boolean;
-}
+/** Payload for creating a parse template, declared once for both the type and the validator. */
+export const createParseTemplateSchema = z.object({
+  name: z.string().min(1),
+  target: z.enum(["sentence", "vocab"]),
+  body: z.string(),
+  boundary: z.enum(["fixed", "blank"]),
+  ignoreBlankLines: z.boolean(),
+});
+
+/** JSON Schema (draft-07) for the create payload, used verbatim as the route body. */
+export const createParseTemplateJsonSchema = objectJsonSchema(createParseTemplateSchema);
+
+export type CreateParseTemplateInput = z.infer<typeof createParseTemplateSchema>;
 
 /** Payload for partially updating a sentence. `reading` is a manual furigana override (null clears it). */
 export type UpdateSentenceInput = Partial<CreateSentenceInput> & {

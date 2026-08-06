@@ -1,7 +1,8 @@
 import type { FastifyInstance, FastifyReply } from "fastify";
 import type { CreateSourceInput, UpdateSourceInput } from "@sentence-bank/types";
+import { createSourceJsonSchema } from "@sentence-bank/types";
 import { idOf, notFound } from "@/routes/handlers";
-import { idParams } from "@/routes/schemas/params";
+import { idParams, updateBodyOf } from "@/routes/schemas/params";
 import {
   createSource,
   deleteSource,
@@ -10,42 +11,9 @@ import {
   updateSource,
 } from "@/services/sources";
 
-const sourceFields = {
-  name: {
-    type: "string",
-    minLength: 1,
-  },
-  type: {
-    type: ["string", "null"],
-  },
-  author: {
-    type: ["string", "null"],
-  },
-  url: {
-    type: ["string", "null"],
-  },
-  notes: {
-    type: ["string", "null"],
-  },
-  /** The source this one nests inside (a page under an issue, an issue under a magazine). */
-  parentId: {
-    type: ["string", "null"],
-    format: "uuid",
-  },
-} as const;
+const createSourceBody = createSourceJsonSchema;
 
-const createSourceBody = {
-  type: "object",
-  required: ["name"],
-  additionalProperties: false,
-  properties: sourceFields,
-} as const;
-
-const updateSourceBody = {
-  type: "object",
-  additionalProperties: false,
-  properties: sourceFields,
-} as const;
+const updateSourceBody = updateBodyOf(createSourceBody);
 
 /**
  * Map a rejected `parentId` to a 400, rethrowing anything else so genuine bugs still surface as

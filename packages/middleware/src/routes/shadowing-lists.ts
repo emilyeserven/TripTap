@@ -5,6 +5,7 @@ import type {
   CreateShadowingListInput,
   UpdateShadowingListInput,
 } from "@sentence-bank/types";
+import { createShadowingListJsonSchema } from "@sentence-bank/types";
 import {
   createShadowingList,
   deleteShadowingList,
@@ -13,30 +14,7 @@ import {
   updateShadowingList,
 } from "@/services/shadowing-lists";
 
-const idArray = {
-  type: "array",
-  items: {
-    type: "string",
-    format: "uuid",
-  },
-} as const;
-
-const createShadowingListBody = {
-  type: "object",
-  required: ["name"],
-  additionalProperties: false,
-  properties: {
-    name: {
-      type: "string",
-      minLength: 1,
-    },
-    notes: {
-      type: ["string", "null"],
-    },
-    sentenceIds: idArray,
-    mySentenceIds: idArray,
-  },
-} as const;
+const createShadowingListBody = createShadowingListJsonSchema;
 
 const updateShadowingListBody = updateBodyOf(createShadowingListBody);
 
