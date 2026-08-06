@@ -5,9 +5,5 @@ import { createFileRoute, Outlet } from "@tanstack/react-router";
  * (`/reading-sessions/$id/`) or the edit form (`/reading-sessions/$id/edit`).
  */
 export const Route = createFileRoute("/reading-sessions/$id")({
-  component: ReadingSessionIdLayout,
+  component: Outlet,
 });
-
-function ReadingSessionIdLayout() {
-  return <Outlet />;
-}

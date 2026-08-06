@@ -5,9 +5,5 @@ import { createFileRoute, Outlet } from "@tanstack/react-router";
  * (`/practice/$id/`) or the tabbed editor (`/practice/$id/edit`).
  */
 export const Route = createFileRoute("/practice/$id")({
-  component: PracticeIdLayout,
+  component: Outlet,
 });
-
-function PracticeIdLayout() {
-  return <Outlet />;
-}

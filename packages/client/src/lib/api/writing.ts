@@ -17,25 +17,10 @@ import type {
   UpdateWritingPromptInput,
 } from "@sentence-bank/types";
 
+import { crudApi } from "./crud";
 import { request } from "./request";
 
-export const writingsApi = {
-  list: () => request<Writing[]>("/writings"),
-  get: (id: string) => request<Writing>(`/writings/${id}`),
-  create: (input: CreateWritingInput) =>
-    request<Writing>("/writings", {
-      method: "POST",
-      body: JSON.stringify(input),
-    }),
-  update: (id: string, input: UpdateWritingInput) =>
-    request<Writing>(`/writings/${id}`, {
-      method: "PATCH",
-      body: JSON.stringify(input),
-    }),
-  remove: (id: string) => request<undefined>(`/writings/${id}`, {
-    method: "DELETE",
-  }),
-};
+export const writingsApi = crudApi<Writing, CreateWritingInput, UpdateWritingInput>("/writings");
 
 export const writingPromptsApi = {
   list: () => request<WritingPrompt[]>("/writing-prompts"),
@@ -62,45 +47,17 @@ export const writingPromptsApi = {
   }),
 };
 
-export const questionSheetsApi = {
-  list: () => request<QuestionSheet[]>("/question-sheets"),
-  get: (id: string) => request<QuestionSheet>(`/question-sheets/${id}`),
-  create: (input: CreateQuestionSheetInput) =>
-    request<QuestionSheet>("/question-sheets", {
-      method: "POST",
-      body: JSON.stringify(input),
-    }),
-  update: (id: string, input: UpdateQuestionSheetInput) =>
-    request<QuestionSheet>(`/question-sheets/${id}`, {
-      method: "PATCH",
-      body: JSON.stringify(input),
-    }),
-  remove: (id: string) => request<undefined>(`/question-sheets/${id}`, {
-    method: "DELETE",
-  }),
-};
+export const questionSheetsApi = crudApi<QuestionSheet, CreateQuestionSheetInput, UpdateQuestionSheetInput>("/question-sheets");
 
 export const answerSheetsApi = {
+  ...crudApi<AnswerSheet, CreateAnswerSheetInput, UpdateAnswerSheetInput>("/answer-sheets"),
+  /** Optionally scoped to one question sheet. */
   list: (filters?: { questionSheetId?: string }) => {
     const params = new URLSearchParams();
     if (filters?.questionSheetId) params.set("questionSheetId", filters.questionSheetId);
     const qs = params.toString();
-    return request<AnswerSheet[]>(qs ? `/answer-sheets?${qs}` : "/answer-sheets");
+    return request<AnswerSheet[]>(`/answer-sheets${qs ? `?${qs}` : ""}`);
   },
-  get: (id: string) => request<AnswerSheet>(`/answer-sheets/${id}`),
-  create: (input: CreateAnswerSheetInput) =>
-    request<AnswerSheet>("/answer-sheets", {
-      method: "POST",
-      body: JSON.stringify(input),
-    }),
-  update: (id: string, input: UpdateAnswerSheetInput) =>
-    request<AnswerSheet>(`/answer-sheets/${id}`, {
-      method: "PATCH",
-      body: JSON.stringify(input),
-    }),
-  remove: (id: string) => request<undefined>(`/answer-sheets/${id}`, {
-    method: "DELETE",
-  }),
 };
 
 export const grammarNotesApi = {

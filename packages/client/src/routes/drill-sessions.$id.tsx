@@ -5,9 +5,5 @@ import { createFileRoute, Outlet } from "@tanstack/react-router";
  * (`/drill-sessions/$id/`) or the edit form (`/drill-sessions/$id/edit`).
  */
 export const Route = createFileRoute("/drill-sessions/$id")({
-  component: DrillSessionIdLayout,
+  component: Outlet,
 });
-
-function DrillSessionIdLayout() {
-  return <Outlet />;
-}
