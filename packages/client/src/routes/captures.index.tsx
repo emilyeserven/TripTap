@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 
+import { sourcePathLabel } from "@sentence-bank/types";
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Camera, ImageOff, PencilLine } from "lucide-react";
 
@@ -18,6 +19,7 @@ import { useCaptures } from "@/hooks/useCaptures";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useSources } from "@/hooks/useSources";
 import { capturesApi } from "@/lib/api";
+import { matchesSourceFilter, sourceFilterOptions } from "@/lib/source-options";
 
 export const Route = createFileRoute("/captures/")({
   component: CapturesPage,
@@ -41,21 +43,14 @@ function CapturesPage() {
   const [manualOpen, setManualOpen] = useState(false);
   const [sourceFilter, setSourceFilter] = useState(sourceParam ?? "all");
 
-  const sourceName = (id: string | null) =>
-    (id ? sources?.find(s => s.id === id)?.name ?? null : null);
+  // The full path, so a capture filed under "p. 12" still says which magazine that page is from.
+  const sourceLabel = (id: string | null) => (id ? sourcePathLabel(sources ?? [], id) || null : null);
 
-  const sourceOptions = useMemo(() => [
-    {
-      value: "all",
-      label: "All sources",
-    },
-    ...(sources ?? []).map(s => ({
-      value: s.id,
-      label: s.name,
-    })),
-  ], [sources]);
+  const sourceOptions = useMemo(() => sourceFilterOptions(sources), [sources]);
 
-  const shown = (captures ?? []).filter(c => sourceFilter === "all" || c.sourceId === sourceFilter);
+  // Filtering by a parent source includes its sub-sources: a magazine shows every page's captures.
+  const bySource = matchesSourceFilter(sources, sourceFilter);
+  const shown = (captures ?? []).filter(c => bySource(c.sourceId));
 
   return (
     <section className="space-y-6">
@@ -177,7 +172,7 @@ function CapturesPage() {
                   </div>
                   <p className="line-clamp-2 text-sm text-muted-foreground">{capture.text}</p>
                   <p className="text-xs text-muted-foreground">
-                    {[sourceName(capture.sourceId), capture.page ? `p. ${capture.page}` : null]
+                    {[sourceLabel(capture.sourceId), capture.page ? `p. ${capture.page}` : null]
                       .filter(Boolean)
                       .join(" · ")}
                   </p>
