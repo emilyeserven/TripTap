@@ -195,19 +195,24 @@ export interface Vocab {
   createdAt: string;
 }
 
-/** Payload for creating a vocab item. */
-export interface CreateVocabInput {
-  term: string;
-  reading?: string | null;
-  meaning?: string | null;
-  language: string;
-  sourceId?: string | null;
-  page?: string | null;
-  tags?: string | null;
-  notes?: string | null;
-  starred?: boolean;
-  captureId?: string | null;
-}
+/** Payload for creating a vocab item, declared once for both the type and the route's validator. */
+export const createVocabSchema = z.object({
+  term: z.string().min(1),
+  reading: z.string().nullable().optional(),
+  meaning: z.string().nullable().optional(),
+  language: z.string().min(1),
+  sourceId: z.guid().nullable().optional(),
+  page: z.string().nullable().optional(),
+  tags: z.string().nullable().optional(),
+  notes: z.string().nullable().optional(),
+  starred: z.boolean().optional(),
+  captureId: z.guid().nullable().optional(),
+});
+
+/** JSON Schema (draft-07) for the create payload, used verbatim as the route body. */
+export const createVocabJsonSchema = objectJsonSchema(createVocabSchema);
+
+export type CreateVocabInput = z.infer<typeof createVocabSchema>;
 
 /** Payload for partially updating a vocab item. */
 export type UpdateVocabInput = Partial<CreateVocabInput>;

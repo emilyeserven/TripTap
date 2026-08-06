@@ -8,6 +8,10 @@
  * review/scheduling happens in Anki after export. Consumed by both the Fastify API and the React client.
  */
 
+import { z } from "zod";
+
+import { objectJsonSchema } from "./json-schema.js";
+
 /** Situation→production (harder, matches that production is what failed) or a cloze. */
 export type ChunkCardFormat = "situation_production" | "cloze";
 
@@ -37,16 +41,21 @@ export interface ChunkCard {
 }
 
 /** Payload for creating a chunk card. `batchId`, `chunk`, `gloss`, `format`, `prompt`, `answer` required. */
-export interface CreateChunkCardInput {
-  correctionId?: string | null;
-  batchId: string;
-  chunk: string;
-  gloss: string;
-  format: ChunkCardFormat;
-  prompt: string;
-  answer: string;
-  wrongForm?: string | null;
-}
+export const createChunkCardSchema = z.object({
+  correctionId: z.guid().nullable().optional(),
+  batchId: z.guid(),
+  chunk: z.string().min(1),
+  gloss: z.string(),
+  format: z.enum(["situation_production", "cloze"]),
+  prompt: z.string().min(1),
+  answer: z.string().min(1),
+  wrongForm: z.string().nullable().optional(),
+});
+
+/** JSON Schema (draft-07) for the create payload, used verbatim as the route body. */
+export const createChunkCardJsonSchema = objectJsonSchema(createChunkCardSchema);
+
+export type CreateChunkCardInput = z.infer<typeof createChunkCardSchema>;
 
 /** Payload for partially updating a chunk card. The batch (its cap grouping) is immutable. */
 export type UpdateChunkCardInput = Partial<Omit<CreateChunkCardInput, "batchId">> & {

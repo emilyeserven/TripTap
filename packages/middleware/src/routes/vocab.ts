@@ -2,6 +2,7 @@ import type { FastifyInstance } from "fastify";
 import { idOf, notFound } from "@/routes/handlers";
 import { idParams } from "@/routes/schemas/params";
 import type { CreateVocabInput, UpdateVocabInput } from "@sentence-bank/types";
+import { createVocabJsonSchema } from "@sentence-bank/types";
 import {
   createVocab,
   createVocabMany,
@@ -13,47 +14,7 @@ import {
 } from "@/services/vocab";
 import { handleUpstreamError } from "@/routes/upstream-errors";
 
-const createVocabBody = {
-  type: "object",
-  required: ["term", "language"],
-  additionalProperties: false,
-  properties: {
-    term: {
-      type: "string",
-      minLength: 1,
-    },
-    reading: {
-      type: ["string", "null"],
-    },
-    meaning: {
-      type: ["string", "null"],
-    },
-    language: {
-      type: "string",
-      minLength: 1,
-    },
-    sourceId: {
-      type: ["string", "null"],
-      format: "uuid",
-    },
-    page: {
-      type: ["string", "null"],
-    },
-    tags: {
-      type: ["string", "null"],
-    },
-    notes: {
-      type: ["string", "null"],
-    },
-    starred: {
-      type: "boolean",
-    },
-    captureId: {
-      type: ["string", "null"],
-      format: "uuid",
-    },
-  },
-} as const;
+const createVocabBody = createVocabJsonSchema;
 
 const bulkVocabBody = {
   type: "object",

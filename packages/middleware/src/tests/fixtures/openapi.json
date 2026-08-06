@@ -9359,21 +9359,10 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "date",
-                  "entryMode"
-                ],
-                "additionalProperties": false,
                 "properties": {
                   "date": {
                     "type": "string",
                     "format": "date"
-                  },
-                  "title": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
                   },
                   "entryMode": {
                     "type": "string",
@@ -9382,58 +9371,91 @@
                       "words"
                     ]
                   },
+                  "title": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
                   "pages": {
-                    "type": [
-                      "integer",
-                      "null"
-                    ],
-                    "minimum": 0
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
                   },
                   "density": {
-                    "type": [
-                      "string",
-                      "null"
-                    ],
-                    "enum": [
-                      "dense",
-                      "medium",
-                      "light",
-                      null
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "dense",
+                          "medium",
+                          "light"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
                     ]
                   },
                   "wordCount": {
-                    "type": [
-                      "integer",
-                      "null"
-                    ],
-                    "minimum": 0
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
                   },
                   "notesCount": {
                     "type": "integer",
                     "minimum": 0
                   },
                   "notes": {
-                    "type": [
-                      "string",
-                      "null"
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
                     ]
                   },
                   "learningArea": {
-                    "type": [
-                      "string",
-                      "null"
-                    ],
-                    "enum": [
-                      "Speaking",
-                      "Listening",
-                      "Reading",
-                      "Writing",
-                      "Grammar",
-                      "Vocabulary",
-                      null
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "Speaking",
+                          "Listening",
+                          "Reading",
+                          "Writing",
+                          "Grammar",
+                          "Vocabulary"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
                     ]
                   }
-                }
+                },
+                "required": [
+                  "date",
+                  "entryMode"
+                ],
+                "additionalProperties": false
               }
             }
           }
@@ -9483,12 +9505,6 @@
                     "type": "string",
                     "format": "date"
                   },
-                  "title": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
-                  },
                   "entryMode": {
                     "type": "string",
                     "enum": [
@@ -9496,55 +9512,83 @@
                       "words"
                     ]
                   },
+                  "title": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
                   "pages": {
-                    "type": [
-                      "integer",
-                      "null"
-                    ],
-                    "minimum": 0
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
                   },
                   "density": {
-                    "type": [
-                      "string",
-                      "null"
-                    ],
-                    "enum": [
-                      "dense",
-                      "medium",
-                      "light",
-                      null
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "dense",
+                          "medium",
+                          "light"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
                     ]
                   },
                   "wordCount": {
-                    "type": [
-                      "integer",
-                      "null"
-                    ],
-                    "minimum": 0
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
                   },
                   "notesCount": {
                     "type": "integer",
                     "minimum": 0
                   },
                   "notes": {
-                    "type": [
-                      "string",
-                      "null"
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
                     ]
                   },
                   "learningArea": {
-                    "type": [
-                      "string",
-                      "null"
-                    ],
-                    "enum": [
-                      "Speaking",
-                      "Listening",
-                      "Reading",
-                      "Writing",
-                      "Grammar",
-                      "Vocabulary",
-                      null
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "Speaking",
+                          "Listening",
+                          "Reading",
+                          "Writing",
+                          "Grammar",
+                          "Vocabulary"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
                     ]
                   }
                 }
@@ -10580,26 +10624,23 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "batchId",
-                  "chunk",
-                  "gloss",
-                  "format",
-                  "prompt",
-                  "answer"
-                ],
-                "additionalProperties": false,
                 "properties": {
                   "correctionId": {
-                    "type": [
-                      "string",
-                      "null"
-                    ],
-                    "format": "uuid"
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
                   },
                   "batchId": {
                     "type": "string",
-                    "format": "uuid"
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
                   },
                   "chunk": {
                     "type": "string",
@@ -10624,12 +10665,25 @@
                     "minLength": 1
                   },
                   "wrongForm": {
-                    "type": [
-                      "string",
-                      "null"
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
                     ]
                   }
-                }
+                },
+                "required": [
+                  "batchId",
+                  "chunk",
+                  "gloss",
+                  "format",
+                  "prompt",
+                  "answer"
+                ],
+                "additionalProperties": false
               }
             }
           }
@@ -10988,26 +11042,29 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "term",
-                  "language"
-                ],
-                "additionalProperties": false,
                 "properties": {
                   "term": {
                     "type": "string",
                     "minLength": 1
                   },
                   "reading": {
-                    "type": [
-                      "string",
-                      "null"
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
                     ]
                   },
                   "meaning": {
-                    "type": [
-                      "string",
-                      "null"
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
                     ]
                   },
                   "language": {
@@ -11015,41 +11072,68 @@
                     "minLength": 1
                   },
                   "sourceId": {
-                    "type": [
-                      "string",
-                      "null"
-                    ],
-                    "format": "uuid"
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
                   },
                   "page": {
-                    "type": [
-                      "string",
-                      "null"
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
                     ]
                   },
                   "tags": {
-                    "type": [
-                      "string",
-                      "null"
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
                     ]
                   },
                   "notes": {
-                    "type": [
-                      "string",
-                      "null"
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
                     ]
                   },
                   "starred": {
                     "type": "boolean"
                   },
                   "captureId": {
-                    "type": [
-                      "string",
-                      "null"
-                    ],
-                    "format": "uuid"
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
                   }
-                }
+                },
+                "required": [
+                  "term",
+                  "language"
+                ],
+                "additionalProperties": false
               }
             }
           }
@@ -11127,26 +11211,29 @@
                     "type": "array",
                     "items": {
                       "type": "object",
-                      "required": [
-                        "term",
-                        "language"
-                      ],
-                      "additionalProperties": false,
                       "properties": {
                         "term": {
                           "type": "string",
                           "minLength": 1
                         },
                         "reading": {
-                          "type": [
-                            "string",
-                            "null"
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
                           ]
                         },
                         "meaning": {
-                          "type": [
-                            "string",
-                            "null"
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
                           ]
                         },
                         "language": {
@@ -11154,41 +11241,68 @@
                           "minLength": 1
                         },
                         "sourceId": {
-                          "type": [
-                            "string",
-                            "null"
-                          ],
-                          "format": "uuid"
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
                         },
                         "page": {
-                          "type": [
-                            "string",
-                            "null"
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
                           ]
                         },
                         "tags": {
-                          "type": [
-                            "string",
-                            "null"
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
                           ]
                         },
                         "notes": {
-                          "type": [
-                            "string",
-                            "null"
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
                           ]
                         },
                         "starred": {
                           "type": "boolean"
                         },
                         "captureId": {
-                          "type": [
-                            "string",
-                            "null"
-                          ],
-                          "format": "uuid"
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
                         }
-                      }
+                      },
+                      "required": [
+                        "term",
+                        "language"
+                      ],
+                      "additionalProperties": false
                     }
                   }
                 }
@@ -11244,15 +11358,23 @@
                     "minLength": 1
                   },
                   "reading": {
-                    "type": [
-                      "string",
-                      "null"
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
                     ]
                   },
                   "meaning": {
-                    "type": [
-                      "string",
-                      "null"
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
                     ]
                   },
                   "language": {
@@ -11260,39 +11382,61 @@
                     "minLength": 1
                   },
                   "sourceId": {
-                    "type": [
-                      "string",
-                      "null"
-                    ],
-                    "format": "uuid"
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
                   },
                   "page": {
-                    "type": [
-                      "string",
-                      "null"
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
                     ]
                   },
                   "tags": {
-                    "type": [
-                      "string",
-                      "null"
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
                     ]
                   },
                   "notes": {
-                    "type": [
-                      "string",
-                      "null"
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
                     ]
                   },
                   "starred": {
                     "type": "boolean"
                   },
                   "captureId": {
-                    "type": [
-                      "string",
-                      "null"
-                    ],
-                    "format": "uuid"
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
                   }
                 }
               }
