@@ -1,8 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft } from "lucide-react";
 
+import { BackIcon, EntityEditPage } from "@/components/EntityPage";
 import { ListeningSessionForm } from "@/components/ListeningSessionForm";
-import { Button } from "@/components/ui/button";
 import { useDeleteListeningSession, useListeningSession } from "@/hooks/useListeningSessions";
 import { usePageTitle } from "@/hooks/usePageTitle";
 
@@ -16,61 +15,43 @@ function EditListeningSessionPage() {
     id,
   } = Route.useParams();
   const navigate = useNavigate();
-  const deleteListeningSession = useDeleteListeningSession();
-  const {
-    data, isLoading, error,
-  } = useListeningSession(id);
-
-  if (isLoading) return <p className="text-muted-foreground">Loading…</p>;
-  if (error) return <p className="text-destructive">{error.message}</p>;
-  if (!data) return <p className="text-muted-foreground">Session not found.</p>;
-
-  const remove = () => {
-    deleteListeningSession.mutate(id, {
-      onSuccess: () => navigate({
-        to: "/listening-sessions",
-      }),
-    });
-  };
+  const remove = useDeleteListeningSession();
 
   return (
-    <section className="max-w-3xl space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <Button
-          asChild
-          variant="ghost"
-          size="sm"
+    <EntityEditPage
+      query={useListeningSession(id)}
+      noun="Session"
+      backLink={(
+        <Link
+          to="/listening-sessions/$id"
+          params={{
+            id,
+          }}
         >
-          <Link
-            to="/listening-sessions/$id"
-            params={{
-              id,
-            }}
-          >
-            <ArrowLeft className="size-4" />
-            Back to session
-          </Link>
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-destructive"
-          disabled={deleteListeningSession.isPending}
-          onClick={remove}
-        >
-          Delete
-        </Button>
-      </div>
-      <ListeningSessionForm
-        session={data}
-        onSuccess={() =>
-          navigate({
-            to: "/listening-sessions/$id",
-            params: {
-              id,
-            },
-          })}
-      />
-    </section>
+          <BackIcon className="size-4" />
+          Back to session
+        </Link>
+      )}
+      deletePending={remove.isPending}
+      onDelete={() =>
+        remove.mutate(id, {
+          onSuccess: () => navigate({
+            to: "/listening-sessions",
+          }),
+        })}
+    >
+      {entity => (
+        <ListeningSessionForm
+          session={entity}
+          onSuccess={() =>
+            navigate({
+              to: "/listening-sessions/$id",
+              params: {
+                id,
+              },
+            })}
+        />
+      )}
+    </EntityEditPage>
   );
 }
