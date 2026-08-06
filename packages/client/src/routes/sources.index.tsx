@@ -2,9 +2,11 @@ import type { CreateSourceInput, Source } from "@sentence-bank/types";
 
 import { useState } from "react";
 
+import { flattenSourceTree, sourceSubtreeIds } from "@sentence-bank/types";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { ExternalLink, Pencil, Plus } from "lucide-react";
 
+import { SourceParentSelect } from "@/components/SourceParentSelect";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -25,9 +27,19 @@ export const Route = createFileRoute("/sources/")({
 
 const fieldClass = "mt-1";
 
+/** A subtree tally: "3 capture(s)" for a leaf, "3 capture(s) (7 with sub-sources)" for a parent. */
+function countLabel({
+  direct, total,
+}: { direct: number;
+  total: number; }, noun: string): string {
+  const own = `${direct} ${noun}(s)`;
+  return total > direct ? `${own} (${total} with sub-sources)` : own;
+}
+
 /** Create/edit form for a source. Emits a normalized {@link CreateSourceInput}. */
 function SourceForm({
   initial,
+  defaultParentId = null,
   submitLabel,
   pending,
   onSubmit,
@@ -36,6 +48,8 @@ function SourceForm({
   deleting,
 }: {
   initial?: Source;
+  /** Parent preset when creating — set by the "sub-source" button on a row. */
+  defaultParentId?: string | null;
   submitLabel: string;
   pending: boolean;
   onSubmit: (input: CreateSourceInput) => void;
@@ -49,6 +63,7 @@ function SourceForm({
   const [author, setAuthor] = useState(initial?.author ?? "");
   const [url, setUrl] = useState(initial?.url ?? "");
   const [notes, setNotes] = useState(initial?.notes ?? "");
+  const [parentId, setParentId] = useState<string | null>(initial?.parentId ?? defaultParentId);
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -59,6 +74,7 @@ function SourceForm({
       author: author.trim() || null,
       url: url.trim() || null,
       notes: notes.trim() || null,
+      parentId,
     });
   }
 
@@ -106,8 +122,15 @@ function SourceForm({
             className={fieldClass}
             value={url}
             onChange={e => setUrl(e.target.value)}
+            placeholder="https://app.renshuu.org/text/70231/0"
           />
         </label>
+        <SourceParentSelect
+          id={initial ? `source-parent-${initial.id}` : "source-parent-new"}
+          value={parentId}
+          onChange={setParentId}
+          selfId={initial?.id}
+        />
       </div>
       <label className="block text-sm font-medium text-slate-700">
         Notes
@@ -166,17 +189,40 @@ function SourcesPage() {
   const updateSource = useUpdateSource();
   const deleteSource = useDeleteSource();
 
-  const [creating, setCreating] = useState(false);
+  // `creating` holds the parent the new source will hang off: null for a top-level source, an id
+  // when the "sub-source" button on a row started it. `false` means the form is closed.
+  const [creating, setCreating] = useState<string | null | false>(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  const countFor = (id: string) => ({
-    sentences: (sentences ?? []).filter(s => s.sourceId === id).length,
-    captures: (captures ?? []).filter(c => c.sourceId === id).length,
-  });
+  const tree = flattenSourceTree(sources ?? []);
+  const parentName = (id: string | null) => (sources ?? []).find(s => s.id === id)?.name ?? null;
+
+  /**
+   * Direct counts plus what sits under the sub-sources: a magazine holds no captures itself, its
+   * pages do, so a bare direct count would read as an empty shelf.
+   */
+  const countFor = (id: string) => {
+    const subtree = sourceSubtreeIds(sources ?? [], id);
+    const inSubtree = <T extends { sourceId: string | null }>(rows: T[] | undefined) => {
+      const all = (rows ?? []).filter(r => r.sourceId && subtree.has(r.sourceId));
+      return {
+        direct: all.filter(r => r.sourceId === id).length,
+        total: all.length,
+      };
+    };
+    return {
+      sentences: inSubtree(sentences),
+      captures: inSubtree(captures),
+    };
+  };
 
   function remove(source: Source) {
+    const children = (sources ?? []).filter(s => s.parentId === source.id).length;
+    const childNote = children > 0
+      ? ` Its ${children} sub-source(s) move to the top level.`
+      : "";
     if (!globalThis.confirm(
-      `Delete "${source.name}"? Sentences and captures keep working; their source is cleared.`,
+      `Delete "${source.name}"? Sentences and captures keep working; their source is cleared.${childNote}`,
     )) {
       return;
     }
@@ -188,12 +234,13 @@ function SourcesPage() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-sm text-muted-foreground">
-            The origins your sentences and captures are tagged with.
+            The origins your sentences and captures are tagged with. Nest them as deep as the thing
+            itself goes — a magazine, one issue, the page a few captures came from.
           </p>
         </div>
-        {!creating
+        {creating === false
           ? (
-            <Button onClick={() => setCreating(true)}>
+            <Button onClick={() => setCreating(null)}>
               <Plus className="size-4" />
               New source
             </Button>
@@ -201,14 +248,19 @@ function SourcesPage() {
           : null}
       </div>
 
-      {creating
+      {creating !== false
         ? (
           <Card>
             <CardHeader>
-              <CardTitle>New source</CardTitle>
+              <CardTitle>
+                {creating ? `New source in ${parentName(creating) ?? "…"}` : "New source"}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <SourceForm
+                // Remount when the preset parent changes, so the form picks the new default up.
+                key={creating ?? "root"}
+                defaultParentId={creating}
                 submitLabel="Create"
                 pending={createSource.isPending}
                 onCancel={() => setCreating(false)}
@@ -224,16 +276,24 @@ function SourcesPage() {
 
       {error ? <p className="text-destructive">{error.message}</p> : null}
       {isLoading ? <p className="text-muted-foreground">Loading…</p> : null}
-      {!isLoading && sources && sources.length === 0 && !creating
+      {!isLoading && sources && sources.length === 0 && creating === false
         ? <p className="text-muted-foreground">No sentence origins yet.</p>
         : null}
 
       <div className="space-y-3">
-        {(sources ?? []).map((source) => {
+        {tree.map(({
+          source, depth,
+        }) => {
           const counts = countFor(source.id);
           const isEditing = editingId === source.id;
           return (
-            <Card key={source.id}>
+            <Card
+              key={source.id}
+              // Depth as an inline indent: the nesting is unbounded, so no fixed class list fits.
+              style={{
+                marginLeft: `${depth * 1.5}rem`,
+              }}
+            >
               <CardContent className="space-y-3 p-4">
                 {isEditing
                   ? (
@@ -310,6 +370,15 @@ function SourcesPage() {
                             type="button"
                             variant="ghost"
                             size="sm"
+                            onClick={() => setCreating(source.id)}
+                            title={`Add a source inside ${source.name}`}
+                          >
+                            <Plus className="size-4" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
                             onClick={() => setEditingId(source.id)}
                             title="Edit source"
                           >
@@ -330,9 +399,7 @@ function SourcesPage() {
                           }}
                           className="hover:underline"
                         >
-                          {counts.sentences}
-                          {" "}
-                          sentence(s)
+                          {countLabel(counts.sentences, "sentence")}
                         </Link>
                         <Link
                           to="/captures"
@@ -341,9 +408,7 @@ function SourcesPage() {
                           }}
                           className="hover:underline"
                         >
-                          {counts.captures}
-                          {" "}
-                          capture(s)
+                          {countLabel(counts.captures, "capture")}
                         </Link>
                       </div>
                     </>

@@ -35,6 +35,7 @@ import { usePageTitle } from "@/hooks/usePageTitle";
 import { useBackfillFurigana, useSentences } from "@/hooks/useSentences";
 import { useSources } from "@/hooks/useSources";
 import { dedupeGrammarTags, grammarTermsOf } from "@/lib/grammar-links";
+import { matchesSourceFilter, sourceFilterOptions } from "@/lib/source-options";
 
 export const Route = createFileRoute("/sentences")({
   component: SentencesPage,
@@ -116,16 +117,7 @@ function SentencesPage() {
     return opts;
   }, [manual.length, aiLessons]);
 
-  const sourceOptions = useMemo(() => [
-    {
-      value: "all",
-      label: "All sources",
-    },
-    ...(sources ?? []).map(s => ({
-      value: s.id,
-      label: s.name,
-    })),
-  ], [sources]);
+  const sourceOptions = useMemo(() => sourceFilterOptions(sources), [sources]);
 
   // Migaku deck options: every `deck:*` tag in use across the manual (bank) sentences.
   const deckOptions = useMemo(() => {
@@ -145,7 +137,8 @@ function SentencesPage() {
     ];
   }, [manual]);
 
-  const bySource = (id: string | null) => sourceFilter === "all" || id === sourceFilter;
+  // Selecting a source matches everything nested under it too (a magazine covers its pages).
+  const bySource = matchesSourceFilter(sources, sourceFilter);
   const byDeck = (tags: string | null) => deckFilter === "all" || hasDeckTag(tags, deckFilter);
   const byGrammarTag = (terms: { id: string }[]) =>
     grammarTag === "all" || terms.some(t => t.id === grammarTag);

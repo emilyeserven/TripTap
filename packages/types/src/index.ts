@@ -30,6 +30,7 @@ export * from "./sentence-mark.js";
 export * from "./session.js";
 export * from "./shadowing-list.js";
 export * from "./shadowing-session.js";
+export * from "./source-tree.js";
 export * from "./term-usage.js";
 export * from "./terms.js";
 export * from "./text-segments.js";
@@ -44,7 +45,12 @@ export * from "./xp.js";
 
 import type { LearningArea } from "./question-sheet.js";
 
-/** A reusable origin for sentences (a book, show, article, …) — the "source taxonomy". */
+/**
+ * A reusable origin for sentences (a book, show, article, …) — the "source taxonomy".
+ *
+ * Sources nest via {@link parentId}: a magazine holds issues, an issue holds pages, and the captures
+ * of one page hang off that page. See `source-tree.js` for the helpers that walk the hierarchy.
+ */
 export interface Source {
   id: string;
   /** Display name, e.g. "よつばと！ vol. 1". */
@@ -52,8 +58,17 @@ export interface Source {
   /** Free-text kind, e.g. "book", "show", "article". */
   type: string | null;
   author: string | null;
+  /**
+   * A link to this exact tier — the magazine's homepage on the magazine, the reader URL of one page
+   * on that page (e.g. `https://app.renshuu.org/text/70231/0`). Every tier carries its own.
+   */
   url: string | null;
   notes: string | null;
+  /**
+   * The source this one sits inside, or null for a top-level source. Deleting a parent clears this
+   * rather than deleting the children, so a mis-delete never takes a page's captures with it.
+   */
+  parentId: string | null;
   /** ISO-8601 timestamp of when the source was added. */
   createdAt: string;
 }
@@ -65,6 +80,7 @@ export interface CreateSourceInput {
   author?: string | null;
   url?: string | null;
   notes?: string | null;
+  parentId?: string | null;
 }
 
 /** Payload for partially updating a source. */
