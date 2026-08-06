@@ -1,6 +1,8 @@
+import type { BasketKind } from "@/stores/basketStore";
+
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import { Plus, X } from "lucide-react";
+import { Plus, ShoppingBasket, X } from "lucide-react";
 
 import { matches } from "@/components/ai-lesson/search";
 import { Button } from "@/components/ui/button";
@@ -15,6 +17,7 @@ import { Combobox } from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useCopyToClipboard } from "@/hooks/useCopyToClipboard";
+import { useBasketStore } from "@/stores/basketStore";
 
 /**
  * One selectable row, mode-agnostic. `secondary`/`tertiary` are the export's extra columns
@@ -52,6 +55,12 @@ function loadIds(key: string): string[] {
 /**
  * The picker + export-list + output for one export mode (Anki/Renshuu); owns its own
  * localStorage-backed id list.
+ *
+ * `basketKind` bridges the app's *other* collection mechanism. The basket is where a learner gathers
+ * sentences and vocab while browsing, and until now it had no way out to an export — the two were
+ * independent "collect things, then act on them" surfaces built on separate storage. Naming a kind
+ * here adds a one-click "Add basket" that pulls in whatever the basket holds of that kind, keyed on
+ * the same entity ids the panel already uses.
  */
 export function ExportPanel({
   items,
@@ -61,6 +70,7 @@ export function ExportPanel({
   pickerHint,
   outputHint,
   outputLabel,
+  basketKind,
 }: {
   items: ExportItem[];
   sources: ExportSource[] | undefined;
@@ -71,6 +81,8 @@ export function ExportPanel({
   outputHint: string;
   /** Accessible label for the output textarea, e.g. "Anki export text". */
   outputLabel: string;
+  /** Which basket kind this panel exports, enabling "Add basket". Omit for modes with no basket. */
+  basketKind?: BasketKind;
 }) {
   const [ids, setIds] = useState<string[]>(() => loadIds(storageKey));
   const [search, setSearch] = useState("");
@@ -111,12 +123,27 @@ export function ExportPanel({
     && matches(search, i.label, i.sublabel, ...i.searchExtra));
   const addableIds = candidates.filter(i => i.eligible).map(i => i.id);
 
+  // Basket rows that this mode can actually export: right kind, known to the panel, and eligible
+  // (an item with no translation can't produce a two-column export row).
+  const basketItems = useBasketStore(s => s.items);
+  const basketAddableIds = basketKind === undefined
+    ? []
+    : basketItems
+      .filter(b => b.kind === basketKind)
+      .map(b => byId.get(b.id))
+      .filter((i): i is ExportItem => i !== undefined && i.eligible && !inList.has(i.id))
+      .map(i => i.id);
+
   function add(id: string) {
     setIds(prev => (prev.includes(id) ? prev : [...prev, id]));
     resetCopied();
   }
   function addAll() {
     setIds(prev => [...prev, ...addableIds.filter(id => !prev.includes(id))]);
+    resetCopied();
+  }
+  function addBasket() {
+    setIds(prev => [...prev, ...basketAddableIds.filter(id => !prev.includes(id))]);
     resetCopied();
   }
   function removeId(id: string) {
@@ -143,18 +170,37 @@ export function ExportPanel({
               <CardTitle>Add</CardTitle>
               <CardDescription>{pickerHint}</CardDescription>
             </div>
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              onClick={addAll}
-              disabled={addableIds.length === 0}
-              title="Add all matching"
-            >
-              Add all (
-              {addableIds.length}
-              )
-            </Button>
+            <div className="flex flex-wrap items-center gap-2">
+              {basketKind === undefined
+                ? null
+                : (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={addBasket}
+                    disabled={basketAddableIds.length === 0}
+                    title="Add everything collected in the basket"
+                  >
+                    <ShoppingBasket className="size-4" />
+                    Add basket (
+                    {basketAddableIds.length}
+                    )
+                  </Button>
+                )}
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={addAll}
+                disabled={addableIds.length === 0}
+                title="Add all matching"
+              >
+                Add all (
+                {addableIds.length}
+                )
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-3">

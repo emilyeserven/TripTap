@@ -213,6 +213,7 @@ function AnkiPage() {
             items={sentenceItems}
             sources={sources}
             storageKey="anki-export"
+            basketKind="sentence"
             pickerHint="Only sentences with a translation can be exported."
             outputHint={OUTPUT_HINT}
             outputLabel="Anki export text"
@@ -231,6 +232,7 @@ function AnkiPage() {
             items={vocabItems}
             sources={sources}
             storageKey="anki-export-vocab"
+            basketKind="vocab"
             pickerHint="Exported one per line as term, reading, meaning."
             outputHint={OUTPUT_HINT}
             outputLabel="Anki export text"

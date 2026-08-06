@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 
 import { createFileRoute, Link } from "@tanstack/react-router";
 
-import { HubSection } from "@/components/HubSection";
+import { HubSection, VIEW_ALL_CLASS } from "@/components/HubSection";
 import { ResourceRow } from "@/components/ResourceRow";
 import { Button } from "@/components/ui/button";
 import { useBookmarkResources } from "@/hooks/useBookmarks";
@@ -20,7 +20,6 @@ export const Route = createFileRoute("/speaking-listening/")({
 });
 
 const PREVIEW_LIMIT = 6;
-const VIEW_ALL_CLASS = "text-sm font-medium text-primary hover:underline";
 
 const MEDIA_FILTERS: { value: ResourceMediaKind;
   label: string; }[] = [
