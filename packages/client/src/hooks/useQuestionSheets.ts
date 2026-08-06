@@ -1,67 +1,16 @@
-import type { CreateQuestionSheetInput, UpdateQuestionSheetInput } from "@sentence-bank/types";
+import { createEntityHooks } from "./createEntityHooks";
 
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { questionSheetsApi } from "@/lib/api";
 
-import { useEntityCacheSync } from "./useEntityCacheSync";
-import { questionSheetsApi } from "../lib/api";
+const hooks = createEntityHooks({
+  key: ["question-sheets"] as const,
+  api: questionSheetsApi,
+  label: "question sheet",
+});
 
-const QUESTION_SHEETS_KEY = ["question-sheets"] as const;
-
-export function useQuestionSheets() {
-  return useQuery({
-    queryKey: QUESTION_SHEETS_KEY,
-    queryFn: () => questionSheetsApi.list(),
-  });
-}
-
+export const useQuestionSheets = hooks.useList;
 /** A single question sheet by id (for its view / edit pages). */
-export function useQuestionSheet(id: string) {
-  return useQuery({
-    queryKey: [...QUESTION_SHEETS_KEY, id],
-    queryFn: () => questionSheetsApi.get(id),
-  });
-}
-
-export function useCreateQuestionSheet() {
-  const {
-    seed,
-  } = useEntityCacheSync(QUESTION_SHEETS_KEY);
-  return useMutation({
-    mutationFn: (input: CreateQuestionSheetInput) => questionSheetsApi.create(input),
-    onSuccess: seed,
-    onError: err => toast.error("Couldn't save the question sheet", {
-      description: err instanceof Error ? err.message : undefined,
-    }),
-  });
-}
-
-export function useUpdateQuestionSheet() {
-  const {
-    seed,
-  } = useEntityCacheSync(QUESTION_SHEETS_KEY);
-  return useMutation({
-    mutationFn: ({
-      id, input,
-    }: { id: string;
-      input: UpdateQuestionSheetInput; }) =>
-      questionSheetsApi.update(id, input),
-    onSuccess: seed,
-    onError: err => toast.error("Couldn't update the question sheet", {
-      description: err instanceof Error ? err.message : undefined,
-    }),
-  });
-}
-
-export function useDeleteQuestionSheet() {
-  const {
-    invalidate,
-  } = useEntityCacheSync(QUESTION_SHEETS_KEY);
-  return useMutation({
-    mutationFn: (id: string) => questionSheetsApi.remove(id),
-    onSuccess: invalidate,
-    onError: err => toast.error("Couldn't delete the question sheet", {
-      description: err instanceof Error ? err.message : undefined,
-    }),
-  });
-}
+export const useQuestionSheet = hooks.useOne;
+export const useCreateQuestionSheet = hooks.useCreate;
+export const useUpdateQuestionSheet = hooks.useUpdate;
+export const useDeleteQuestionSheet = hooks.useRemove;

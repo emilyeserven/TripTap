@@ -5,9 +5,5 @@ import { createFileRoute, Outlet } from "@tanstack/react-router";
  * (`/tutors/$id/`) or the edit form (`/tutors/$id/edit`).
  */
 export const Route = createFileRoute("/tutors/$id")({
-  component: TutorIdLayout,
+  component: Outlet,
 });
-
-function TutorIdLayout() {
-  return <Outlet />;
-}

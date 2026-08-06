@@ -5,9 +5,5 @@ import { createFileRoute, Outlet } from "@tanstack/react-router";
  * (`/dialogues/$id/`) or the edit form (`/dialogues/$id/edit`).
  */
 export const Route = createFileRoute("/dialogues/$id")({
-  component: DialogueIdLayout,
+  component: Outlet,
 });
-
-function DialogueIdLayout() {
-  return <Outlet />;
-}

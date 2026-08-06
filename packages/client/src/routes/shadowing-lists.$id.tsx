@@ -5,9 +5,5 @@ import { createFileRoute, Outlet } from "@tanstack/react-router";
  * (`/shadowing-lists/$id/`) or the edit form (`/shadowing-lists/$id/edit`).
  */
 export const Route = createFileRoute("/shadowing-lists/$id")({
-  component: ShadowingListIdLayout,
+  component: Outlet,
 });
-
-function ShadowingListIdLayout() {
-  return <Outlet />;
-}
