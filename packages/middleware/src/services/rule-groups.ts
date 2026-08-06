@@ -12,6 +12,7 @@ import {
 import { db } from "@/db";
 import { ruleGroups, type RuleGroupRow } from "@/db/schema";
 import { linkProducedCards, ruleTagOccurrenceCount } from "@/services/corrections";
+import { crudService } from "@/services/crud";
 import { toIsoOrNull } from "@/services/rows";
 
 /** A group can't be built before its rule tag has recurred enough (spec §6 inv.1). */
@@ -44,15 +45,23 @@ function assertGroupSize(count: number): void {
   }
 }
 
-export async function listRuleGroups(): Promise<RuleGroup[]> {
-  const rows = await db.select().from(ruleGroups).orderBy(desc(ruleGroups.createdAt));
-  return rows.map(toRuleGroup);
-}
+// No `updated_at` column; this table tracks `exportedAt`/`suspendedAt` instead.
+const crud = crudService(ruleGroups, {
+  toWire: toRuleGroup,
+  toInsert: (input: CreateRuleGroupInput) => ({
+    ruleTagKey: input.ruleTagKey,
+    axis: input.axis,
+    status: input.status ?? "proposed",
+    items: input.items,
+    seedCorrectionIds: input.seedCorrectionIds ?? [],
+  }),
+  orderBy: [desc(ruleGroups.createdAt)],
+  touchUpdatedAt: false,
+});
 
-export async function getRuleGroup(id: string): Promise<RuleGroup | null> {
-  const [row] = await db.select().from(ruleGroups).where(eq(ruleGroups.id, id));
-  return row ? toRuleGroup(row) : null;
-}
+export const listRuleGroups = crud.list;
+export const getRuleGroup = crud.get;
+export const deleteRuleGroup = crud.remove;
 
 export async function getRuleGroupByTag(ruleTagKey: string): Promise<RuleGroup | null> {
   const [row] = await db.select().from(ruleGroups).where(eq(ruleGroups.ruleTagKey, ruleTagKey));
@@ -82,18 +91,9 @@ export async function createRuleGroup(
   }
 
   const seedCorrectionIds = input.seedCorrectionIds ?? [];
-  const [row] = await db
-    .insert(ruleGroups)
-    .values({
-      ruleTagKey: input.ruleTagKey,
-      axis: input.axis,
-      status: input.status ?? "proposed",
-      items: input.items,
-      seedCorrectionIds,
-    })
-    .returning();
-  if (seedCorrectionIds.length > 0) await linkProducedCards(seedCorrectionIds, row.id);
-  return toRuleGroup(row);
+  const group = await crud.create(input);
+  if (seedCorrectionIds.length > 0) await linkProducedCards(seedCorrectionIds, group.id);
+  return group;
 }
 
 /**
@@ -122,14 +122,4 @@ export async function updateRuleGroup(
 
   const [row] = await db.update(ruleGroups).set(set).where(eq(ruleGroups.id, id)).returning();
   return row ? toRuleGroup(row) : null;
-}
-
-export async function deleteRuleGroup(id: string): Promise<boolean> {
-  const rows = await db
-    .delete(ruleGroups)
-    .where(eq(ruleGroups.id, id))
-    .returning({
-      id: ruleGroups.id,
-    });
-  return rows.length > 0;
 }

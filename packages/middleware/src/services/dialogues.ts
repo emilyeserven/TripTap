@@ -8,6 +8,7 @@ import type {
 import { reconcileDialogueLines } from "@sentence-bank/types";
 import { db } from "@/db";
 import { type DialogueRow, dialogues } from "@/db/schema";
+import { crudService } from "@/services/crud";
 import { generateFurigana, getFuriganaOverrides } from "@/services/furigana";
 import { toIso } from "@/services/rows";
 
@@ -76,22 +77,9 @@ function toDialogue(row: DialogueRow): Dialogue {
   };
 }
 
-/** List dialogues, most recent date first. */
-export async function listDialogues(): Promise<Dialogue[]> {
-  const rows = await db
-    .select()
-    .from(dialogues)
-    .orderBy(desc(dialogues.date), desc(dialogues.createdAt));
-  return rows.map(toDialogue);
-}
-
-export async function getDialogue(id: string): Promise<Dialogue | null> {
-  const [row] = await db.select().from(dialogues).where(eq(dialogues.id, id));
-  return row ? toDialogue(row) : null;
-}
-
-export async function createDialogue(input: CreateDialogueInput): Promise<Dialogue> {
-  const [row] = await db.insert(dialogues).values({
+/** Drizzle insert shape for one dialogue row — async, because the lines carry generated furigana. */
+async function toInsert(input: CreateDialogueInput) {
+  return {
     date: input.date,
     title: input.title,
     language: input.language,
@@ -104,10 +92,22 @@ export async function createDialogue(input: CreateDialogueInput): Promise<Dialog
     selfSpeakers: normalizeSelfSpeakers(input.selfSpeakers),
     countsTowardXp: input.countsTowardXp ?? false,
     learningArea: input.learningArea ?? null,
-  }).returning();
-  return toDialogue(row);
+  };
 }
 
+const crud = crudService(dialogues, {
+  toWire: toDialogue,
+  toInsert,
+  orderBy: [desc(dialogues.date), desc(dialogues.createdAt)],
+});
+
+/** List dialogues, most recent date first. */
+export const listDialogues = crud.list;
+export const getDialogue = crud.get;
+export const createDialogue = crud.create;
+export const deleteDialogue = crud.remove;
+
+/** Hand-written: the script has to be reconciled against the *stored* lines before the update. */
 export async function updateDialogue(
   id: string,
   input: UpdateDialogueInput,
@@ -137,11 +137,4 @@ export async function updateDialogue(
     .where(eq(dialogues.id, id))
     .returning();
   return row ? toDialogue(row) : null;
-}
-
-export async function deleteDialogue(id: string): Promise<boolean> {
-  const rows = await db.delete(dialogues).where(eq(dialogues.id, id)).returning({
-    id: dialogues.id,
-  });
-  return rows.length > 0;
 }

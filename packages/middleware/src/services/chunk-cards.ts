@@ -8,6 +8,7 @@ import { BATCH_CARD_CAP } from "@sentence-bank/types";
 import { db } from "@/db";
 import { chunkCards, type ChunkCardRow } from "@/db/schema";
 import { linkProducedCards } from "@/services/corrections";
+import { crudService } from "@/services/crud";
 import { toIsoOrNull } from "@/services/rows";
 
 /** Producing a 4th card in one batch is a hard block, not a warning (spec §6 inv.2). */
@@ -29,19 +30,27 @@ function toChunkCard(row: ChunkCardRow): ChunkCard {
   };
 }
 
-export async function listChunkCards(opts: { batchId?: string } = {}): Promise<ChunkCard[]> {
-  const rows = await db
-    .select()
-    .from(chunkCards)
-    .where(opts.batchId ? eq(chunkCards.batchId, opts.batchId) : undefined)
-    .orderBy(desc(chunkCards.createdAt));
-  return rows.map(toChunkCard);
+const crud = crudService(chunkCards, {
+  toWire: toChunkCard,
+  toInsert: (input: CreateChunkCardInput) => ({
+    correctionId: input.correctionId ?? null,
+    batchId: input.batchId,
+    chunk: input.chunk,
+    gloss: input.gloss,
+    format: input.format,
+    prompt: input.prompt,
+    answer: input.answer,
+    wrongForm: input.wrongForm ?? null,
+  }),
+  orderBy: [desc(chunkCards.createdAt)],
+});
+
+export function listChunkCards(opts: { batchId?: string } = {}): Promise<ChunkCard[]> {
+  return crud.list(opts.batchId ? eq(chunkCards.batchId, opts.batchId) : undefined);
 }
 
-export async function getChunkCard(id: string): Promise<ChunkCard | null> {
-  const [row] = await db.select().from(chunkCards).where(eq(chunkCards.id, id));
-  return row ? toChunkCard(row) : null;
-}
+export const getChunkCard = crud.get;
+export const deleteChunkCard = crud.remove;
 
 /** How many chunk cards already exist in a batch — the count the volume cap checks (spec §6 inv.2). */
 export async function batchCardCount(batchId: string): Promise<number> {
@@ -67,21 +76,9 @@ export async function createChunkCard(input: CreateChunkCardInput): Promise<Chun
     );
   }
 
-  const [row] = await db
-    .insert(chunkCards)
-    .values({
-      correctionId: input.correctionId ?? null,
-      batchId: input.batchId,
-      chunk: input.chunk,
-      gloss: input.gloss,
-      format: input.format,
-      prompt: input.prompt,
-      answer: input.answer,
-      wrongForm: input.wrongForm ?? null,
-    })
-    .returning();
-  if (input.correctionId) await linkProducedCards([input.correctionId], row.id);
-  return toChunkCard(row);
+  const card = await crud.create(input);
+  if (input.correctionId) await linkProducedCards([input.correctionId], card.id);
+  return card;
 }
 
 export async function updateChunkCard(
@@ -100,14 +97,4 @@ export async function updateChunkCard(
 
   const [row] = await db.update(chunkCards).set(set).where(eq(chunkCards.id, id)).returning();
   return row ? toChunkCard(row) : null;
-}
-
-export async function deleteChunkCard(id: string): Promise<boolean> {
-  const rows = await db
-    .delete(chunkCards)
-    .where(eq(chunkCards.id, id))
-    .returning({
-      id: chunkCards.id,
-    });
-  return rows.length > 0;
 }

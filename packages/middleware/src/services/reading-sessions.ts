@@ -1,12 +1,11 @@
-import { desc, eq } from "drizzle-orm";
+import { desc } from "drizzle-orm";
 import type {
   CreateReadingSessionInput,
   ReadingSession,
   ReadingTranslationMode,
-  UpdateReadingSessionInput,
 } from "@sentence-bank/types";
-import { db } from "@/db";
 import { readingSessions, type ReadingSessionRow } from "@/db/schema";
+import { crudService } from "@/services/crud";
 import { toIso } from "@/services/rows";
 
 /** Coalesce a possibly-null stored mode to the default. */
@@ -75,45 +74,15 @@ function toInsert(input: CreateReadingSessionInput) {
   };
 }
 
+const crud = crudService(readingSessions, {
+  toWire: toReadingSession,
+  toInsert,
+  orderBy: [desc(readingSessions.date), desc(readingSessions.createdAt)],
+});
+
 /** List reading sessions, most recent date first. */
-export async function listReadingSessions(): Promise<ReadingSession[]> {
-  const rows = await db
-    .select()
-    .from(readingSessions)
-    .orderBy(desc(readingSessions.date), desc(readingSessions.createdAt));
-  return rows.map(toReadingSession);
-}
-
-export async function getReadingSession(id: string): Promise<ReadingSession | null> {
-  const [row] = await db.select().from(readingSessions).where(eq(readingSessions.id, id));
-  return row ? toReadingSession(row) : null;
-}
-
-export async function createReadingSession(
-  input: CreateReadingSessionInput,
-): Promise<ReadingSession> {
-  const [row] = await db.insert(readingSessions).values(toInsert(input)).returning();
-  return toReadingSession(row);
-}
-
-export async function updateReadingSession(
-  id: string,
-  input: UpdateReadingSessionInput,
-): Promise<ReadingSession | null> {
-  const [row] = await db
-    .update(readingSessions)
-    .set({
-      ...input,
-      updatedAt: new Date(),
-    })
-    .where(eq(readingSessions.id, id))
-    .returning();
-  return row ? toReadingSession(row) : null;
-}
-
-export async function deleteReadingSession(id: string): Promise<boolean> {
-  const rows = await db.delete(readingSessions).where(eq(readingSessions.id, id)).returning({
-    id: readingSessions.id,
-  });
-  return rows.length > 0;
-}
+export const listReadingSessions = crud.list;
+export const getReadingSession = crud.get;
+export const createReadingSession = crud.create;
+export const updateReadingSession = crud.update;
+export const deleteReadingSession = crud.remove;

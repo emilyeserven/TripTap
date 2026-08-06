@@ -2,10 +2,9 @@ import { desc, eq } from "drizzle-orm";
 import type {
   CreateLessonInput,
   Lesson,
-  UpdateLessonInput,
 } from "@sentence-bank/types";
-import { db } from "@/db";
 import { lessons, type LessonRow } from "@/db/schema";
+import { crudService } from "@/services/crud";
 import { toIso } from "@/services/rows";
 
 /** Map a DB row to the shared `Lesson` wire type. */
@@ -45,46 +44,18 @@ function toInsert(input: CreateLessonInput) {
   };
 }
 
+const crud = crudService(lessons, {
+  toWire: toLesson,
+  toInsert,
+  orderBy: [desc(lessons.date), desc(lessons.createdAt)],
+});
+
 /** List lessons, most recent date first; optionally scoped to one tutor. */
-export async function listLessons(tutorId?: string): Promise<Lesson[]> {
-  const rows = tutorId
-    ? await db
-      .select()
-      .from(lessons)
-      .where(eq(lessons.tutorId, tutorId))
-      .orderBy(desc(lessons.date), desc(lessons.createdAt))
-    : await db.select().from(lessons).orderBy(desc(lessons.date), desc(lessons.createdAt));
-  return rows.map(toLesson);
+export function listLessons(tutorId?: string): Promise<Lesson[]> {
+  return crud.list(tutorId ? eq(lessons.tutorId, tutorId) : undefined);
 }
 
-export async function getLesson(id: string): Promise<Lesson | null> {
-  const [row] = await db.select().from(lessons).where(eq(lessons.id, id));
-  return row ? toLesson(row) : null;
-}
-
-export async function createLesson(input: CreateLessonInput): Promise<Lesson> {
-  const [row] = await db.insert(lessons).values(toInsert(input)).returning();
-  return toLesson(row);
-}
-
-export async function updateLesson(
-  id: string,
-  input: UpdateLessonInput,
-): Promise<Lesson | null> {
-  const [row] = await db
-    .update(lessons)
-    .set({
-      ...input,
-      updatedAt: new Date(),
-    })
-    .where(eq(lessons.id, id))
-    .returning();
-  return row ? toLesson(row) : null;
-}
-
-export async function deleteLesson(id: string): Promise<boolean> {
-  const rows = await db.delete(lessons).where(eq(lessons.id, id)).returning({
-    id: lessons.id,
-  });
-  return rows.length > 0;
-}
+export const getLesson = crud.get;
+export const createLesson = crud.create;
+export const updateLesson = crud.update;
+export const deleteLesson = crud.remove;

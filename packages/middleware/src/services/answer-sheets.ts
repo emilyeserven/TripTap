@@ -1,4 +1,4 @@
-import { and, desc, eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import type {
   AnswerSheet,
   AnswerSheetEntry,
@@ -7,6 +7,7 @@ import type {
 } from "@sentence-bank/types";
 import { db } from "@/db";
 import { answerSheets, type AnswerSheetRow } from "@/db/schema";
+import { crudService } from "@/services/crud";
 import { toIso, toIsoOrNull } from "@/services/rows";
 
 /** An entry as it may exist in older JSONB rows, before `needsCorrection` was replaced by `correct`. */
@@ -56,36 +57,28 @@ function toInsert(input: CreateAnswerSheetInput) {
   };
 }
 
+const crud = crudService(answerSheets, {
+  toWire: toAnswerSheet,
+  toInsert,
+  orderBy: [desc(answerSheets.createdAt)],
+});
+
 /** List answer sheets, newest first; optionally scoped to one question sheet. */
-export async function listAnswerSheets(
+export function listAnswerSheets(
   filters: { questionSheetId?: string } = {},
 ): Promise<AnswerSheet[]> {
-  const conditions = [
+  return crud.list(
     filters.questionSheetId
       ? eq(answerSheets.questionSheetId, filters.questionSheetId)
       : undefined,
-  ].filter(c => c !== undefined);
-
-  const rows = conditions.length > 0
-    ? await db
-      .select()
-      .from(answerSheets)
-      .where(and(...conditions))
-      .orderBy(desc(answerSheets.createdAt))
-    : await db.select().from(answerSheets).orderBy(desc(answerSheets.createdAt));
-  return rows.map(toAnswerSheet);
+  );
 }
 
-export async function getAnswerSheet(id: string): Promise<AnswerSheet | null> {
-  const [row] = await db.select().from(answerSheets).where(eq(answerSheets.id, id));
-  return row ? toAnswerSheet(row) : null;
-}
+export const getAnswerSheet = crud.get;
+export const createAnswerSheet = crud.create;
+export const deleteAnswerSheet = crud.remove;
 
-export async function createAnswerSheet(input: CreateAnswerSheetInput): Promise<AnswerSheet> {
-  const [row] = await db.insert(answerSheets).values(toInsert(input)).returning();
-  return toAnswerSheet(row);
-}
-
+/** Hand-written because `date` arrives as an ISO string and has to become a `Date` column. */
 export async function updateAnswerSheet(
   id: string,
   input: UpdateAnswerSheetInput,
@@ -100,11 +93,4 @@ export async function updateAnswerSheet(
     .where(eq(answerSheets.id, id))
     .returning();
   return row ? toAnswerSheet(row) : null;
-}
-
-export async function deleteAnswerSheet(id: string): Promise<boolean> {
-  const rows = await db.delete(answerSheets).where(eq(answerSheets.id, id)).returning({
-    id: answerSheets.id,
-  });
-  return rows.length > 0;
 }

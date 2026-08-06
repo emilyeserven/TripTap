@@ -6,6 +6,7 @@ import type {
 } from "@sentence-bank/types";
 import { db } from "@/db";
 import { mySentences, type MySentenceRow } from "@/db/schema";
+import { crudService } from "@/services/crud";
 import { furiganaColumns, furiganaColumnsMany, furiganaColumnsOnEdit } from "@/services/furigana";
 import { toIso } from "@/services/rows";
 
@@ -34,8 +35,8 @@ function toMySentence(row: MySentenceRow): MySentence {
   };
 }
 
-/** Drizzle insert shape for one my-sentence row, from the create input. */
-function toInsert(input: CreateMySentenceInput) {
+/** Drizzle insert shape for one my-sentence row, minus the generated furigana columns. */
+function toColumns(input: CreateMySentenceInput) {
   return {
     text: input.text,
     translation: input.translation ?? null,
@@ -55,8 +56,20 @@ function toInsert(input: CreateMySentenceInput) {
   };
 }
 
+// `my_sentences` has no `updated_at`; furigana is generated in the insert mapper, the same way a
+// bank sentence does it — furigana is a property of Japanese text, not of one table.
+const crud = crudService(mySentences, {
+  toWire: toMySentence,
+  toInsert: async (input: CreateMySentenceInput) => ({
+    ...toColumns(input),
+    ...(await furiganaColumns(input.text)),
+  }),
+  orderBy: [desc(mySentences.createdAt)],
+  touchUpdatedAt: false,
+});
+
 /** List my-sentences, newest first; optionally scoped to one practice sentence and/or lesson. */
-export async function listMySentences(
+export function listMySentences(
   filters: { practiceSentenceId?: string;
     lessonId?: string; } = {},
 ): Promise<MySentence[]> {
@@ -66,32 +79,19 @@ export async function listMySentences(
       : undefined,
     filters.lessonId ? eq(mySentences.lessonId, filters.lessonId) : undefined,
   ].filter(c => c !== undefined);
-
-  const rows = conditions.length > 0
-    ? await db
-      .select()
-      .from(mySentences)
-      .where(and(...conditions))
-      .orderBy(desc(mySentences.createdAt))
-    : await db.select().from(mySentences).orderBy(desc(mySentences.createdAt));
-  return rows.map(toMySentence);
+  return crud.list(conditions.length > 0 ? and(...conditions) : undefined);
 }
 
-export async function getMySentence(id: string): Promise<MySentence | null> {
-  const [row] = await db.select().from(mySentences).where(eq(mySentences.id, id));
-  return row ? toMySentence(row) : null;
-}
+export const getMySentence = crud.get;
+export const createMySentence = crud.create;
+export const deleteMySentence = crud.remove;
 
-export async function createMySentence(input: CreateMySentenceInput): Promise<MySentence> {
-  // Generated the same way as a bank sentence — furigana is a property of Japanese text, not of one table.
-  const [row] = await db.insert(mySentences).values({
-    ...toInsert(input),
-    ...(await furiganaColumns(input.text)),
-  }).returning();
-  return toMySentence(row);
-}
-
-/** Create many my-sentences in a single insert (used by the bulk-paste import flow). */
+/**
+ * Create many my-sentences in a single insert (used by the bulk-paste import flow).
+ *
+ * Not `crud.createMany`: that would run the analyzer once per sentence, where `furiganaColumnsMany`
+ * resolves the overrides once for the whole batch.
+ */
 export async function createMySentencesMany(
   inputs: CreateMySentenceInput[],
 ): Promise<MySentence[]> {
@@ -100,7 +100,7 @@ export async function createMySentencesMany(
   const rows = await db
     .insert(mySentences)
     .values(inputs.map((input, i) => ({
-      ...toInsert(input),
+      ...toColumns(input),
       ...furigana[i],
     })))
     .returning();
@@ -121,11 +121,4 @@ export async function updateMySentence(
     .where(eq(mySentences.id, id))
     .returning();
   return row ? toMySentence(row) : null;
-}
-
-export async function deleteMySentence(id: string): Promise<boolean> {
-  const rows = await db.delete(mySentences).where(eq(mySentences.id, id)).returning({
-    id: mySentences.id,
-  });
-  return rows.length > 0;
 }

@@ -1,7 +1,7 @@
-import { asc, eq } from "drizzle-orm";
-import type { CreateSourceInput, Source, UpdateSourceInput } from "@sentence-bank/types";
-import { db } from "@/db";
+import { asc } from "drizzle-orm";
+import type { CreateSourceInput, Source } from "@sentence-bank/types";
 import { sources, type SourceRow } from "@/db/schema";
+import { crudService } from "@/services/crud";
 import { toIso } from "@/services/rows";
 
 /** Map a DB row to the shared `Source` wire type. */
@@ -17,37 +17,27 @@ function toSource(row: SourceRow): Source {
   };
 }
 
-export async function listSources(): Promise<Source[]> {
-  const rows = await db.select().from(sources).orderBy(asc(sources.name));
-  return rows.map(toSource);
+/** Drizzle insert shape for one source row, from the create input. */
+function toInsert(input: CreateSourceInput) {
+  return {
+    name: input.name,
+    type: input.type ?? null,
+    author: input.author ?? null,
+    url: input.url ?? null,
+    notes: input.notes ?? null,
+  };
 }
 
-export async function createSource(input: CreateSourceInput): Promise<Source> {
-  const [row] = await db
-    .insert(sources)
-    .values({
-      name: input.name,
-      type: input.type ?? null,
-      author: input.author ?? null,
-      url: input.url ?? null,
-      notes: input.notes ?? null,
-    })
-    .returning();
-  return toSource(row);
-}
+// `sources` is the one adopting table with no `updated_at` column, so nothing to stamp.
+const crud = crudService(sources, {
+  toWire: toSource,
+  toInsert,
+  orderBy: [asc(sources.name)],
+  touchUpdatedAt: false,
+});
 
-export async function updateSource(id: string, input: UpdateSourceInput): Promise<Source | null> {
-  const [row] = await db
-    .update(sources)
-    .set(input)
-    .where(eq(sources.id, id))
-    .returning();
-  return row ? toSource(row) : null;
-}
-
-export async function deleteSource(id: string): Promise<boolean> {
-  const rows = await db.delete(sources).where(eq(sources.id, id)).returning({
-    id: sources.id,
-  });
-  return rows.length > 0;
-}
+/** List sources, alphabetically by name. */
+export const listSources = crud.list;
+export const createSource = crud.create;
+export const updateSource = crud.update;
+export const deleteSource = crud.remove;

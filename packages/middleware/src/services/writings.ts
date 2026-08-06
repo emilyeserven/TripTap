@@ -1,11 +1,10 @@
-import { desc, eq } from "drizzle-orm";
+import { desc } from "drizzle-orm";
 import type {
   CreateWritingInput,
-  UpdateWritingInput,
   Writing,
 } from "@sentence-bank/types";
-import { db } from "@/db";
 import { writings, type WritingRow } from "@/db/schema";
+import { crudService } from "@/services/crud";
 import { toIso } from "@/services/rows";
 
 /** Map a DB row to the shared `Writing` wire type. */
@@ -43,43 +42,15 @@ function toInsert(input: CreateWritingInput) {
   };
 }
 
+const crud = crudService(writings, {
+  toWire: toWriting,
+  toInsert,
+  orderBy: [desc(writings.date), desc(writings.createdAt)],
+});
+
 /** List writings, most recent date first. */
-export async function listWritings(): Promise<Writing[]> {
-  const rows = await db
-    .select()
-    .from(writings)
-    .orderBy(desc(writings.date), desc(writings.createdAt));
-  return rows.map(toWriting);
-}
-
-export async function getWriting(id: string): Promise<Writing | null> {
-  const [row] = await db.select().from(writings).where(eq(writings.id, id));
-  return row ? toWriting(row) : null;
-}
-
-export async function createWriting(input: CreateWritingInput): Promise<Writing> {
-  const [row] = await db.insert(writings).values(toInsert(input)).returning();
-  return toWriting(row);
-}
-
-export async function updateWriting(
-  id: string,
-  input: UpdateWritingInput,
-): Promise<Writing | null> {
-  const [row] = await db
-    .update(writings)
-    .set({
-      ...input,
-      updatedAt: new Date(),
-    })
-    .where(eq(writings.id, id))
-    .returning();
-  return row ? toWriting(row) : null;
-}
-
-export async function deleteWriting(id: string): Promise<boolean> {
-  const rows = await db.delete(writings).where(eq(writings.id, id)).returning({
-    id: writings.id,
-  });
-  return rows.length > 0;
-}
+export const listWritings = crud.list;
+export const getWriting = crud.get;
+export const createWriting = crud.create;
+export const updateWriting = crud.update;
+export const deleteWriting = crud.remove;

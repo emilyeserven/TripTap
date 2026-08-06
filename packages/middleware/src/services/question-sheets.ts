@@ -6,6 +6,7 @@ import type {
 } from "@sentence-bank/types";
 import { db } from "@/db";
 import { questionSheets, type QuestionSheetRow } from "@/db/schema";
+import { crudService } from "@/services/crud";
 import { toIso, toIsoOrNull } from "@/services/rows";
 
 /** Map a DB row to the shared `QuestionSheet` wire type. */
@@ -51,24 +52,19 @@ function toInsert(input: CreateQuestionSheetInput) {
   };
 }
 
+const crud = crudService(questionSheets, {
+  toWire: toQuestionSheet,
+  toInsert,
+  orderBy: [desc(questionSheets.createdAt)],
+});
+
 /** List question sheets, newest first. */
-export async function listQuestionSheets(): Promise<QuestionSheet[]> {
-  const rows = await db.select().from(questionSheets).orderBy(desc(questionSheets.createdAt));
-  return rows.map(toQuestionSheet);
-}
+export const listQuestionSheets = crud.list;
+export const getQuestionSheet = crud.get;
+export const createQuestionSheet = crud.create;
+export const deleteQuestionSheet = crud.remove;
 
-export async function getQuestionSheet(id: string): Promise<QuestionSheet | null> {
-  const [row] = await db.select().from(questionSheets).where(eq(questionSheets.id, id));
-  return row ? toQuestionSheet(row) : null;
-}
-
-export async function createQuestionSheet(
-  input: CreateQuestionSheetInput,
-): Promise<QuestionSheet> {
-  const [row] = await db.insert(questionSheets).values(toInsert(input)).returning();
-  return toQuestionSheet(row);
-}
-
+/** Hand-written because `dueDate` arrives as an ISO string and has to become a `Date` column. */
 export async function updateQuestionSheet(
   id: string,
   input: UpdateQuestionSheetInput,
@@ -83,11 +79,4 @@ export async function updateQuestionSheet(
     .where(eq(questionSheets.id, id))
     .returning();
   return row ? toQuestionSheet(row) : null;
-}
-
-export async function deleteQuestionSheet(id: string): Promise<boolean> {
-  const rows = await db.delete(questionSheets).where(eq(questionSheets.id, id)).returning({
-    id: questionSheets.id,
-  });
-  return rows.length > 0;
 }

@@ -12,6 +12,7 @@ import type {
 import { DEFAULT_RECURRENCE_GATE } from "@sentence-bank/types";
 import { db } from "@/db";
 import { corrections, type CorrectionRow, ruleTags } from "@/db/schema";
+import { crudService } from "@/services/crud";
 import { upsertRuleTag } from "@/services/rule-tags";
 import { toIso } from "@/services/rows";
 
@@ -58,33 +59,30 @@ function toInsert(input: CreateCorrectionInput) {
   };
 }
 
+// No `updated_at` column; a correction's lifecycle is tracked by `triage` instead.
+const crud = crudService(corrections, {
+  toWire: toCorrection,
+  toInsert,
+  orderBy: [desc(corrections.createdAt)],
+  touchUpdatedAt: false,
+});
+
 /** List corrections, newest first. `untriaged` limits to the Inbox; `batchId` scopes to one batch. */
-export async function listCorrections(
+export function listCorrections(
   opts: { untriaged?: boolean;
     batchId?: string; } = {},
 ): Promise<Correction[]> {
   const filters = [];
   if (opts.untriaged) filters.push(isNull(corrections.triage));
   if (opts.batchId) filters.push(eq(corrections.batchId, opts.batchId));
-  const where = filters.length ? and(...filters) : undefined;
-  const rows = await db
-    .select()
-    .from(corrections)
-    .where(where)
-    .orderBy(desc(corrections.createdAt));
-  return rows.map(toCorrection);
+  return crud.list(filters.length ? and(...filters) : undefined);
 }
 
-export async function getCorrection(id: string): Promise<Correction | null> {
-  const [row] = await db.select().from(corrections).where(eq(corrections.id, id));
-  return row ? toCorrection(row) : null;
-}
+export const getCorrection = crud.get;
+export const createCorrection = crud.create;
+export const deleteCorrection = crud.remove;
 
-export async function createCorrection(input: CreateCorrectionInput): Promise<Correction> {
-  const [row] = await db.insert(corrections).values(toInsert(input)).returning();
-  return toCorrection(row);
-}
-
+/** Hand-written: `batchId` is not-null, so a partial edit must not be allowed to blank it. */
 export async function updateCorrection(
   id: string,
   input: UpdateCorrectionInput,
@@ -105,16 +103,6 @@ export async function updateCorrection(
     .where(eq(corrections.id, id))
     .returning();
   return row ? toCorrection(row) : null;
-}
-
-export async function deleteCorrection(id: string): Promise<boolean> {
-  const rows = await db
-    .delete(corrections)
-    .where(eq(corrections.id, id))
-    .returning({
-      id: corrections.id,
-    });
-  return rows.length > 0;
 }
 
 /**

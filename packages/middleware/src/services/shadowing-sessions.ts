@@ -2,11 +2,11 @@ import { desc, eq } from "drizzle-orm";
 import type {
   CreateShadowingSessionInput,
   ShadowingSession,
-  UpdateShadowingSessionInput,
 } from "@sentence-bank/types";
 import { db } from "@/db";
 import { shadowingSessions, type ShadowingSessionRow } from "@/db/schema";
 import { newId } from "@/lib/id";
+import { crudService } from "@/services/crud";
 import { deleteMedia, getMedia, MEDIA_PREFIX, putMedia, type StoredMedia } from "@/services/media";
 import { toIso } from "@/services/rows";
 
@@ -66,42 +66,19 @@ function toInsert(input: CreateShadowingSessionInput) {
   };
 }
 
+const crud = crudService(shadowingSessions, {
+  toWire: toShadowingSession,
+  toInsert,
+  orderBy: [desc(shadowingSessions.date), desc(shadowingSessions.createdAt)],
+});
+
 /** List shadowing sessions, most recent date first. */
-export async function listShadowingSessions(): Promise<ShadowingSession[]> {
-  const rows = await db
-    .select()
-    .from(shadowingSessions)
-    .orderBy(desc(shadowingSessions.date), desc(shadowingSessions.createdAt));
-  return rows.map(toShadowingSession);
-}
+export const listShadowingSessions = crud.list;
+export const getShadowingSession = crud.get;
+export const createShadowingSession = crud.create;
+export const updateShadowingSession = crud.update;
 
-export async function getShadowingSession(id: string): Promise<ShadowingSession | null> {
-  const [row] = await db.select().from(shadowingSessions).where(eq(shadowingSessions.id, id));
-  return row ? toShadowingSession(row) : null;
-}
-
-export async function createShadowingSession(
-  input: CreateShadowingSessionInput,
-): Promise<ShadowingSession> {
-  const [row] = await db.insert(shadowingSessions).values(toInsert(input)).returning();
-  return toShadowingSession(row);
-}
-
-export async function updateShadowingSession(
-  id: string,
-  input: UpdateShadowingSessionInput,
-): Promise<ShadowingSession | null> {
-  const [row] = await db
-    .update(shadowingSessions)
-    .set({
-      ...input,
-      updatedAt: new Date(),
-    })
-    .where(eq(shadowingSessions.id, id))
-    .returning();
-  return row ? toShadowingSession(row) : null;
-}
-
+/** Deletes the row *and* its stored audio, so `crud.remove` isn't enough here. */
 export async function deleteShadowingSession(id: string): Promise<boolean> {
   const rows = await db.delete(shadowingSessions).where(eq(shadowingSessions.id, id)).returning({
     id: shadowingSessions.id,
