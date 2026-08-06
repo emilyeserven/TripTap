@@ -7,6 +7,7 @@ import type {
 } from "@sentence-bank/types";
 import { db } from "@/db";
 import { parseTemplates, type ParseTemplateRow } from "@/db/schema";
+import { toIso } from "@/services/rows";
 
 function toTemplate(row: ParseTemplateRow): ParseTemplate {
   return {
@@ -16,8 +17,7 @@ function toTemplate(row: ParseTemplateRow): ParseTemplate {
     body: row.body,
     boundary: row.boundary as ParseBoundary,
     ignoreBlankLines: row.ignoreBlankLines,
-    createdAt:
-      row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
+    createdAt: toIso(row.createdAt),
   };
 }
 

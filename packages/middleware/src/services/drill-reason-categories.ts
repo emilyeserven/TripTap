@@ -6,6 +6,7 @@ import type {
 } from "@sentence-bank/types";
 import { db } from "@/db";
 import { drillReasonCategories, type DrillReasonCategoryRow } from "@/db/schema";
+import { toIso } from "@/services/rows";
 
 /** Map a DB row to the shared `DrillReasonCategory` wire type. */
 function toDrillReasonCategory(row: DrillReasonCategoryRow): DrillReasonCategory {
@@ -14,10 +15,8 @@ function toDrillReasonCategory(row: DrillReasonCategoryRow): DrillReasonCategory
     name: row.name,
     subcategories: row.subcategories ?? null,
     reasons: row.reasons ?? null,
-    createdAt:
-      row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
-    updatedAt:
-      row.updatedAt instanceof Date ? row.updatedAt.toISOString() : String(row.updatedAt),
+    createdAt: toIso(row.createdAt),
+    updatedAt: toIso(row.updatedAt),
   };
 }
 

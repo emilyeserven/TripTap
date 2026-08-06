@@ -1,9 +1,9 @@
-import type { FastifyInstance, FastifyReply } from "fastify";
+import type { FastifyInstance } from "fastify";
 import type {
   CreateShadowingSessionInput,
   UpdateShadowingSessionInput,
 } from "@sentence-bank/types";
-import { MediaNotConfiguredError, MediaUnavailableError } from "@/services/media";
+import { handleUpstreamError } from "@/routes/upstream-errors";
 import {
   createShadowingSession,
   deleteShadowingSession,
@@ -23,17 +23,6 @@ import { LEARNING_AREAS } from "@sentence-bank/types";
 
 /** An uploaded audio file can be large, but well under a `.apkg` — cap at 100 MiB. */
 const MAX_AUDIO_BYTES = 100 * 1024 * 1024;
-
-/** Map media error classes to HTTP status codes; rethrow anything else. */
-function handleMediaError(err: unknown, reply: FastifyReply): FastifyReply {
-  if (err instanceof MediaNotConfiguredError) return reply.code(503).send({
-    message: err.message,
-  });
-  if (err instanceof MediaUnavailableError) return reply.code(502).send({
-    message: err.message,
-  });
-  throw err;
-}
 
 const shadowingSessionParams = {
   type: "object",
@@ -303,7 +292,7 @@ export async function shadowingSessionsRoutes(app: FastifyInstance): Promise<voi
       return updated;
     }
     catch (err) {
-      return handleMediaError(err, reply);
+      return handleUpstreamError(err, reply);
     }
   });
 
@@ -327,7 +316,7 @@ export async function shadowingSessionsRoutes(app: FastifyInstance): Promise<voi
       return reply.send(media.body);
     }
     catch (err) {
-      return handleMediaError(err, reply);
+      return handleUpstreamError(err, reply);
     }
   });
 

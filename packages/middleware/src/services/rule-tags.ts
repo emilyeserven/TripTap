@@ -2,6 +2,7 @@ import { asc, eq } from "drizzle-orm";
 import type { RuleTag, UpsertRuleTagInput } from "@sentence-bank/types";
 import { db } from "@/db";
 import { ruleTags, type RuleTagRow } from "@/db/schema";
+import { toIso } from "@/services/rows";
 
 /** Map a DB row to the shared `RuleTag` wire type. */
 function toRuleTag(row: RuleTagRow): RuleTag {
@@ -10,8 +11,7 @@ function toRuleTag(row: RuleTagRow): RuleTag {
     label: row.label,
     grammarTagId: row.grammarTagId,
     grammarTagName: row.grammarTagName,
-    createdAt:
-      row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
+    createdAt: toIso(row.createdAt),
   };
 }
 

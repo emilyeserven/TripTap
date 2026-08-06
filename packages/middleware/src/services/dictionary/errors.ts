@@ -1,5 +1,7 @@
+import { UpstreamNotConfiguredError, UpstreamUnavailableError } from "@/services/upstream-errors";
+
 /** Raised when the dictionary integration is used but no endpoint URL can be resolved. */
-export class DictionaryNotConfiguredError extends Error {
+export class DictionaryNotConfiguredError extends UpstreamNotConfiguredError {
   constructor(message = "Dictionary integration not configured") {
     super(message);
     this.name = "DictionaryNotConfiguredError";
@@ -7,7 +9,7 @@ export class DictionaryNotConfiguredError extends Error {
 }
 
 /** Raised when the configured dictionary host is unreachable, times out, or returns a non-2xx. */
-export class DictionaryUnavailableError extends Error {
+export class DictionaryUnavailableError extends UpstreamUnavailableError {
   constructor(message: string) {
     super(message);
     this.name = "DictionaryUnavailableError";

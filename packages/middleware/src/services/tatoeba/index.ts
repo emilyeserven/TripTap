@@ -12,8 +12,6 @@ import type { ExampleSentence, FuriToken } from "@sentence-bank/types";
 import { fetchJsonWithTimeout } from "@/services/http";
 import { TatoebaUnavailableError } from "@/services/tatoeba/errors";
 
-export { TatoebaUnavailableError } from "@/services/tatoeba/errors";
-
 const DEFAULT_BASE_URL = "https://tatoeba.org";
 const REQUEST_TIMEOUT_MS = 10_000;
 const DEFAULT_LIMIT = 5;

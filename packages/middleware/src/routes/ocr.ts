@@ -1,5 +1,6 @@
 import type { FastifyInstance } from "fastify";
-import { OcrNotConfiguredError, OcrUnavailableError, runOcr } from "@/services/ocr";
+import { runOcr } from "@/services/ocr";
+import { handleUpstreamError } from "@/routes/upstream-errors";
 
 /**
  * OCR route, mounted at `/api/ocr`. Accepts a `multipart/form-data` upload with a single `file`
@@ -27,17 +28,7 @@ export async function ocrRoutes(app: FastifyInstance): Promise<void> {
       return result;
     }
     catch (err) {
-      if (err instanceof OcrNotConfiguredError) {
-        return reply.code(503).send({
-          message: err.message,
-        });
-      }
-      if (err instanceof OcrUnavailableError) {
-        return reply.code(502).send({
-          message: err.message,
-        });
-      }
-      throw err;
+      return handleUpstreamError(err, reply);
     }
   });
 }

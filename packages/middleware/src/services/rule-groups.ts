@@ -12,6 +12,7 @@ import {
 import { db } from "@/db";
 import { ruleGroups, type RuleGroupRow } from "@/db/schema";
 import { linkProducedCards, ruleTagOccurrenceCount } from "@/services/corrections";
+import { toIsoOrNull } from "@/services/rows";
 
 /** A group can't be built before its rule tag has recurred enough (spec §6 inv.1). */
 export class RecurrenceGateError extends Error {}
@@ -19,11 +20,6 @@ export class RecurrenceGateError extends Error {}
 export class DuplicateGroupError extends Error {}
 /** A group must hold 4–6 contrast pairs (spec §6 inv.9). */
 export class GroupSizeError extends Error {}
-
-function ts(value: Date | string | null): string | null {
-  if (value == null) return null;
-  return value instanceof Date ? value.toISOString() : String(value);
-}
 
 function toRuleGroup(row: RuleGroupRow): RuleGroup {
   return {
@@ -33,9 +29,9 @@ function toRuleGroup(row: RuleGroupRow): RuleGroup {
     status: row.status,
     items: row.items,
     seedCorrectionIds: row.seedCorrectionIds ?? [],
-    createdAt: ts(row.createdAt)!,
-    exportedAt: ts(row.exportedAt),
-    suspendedAt: ts(row.suspendedAt),
+    createdAt: toIsoOrNull(row.createdAt)!,
+    exportedAt: toIsoOrNull(row.exportedAt),
+    suspendedAt: toIsoOrNull(row.suspendedAt),
   };
 }
 

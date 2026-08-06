@@ -7,6 +7,7 @@ import type {
 import { db } from "@/db";
 import { mySentences, type MySentenceRow } from "@/db/schema";
 import { furiganaColumns, furiganaColumnsMany, furiganaColumnsOnEdit } from "@/services/furigana";
+import { toIso } from "@/services/rows";
 
 /** Map a DB row to the shared `MySentence` wire type. */
 function toMySentence(row: MySentenceRow): MySentence {
@@ -29,8 +30,7 @@ function toMySentence(row: MySentenceRow): MySentence {
     reasons: row.reasons ?? null,
     marks: row.marks ?? null,
     shadowingCandidate: row.shadowingCandidate,
-    createdAt:
-      row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
+    createdAt: toIso(row.createdAt),
   };
 }
 

@@ -12,7 +12,7 @@ import {
   regenerateSentenceFurigana,
   updateSentence,
 } from "@/services/sentences";
-import { MediaNotConfiguredError, MediaUnavailableError } from "@/services/media";
+import { handleUpstreamError } from "@/routes/upstream-errors";
 import { termsSchema } from "@/routes/schemas/terms";
 
 const sentenceParams = {
@@ -176,13 +176,7 @@ export async function sentenceRoutes(app: FastifyInstance): Promise<void> {
         return reply.send(media.body);
       }
       catch (err) {
-        if (err instanceof MediaNotConfiguredError) return reply.code(503).send({
-          message: err.message,
-        });
-        if (err instanceof MediaUnavailableError) return reply.code(502).send({
-          message: err.message,
-        });
-        throw err;
+        return handleUpstreamError(err, reply);
       }
     });
   }

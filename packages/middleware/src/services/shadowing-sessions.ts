@@ -8,6 +8,7 @@ import { db } from "@/db";
 import { shadowingSessions, type ShadowingSessionRow } from "@/db/schema";
 import { newId } from "@/lib/id";
 import { deleteMedia, getMedia, MEDIA_PREFIX, putMedia, type StoredMedia } from "@/services/media";
+import { toIso } from "@/services/rows";
 
 /** Object-storage key for an uploaded audio file, keeping the original extension for content sniffing. */
 function mediaKey(filename: string): string {
@@ -36,10 +37,8 @@ function toShadowingSession(row: ShadowingSessionRow): ShadowingSession {
     terms: row.terms ?? null,
     learningArea: row.learningArea ?? null,
     countsTowardXp: row.countsTowardXp,
-    createdAt:
-      row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
-    updatedAt:
-      row.updatedAt instanceof Date ? row.updatedAt.toISOString() : String(row.updatedAt),
+    createdAt: toIso(row.createdAt),
+    updatedAt: toIso(row.updatedAt),
   };
 }
 

@@ -7,6 +7,7 @@ import type {
 } from "@sentence-bank/types";
 import { db } from "@/db";
 import { writingPrompts, type WritingPromptRow } from "@/db/schema";
+import { toIso } from "@/services/rows";
 
 /** Map a DB row to the shared `WritingPrompt` wire type. */
 function toWritingPrompt(row: WritingPromptRow): WritingPrompt {
@@ -17,10 +18,8 @@ function toWritingPrompt(row: WritingPromptRow): WritingPrompt {
     text: row.text,
     textEn: row.textEn ?? null,
     difficulty: (row.difficulty as WritingPromptDifficulty) ?? "Other",
-    createdAt:
-      row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
-    updatedAt:
-      row.updatedAt instanceof Date ? row.updatedAt.toISOString() : String(row.updatedAt),
+    createdAt: toIso(row.createdAt),
+    updatedAt: toIso(row.updatedAt),
   };
 }
 

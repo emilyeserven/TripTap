@@ -13,6 +13,7 @@ import { DEFAULT_RECURRENCE_GATE } from "@sentence-bank/types";
 import { db } from "@/db";
 import { corrections, type CorrectionRow, ruleTags } from "@/db/schema";
 import { upsertRuleTag } from "@/services/rule-tags";
+import { toIso } from "@/services/rows";
 
 /**
  * Thrown when a triage verdict is missing a field its bucket requires (a rule tag for `rule_gap`, a
@@ -33,8 +34,7 @@ function toCorrection(row: CorrectionRow): Correction {
     importedFrom: row.importedFrom ?? null,
     batchId: row.batchId,
     triage: row.triage ?? null,
-    createdAt:
-      row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
+    createdAt: toIso(row.createdAt),
   };
 }
 
@@ -221,8 +221,7 @@ function toLogEntry(row: CorrectionRow): CorrectionLogEntry {
     original: row.original,
     corrected: row.corrected,
     batchId: row.batchId,
-    createdAt:
-      row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
+    createdAt: toIso(row.createdAt),
   };
 }
 
@@ -336,8 +335,7 @@ export async function grammarFailureStats(grammarTagId: string): Promise<Grammar
     if (!triage || triage.bucket !== "rule_gap") continue;
     if (!triage.ruleTagKey || !keys.has(triage.ruleTagKey)) continue;
     count += 1;
-    const iso
-      = row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt);
+    const iso = toIso(row.createdAt);
     if (!lastSeenAt || iso > lastSeenAt) lastSeenAt = iso;
   }
 

@@ -7,6 +7,7 @@ import type {
 } from "@sentence-bank/types";
 import { db } from "@/db";
 import { answerSheets, type AnswerSheetRow } from "@/db/schema";
+import { toIso, toIsoOrNull } from "@/services/rows";
 
 /** An entry as it may exist in older JSONB rows, before `needsCorrection` was replaced by `correct`. */
 type LegacyEntry = AnswerSheetEntry & { needsCorrection?: boolean };
@@ -36,13 +37,11 @@ function toAnswerSheet(row: AnswerSheetRow): AnswerSheet {
     id: row.id,
     questionSheetId: row.questionSheetId,
     title: row.title,
-    date: row.date instanceof Date ? row.date.toISOString() : (row.date ?? null),
+    date: toIsoOrNull(row.date),
     entries: (row.entries ?? []).map(normalizeEntry),
     hiddenPartIds: row.hiddenPartIds ?? null,
-    createdAt:
-      row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
-    updatedAt:
-      row.updatedAt instanceof Date ? row.updatedAt.toISOString() : String(row.updatedAt),
+    createdAt: toIso(row.createdAt),
+    updatedAt: toIso(row.updatedAt),
   };
 }
 
