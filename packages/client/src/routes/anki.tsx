@@ -6,6 +6,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { ExportPanel } from "@/components/ExportPanel";
 import { Button } from "@/components/ui/button";
+import { useMySentences } from "@/hooks/useMySentences";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { usePracticeSentences } from "@/hooks/usePracticeSentences";
 import { useRuleGroups, useChunkCards } from "@/hooks/useRuleGroups";
@@ -21,7 +22,20 @@ import {
   toAnkiVocabText,
 } from "@/lib/anki";
 
+const ANKI_MODES = ["sentences", "vocab", "practice", "my-sentences", "groups", "chunks"] as const;
+
+type AnkiMode = (typeof ANKI_MODES)[number];
+
 export const Route = createFileRoute("/anki")({
+  // `?mode=` lets other pages deep-link a specific tab (e.g. the practice "ready to card" nudge).
+  validateSearch: (search: Record<string, unknown>): { mode?: AnkiMode } => {
+    const mode = ANKI_MODES.find(m => m === search.mode);
+    return mode
+      ? {
+        mode,
+      }
+      : {};
+  },
   component: AnkiPage,
 });
 
@@ -30,6 +44,9 @@ const OUTPUT_HINT
 
 function AnkiPage() {
   usePageTitle("Anki export");
+  const {
+    mode: searchMode,
+  } = Route.useSearch();
   const {
     data: sentences,
   } = useSentences();
@@ -40,6 +57,9 @@ function AnkiPage() {
     data: practiceSentences,
   } = usePracticeSentences();
   const {
+    data: mySentences,
+  } = useMySentences();
+  const {
     data: sources,
   } = useSources();
   const {
@@ -49,9 +69,7 @@ function AnkiPage() {
     data: chunkCards,
   } = useChunkCards();
 
-  const [mode, setMode] = useState<
-    "sentences" | "vocab" | "practice" | "groups" | "chunks"
-  >("sentences");
+  const [mode, setMode] = useState<AnkiMode>(searchMode ?? "sentences");
 
   const sentenceItems: ExportItem[] = useMemo(() => (sentences ?? []).map(s => ({
     id: s.id,
@@ -86,6 +104,24 @@ function AnkiPage() {
     sourceId: p.sourceId,
     searchExtra: [p.target, p.nuance],
   })), [practiceSentences]);
+
+  const mySentenceItems: ExportItem[] = useMemo(() => (mySentences ?? []).map((ms) => {
+    // Export the corrected form when there is one — your own mistakes-turned-correct are the
+    // highest-value SRS material; the uncorrected original never ships alone if a fix exists.
+    const corrected = ms.correction?.trim() ? ms.correction : null;
+    return {
+      id: ms.id,
+      label: corrected ?? ms.text,
+      sublabel: ms.translation ?? "",
+      secondary: ms.translation,
+      // The stored furigana was generated from the original text, so only attach it when exporting
+      // that original — corrected text would get misaligned readings.
+      tertiary: corrected ? null : furiganaReading(ms.reading),
+      eligible: Boolean((corrected ?? ms.text).trim() && ms.translation?.trim()),
+      sourceId: null,
+      searchExtra: [ms.text, ms.translation, ms.explanation],
+    };
+  }), [mySentences]);
 
   const groupsById = useMemo(
     () => new Map((ruleGroups ?? []).map(g => [g.id, g])),
@@ -143,6 +179,10 @@ function AnkiPage() {
           {
             m: "practice",
             label: "Practice",
+          },
+          {
+            m: "my-sentences",
+            label: "My Sentences",
           },
           {
             m: "groups",
@@ -210,6 +250,24 @@ function AnkiPage() {
             sources={sources}
             storageKey="anki-export-practice"
             pickerHint="Practice sentences with a translation. Use Anki's reversed note type for E→J cards."
+            outputHint={OUTPUT_HINT}
+            outputLabel="Anki export text"
+            toText={selected =>
+              toAnkiSentenceText(selected.map(i => ({
+                text: i.label,
+                translation: i.secondary,
+                reading: i.tertiary ?? null,
+              })))}
+          />
+        )
+        : null}
+      {mode === "my-sentences"
+        ? (
+          <ExportPanel
+            items={mySentenceItems}
+            sources={undefined}
+            storageKey="anki-export-my-sentences"
+            pickerHint="Your own sentences with a translation; corrected versions are exported when present."
             outputHint={OUTPUT_HINT}
             outputLabel="Anki export text"
             toText={selected =>

@@ -6,6 +6,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { ExportPanel } from "@/components/ExportPanel";
 import { Button } from "@/components/ui/button";
+import { useMySentences } from "@/hooks/useMySentences";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useSentences } from "@/hooks/useSentences";
 import { useSources } from "@/hooks/useSources";
@@ -27,10 +28,13 @@ function RenshuuPage() {
     data: vocab,
   } = useVocab();
   const {
+    data: mySentences,
+  } = useMySentences();
+  const {
     data: sources,
   } = useSources();
 
-  const [mode, setMode] = useState<"sentences" | "vocab">("sentences");
+  const [mode, setMode] = useState<"sentences" | "vocab" | "my-sentences">("sentences");
 
   const sentenceItems: ExportItem[] = useMemo(() => (sentences ?? []).map(s => ({
     id: s.id,
@@ -52,6 +56,20 @@ function RenshuuPage() {
     searchExtra: [v.meaning, v.tags, v.notes],
   })), [vocab]);
 
+  // Export the corrected form when there is one — never ship the uncorrected original if a fix exists.
+  const mySentenceItems: ExportItem[] = useMemo(() => (mySentences ?? []).map((ms) => {
+    const exportText = ms.correction?.trim() ? ms.correction : ms.text;
+    return {
+      id: ms.id,
+      label: exportText,
+      sublabel: ms.translation ?? "",
+      secondary: ms.translation,
+      eligible: Boolean(exportText.trim() && ms.translation?.trim()),
+      sourceId: null,
+      searchExtra: [ms.text, ms.translation, ms.explanation],
+    };
+  }), [mySentences]);
+
   return (
     <section className="space-y-6">
       <div>
@@ -67,7 +85,22 @@ function RenshuuPage() {
       </div>
 
       <div className="flex gap-2">
-        {(["sentences", "vocab"] as const).map(m => (
+        {([
+          {
+            m: "sentences",
+            label: "Sentences",
+          },
+          {
+            m: "vocab",
+            label: "Vocab",
+          },
+          {
+            m: "my-sentences",
+            label: "My Sentences",
+          },
+        ] as const).map(({
+          m, label,
+        }) => (
           <Button
             key={m}
             type="button"
@@ -75,7 +108,7 @@ function RenshuuPage() {
             variant={mode === m ? "default" : "outline"}
             onClick={() => setMode(m)}
           >
-            {m === "sentences" ? "Sentences" : "Vocab"}
+            {label}
           </Button>
         ))}
       </div>
@@ -96,7 +129,9 @@ function RenshuuPage() {
               })))}
           />
         )
-        : (
+        : null}
+      {mode === "vocab"
+        ? (
           <ExportPanel
             items={vocabItems}
             sources={sources}
@@ -110,7 +145,25 @@ function RenshuuPage() {
                 reading: i.secondary,
               })))}
           />
-        )}
+        )
+        : null}
+      {mode === "my-sentences"
+        ? (
+          <ExportPanel
+            items={mySentenceItems}
+            sources={undefined}
+            storageKey="renshuu-export-my-sentences"
+            pickerHint="Your own sentences with a translation; corrected versions are exported when present."
+            outputHint={OUTPUT_HINT}
+            outputLabel="Renshuu export text"
+            toText={selected =>
+              toRenshuuText(selected.map(i => ({
+                text: i.label,
+                translation: i.secondary,
+              })))}
+          />
+        )
+        : null}
     </section>
   );
 }
