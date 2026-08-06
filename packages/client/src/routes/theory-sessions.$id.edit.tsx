@@ -1,8 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft } from "lucide-react";
 
+import { BackIcon, EntityEditPage } from "@/components/EntityPage";
 import { TheorySessionForm } from "@/components/TheorySessionForm";
-import { Button } from "@/components/ui/button";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useDeleteTheorySession, useTheorySession } from "@/hooks/useTheorySessions";
 
@@ -16,61 +15,43 @@ function EditTheorySessionPage() {
     id,
   } = Route.useParams();
   const navigate = useNavigate();
-  const deleteTheorySession = useDeleteTheorySession();
-  const {
-    data, isLoading, error,
-  } = useTheorySession(id);
-
-  if (isLoading) return <p className="text-muted-foreground">Loading…</p>;
-  if (error) return <p className="text-destructive">{error.message}</p>;
-  if (!data) return <p className="text-muted-foreground">Theory session not found.</p>;
-
-  const remove = () => {
-    deleteTheorySession.mutate(id, {
-      onSuccess: () => navigate({
-        to: "/theory-sessions",
-      }),
-    });
-  };
+  const remove = useDeleteTheorySession();
 
   return (
-    <section className="max-w-3xl space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <Button
-          asChild
-          variant="ghost"
-          size="sm"
+    <EntityEditPage
+      query={useTheorySession(id)}
+      noun="Theory session"
+      backLink={(
+        <Link
+          to="/theory-sessions/$id"
+          params={{
+            id,
+          }}
         >
-          <Link
-            to="/theory-sessions/$id"
-            params={{
-              id,
-            }}
-          >
-            <ArrowLeft className="size-4" />
-            Back to session
-          </Link>
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-destructive"
-          disabled={deleteTheorySession.isPending}
-          onClick={remove}
-        >
-          Delete
-        </Button>
-      </div>
-      <TheorySessionForm
-        session={data}
-        onSuccess={() =>
-          navigate({
-            to: "/theory-sessions/$id",
-            params: {
-              id,
-            },
-          })}
-      />
-    </section>
+          <BackIcon className="size-4" />
+          Back to session
+        </Link>
+      )}
+      deletePending={remove.isPending}
+      onDelete={() =>
+        remove.mutate(id, {
+          onSuccess: () => navigate({
+            to: "/theory-sessions",
+          }),
+        })}
+    >
+      {entity => (
+        <TheorySessionForm
+          session={entity}
+          onSuccess={() =>
+            navigate({
+              to: "/theory-sessions/$id",
+              params: {
+                id,
+              },
+            })}
+        />
+      )}
+    </EntityEditPage>
   );
 }
