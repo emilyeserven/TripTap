@@ -8,6 +8,7 @@ import type {
   UpdateStartSettingsInput,
   UpdateXpSettingsInput,
 } from "@sentence-bank/types";
+import { XP_RATE_KEYS } from "@sentence-bank/types";
 import {
   getBookmarksSettings,
   getDictionarySettings,
@@ -430,30 +431,9 @@ const updateXpSettingsBody = {
     rates: {
       type: ["object", "null"],
       additionalProperties: false,
-      properties: {
-        readingTranslatedSentence: xpRateValueSchema,
-        readingWordNote: xpRateValueSchema,
-        writingSentence: xpRateValueSchema,
-        writingCorrection: xpRateValueSchema,
-        questionSheetAuthored: xpRateValueSchema,
-        answerEntryList: xpRateValueSchema,
-        answerEntryGrid: xpRateValueSchema,
-        listeningEntry: xpRateValueSchema,
-        listeningPassiveMinute: xpRateValueSchema,
-        shadowingLoop: xpRateValueSchema,
-        drillQuestion: xpRateValueSchema,
-        drillQuestionMultipleChoice: xpRateValueSchema,
-        drillMistakePenalty: xpRateValueSchema,
-        drillMistakeCorrected: xpRateValueSchema,
-        lessonLine: xpRateValueSchema,
-        lessonWordNote: xpRateValueSchema,
-        lessonMinute: xpRateValueSchema,
-        theoryStudyPageDense: xpRateValueSchema,
-        theoryStudyPageMedium: xpRateValueSchema,
-        theoryStudyPageLight: xpRateValueSchema,
-        theoryStudyPer250Words: xpRateValueSchema,
-        theoryStudyNote: xpRateValueSchema,
-      },
+      // Derived from the canonical key list: a hand-maintained copy once drifted and silently
+      // dropped rates (AJV removeAdditional strips unknown keys instead of rejecting them).
+      properties: Object.fromEntries(XP_RATE_KEYS.map(key => [key, xpRateValueSchema])),
     },
   },
 } as const;

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { OcrSettings } from "@sentence-bank/types";
+import { XP_RATE_KEYS } from "@sentence-bank/types";
 import { buildApp } from "@/app";
 import {
   parseDailyLineup,
@@ -157,6 +158,27 @@ test("PATCH /api/settings/xp strips unknown rate keys", async () => {
     },
   });
   assert.notEqual(res.statusCode, 400);
+  await app.close();
+});
+
+test("PATCH /api/settings/xp validates every rate key in XP_RATE_KEYS", async () => {
+  const app = await buildApp();
+  // A key the schema knows about is *validated* (negative → 400); a key it doesn't know about is
+  // silently stripped by removeAdditional (→ not-400). So a 400 per key proves the route schema
+  // covers the full canonical list — this is the regression guard for the schema drift that once
+  // made readingPassiveMinute and dialogueLine un-saveable.
+  for (const key of XP_RATE_KEYS) {
+    const res = await app.inject({
+      method: "PATCH",
+      url: "/api/settings/xp",
+      payload: {
+        rates: {
+          [key]: -1,
+        },
+      },
+    });
+    assert.equal(res.statusCode, 400, `rate key ${key} is missing from the route schema`);
+  }
   await app.close();
 });
 
