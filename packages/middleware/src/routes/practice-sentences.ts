@@ -91,25 +91,20 @@ const grammarSchema = {
   },
 } as const;
 
+// A pass value is either a legacy boolean or the ISO timestamp of completion (see PracticePasses).
+const passValueSchema = {
+  type: ["boolean", "string"],
+} as const;
+
 const passesSchema = {
   type: ["object", "null"],
   additionalProperties: false,
   properties: {
-    read: {
-      type: "boolean",
-    },
-    guess: {
-      type: "boolean",
-    },
-    lookup: {
-      type: "boolean",
-    },
-    produce: {
-      type: "boolean",
-    },
-    card: {
-      type: "boolean",
-    },
+    read: passValueSchema,
+    guess: passValueSchema,
+    lookup: passValueSchema,
+    produce: passValueSchema,
+    card: passValueSchema,
   },
 } as const;
 

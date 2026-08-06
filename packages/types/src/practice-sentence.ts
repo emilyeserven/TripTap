@@ -34,8 +34,12 @@ export interface PracticeGrammar {
 /** The study passes tracked per practice sentence (the worksheet's checklist). */
 export type PracticePassKey = "read" | "guess" | "lookup" | "produce" | "card";
 
-/** Which study passes the learner has completed for a sentence. Absent key = not done. */
-export type PracticePasses = Partial<Record<PracticePassKey, boolean>>;
+/**
+ * Which study passes the learner has completed for a sentence. Absent key = not done. A string value
+ * is the ISO timestamp of completion (dates the pass's XP grant); legacy `true` means completed at an
+ * unknown time, which XP dates by the sentence's `createdAt`.
+ */
+export type PracticePasses = Partial<Record<PracticePassKey, boolean | string>>;
 
 /** What kind of thing the sentence's single "target" is. Validated at the route layer. */
 export type PracticeTargetKind = "word" | "grammar" | "idiom" | "collocation" | "reading";

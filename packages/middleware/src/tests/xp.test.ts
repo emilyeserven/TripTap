@@ -8,12 +8,14 @@ import {
   applyGoalBonus,
   bookExercisesXp,
   ceilToQuarter,
+  correctionTriageXp,
   countSentences,
   dialoguesXp,
   drillXp,
   isFilledWordNote,
   lessonXp,
   listeningXp,
+  practicePassXp,
   readingXp,
   shadowingXp,
   summarizeGrants,
@@ -1293,4 +1295,129 @@ test("a lesson's minutes credit only the chosen area instead of splitting three 
   assert.deepEqual(focused.map(g => g.area), ["Grammar"]);
   // The hour is credited once, not three times over.
   assert.equal(focused.length, 1);
+});
+
+test("practicePassXp grants per completed pass, dated by the pass timestamp", () => {
+  const grants = practicePassXp([{
+    id: "ps-1",
+    text: "猫が寝ている。",
+    passes: {
+      read: "2026-07-19T09:00:00.000Z",
+      guess: "2026-07-20T09:00:00.000Z",
+    },
+    createdAt: OLD,
+  }]);
+  assert.equal(grants.length, 2);
+  assert.deepEqual(grants.map(g => g.area), ["Vocabulary", "Vocabulary"]);
+  assert.deepEqual(grants.map(g => g.feature), ["practice", "practice"]);
+  assert.deepEqual(grants.map(g => g.xp), [DEFAULT_XP_RATES.practicePass, DEFAULT_XP_RATES.practicePass]);
+  assert.deepEqual(grants.map(g => g.at.toISOString()), [
+    "2026-07-19T09:00:00.000Z",
+    "2026-07-20T09:00:00.000Z",
+  ]);
+  // Both grants share the sentence's sourceId so the activity feed merges them into one item.
+  assert.deepEqual(grants.map(g => g.sourceId), ["ps-1", "ps-1"]);
+});
+
+test("practicePassXp dates legacy boolean and unparsable passes by createdAt", () => {
+  const grants = practicePassXp([{
+    id: "ps-2",
+    text: "犬が走る。",
+    passes: {
+      read: true,
+      lookup: "not-a-date",
+      produce: false,
+    },
+    createdAt: RECENT,
+  }]);
+  // `false` earns nothing; `true` and the bad timestamp both fall back to createdAt.
+  assert.equal(grants.length, 2);
+  assert.deepEqual(grants.map(g => g.at), [RECENT, RECENT]);
+});
+
+test("practicePassXp ignores sentences with no passes", () => {
+  assert.deepEqual(practicePassXp([{
+    id: "ps-3",
+    text: "空",
+    passes: null,
+    createdAt: NOW,
+  }, {
+    id: "ps-4",
+    text: "空",
+    passes: {},
+    createdAt: NOW,
+  }]), []);
+});
+
+test("practicePassXp honours a rate override", () => {
+  const rates = {
+    ...DEFAULT_XP_RATES,
+    practicePass: 2,
+  };
+  const grants = practicePassXp([{
+    id: "ps-5",
+    text: "雨が降る。",
+    passes: {
+      card: true,
+    },
+    createdAt: NOW,
+  }], rates);
+  assert.deepEqual(grants.map(g => g.xp), [2]);
+});
+
+test("correctionTriageXp grants Writing XP per triaged correction, dated by triagedAt", () => {
+  const grants = correctionTriageXp([{
+    id: "c-1",
+    original: "学校を行きます",
+    triage: {
+      bucket: "rule_gap",
+      path: [],
+      ruleTagKey: "particle-を-に",
+      triagedAt: "2026-07-20T10:30:00.000Z",
+      producedCardIds: [],
+    },
+  }, {
+    // Still in the Inbox: no XP until the learner works through it.
+    id: "c-2",
+    original: "未処理",
+    triage: null,
+  }]);
+  assert.equal(grants.length, 1);
+  assert.equal(grants[0]?.area, "Writing");
+  assert.equal(grants[0]?.feature, "corrections");
+  assert.equal(grants[0]?.xp, DEFAULT_XP_RATES.correctionTriaged);
+  assert.equal(grants[0]?.at.toISOString(), "2026-07-20T10:30:00.000Z");
+  assert.equal(grants[0]?.to, "/corrections/log");
+});
+
+test("correctionTriageXp skips a triage record with an unparsable timestamp", () => {
+  assert.deepEqual(correctionTriageXp([{
+    id: "c-3",
+    original: "壊れた日付",
+    triage: {
+      bucket: "register",
+      path: [],
+      scene: "formal-email",
+      triagedAt: "not-a-date",
+      producedCardIds: [],
+    },
+  }]), []);
+});
+
+test("correctionTriageXp honours a rate override", () => {
+  const rates = {
+    ...DEFAULT_XP_RATES,
+    correctionTriaged: 1.5,
+  };
+  const grants = correctionTriageXp([{
+    id: "c-4",
+    original: "行くだ",
+    triage: {
+      bucket: "collocation",
+      path: [],
+      triagedAt: "2026-07-20T11:00:00.000Z",
+      producedCardIds: [],
+    },
+  }], rates);
+  assert.deepEqual(grants.map(g => g.xp), [1.5]);
 });
