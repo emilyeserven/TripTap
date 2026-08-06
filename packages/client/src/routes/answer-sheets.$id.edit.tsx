@@ -1,8 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft } from "lucide-react";
 
 import { AnswerSheetForm } from "@/components/AnswerSheetForm";
-import { Button } from "@/components/ui/button";
+import { BackIcon, EntityEditPage } from "@/components/EntityPage";
 import { useAnswerSheet, useDeleteAnswerSheet } from "@/hooks/useAnswerSheets";
 import { usePageTitle } from "@/hooks/usePageTitle";
 
@@ -22,55 +21,38 @@ function EditAnswerSheetPage() {
     part,
   } = Route.useSearch();
   const navigate = useNavigate();
-  const deleteAnswerSheet = useDeleteAnswerSheet();
-  const {
-    data, isLoading, error,
-  } = useAnswerSheet(id);
-
-  if (isLoading) return <p className="text-muted-foreground">Loading…</p>;
-  if (error) return <p className="text-destructive">{error.message}</p>;
-  if (!data) return <p className="text-muted-foreground">Answer sheet not found.</p>;
-
-  const remove = () => {
-    deleteAnswerSheet.mutate(id, {
-      onSuccess: () => navigate({
-        to: "/answer-sheets",
-      }),
-    });
-  };
+  const remove = useDeleteAnswerSheet();
 
   return (
-    <section className="max-w-3xl space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <Button
-          asChild
-          variant="ghost"
-          size="sm"
+    <EntityEditPage
+      query={useAnswerSheet(id)}
+      noun="Answer sheet"
+      backLink={(
+        <Link
+          to="/answer-sheets/$id"
+          params={{
+            id,
+          }}
         >
-          <Link
-            to="/answer-sheets/$id"
-            params={{
-              id,
-            }}
-          >
-            <ArrowLeft className="size-4" />
-            Done — back to answer sheet
-          </Link>
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-destructive"
-          disabled={deleteAnswerSheet.isPending}
-          onClick={remove}
-        >
-          Delete
-        </Button>
-      </div>
-      <AnswerSheetForm
-        answerSheet={data}
-        activePart={part ?? null}
-      />
-    </section>
+          <BackIcon className="size-4" />
+          Done — back to answer sheet
+        </Link>
+      )}
+      deletePending={remove.isPending}
+      onDelete={() =>
+        remove.mutate(id, {
+          onSuccess: () => navigate({
+            to: "/answer-sheets",
+          }),
+        })}
+    >
+      {/* The form autosaves, so there's no onSuccess — `activePart` scopes it to one part. */}
+      {answerSheet => (
+        <AnswerSheetForm
+          answerSheet={answerSheet}
+          activePart={part ?? null}
+        />
+      )}
+    </EntityEditPage>
   );
 }
