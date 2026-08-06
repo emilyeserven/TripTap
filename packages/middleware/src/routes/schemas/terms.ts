@@ -1,41 +1,15 @@
+import { fieldJsonSchema, termsListSchema } from "@sentence-bank/types";
+
 /**
- * Shared JSON-Schema fragments for the borrowed-taxonomy term refs (`SentenceTermRef`).
+ * Shared JSON-Schema fragment for the borrowed-taxonomy term refs (`SentenceTermRef`).
  *
  * The same validation shape was previously restated in every route that accepts tags — eleven
- * copies, which is eleven places to miss when a channel is added. Import from here instead.
+ * copies, which is eleven places to miss when a channel is added. It was then written once here,
+ * by hand, which left one copy that could still drift from the TypeScript type: that is exactly
+ * how `category` came to be required on the type but optional on the wire (#267). It now derives
+ * from the Zod declaration in `types/src/terms.ts`, so the wire type, the validator and this
+ * fragment cannot disagree.
  */
 
-/** One term ref: the denormalized (id + name + provenance + channel) tag stored on an entity. */
-const termRefSchema = {
-  type: "object",
-  additionalProperties: false,
-  required: ["id", "name", "kind", "sourceId", "sourceLabel"],
-  properties: {
-    id: {
-      type: "string",
-    },
-    name: {
-      type: "string",
-    },
-    kind: {
-      type: "string",
-      enum: ["tag", "taxonomy"],
-    },
-    sourceId: {
-      type: "string",
-    },
-    sourceLabel: {
-      type: "string",
-    },
-    category: {
-      type: "string",
-      enum: ["vocabulary", "grammar", "general", "resource"],
-    },
-  },
-} as const;
-
 /** A nullable list of term refs — the `terms` / `grammarTerms` column shape. */
-export const termsSchema = {
-  type: ["array", "null"],
-  items: termRefSchema,
-} as const;
+export const termsSchema = fieldJsonSchema(termsListSchema);

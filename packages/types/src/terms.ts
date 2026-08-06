@@ -17,6 +17,27 @@
 
 import type { SentenceTermCategory, SentenceTermRef } from "./index.js";
 
+import { z } from "zod";
+
+/**
+ * One term ref, as a route body accepts it.
+ *
+ * `category` is optional here because it is optional on the wire — see {@link SentenceTermRef}.
+ * Every entity that can be tagged validates its `terms` column against this, so the shape is
+ * declared once and the generated JSON Schema follows from it.
+ */
+export const termRefSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  kind: z.enum(["tag", "taxonomy"]),
+  sourceId: z.string(),
+  sourceLabel: z.string(),
+  category: z.enum(["vocabulary", "grammar", "general", "resource"]).optional(),
+});
+
+/** A nullable list of term refs — the `terms` / `grammarTerms` column shape. */
+export const termsListSchema = z.array(termRefSchema).nullable();
+
 /** The channels in display order, with their picker/badge labels. */
 export const TERM_CATEGORIES: { category: SentenceTermCategory;
   label: string; }[] = [
