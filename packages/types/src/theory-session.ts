@@ -10,6 +10,11 @@
 
 import type { LearningArea } from "./question-sheet.js";
 
+import { z } from "zod";
+
+import { isoDateString, nonNegativeInt, objectJsonSchema } from "./json-schema.js";
+import { LEARNING_AREAS } from "./question-sheet.js";
+
 /** How a theory session's core XP is measured: by pages read, or by a word count. */
 export type TheoryEntryMode = "pages" | "words";
 
@@ -44,17 +49,22 @@ export interface TheorySession {
 }
 
 /** Payload for creating a theory session. `date` and `entryMode` are required. */
-export interface CreateTheorySessionInput {
-  date: string;
-  entryMode: TheoryEntryMode;
-  title?: string | null;
-  pages?: number | null;
-  density?: TheoryDensity | null;
-  wordCount?: number | null;
-  notesCount?: number;
-  notes?: string | null;
-  learningArea?: LearningArea | null;
-}
+export const createTheorySessionSchema = z.object({
+  date: isoDateString(),
+  entryMode: z.enum(["pages", "words"]),
+  title: z.string().nullable().optional(),
+  pages: nonNegativeInt().nullable().optional(),
+  density: z.enum(["dense", "medium", "light"]).nullable().optional(),
+  wordCount: nonNegativeInt().nullable().optional(),
+  notesCount: nonNegativeInt().optional(),
+  notes: z.string().nullable().optional(),
+  learningArea: z.enum(LEARNING_AREAS).nullable().optional(),
+});
+
+/** JSON Schema (draft-07) for the create payload, used verbatim as the route body. */
+export const createTheorySessionJsonSchema = objectJsonSchema(createTheorySessionSchema);
+
+export type CreateTheorySessionInput = z.infer<typeof createTheorySessionSchema>;
 
 /** Payload for partially updating a theory session. */
 export type UpdateTheorySessionInput = Partial<CreateTheorySessionInput>;

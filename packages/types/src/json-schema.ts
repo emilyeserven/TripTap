@@ -25,6 +25,33 @@ import { z } from "zod";
  * matching lax pattern, so the contract is unchanged.
  */
 
+/**
+ * A `format: "date"` string, exactly as the hand-written schemas spell it.
+ *
+ * Not `z.iso.date()`: that emits a large calendar-aware `pattern` on top of the format, which is a
+ * different (stricter) contract than what Ajv enforces today and would bury the real changes in the
+ * snapshot diff.
+ */
+export function isoDateString() {
+  return z.string().meta({
+    format: "date",
+  });
+}
+
+/**
+ * A non-negative integer, exactly as the hand-written schemas spell it.
+ *
+ * `z.int()` emits `maximum: 9007199254740991` — a ceiling the current schemas don't have. Values
+ * above it are already meaningless in JS, but adding a bound the API didn't have is still a change,
+ * and one line of noise per integer field. `meta({ maximum: undefined })` drops it from the emitted
+ * schema; the Zod type stays a true integer.
+ */
+export function nonNegativeInt() {
+  return z.int().min(0).meta({
+    maximum: undefined,
+  });
+}
+
 /** The parts of a generated object schema the route layer reads. */
 export interface GeneratedObjectSchema {
   type: "object";

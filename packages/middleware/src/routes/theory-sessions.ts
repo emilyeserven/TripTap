@@ -5,7 +5,7 @@ import type {
   CreateTheorySessionInput,
   UpdateTheorySessionInput,
 } from "@sentence-bank/types";
-import { LEARNING_AREAS } from "@sentence-bank/types";
+import { createTheorySessionJsonSchema } from "@sentence-bank/types";
 import {
   createTheorySession,
   deleteTheorySession,
@@ -14,47 +14,7 @@ import {
   updateTheorySession,
 } from "@/services/theory-sessions";
 
-const createSessionBody = {
-  type: "object",
-  required: ["date", "entryMode"],
-  additionalProperties: false,
-  properties: {
-    date: {
-      type: "string",
-      format: "date",
-    },
-    title: {
-      type: ["string", "null"],
-    },
-    entryMode: {
-      type: "string",
-      enum: ["pages", "words"],
-    },
-    pages: {
-      type: ["integer", "null"],
-      minimum: 0,
-    },
-    density: {
-      type: ["string", "null"],
-      enum: ["dense", "medium", "light", null],
-    },
-    wordCount: {
-      type: ["integer", "null"],
-      minimum: 0,
-    },
-    notesCount: {
-      type: "integer",
-      minimum: 0,
-    },
-    notes: {
-      type: ["string", "null"],
-    },
-    learningArea: {
-      type: ["string", "null"],
-      enum: [...LEARNING_AREAS, null],
-    },
-  },
-} as const;
+const createSessionBody = createTheorySessionJsonSchema;
 
 const updateSessionBody = updateBodyOf(createSessionBody);
 

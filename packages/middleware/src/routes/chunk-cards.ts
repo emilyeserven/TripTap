@@ -2,6 +2,7 @@ import type { FastifyInstance } from "fastify";
 import { idOf, notFound } from "@/routes/handlers";
 import { idParams } from "@/routes/schemas/params";
 import type { CreateChunkCardInput, UpdateChunkCardInput } from "@sentence-bank/types";
+import { createChunkCardJsonSchema } from "@sentence-bank/types";
 import {
   createChunkCard,
   deleteChunkCard,
@@ -13,43 +14,7 @@ import {
 
 const formatEnum = ["situation_production", "cloze"] as const;
 
-const createChunkCardBody = {
-  type: "object",
-  required: ["batchId", "chunk", "gloss", "format", "prompt", "answer"],
-  additionalProperties: false,
-  properties: {
-    correctionId: {
-      type: ["string", "null"],
-      format: "uuid",
-    },
-    batchId: {
-      type: "string",
-      format: "uuid",
-    },
-    chunk: {
-      type: "string",
-      minLength: 1,
-    },
-    gloss: {
-      type: "string",
-    },
-    format: {
-      type: "string",
-      enum: formatEnum,
-    },
-    prompt: {
-      type: "string",
-      minLength: 1,
-    },
-    answer: {
-      type: "string",
-      minLength: 1,
-    },
-    wrongForm: {
-      type: ["string", "null"],
-    },
-  },
-} as const;
+const createChunkCardBody = createChunkCardJsonSchema;
 
 const updateChunkCardBody = {
   type: "object",
