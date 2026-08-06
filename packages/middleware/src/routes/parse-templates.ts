@@ -2,37 +2,14 @@ import type { FastifyInstance } from "fastify";
 import { idOf, notFound } from "@/routes/handlers";
 import { idParams } from "@/routes/schemas/params";
 import type { CreateParseTemplateInput } from "@sentence-bank/types";
+import { createParseTemplateJsonSchema } from "@sentence-bank/types";
 import {
   createParseTemplate,
   deleteParseTemplate,
   listParseTemplates,
 } from "@/services/parse-templates";
 
-const createTemplateBody = {
-  type: "object",
-  required: ["name", "target", "body", "boundary", "ignoreBlankLines"],
-  additionalProperties: false,
-  properties: {
-    name: {
-      type: "string",
-      minLength: 1,
-    },
-    target: {
-      type: "string",
-      enum: ["sentence", "vocab"],
-    },
-    body: {
-      type: "string",
-    },
-    boundary: {
-      type: "string",
-      enum: ["fixed", "blank"],
-    },
-    ignoreBlankLines: {
-      type: "boolean",
-    },
-  },
-} as const;
+const createTemplateBody = createParseTemplateJsonSchema;
 
 /** Routes for saved parse templates, mounted under `/api/parse-templates`. */
 export async function parseTemplateRoutes(app: FastifyInstance): Promise<void> {

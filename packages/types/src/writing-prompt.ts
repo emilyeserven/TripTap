@@ -9,6 +9,10 @@
  * the React client.
  */
 
+import { z } from "zod";
+
+import { objectJsonSchema } from "./json-schema.js";
+
 /**
  * The difficulty tags a prompt can carry, in dropdown order. `JLPT N6` is not an official JLPT level
  * but is offered here by request (a pre-N5 stepping stone).
@@ -49,13 +53,18 @@ export interface WritingPrompt {
 }
 
 /** Payload for creating a writing prompt. `difficulty` defaults to "Other" when omitted. */
-export interface CreateWritingPromptInput {
-  title?: string | null;
-  titleEn?: string | null;
-  text: string;
-  textEn?: string | null;
-  difficulty?: WritingPromptDifficulty;
-}
+export const createWritingPromptSchema = z.object({
+  title: z.string().nullable().optional(),
+  titleEn: z.string().nullable().optional(),
+  text: z.string().min(1),
+  textEn: z.string().nullable().optional(),
+  difficulty: z.enum(WRITING_PROMPT_DIFFICULTIES).optional(),
+});
+
+/** JSON Schema (draft-07) for the create payload, used verbatim as the route body. */
+export const createWritingPromptJsonSchema = objectJsonSchema(createWritingPromptSchema);
+
+export type CreateWritingPromptInput = z.infer<typeof createWritingPromptSchema>;
 
 /** Payload for partially updating a writing prompt. */
 export type UpdateWritingPromptInput = Partial<CreateWritingPromptInput>;

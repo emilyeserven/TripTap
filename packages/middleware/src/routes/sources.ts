@@ -1,40 +1,13 @@
 import type { FastifyInstance } from "fastify";
 import { idOf, notFound } from "@/routes/handlers";
 import type { CreateSourceInput, UpdateSourceInput } from "@sentence-bank/types";
-import { idParams } from "@/routes/schemas/params";
+import { createSourceJsonSchema } from "@sentence-bank/types";
+import { idParams, updateBodyOf } from "@/routes/schemas/params";
 import { createSource, deleteSource, listSources, updateSource } from "@/services/sources";
 
-const sourceFields = {
-  name: {
-    type: "string",
-    minLength: 1,
-  },
-  type: {
-    type: ["string", "null"],
-  },
-  author: {
-    type: ["string", "null"],
-  },
-  url: {
-    type: ["string", "null"],
-  },
-  notes: {
-    type: ["string", "null"],
-  },
-} as const;
+const createSourceBody = createSourceJsonSchema;
 
-const createSourceBody = {
-  type: "object",
-  required: ["name"],
-  additionalProperties: false,
-  properties: sourceFields,
-} as const;
-
-const updateSourceBody = {
-  type: "object",
-  additionalProperties: false,
-  properties: sourceFields,
-} as const;
+const updateSourceBody = updateBodyOf(createSourceBody);
 
 /** Routes for the source taxonomy, mounted under `/api/sources`. */
 export async function sourceRoutes(app: FastifyInstance): Promise<void> {

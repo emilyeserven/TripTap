@@ -2,7 +2,7 @@ import type { FastifyInstance } from "fastify";
 import { idOf, notFound } from "@/routes/handlers";
 import { idParams, updateBodyOf } from "@/routes/schemas/params";
 import type { CreateWritingPromptInput, UpdateWritingPromptInput } from "@sentence-bank/types";
-import { WRITING_PROMPT_DIFFICULTIES } from "@sentence-bank/types";
+import { createWritingPromptJsonSchema } from "@sentence-bank/types";
 import {
   createWritingPrompt,
   createWritingPromptsMany,
@@ -12,30 +12,7 @@ import {
   updateWritingPrompt,
 } from "@/services/writing-prompts";
 
-const createWritingPromptBody = {
-  type: "object",
-  required: ["text"],
-  additionalProperties: false,
-  properties: {
-    title: {
-      type: ["string", "null"],
-    },
-    titleEn: {
-      type: ["string", "null"],
-    },
-    text: {
-      type: "string",
-      minLength: 1,
-    },
-    textEn: {
-      type: ["string", "null"],
-    },
-    difficulty: {
-      type: "string",
-      enum: WRITING_PROMPT_DIFFICULTIES,
-    },
-  },
-} as const;
+const createWritingPromptBody = createWritingPromptJsonSchema;
 
 const updateWritingPromptBody = updateBodyOf(createWritingPromptBody);
 

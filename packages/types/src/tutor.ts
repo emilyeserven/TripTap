@@ -6,6 +6,10 @@
  * API and the React client.
  */
 
+import { z } from "zod";
+
+import { objectJsonSchema } from "./json-schema.js";
+
 /** A tutor a lesson can be associated with. */
 export interface Tutor {
   id: string;
@@ -19,11 +23,25 @@ export interface Tutor {
   updatedAt: string;
 }
 
+/**
+ * The create payload, declared once.
+ *
+ * The route's JSON Schema and the TS input type are both derived from this. They used to be written
+ * separately — an `interface` here and a `createTutorBody` literal in `routes/tutors.ts` — with
+ * nothing tying them together, which is how a field can end up typed but not accepted (or accepted
+ * but silently stripped, since Ajv's `removeAdditional` drops unknown keys rather than rejecting
+ * them). That has already happened once in this codebase, to the XP rate settings.
+ */
+export const createTutorSchema = z.object({
+  name: z.string().min(1),
+  notes: z.string().nullable().optional(),
+});
+
+/** JSON Schema (draft-07) for the create payload, used verbatim as the route body. */
+export const createTutorJsonSchema = objectJsonSchema(createTutorSchema);
+
 /** Payload for creating a tutor. Only `name` is required. */
-export interface CreateTutorInput {
-  name: string;
-  notes?: string | null;
-}
+export type CreateTutorInput = z.infer<typeof createTutorSchema>;
 
 /** Payload for partially updating a tutor. */
 export type UpdateTutorInput = Partial<CreateTutorInput>;
