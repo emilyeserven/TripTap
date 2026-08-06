@@ -2,11 +2,13 @@ import type { OcrResult } from "@sentence-bank/types";
 import type { OcrConfig, OcrProvider } from "@/services/ocr/types";
 import { getOcrSecrets } from "@/services/settings";
 import { OcrNotConfiguredError, OcrUnavailableError } from "@/services/ocr/errors";
+
+// Re-exported for the provider tests, which assert the specific failure type per backend.
+export { OcrNotConfiguredError, OcrUnavailableError } from "@/services/ocr/errors";
 import { googleVisionProvider } from "@/services/ocr/google-vision";
 import { ocrSpaceProvider } from "@/services/ocr/ocr-space";
 import { selfHostedProvider } from "@/services/ocr/self-hosted";
 
-export { OcrNotConfiguredError, OcrUnavailableError } from "@/services/ocr/errors";
 export type { OcrConfig, OcrProvider } from "@/services/ocr/types";
 
 const DEFAULT_OCR_SPACE_URL = "https://api.ocr.space/parse/image";

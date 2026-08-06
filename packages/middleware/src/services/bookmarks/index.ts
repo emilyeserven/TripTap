@@ -28,7 +28,6 @@ import {
 } from "@/services/bookmarks/mappers";
 import { fetchBookmarksImage, fetchBookmarksJson } from "@/services/bookmarks/util";
 
-export { BookmarksNotConfiguredError, BookmarksUnavailableError } from "@/services/bookmarks/errors";
 export { toBookmarkResource } from "@/services/bookmarks/mappers";
 
 /** All flat tags from the bookmarks app. */

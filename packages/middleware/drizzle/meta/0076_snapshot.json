@@ -1,5 +1,5 @@
 {
-  "id": "d26c05b9-a3e5-4e7e-8652-65dde6dbfa13",
+  "id": "728f894f-c6ba-40a5-9004-35860ec2b8c0",
   "prevId": "b1613e48-f6bf-4786-b258-3211bc52cbca",
   "version": "7",
   "dialect": "postgresql",
@@ -1028,6 +1028,30 @@
         },
         "lines": {
           "name": "lines",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "bookmark_id": {
+          "name": "bookmark_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "bookmark_title": {
+          "name": "bookmark_title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "bookmark_url": {
+          "name": "bookmark_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "section": {
+          "name": "section",
           "type": "jsonb",
           "primaryKey": false,
           "notNull": false
@@ -3164,12 +3188,6 @@
           "notNull": true,
           "default": true
         },
-        "shadowing_list_id": {
-          "name": "shadowing_list_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -3202,21 +3220,7 @@
           "with": {}
         }
       },
-      "foreignKeys": {
-        "shadowing_sessions_shadowing_list_id_shadowing_lists_id_fk": {
-          "name": "shadowing_sessions_shadowing_list_id_shadowing_lists_id_fk",
-          "tableFrom": "shadowing_sessions",
-          "tableTo": "shadowing_lists",
-          "columnsFrom": [
-            "shadowing_list_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        }
-      },
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},

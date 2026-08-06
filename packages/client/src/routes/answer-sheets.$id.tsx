@@ -5,9 +5,5 @@ import { createFileRoute, Outlet } from "@tanstack/react-router";
  * (`/answer-sheets/$id/`) or the edit form (`/answer-sheets/$id/edit`).
  */
 export const Route = createFileRoute("/answer-sheets/$id")({
-  component: AnswerSheetIdLayout,
+  component: Outlet,
 });
-
-function AnswerSheetIdLayout() {
-  return <Outlet />;
-}

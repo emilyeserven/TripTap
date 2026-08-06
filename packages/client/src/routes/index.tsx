@@ -1,218 +1,10 @@
-import type * as React from "react";
+import type { NavDestination } from "@/lib/nav";
 
 import { Link, createFileRoute } from "@tanstack/react-router";
-import {
-  BookAIcon,
-  BookMarkedIcon,
-  BookOpenIcon,
-  CameraIcon,
-  DatabaseIcon,
-  GraduationCapIcon,
-  HeadphonesIcon,
-  ImagesIcon,
-  LandmarkIcon,
-  LanguagesIcon,
-  LayersIcon,
-  LightbulbIcon,
-  MessagesSquareIcon,
-  NotebookPenIcon,
-  PencilRulerIcon,
-  PenLineIcon,
-  Repeat2Icon,
-  ScrollTextIcon,
-  SendIcon,
-  SettingsIcon,
-  SparklesIcon,
-  UserRoundIcon,
-} from "lucide-react";
 
 import { DueSoonCard } from "@/components/DueSoonCard";
 import { usePageTitle } from "@/hooks/usePageTitle";
-
-interface Tile {
-  title: string;
-  to: string;
-  icon: React.ComponentType<{ className?: string }>;
-  description: string;
-}
-
-interface TileSection {
-  label: string;
-  description: string;
-  tiles: readonly Tile[];
-}
-
-const sections: readonly TileSection[] = [
-  {
-    label: "Start Something",
-    description: "Get a quick, contained task picked from your XP and goals.",
-    tiles: [
-      {
-        title: "Start Something",
-        to: "/start",
-        icon: SparklesIcon,
-        description:
-          "See your XP per learning area and get a recommendation for what to practice next.",
-      },
-      {
-        title: "Capture",
-        to: "/capture",
-        icon: CameraIcon,
-        description: "Snap or paste text and run it through OCR to mine sentences.",
-      },
-    ],
-  },
-  {
-    label: "Action",
-    description: "Study and work with the sentences you've collected.",
-    tiles: [
-      {
-        title: "Study Sentences",
-        to: "/practice",
-        icon: NotebookPenIcon,
-        description: "Drill your saved sentences in focused practice sessions.",
-      },
-      {
-        title: "My Writing",
-        to: "/my-writing",
-        icon: PenLineIcon,
-        description: "Compose and track your own writing.",
-      },
-      {
-        title: "My Sentences",
-        to: "/my-sentences",
-        icon: PencilRulerIcon,
-        description: "The sentences you've written yourself.",
-      },
-      {
-        title: "Exercises",
-        to: "/exercises",
-        icon: BookMarkedIcon,
-        description: "Work through textbook and worksheet exercises, questions and answers in one place.",
-      },
-      {
-        title: "Listening Sessions",
-        to: "/listening-sessions",
-        icon: HeadphonesIcon,
-        description: "Log and review focused listening practice.",
-      },
-      {
-        title: "Shadowing Practice",
-        to: "/shadowing",
-        icon: Repeat2Icon,
-        description: "Repeat audio to sharpen pronunciation and rhythm.",
-      },
-      {
-        title: "Dialogues",
-        to: "/dialogues",
-        icon: MessagesSquareIcon,
-        description: "Multi-speaker scripts as a chat transcript you can practise against.",
-      },
-      {
-        title: "Reading Session",
-        to: "/reading-sessions",
-        icon: BookOpenIcon,
-        description: "Track what you read and what you pull from it.",
-      },
-      {
-        title: "Renshuu export",
-        to: "/renshuu",
-        icon: SendIcon,
-        description: "Export sentences to Renshuu for drilling.",
-      },
-      {
-        title: "Anki export",
-        to: "/anki",
-        icon: LayersIcon,
-        description: "Export sentences to Anki flashcards.",
-      },
-    ],
-  },
-  {
-    label: "Collections",
-    description: "The source material you mine sentences from.",
-    tiles: [
-      {
-        title: "Lessons",
-        to: "/lessons",
-        icon: BookAIcon,
-        description: "Records of your tutoring lessons.",
-      },
-      {
-        title: "Tutors",
-        to: "/tutors",
-        icon: UserRoundIcon,
-        description: "The tutors you take lessons with.",
-      },
-      {
-        title: "AI Lessons",
-        to: "/ai-lessons",
-        icon: GraduationCapIcon,
-        description: "AI Lesson notes and material to draw from.",
-      },
-      {
-        title: "Captures",
-        to: "/captures",
-        icon: ImagesIcon,
-        description: "Everything you've captured, ready to process.",
-      },
-      {
-        title: "Sentence Origins",
-        to: "/sources",
-        icon: DatabaseIcon,
-        description: "Where your sentences come from — books, shows, articles.",
-      },
-    ],
-  },
-  {
-    label: "Library",
-    description: "Your personal study bank.",
-    tiles: [
-      {
-        title: "Culture",
-        to: "/culture",
-        icon: LandmarkIcon,
-        description: "Cultural notes worth remembering.",
-      },
-      {
-        title: "Vocabulary",
-        to: "/vocabulary",
-        icon: BookOpenIcon,
-        description: "Words you're building fluency with.",
-      },
-      {
-        title: "Grammar",
-        to: "/grammar-notes",
-        icon: LanguagesIcon,
-        description: "Grammar points and patterns.",
-      },
-      {
-        title: "Sentences",
-        to: "/sentences",
-        icon: ScrollTextIcon,
-        description: "Your bank of example sentences.",
-      },
-      {
-        title: "Writing Prompts",
-        to: "/writing-prompts",
-        icon: LightbulbIcon,
-        description: "Prompts to spark your own writing.",
-      },
-    ],
-  },
-  {
-    label: "Settings",
-    description: "Configure the app to fit your workflow.",
-    tiles: [
-      {
-        title: "Settings",
-        to: "/settings",
-        icon: SettingsIcon,
-        description: "OCR keys, bookmarks sources, and more.",
-      },
-    ],
-  },
-];
+import { allNavSections, sectionTiles } from "@/lib/nav";
 
 export const Route = createFileRoute("/")({
   component: HomePage,
@@ -220,7 +12,7 @@ export const Route = createFileRoute("/")({
 
 function TileCard({
   tile,
-}: { tile: Tile }) {
+}: { tile: NavDestination }) {
   return (
     <Link
       to={tile.to}
@@ -263,7 +55,7 @@ function HomePage() {
 
       <DueSoonCard />
 
-      {sections.map(section => (
+      {allNavSections.map(section => (
         <section
           key={section.label}
           className="space-y-3"
@@ -279,7 +71,7 @@ function HomePage() {
               lg:grid-cols-3
             "
           >
-            {section.tiles.map(tile => (
+            {sectionTiles(section).map(tile => (
               <TileCard
                 key={tile.to}
                 tile={tile}

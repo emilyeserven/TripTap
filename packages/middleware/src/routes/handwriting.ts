@@ -1,19 +1,9 @@
+import { handleUpstreamError } from "@/routes/upstream-errors";
 import type { RecognizeHandwritingInput } from "@sentence-bank/types";
-import type { FastifyInstance, FastifyReply } from "fastify";
+import type { FastifyInstance } from "fastify";
 import {
-  HandwritingUnavailableError,
   recognizeHandwriting,
 } from "@/services/handwriting";
-
-/** Map a handwriting domain error to its HTTP status; rethrow anything else. */
-function handleError(err: unknown, reply: FastifyReply): FastifyReply {
-  if (err instanceof HandwritingUnavailableError) {
-    return reply.code(502).send({
-      message: err.message,
-    });
-  }
-  throw err;
-}
 
 const coordinates = {
   type: "array",
@@ -80,7 +70,7 @@ export async function handwritingRoutes(app: FastifyInstance): Promise<void> {
       return await recognizeHandwriting(req.body as RecognizeHandwritingInput);
     }
     catch (err) {
-      return handleError(err, reply);
+      return handleUpstreamError(err, reply);
     }
   });
 }

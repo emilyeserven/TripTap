@@ -7,6 +7,7 @@ import type {
 import { db } from "@/db";
 import { practiceSentenceImages, practiceSentences, type PracticeSentenceRow } from "@/db/schema";
 import { furiganaColumns, furiganaColumnsMany, furiganaColumnsOnEdit } from "@/services/furigana";
+import { toIso } from "@/services/rows";
 
 /** Map a DB row to the shared `PracticeSentence` wire type. */
 function toPracticeSentence(row: PracticeSentenceRow, hasImage: boolean): PracticeSentence {
@@ -36,8 +37,7 @@ function toPracticeSentence(row: PracticeSentenceRow, hasImage: boolean): Practi
     needsCorrection: row.needsCorrection,
     correction: row.correction,
     hasImage,
-    createdAt:
-      row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
+    createdAt: toIso(row.createdAt),
   };
 }
 

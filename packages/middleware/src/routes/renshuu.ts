@@ -1,24 +1,8 @@
-import type { FastifyInstance, FastifyReply } from "fastify";
+import { handleUpstreamError } from "@/routes/upstream-errors";
+import type { FastifyInstance } from "fastify";
 import {
-  RenshuuNotConfiguredError,
-  RenshuuUnavailableError,
   searchExampleSentences,
 } from "@/services/renshuu";
-
-/** Map a Renshuu domain error to its HTTP status; rethrow anything else. */
-function handleError(err: unknown, reply: FastifyReply): FastifyReply {
-  if (err instanceof RenshuuNotConfiguredError) {
-    return reply.code(503).send({
-      message: err.message,
-    });
-  }
-  if (err instanceof RenshuuUnavailableError) {
-    return reply.code(502).send({
-      message: err.message,
-    });
-  }
-  throw err;
-}
 
 const searchQuery = {
   type: "object",
@@ -56,7 +40,7 @@ export async function renshuuRoutes(app: FastifyInstance): Promise<void> {
       return await searchExampleSentences(query, limit);
     }
     catch (err) {
-      return handleError(err, reply);
+      return handleUpstreamError(err, reply);
     }
   });
 }

@@ -19,6 +19,7 @@ import type {
   UpsertRuleTagInput,
 } from "@sentence-bank/types";
 
+import { crudApi } from "./crud";
 import { request } from "./request";
 
 /** Filters for the correction list: `untriaged` limits to the Inbox; `batchId` scopes to one batch. */
@@ -81,39 +82,11 @@ export const ruleTagsApi = {
     }),
 };
 
-export const ruleGroupsApi = {
-  list: () => request<RuleGroup[]>("/rule-groups"),
-  get: (id: string) => request<RuleGroup>(`/rule-groups/${id}`),
-  create: (input: CreateRuleGroupInput) =>
-    request<RuleGroup>("/rule-groups", {
-      method: "POST",
-      body: JSON.stringify(input),
-    }),
-  update: (id: string, input: UpdateRuleGroupInput) =>
-    request<RuleGroup>(`/rule-groups/${id}`, {
-      method: "PATCH",
-      body: JSON.stringify(input),
-    }),
-  remove: (id: string) => request<undefined>(`/rule-groups/${id}`, {
-    method: "DELETE",
-  }),
-};
+export const ruleGroupsApi = crudApi<RuleGroup, CreateRuleGroupInput, UpdateRuleGroupInput>("/rule-groups");
 
 export const chunkCardsApi = {
+  ...crudApi<ChunkCard, CreateChunkCardInput, UpdateChunkCardInput>("/chunk-cards"),
+  /** Optionally scoped to one capture batch. */
   list: (batchId?: string) =>
     request<ChunkCard[]>(`/chunk-cards${batchId ? `?batchId=${batchId}` : ""}`),
-  get: (id: string) => request<ChunkCard>(`/chunk-cards/${id}`),
-  create: (input: CreateChunkCardInput) =>
-    request<ChunkCard>("/chunk-cards", {
-      method: "POST",
-      body: JSON.stringify(input),
-    }),
-  update: (id: string, input: UpdateChunkCardInput) =>
-    request<ChunkCard>(`/chunk-cards/${id}`, {
-      method: "PATCH",
-      body: JSON.stringify(input),
-    }),
-  remove: (id: string) => request<undefined>(`/chunk-cards/${id}`, {
-    method: "DELETE",
-  }),
 };

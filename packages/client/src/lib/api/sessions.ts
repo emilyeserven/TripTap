@@ -28,6 +28,7 @@ import type {
   XpSummary,
 } from "@sentence-bank/types";
 
+import { crudApi } from "./crud";
 import { BASE, request } from "./request";
 
 /** A caption-derived practice segment (no id yet — the client stamps `ShadowingSegment` ids). */
@@ -37,59 +38,11 @@ export interface CaptionSegment {
   label: string;
 }
 
-export const listeningSessionsApi = {
-  list: () => request<ListeningSession[]>("/listening-sessions"),
-  get: (id: string) => request<ListeningSession>(`/listening-sessions/${id}`),
-  create: (input: CreateListeningSessionInput) =>
-    request<ListeningSession>("/listening-sessions", {
-      method: "POST",
-      body: JSON.stringify(input),
-    }),
-  update: (id: string, input: UpdateListeningSessionInput) =>
-    request<ListeningSession>(`/listening-sessions/${id}`, {
-      method: "PATCH",
-      body: JSON.stringify(input),
-    }),
-  remove: (id: string) => request<undefined>(`/listening-sessions/${id}`, {
-    method: "DELETE",
-  }),
-};
+export const listeningSessionsApi = crudApi<ListeningSession, CreateListeningSessionInput, UpdateListeningSessionInput>("/listening-sessions");
 
-export const dialoguesApi = {
-  list: () => request<Dialogue[]>("/dialogues"),
-  get: (id: string) => request<Dialogue>(`/dialogues/${id}`),
-  create: (input: CreateDialogueInput) =>
-    request<Dialogue>("/dialogues", {
-      method: "POST",
-      body: JSON.stringify(input),
-    }),
-  update: (id: string, input: UpdateDialogueInput) =>
-    request<Dialogue>(`/dialogues/${id}`, {
-      method: "PATCH",
-      body: JSON.stringify(input),
-    }),
-  remove: (id: string) => request<undefined>(`/dialogues/${id}`, {
-    method: "DELETE",
-  }),
-};
+export const dialoguesApi = crudApi<Dialogue, CreateDialogueInput, UpdateDialogueInput>("/dialogues");
 
-export const readingSessionsApi = {
-  list: () => request<ReadingSession[]>("/reading-sessions"),
-  get: (id: string) => request<ReadingSession>(`/reading-sessions/${id}`),
-  create: (input: CreateReadingSessionInput) =>
-    request<ReadingSession>("/reading-sessions", {
-      method: "POST",
-      body: JSON.stringify(input),
-    }),
-  update: (id: string, input: UpdateReadingSessionInput) =>
-    request<ReadingSession>(`/reading-sessions/${id}`, {
-      method: "PATCH",
-      body: JSON.stringify(input),
-    }),
-  remove: (id: string) => request<undefined>(`/reading-sessions/${id}`, {
-    method: "DELETE",
-  }),
-};
+export const readingSessionsApi = crudApi<ReadingSession, CreateReadingSessionInput, UpdateReadingSessionInput>("/reading-sessions");
 
 export const shadowingSessionsApi = {
   list: () => request<ShadowingSession[]>("/shadowing-sessions"),
@@ -133,59 +86,11 @@ export const shadowingSessionsApi = {
   },
 };
 
-export const drillSessionsApi = {
-  list: () => request<DrillSession[]>("/drill-sessions"),
-  get: (id: string) => request<DrillSession>(`/drill-sessions/${id}`),
-  create: (input: CreateDrillSessionInput) =>
-    request<DrillSession>("/drill-sessions", {
-      method: "POST",
-      body: JSON.stringify(input),
-    }),
-  update: (id: string, input: UpdateDrillSessionInput) =>
-    request<DrillSession>(`/drill-sessions/${id}`, {
-      method: "PATCH",
-      body: JSON.stringify(input),
-    }),
-  remove: (id: string) => request<undefined>(`/drill-sessions/${id}`, {
-    method: "DELETE",
-  }),
-};
+export const drillSessionsApi = crudApi<DrillSession, CreateDrillSessionInput, UpdateDrillSessionInput>("/drill-sessions");
 
-export const theorySessionsApi = {
-  list: () => request<TheorySession[]>("/theory-sessions"),
-  get: (id: string) => request<TheorySession>(`/theory-sessions/${id}`),
-  create: (input: CreateTheorySessionInput) =>
-    request<TheorySession>("/theory-sessions", {
-      method: "POST",
-      body: JSON.stringify(input),
-    }),
-  update: (id: string, input: UpdateTheorySessionInput) =>
-    request<TheorySession>(`/theory-sessions/${id}`, {
-      method: "PATCH",
-      body: JSON.stringify(input),
-    }),
-  remove: (id: string) => request<undefined>(`/theory-sessions/${id}`, {
-    method: "DELETE",
-  }),
-};
+export const theorySessionsApi = crudApi<TheorySession, CreateTheorySessionInput, UpdateTheorySessionInput>("/theory-sessions");
 
-export const drillReasonCategoriesApi = {
-  list: () => request<DrillReasonCategory[]>("/drill-reason-categories"),
-  get: (id: string) => request<DrillReasonCategory>(`/drill-reason-categories/${id}`),
-  create: (input: CreateDrillReasonCategoryInput) =>
-    request<DrillReasonCategory>("/drill-reason-categories", {
-      method: "POST",
-      body: JSON.stringify(input),
-    }),
-  update: (id: string, input: UpdateDrillReasonCategoryInput) =>
-    request<DrillReasonCategory>(`/drill-reason-categories/${id}`, {
-      method: "PATCH",
-      body: JSON.stringify(input),
-    }),
-  remove: (id: string) => request<undefined>(`/drill-reason-categories/${id}`, {
-    method: "DELETE",
-  }),
-};
+export const drillReasonCategoriesApi = crudApi<DrillReasonCategory, CreateDrillReasonCategoryInput, UpdateDrillReasonCategoryInput>("/drill-reason-categories");
 
 export const xpApi = {
   summary: (days?: number) => {

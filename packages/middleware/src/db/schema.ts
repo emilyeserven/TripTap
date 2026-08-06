@@ -499,6 +499,12 @@ export const dialogues = pgTable("dialogues", {
   language: text("language").notNull(),
   script: text("script").notNull(),
   lines: jsonb("lines").$type<DialogueLine[]>(),
+  // The textbook/resource this dialogue came from, denormalized like `listening_sessions`.
+  bookmarkId: text("bookmark_id"),
+  bookmarkTitle: text("bookmark_title"),
+  bookmarkUrl: text("bookmark_url"),
+  // A specific section of the linked bookmark (e.g. the chapter the dialogue appears in).
+  section: jsonb("section").$type<BookmarkSectionRef>(),
   // Extra speaker labels to render on the right, on top of the built-in "私"/"Me".
   selfSpeakers: jsonb("self_speakers").$type<string[]>(),
   countsTowardXp: boolean("counts_toward_xp").notNull().default(false),

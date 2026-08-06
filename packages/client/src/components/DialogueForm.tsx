@@ -1,9 +1,10 @@
-import type { Dialogue, DialogueLine, LearningArea } from "@sentence-bank/types";
+import type { BookmarkSectionRef, Dialogue, DialogueLine, LearningArea } from "@sentence-bank/types";
 
 import { useState } from "react";
 
 import { dialogueSpeakers, isSelfSpeaker, LEARNING_AREAS, reconcileDialogueLines } from "@sentence-bank/types";
 
+import { BookmarkPicker } from "@/components/BookmarkPicker";
 import { DialogueTranscript } from "@/components/DialogueTranscript";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -46,6 +47,10 @@ export function DialogueForm({
   const [title, setTitle] = useState(dialogue?.title ?? "");
   const [language, setLanguage] = useState(dialogue?.language ?? "Japanese");
   const [script, setScript] = useState(dialogue?.script ?? "");
+  const [bookmarkId, setBookmarkId] = useState<string | null>(dialogue?.bookmarkId ?? null);
+  const [bookmarkTitle, setBookmarkTitle] = useState<string | null>(dialogue?.bookmarkTitle ?? null);
+  const [bookmarkUrl, setBookmarkUrl] = useState<string | null>(dialogue?.bookmarkUrl ?? null);
+  const [section, setSection] = useState<BookmarkSectionRef | null>(dialogue?.section ?? null);
   const [selfSpeakers, setSelfSpeakers] = useState<string[]>(dialogue?.selfSpeakers ?? []);
   const [countsTowardXp, setCountsTowardXp] = useState(dialogue?.countsTowardXp ?? false);
   const [learningArea, setLearningArea] = useState<LearningArea>(
@@ -94,6 +99,10 @@ export function DialogueForm({
       language: language.trim() || "Japanese",
       script,
       lines,
+      bookmarkId,
+      bookmarkTitle,
+      bookmarkUrl,
+      section,
       selfSpeakers: selfSpeakers.length > 0 ? selfSpeakers : null,
       countsTowardXp,
       learningArea: countsTowardXp ? learningArea : null,
@@ -139,6 +148,20 @@ export function DialogueForm({
           placeholder="Genki L3 — meeting a coworker"
         />
       </div>
+
+      <BookmarkPicker
+        label="Resource (optional)"
+        selectedBookmarkId={bookmarkId}
+        selectedBookmarkTitle={bookmarkTitle}
+        onPick={(record) => {
+          setBookmarkId(record?.id ?? null);
+          setBookmarkTitle(record?.title ?? null);
+          setBookmarkUrl(record?.url ?? null);
+        }}
+        enableSections
+        selectedSection={section}
+        onPickSection={setSection}
+      />
 
       <div className="space-y-1.5">
         <Label htmlFor="dlg-script">Script</Label>

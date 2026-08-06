@@ -6,6 +6,7 @@ import type {
 } from "@sentence-bank/types";
 import { db } from "@/db";
 import { grammarNotes, type GrammarNoteRow } from "@/db/schema";
+import { toIso } from "@/services/rows";
 
 /** Thrown when creating a note for a grammar tag that already has one (unique `tag_id`). */
 export class GrammarNoteExistsError extends Error {
@@ -28,10 +29,8 @@ function toGrammarNote(row: GrammarNoteRow): GrammarNote {
     relations: row.relations ?? [],
     resources: row.resources ?? [],
     starred: row.starred,
-    createdAt:
-      row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
-    updatedAt:
-      row.updatedAt instanceof Date ? row.updatedAt.toISOString() : String(row.updatedAt),
+    createdAt: toIso(row.createdAt),
+    updatedAt: toIso(row.updatedAt),
   };
 }
 

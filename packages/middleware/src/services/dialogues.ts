@@ -9,6 +9,7 @@ import { reconcileDialogueLines } from "@sentence-bank/types";
 import { db } from "@/db";
 import { type DialogueRow, dialogues } from "@/db/schema";
 import { generateFurigana, getFuriganaOverrides } from "@/services/furigana";
+import { toIso } from "@/services/rows";
 
 /**
  * A dialogue's `script` is the source of truth for its structure, but its `lines` carry two things the
@@ -63,13 +64,15 @@ function toDialogue(row: DialogueRow): Dialogue {
     language: row.language,
     script: row.script,
     lines: row.lines ?? null,
+    bookmarkId: row.bookmarkId,
+    bookmarkTitle: row.bookmarkTitle,
+    bookmarkUrl: row.bookmarkUrl,
+    section: row.section ?? null,
     selfSpeakers: row.selfSpeakers ?? null,
     countsTowardXp: row.countsTowardXp,
     learningArea: row.learningArea ?? null,
-    createdAt:
-      row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
-    updatedAt:
-      row.updatedAt instanceof Date ? row.updatedAt.toISOString() : String(row.updatedAt),
+    createdAt: toIso(row.createdAt),
+    updatedAt: toIso(row.updatedAt),
   };
 }
 
@@ -94,6 +97,10 @@ export async function createDialogue(input: CreateDialogueInput): Promise<Dialog
     language: input.language,
     script: input.script,
     lines: await buildLines(input.script, input.lines ?? []),
+    bookmarkId: input.bookmarkId ?? null,
+    bookmarkTitle: input.bookmarkTitle ?? null,
+    bookmarkUrl: input.bookmarkUrl ?? null,
+    section: input.section ?? null,
     selfSpeakers: normalizeSelfSpeakers(input.selfSpeakers),
     countsTowardXp: input.countsTowardXp ?? false,
     learningArea: input.learningArea ?? null,

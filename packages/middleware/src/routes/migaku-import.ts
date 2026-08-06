@@ -1,6 +1,6 @@
 import type { FastifyInstance, FastifyReply } from "fastify";
 import type { CommitMigakuImportInput } from "@sentence-bank/types";
-import { MediaNotConfiguredError, MediaUnavailableError } from "@/services/media";
+import { handleUpstreamError } from "@/routes/upstream-errors";
 import {
   commitImport,
   createImport,
@@ -122,13 +122,7 @@ function handleError(err: unknown, reply: FastifyReply): FastifyReply {
   if (err instanceof MigakuImportNotFoundError) return reply.code(404).send({
     message: err.message,
   });
-  if (err instanceof MediaNotConfiguredError) return reply.code(503).send({
-    message: err.message,
-  });
-  if (err instanceof MediaUnavailableError) return reply.code(502).send({
-    message: err.message,
-  });
-  throw err;
+  return handleUpstreamError(err, reply);
 }
 
 /** Routes for importing Migaku `.apkg` decks, mounted under `/api/migaku-imports`. */

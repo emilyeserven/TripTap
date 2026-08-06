@@ -537,8 +537,15 @@
     {
       "idx": 76,
       "version": "7",
-      "when": 1785980529091,
-      "tag": "0076_wild_shadow_king",
+      "when": 1785974541475,
+      "tag": "0076_petite_sentinels",
+      "breakpoints": true
+    },
+    {
+      "idx": 77,
+      "version": "7",
+      "when": 1785983351200,
+      "tag": "0077_mute_scarlet_witch",
       "breakpoints": true
     }
   ]

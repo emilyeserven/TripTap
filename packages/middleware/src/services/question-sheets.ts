@@ -6,6 +6,7 @@ import type {
 } from "@sentence-bank/types";
 import { db } from "@/db";
 import { questionSheets, type QuestionSheetRow } from "@/db/schema";
+import { toIso, toIsoOrNull } from "@/services/rows";
 
 /** Map a DB row to the shared `QuestionSheet` wire type. */
 function toQuestionSheet(row: QuestionSheetRow): QuestionSheet {
@@ -18,17 +19,15 @@ function toQuestionSheet(row: QuestionSheetRow): QuestionSheet {
     bookmarkTitle: row.bookmarkTitle,
     bookmarkUrl: row.bookmarkUrl,
     sections: row.sections ?? [],
-    dueDate: row.dueDate instanceof Date ? row.dueDate.toISOString() : (row.dueDate ?? null),
+    dueDate: toIsoOrNull(row.dueDate),
     firstQuestionNumber: row.firstQuestionNumber ?? 1,
     learningAreas: row.learningAreas ?? [],
     grammarTerms: row.grammarTerms ?? [],
     layout: row.layout === "grid" ? "grid" : "list",
     questions: row.questions ?? [],
     grid: row.grid ?? null,
-    createdAt:
-      row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
-    updatedAt:
-      row.updatedAt instanceof Date ? row.updatedAt.toISOString() : String(row.updatedAt),
+    createdAt: toIso(row.createdAt),
+    updatedAt: toIso(row.updatedAt),
   };
 }
 

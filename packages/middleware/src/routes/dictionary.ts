@@ -1,24 +1,8 @@
-import type { FastifyInstance, FastifyReply } from "fastify";
+import { handleUpstreamError } from "@/routes/upstream-errors";
+import type { FastifyInstance } from "fastify";
 import {
-  DictionaryNotConfiguredError,
-  DictionaryUnavailableError,
   searchDictionary,
 } from "@/services/dictionary";
-
-/** Map a dictionary domain error to its HTTP status; rethrow anything else. */
-function handleError(err: unknown, reply: FastifyReply): FastifyReply {
-  if (err instanceof DictionaryNotConfiguredError) {
-    return reply.code(503).send({
-      message: err.message,
-    });
-  }
-  if (err instanceof DictionaryUnavailableError) {
-    return reply.code(502).send({
-      message: err.message,
-    });
-  }
-  throw err;
-}
 
 const searchQuery = {
   type: "object",
@@ -50,7 +34,7 @@ export async function dictionaryRoutes(app: FastifyInstance): Promise<void> {
       return await searchDictionary(keyword);
     }
     catch (err) {
-      return handleError(err, reply);
+      return handleUpstreamError(err, reply);
     }
   });
 }

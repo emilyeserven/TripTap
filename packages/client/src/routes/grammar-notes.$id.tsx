@@ -5,9 +5,5 @@ import { createFileRoute, Outlet } from "@tanstack/react-router";
  * (`/grammar-notes/$id/`) or the edit form (`/grammar-notes/$id/edit`).
  */
 export const Route = createFileRoute("/grammar-notes/$id")({
-  component: GrammarNoteIdLayout,
+  component: Outlet,
 });
-
-function GrammarNoteIdLayout() {
-  return <Outlet />;
-}

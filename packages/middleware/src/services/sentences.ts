@@ -9,6 +9,7 @@ import {
   getFuriganaOverrides,
 } from "@/services/furigana";
 import { deleteMedia, getMedia, type StoredMedia } from "@/services/media";
+import { toIso } from "@/services/rows";
 
 /** Number of vocab items linked to one sentence. */
 async function vocabCountFor(id: string): Promise<number> {
@@ -55,8 +56,7 @@ export function toSentence(row: SentenceRow, vocabCount = 0): Sentence {
     hasImage: row.imageKey != null,
     vocabCount,
     shadowingCandidate: row.shadowingCandidate,
-    createdAt:
-      row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
+    createdAt: toIso(row.createdAt),
   };
 }
 

@@ -18,8 +18,6 @@ import type { MediaConnectionTestResult, MediaStorageStatus } from "@sentence-ba
 import { newId } from "@/lib/id";
 import { MediaNotConfiguredError, MediaUnavailableError } from "@/services/media/errors";
 
-export { MediaNotConfiguredError, MediaUnavailableError } from "@/services/media/errors";
-
 /** All app-managed objects live under this key prefix within the bucket. */
 export const MEDIA_PREFIX = "migaku/";
 

@@ -1,44 +1,8 @@
+import type { NavDestination, NavParent } from "@/lib/nav";
 import type * as React from "react";
 
 import { Link, useRouterState } from "@tanstack/react-router";
-import {
-  ArrowDownUpIcon,
-  BookAIcon,
-  BookMarkedIcon,
-  BookOpenIcon,
-  BookOpenTextIcon,
-  BrainIcon,
-  CameraIcon,
-  ChartColumnIcon,
-  ChevronDownIcon,
-  ChevronRightIcon,
-  DatabaseIcon,
-  DrillIcon,
-  FolderTreeIcon,
-  GraduationCapIcon,
-  HeadphonesIcon,
-  ImagesIcon,
-  LandmarkIcon,
-  LayersIcon,
-  ListChecksIcon,
-  LibraryIcon,
-  LightbulbIcon,
-  ListMusicIcon,
-  MessagesSquareIcon,
-  MicIcon,
-  NotebookPenIcon,
-  PencilRulerIcon,
-  PenLineIcon,
-  Repeat2Icon,
-  ScrollTextIcon,
-  SendIcon,
-  SettingsIcon,
-  SparklesIcon,
-  SpellCheckIcon,
-  TargetIcon,
-  TelescopeIcon,
-  UserRoundIcon,
-} from "lucide-react";
+import { ChevronDownIcon, ChevronRightIcon, LibraryIcon } from "lucide-react";
 
 import { PwaUpdateItem } from "@/components/PwaUpdateItem";
 import {
@@ -64,219 +28,8 @@ import {
 } from "@/components/ui/sidebar";
 import { useLearnerProfile } from "@/hooks/useSettings";
 import { useXpSummary } from "@/hooks/useXp";
+import { navFooterItems, navSections, startSomething } from "@/lib/nav";
 import { cn } from "@/lib/utils";
-
-/** { Resources, Lessons, AI Lessons, Captures, … } — source material to mine from. */
-const collectionsItems = [
-  {
-    title: "Resources",
-    to: "/collections",
-    icon: TelescopeIcon,
-  },
-  {
-    title: "Lessons",
-    to: "/lessons",
-    icon: BookAIcon,
-  },
-  {
-    title: "AI Lessons",
-    to: "/ai-lessons",
-    icon: GraduationCapIcon,
-  },
-  {
-    title: "Captures",
-    to: "/captures",
-    icon: ImagesIcon,
-  },
-  {
-    // Renamed from "Sources" to stop colliding with the bookmarks "Resources" page above — this is
-    // the local free-text provenance table for sentences, not the remote study-material channel.
-    title: "Sentence Origins",
-    to: "/sources",
-    icon: DatabaseIcon,
-  },
-] as const;
-
-/** The study bank itself. */
-const libraryItems = [
-  {
-    title: "Tutors",
-    to: "/tutors",
-    icon: UserRoundIcon,
-  },
-  {
-    title: "Culture",
-    to: "/culture",
-    icon: LandmarkIcon,
-  },
-  {
-    title: "Vocabulary",
-    to: "/vocabulary",
-    icon: BookOpenIcon,
-  },
-  {
-    title: "Sentences",
-    to: "/sentences",
-    icon: ScrollTextIcon,
-  },
-  {
-    title: "Writing Prompts",
-    to: "/writing-prompts",
-    icon: LightbulbIcon,
-  },
-] as const;
-
-/** Tools that act on the bank (exports, etc.). */
-const actionItems = [
-  {
-    title: "Grammar",
-    to: "/grammar-notes",
-    icon: SpellCheckIcon,
-  },
-  {
-    title: "Reading & Writing",
-    to: "/reading-writing",
-    icon: BookOpenTextIcon,
-    children: [
-      {
-        title: "Study Sentences",
-        to: "/practice",
-        icon: NotebookPenIcon,
-      },
-      {
-        title: "My Writing",
-        to: "/my-writing",
-        icon: PenLineIcon,
-      },
-      {
-        title: "My Sentences",
-        to: "/my-sentences",
-        icon: PencilRulerIcon,
-      },
-      {
-        title: "Reading Session",
-        to: "/reading-sessions",
-        icon: BookOpenIcon,
-      },
-    ],
-  },
-  {
-    title: "Exercises",
-    to: "/exercises",
-    icon: BookMarkedIcon,
-  },
-  {
-    title: "Speaking & Listening",
-    to: "/speaking-listening",
-    icon: MicIcon,
-    children: [
-      {
-        title: "Listening Sessions",
-        to: "/listening-sessions",
-        icon: HeadphonesIcon,
-      },
-      {
-        title: "Shadowing Practice",
-        to: "/shadowing",
-        icon: Repeat2Icon,
-      },
-      {
-        title: "Shadowing Lists",
-        to: "/shadowing-lists",
-        icon: ListMusicIcon,
-      },
-      {
-        title: "Dialogues",
-        to: "/dialogues",
-        icon: MessagesSquareIcon,
-      },
-    ],
-  },
-  {
-    title: "Drill Sessions",
-    to: "/drill-sessions",
-    icon: TargetIcon,
-    children: [
-      {
-        title: "Mistake Reasons",
-        to: "/drill-sessions/reasons",
-        icon: FolderTreeIcon,
-      },
-      {
-        title: "Statistics",
-        to: "/drill-sessions/stats",
-        icon: ChartColumnIcon,
-      },
-    ],
-  },
-  {
-    title: "Correction Triage",
-    to: "/corrections",
-    icon: ListChecksIcon,
-    children: [
-      {
-        title: "Triage",
-        to: "/corrections/triage",
-        icon: SpellCheckIcon,
-      },
-      {
-        title: "Error Log",
-        to: "/corrections/log",
-        icon: ScrollTextIcon,
-      },
-      {
-        title: "Rule Groups",
-        to: "/corrections/groups",
-        icon: LayersIcon,
-      },
-    ],
-  },
-  {
-    title: "Theory Study",
-    to: "/theory-sessions",
-    icon: BrainIcon,
-  },
-  {
-    title: "Import & Export",
-    icon: ArrowDownUpIcon,
-    children: [
-      {
-        title: "Migaku import",
-        to: "/migaku-import",
-        icon: LayersIcon,
-      },
-      {
-        title: "Renshuu export",
-        to: "/renshuu",
-        icon: SendIcon,
-      },
-      {
-        title: "Anki export",
-        to: "/anki",
-        icon: LayersIcon,
-      },
-    ],
-  },
-] as const;
-
-/** Primary "start a task" entry points, listed in the "Action" section under the Start Something link. */
-const startItems = [
-  {
-    title: "Capture",
-    to: "/capture",
-    icon: CameraIcon,
-  },
-  {
-    title: "Start Lesson",
-    to: "/lessons/new",
-    icon: BookAIcon,
-  },
-  {
-    title: "Start Drills",
-    to: "/drill-sessions/new",
-    icon: DrillIcon,
-  },
-] as const;
 
 function isItemActive(pathname: string, to: string) {
   if (to === "/") return pathname === "/";
@@ -288,9 +41,7 @@ function NavItem({
   item,
   pathname,
 }: {
-  item: { title: string;
-    to: string;
-    icon: React.ComponentType; };
+  item: NavDestination;
   pathname: string;
 }) {
   return (
@@ -313,14 +64,7 @@ function NavNestedItem({
   item,
   pathname,
 }: {
-  item: {
-    title: string;
-    to?: string;
-    icon: React.ComponentType;
-    children: readonly { title: string;
-      to: string;
-      icon: React.ComponentType; }[];
-  };
+  item: NavParent;
   pathname: string;
 }) {
   const isChildActive = item.children.some(child => isItemActive(pathname, child.to));
@@ -483,8 +227,8 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenuItem>
               <SidebarMenuButton
                 asChild
-                isActive={isItemActive(pathname, "/start")}
-                tooltip="Start Something"
+                isActive={isItemActive(pathname, startSomething.to)}
+                tooltip={startSomething.title}
                 className={cn(
                   // Solid primary with its own foreground — the readable pairing in both themes.
                   // Progress rides as a slim bar along the bottom edge, clear of the label so the
@@ -500,9 +244,9 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                   `,
                 )}
               >
-                <Link to="/start">
-                  <SparklesIcon className="relative z-10" />
-                  <span className="relative z-10">Start Something</span>
+                <Link to={startSomething.to}>
+                  <startSomething.icon className="relative z-10" />
+                  <span className="relative z-10">{startSomething.title}</span>
                   {/* Progress bar: today's XP toward the daily goal, along the bottom edge. */}
                   <span
                     aria-hidden
@@ -527,84 +271,44 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
           </SidebarMenu>
         </SidebarGroup>
 
-        {/* The "start a task" entry points, directly below the Start Something link. */}
-        <NavSection label="Action">
-          <SidebarMenu>
-            {startItems.map(item => (
-              <NavItem
-                key={item.title}
-                item={item}
-                pathname={pathname}
-              />
-            ))}
-          </SidebarMenu>
-        </NavSection>
-
-        <NavSection label="Input & Output">
-          <SidebarMenu>
-            {actionItems.map(item =>
-              "children" in item
-                ? (
-                  <NavNestedItem
-                    key={item.title}
-                    item={item}
-                    pathname={pathname}
-                  />
-                )
-                : (
-                  <NavItem
-                    key={item.title}
-                    item={item}
-                    pathname={pathname}
-                  />
-                ))}
-          </SidebarMenu>
-        </NavSection>
-
-        <NavSection label="Collections">
-          <SidebarMenu>
-            {collectionsItems.map(item => (
-              <NavItem
-                key={item.to}
-                item={item}
-                pathname={pathname}
-              />
-            ))}
-          </SidebarMenu>
-        </NavSection>
-
-        <NavSection label="Library">
-          <SidebarMenu>
-            {libraryItems.map(item => (
-              <NavItem
-                key={item.to}
-                item={item}
-                pathname={pathname}
-              />
-            ))}
-          </SidebarMenu>
-        </NavSection>
+        {/* Action first — the "start a task" entry points sit directly below Start Something. */}
+        {navSections.map(section => (
+          <NavSection
+            key={section.label}
+            label={section.label}
+          >
+            <SidebarMenu>
+              {section.items.map(item =>
+                "children" in item
+                  ? (
+                    <NavNestedItem
+                      key={item.title}
+                      item={item}
+                      pathname={pathname}
+                    />
+                  )
+                  : (
+                    <NavItem
+                      key={item.to}
+                      item={item}
+                      pathname={pathname}
+                    />
+                  ))}
+            </SidebarMenu>
+          </NavSection>
+        ))}
       </SidebarContent>
 
       <SidebarFooter>
         <SidebarMenu>
           <PwaUpdateItem />
-          <NavItem
-            item={{
-              title: "Learner Profile",
-              to: "/profile",
-              icon: TargetIcon,
-            }}
-            pathname={pathname}
-          />
-          <NavItem
-            item={{
-              title: "Settings",
-              to: "/settings",
-              icon: SettingsIcon,
-            }}
-            pathname={pathname}
-          />
+          {navFooterItems.map(item => (
+            <NavItem
+              key={item.to}
+              item={item}
+              pathname={pathname}
+            />
+          ))}
         </SidebarMenu>
       </SidebarFooter>
 

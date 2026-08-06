@@ -12,8 +12,6 @@ import { RenshuuNotConfiguredError, RenshuuUnavailableError } from "@/services/r
 import { normalizeJapaneseOrthography } from "@/services/renshuu/orthography";
 import { getRenshuuApiKey } from "@/services/settings";
 
-export { RenshuuNotConfiguredError, RenshuuUnavailableError } from "@/services/renshuu/errors";
-
 const DEFAULT_BASE_URL = "https://api.renshuu.org";
 const REQUEST_TIMEOUT_MS = 10_000;
 const DEFAULT_LIMIT = 10;

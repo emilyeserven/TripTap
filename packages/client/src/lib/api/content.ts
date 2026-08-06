@@ -21,6 +21,7 @@ import type {
   Vocab,
 } from "@sentence-bank/types";
 
+import { crudApi } from "./crud";
 import { BASE, request, uploadFile } from "./request";
 
 /**
@@ -190,20 +191,4 @@ export const sourcesApi = {
   }),
 };
 
-export const shadowingListsApi = {
-  list: () => request<ShadowingList[]>("/shadowing-lists"),
-  get: (id: string) => request<ShadowingList>(`/shadowing-lists/${id}`),
-  create: (input: CreateShadowingListInput) =>
-    request<ShadowingList>("/shadowing-lists", {
-      method: "POST",
-      body: JSON.stringify(input),
-    }),
-  update: (id: string, input: UpdateShadowingListInput) =>
-    request<ShadowingList>(`/shadowing-lists/${id}`, {
-      method: "PATCH",
-      body: JSON.stringify(input),
-    }),
-  remove: (id: string) => request<undefined>(`/shadowing-lists/${id}`, {
-    method: "DELETE",
-  }),
-};
+export const shadowingListsApi = crudApi<ShadowingList, CreateShadowingListInput, UpdateShadowingListInput>("/shadowing-lists");

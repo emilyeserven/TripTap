@@ -29,6 +29,7 @@ import {
   type AiLessonSourceSentenceRow,
   type AiLessonVocabRow,
 } from "@/db/schema";
+import { toIso } from "@/services/rows";
 
 /** Thrown when an imported AI Lesson reuses an existing slug. Routes map this to HTTP 409. */
 export class AiLessonSlugConflictError extends Error {
@@ -39,10 +40,6 @@ export class AiLessonSlugConflictError extends Error {
 }
 
 /* ── Row → wire mappers ───────────────────────────────────────────────────────────────────── */
-
-function toIso(value: Date | string): string {
-  return value instanceof Date ? value.toISOString() : String(value);
-}
 
 function toAiLessonRecord(row: AiLessonRow): AiLessonRecord {
   return {

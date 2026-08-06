@@ -8,14 +8,10 @@ import { BATCH_CARD_CAP } from "@sentence-bank/types";
 import { db } from "@/db";
 import { chunkCards, type ChunkCardRow } from "@/db/schema";
 import { linkProducedCards } from "@/services/corrections";
+import { toIsoOrNull } from "@/services/rows";
 
 /** Producing a 4th card in one batch is a hard block, not a warning (spec §6 inv.2). */
 export class VolumeCapError extends Error {}
-
-function ts(value: Date | string | null): string | null {
-  if (value == null) return null;
-  return value instanceof Date ? value.toISOString() : String(value);
-}
 
 function toChunkCard(row: ChunkCardRow): ChunkCard {
   return {
@@ -28,8 +24,8 @@ function toChunkCard(row: ChunkCardRow): ChunkCard {
     prompt: row.prompt,
     answer: row.answer,
     wrongForm: row.wrongForm,
-    createdAt: ts(row.createdAt)!,
-    exportedAt: ts(row.exportedAt),
+    createdAt: toIsoOrNull(row.createdAt)!,
+    exportedAt: toIsoOrNull(row.exportedAt),
   };
 }
 

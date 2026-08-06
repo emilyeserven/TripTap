@@ -6,6 +6,7 @@ import type {
 } from "@sentence-bank/types";
 import { db } from "@/db";
 import { drillSessions, type DrillSessionRow } from "@/db/schema";
+import { toIso } from "@/services/rows";
 
 /** Map a DB row to the shared `DrillSession` wire type. */
 function toDrillSession(row: DrillSessionRow): DrillSession {
@@ -22,10 +23,8 @@ function toDrillSession(row: DrillSessionRow): DrillSession {
     bookmarkTitle: row.bookmarkTitle ?? null,
     bookmarkUrl: row.bookmarkUrl ?? null,
     section: row.section ?? null,
-    createdAt:
-      row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
-    updatedAt:
-      row.updatedAt instanceof Date ? row.updatedAt.toISOString() : String(row.updatedAt),
+    createdAt: toIso(row.createdAt),
+    updatedAt: toIso(row.updatedAt),
   };
 }
 

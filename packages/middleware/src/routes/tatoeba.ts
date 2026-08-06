@@ -1,15 +1,6 @@
-import type { FastifyInstance, FastifyReply } from "fastify";
-import { searchExampleSentences, TatoebaUnavailableError } from "@/services/tatoeba";
-
-/** Map a Tatoeba domain error to its HTTP status; rethrow anything else. */
-function handleError(err: unknown, reply: FastifyReply): FastifyReply {
-  if (err instanceof TatoebaUnavailableError) {
-    return reply.code(502).send({
-      message: err.message,
-    });
-  }
-  throw err;
-}
+import { handleUpstreamError } from "@/routes/upstream-errors";
+import type { FastifyInstance } from "fastify";
+import { searchExampleSentences } from "@/services/tatoeba";
 
 const searchQuery = {
   type: "object",
@@ -46,7 +37,7 @@ export async function tatoebaRoutes(app: FastifyInstance): Promise<void> {
       return await searchExampleSentences(query, limit);
     }
     catch (err) {
-      return handleError(err, reply);
+      return handleUpstreamError(err, reply);
     }
   });
 }

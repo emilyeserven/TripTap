@@ -2,6 +2,7 @@ import { asc, eq } from "drizzle-orm";
 import type { CreateSourceInput, Source, UpdateSourceInput } from "@sentence-bank/types";
 import { db } from "@/db";
 import { sources, type SourceRow } from "@/db/schema";
+import { toIso } from "@/services/rows";
 
 /** Map a DB row to the shared `Source` wire type. */
 function toSource(row: SourceRow): Source {
@@ -12,8 +13,7 @@ function toSource(row: SourceRow): Source {
     author: row.author,
     url: row.url,
     notes: row.notes,
-    createdAt:
-      row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
+    createdAt: toIso(row.createdAt),
   };
 }
 
