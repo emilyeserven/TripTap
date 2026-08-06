@@ -4,13 +4,21 @@ import type {
   BasketSentence,
   BasketVocab,
 } from "@/stores/basketStore";
+import type { ShadowingList } from "@sentence-bank/types";
 
-import { ShoppingBasket, X } from "lucide-react";
+import { useState } from "react";
+
+import { ListMusic, NotebookPen, ShoppingBasket, X } from "lucide-react";
+import { toast } from "sonner";
 
 import { SentenceText } from "./SentenceText";
 
 import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
+import { useCreatePracticeSentencesMany } from "@/hooks/usePracticeSentences";
+import { useSentences } from "@/hooks/useSentences";
+import { useShadowingLists, useUpdateShadowingList } from "@/hooks/useShadowingLists";
 import { basketKey, useBasketStore } from "@/stores/basketStore";
 import { useDisplayStore } from "@/stores/displayStore";
 
@@ -108,6 +116,139 @@ function GrammarRow({
       </div>
       <RemoveRow itemKey={basketKey("grammar", item.id)} />
     </li>
+  );
+}
+
+/**
+ * Send-to actions for the basket's sentence section — the basket's exit doors. "To practice" bulk-
+ * creates practice sentences from the snapshots; "To list" appends them to a chosen shadowing list.
+ * Sent items leave the basket on success.
+ */
+function SentenceSendActions({
+  sentences,
+}: {
+  sentences: BasketSentence[];
+}) {
+  const remove = useBasketStore(s => s.remove);
+  const createPractice = useCreatePracticeSentencesMany();
+  const {
+    data: lists,
+  } = useShadowingLists();
+  const updateList = useUpdateShadowingList();
+  const {
+    data: bankSentences,
+  } = useSentences();
+  const [listOpen, setListOpen] = useState(false);
+
+  const pending = createPractice.isPending || updateList.isPending;
+
+  const sendToPractice = () => {
+    createPractice.mutate(
+      // Basket snapshots don't carry a language; default to the app-wide form default.
+      sentences.map(s => ({
+        text: s.text,
+        translation: s.translation,
+        language: "Japanese",
+      })),
+      {
+        onSuccess: () => {
+          for (const s of sentences) remove(basketKey("sentence", s.id));
+        },
+      },
+    );
+  };
+
+  const addToList = (list: ShadowingList) => {
+    // AI-lesson source sentences share the basket "sentence" kind but aren't bank rows; storing
+    // their ids on a list would leave entries that never resolve.
+    const bankIds = new Set((bankSentences ?? []).map(s => s.id));
+    const resolvable = sentences.filter(s => bankIds.has(s.id));
+    const skipped = sentences.length - resolvable.length;
+    if (resolvable.length === 0) {
+      toast.error("None of these are bank sentences, so they can't join a shadowing list.");
+      return;
+    }
+    updateList.mutate(
+      {
+        id: list.id,
+        input: {
+          sentenceIds: [...new Set([...list.sentenceIds, ...resolvable.map(s => s.id)])],
+        },
+      },
+      {
+        onSuccess: () => {
+          setListOpen(false);
+          for (const s of resolvable) remove(basketKey("sentence", s.id));
+          toast.success(
+            `Added ${resolvable.length} to “${list.name}”${
+              skipped > 0 ? ` (${skipped} skipped — not bank sentences)` : ""
+            }`,
+          );
+        },
+      },
+    );
+  };
+
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      <Button
+        type="button"
+        size="sm"
+        variant="outline"
+        className="h-7 gap-1 px-2 text-xs"
+        disabled={pending}
+        onClick={sendToPractice}
+      >
+        <NotebookPen className="size-3.5" />
+        To practice
+      </Button>
+      <Popover
+        open={listOpen}
+        onOpenChange={setListOpen}
+      >
+        <PopoverTrigger asChild>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className="h-7 gap-1 px-2 text-xs"
+            disabled={pending}
+          >
+            <ListMusic className="size-3.5" />
+            To list
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent
+          align="start"
+          className="w-56 p-2"
+        >
+          {(lists ?? []).length === 0
+            ? (
+              <p className="p-1 text-xs text-muted-foreground">
+                No shadowing lists yet — create one from a sentence card first.
+              </p>
+            )
+            : (
+              <ul className="space-y-1">
+                {(lists ?? []).map(l => (
+                  <li key={l.id}>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 w-full justify-start px-2 text-xs"
+                      disabled={pending}
+                      onClick={() => addToList(l)}
+                    >
+                      {l.name}
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            )}
+        </PopoverContent>
+      </Popover>
+    </div>
   );
 }
 
@@ -233,6 +374,7 @@ export function Basket() {
             />
           )}
         />
+        {sentences.length > 0 ? <SentenceSendActions sentences={sentences} /> : null}
         {sentences.length > 0 && (vocab.length > 0 || grammar.length > 0)
           ? <Separator />
           : null}

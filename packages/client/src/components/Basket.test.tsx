@@ -1,12 +1,40 @@
 import type { BasketGrammar, BasketSentence } from "@/stores/basketStore";
 
 import { fireEvent, render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { Basket } from "./Basket";
 
 import { useBasketStore } from "@/stores/basketStore";
 import { useDisplayStore } from "@/stores/displayStore";
+
+// The send-to actions reach the API through these hooks; the basket behavior under test is store-local.
+const createPracticeMutate = vi.fn(
+  (_inputs: unknown, options?: { onSuccess?: () => void }) => options?.onSuccess?.(),
+);
+
+vi.mock("@/hooks/usePracticeSentences", () => ({
+  useCreatePracticeSentencesMany: () => ({
+    mutate: createPracticeMutate,
+    isPending: false,
+  }),
+}));
+
+vi.mock("@/hooks/useSentences", () => ({
+  useSentences: () => ({
+    data: [],
+  }),
+}));
+
+vi.mock("@/hooks/useShadowingLists", () => ({
+  useShadowingLists: () => ({
+    data: [],
+  }),
+  useUpdateShadowingList: () => ({
+    mutate: vi.fn(),
+    isPending: false,
+  }),
+}));
 
 const sentence: BasketSentence = {
   kind: "sentence",
@@ -94,5 +122,25 @@ describe("Basket", () => {
       name: "Clear",
     }));
     expect(useBasketStore.getState().items).toHaveLength(0);
+  });
+
+  it("sends sentences to practice and removes them from the basket", () => {
+    createPracticeMutate.mockClear();
+    useBasketStore.setState({
+      items: [sentence, grammar],
+      expanded: true,
+    });
+    render(<Basket />);
+    fireEvent.click(screen.getByRole("button", {
+      name: "To practice",
+    }));
+    expect(createPracticeMutate).toHaveBeenCalledTimes(1);
+    expect(createPracticeMutate.mock.calls[0]?.[0]).toEqual([{
+      text: sentence.text,
+      translation: sentence.translation,
+      language: "Japanese",
+    }]);
+    // Sent sentences leave the basket; unrelated kinds stay.
+    expect(useBasketStore.getState().items).toEqual([grammar]);
   });
 });
