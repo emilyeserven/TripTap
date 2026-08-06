@@ -43,6 +43,8 @@ export const TERM_CATEGORIES: { category: SentenceTermCategory;
  * retired channel (e.g. the old "listening") is folded into "resource" so it still renders.
  */
 export function termCategory(term: SentenceTermRef): SentenceTermCategory {
+  // The cast is deliberate, not leftover: `category` is optional *and* a stored row may carry a
+  // value outside the union (the retired "listening" channel), which the type can't express.
   const raw = term.category as string | undefined;
   if (raw === "vocabulary" || raw === "grammar" || raw === "general" || raw === "resource") return raw;
   return raw ? "resource" : "vocabulary";

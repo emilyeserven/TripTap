@@ -599,8 +599,14 @@ export interface SentenceTermRef {
   sourceId: string;
   /** The source tag/taxonomy display name at the time of tagging. */
   sourceLabel: string;
-  /** Which channel this term belongs to. Absent on rows created before channels existed → treat as "vocabulary". */
-  category: SentenceTermCategory;
+  /**
+   * Which channel this term belongs to.
+   *
+   * Optional, and genuinely so: the API has never required it (`routes/schemas/terms.ts` omits it
+   * from `required`), and rows created before channels existed don't carry one. Read it through
+   * {@link termCategory}, which applies the "absent → vocabulary" default.
+   */
+  category?: SentenceTermCategory;
 }
 
 /**

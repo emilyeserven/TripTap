@@ -149,3 +149,28 @@ test("POST /api/writings rejects a correction mark missing required fields", asy
   assert.equal(res.statusCode, 400);
   await app.close();
 });
+
+test("POST /api/writings accepts a term ref with no category", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/writings",
+    payload: {
+      date: "2026-01-01",
+      text: "今日は寒いです。",
+      language: "Japanese",
+      terms: [{
+        id: "t1",
+        name: "寒い",
+        kind: "tag",
+        sourceId: "s1",
+        sourceLabel: "Vocabulary",
+      }],
+    },
+  });
+  // `category` has never been required by the schema — rows predating channels don't carry one, and
+  // `termCategory()` defaults them to "vocabulary". Pinned here because the TS type claimed it was
+  // required until this change, and deriving the schema from that type would have broken these rows.
+  assert.notEqual(res.statusCode, 400);
+  await app.close();
+});
