@@ -42,6 +42,12 @@ export function DialogueCard({
           <p>
             {dialogue.date} · {lineCount} {lineCount === 1 ? "line" : "lines"}
           </p>
+          {dialogue.bookmarkTitle && (
+            <p className="truncate text-xs">
+              From {dialogue.bookmarkTitle}
+              {dialogue.section && ` · ${dialogue.section.label}`}
+            </p>
+          )}
           {speakers.length > 0 && (
             <div className="flex flex-wrap gap-1">
               {speakers.map(speaker => (
