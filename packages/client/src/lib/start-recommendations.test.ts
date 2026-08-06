@@ -798,3 +798,123 @@ describe("retargetLineupItem", () => {
     expect(next.sectionId).toBeUndefined();
   });
 });
+
+describe("activity-specific session links", () => {
+  const FULL_AREA_TAGS: LearningAreaTagMap = {
+    ...AREA_TAGS,
+    Writing: {
+      id: "t-writing",
+      name: "Writing",
+    },
+    Grammar: {
+      id: "t-grammar",
+      name: "Grammar",
+    },
+    Vocabulary: {
+      id: "t-vocab",
+      name: "Vocabulary",
+    },
+  };
+
+  const lowestFor = (area: string) => summary({
+    Speaking: 9,
+    Listening: 9,
+    Reading: 9,
+    Writing: 9,
+    Grammar: 9,
+    Vocabulary: 9,
+    [area]: 0,
+  });
+
+  it("sends a Writing-tagged resource to My Writing with no bookmark params", () => {
+    const suggestions = buildStartSuggestions({
+      summary: lowestFor("Writing"),
+      areaTags: FULL_AREA_TAGS,
+      resources: [res({
+        id: "essay-prompts",
+        tagIds: ["t-writing"],
+      })],
+      now: NOW,
+    });
+    const pick = suggestions.find(s => s.id === "resource-essay-prompts");
+    expect(pick?.to).toBe("/my-writing");
+    // /my-writing has no validateSearch for bookmark params, so the link carries none.
+    expect(pick?.search ?? {}).toEqual({});
+  });
+
+  it("drops a Writing resource pick when the writing session type is excluded", () => {
+    const suggestions = buildStartSuggestions({
+      summary: lowestFor("Writing"),
+      areaTags: FULL_AREA_TAGS,
+      resources: [res({
+        id: "essay-prompts",
+        tagIds: ["t-writing"],
+      })],
+      exclusions: {
+        mediaTypes: [],
+        sessionTypes: ["writing"],
+        learningAreas: [],
+      },
+      now: NOW,
+    });
+    expect(suggestions.find(s => s.id === "resource-essay-prompts")).toBeUndefined();
+  });
+
+  it("sends Vocabulary-tagged resources to practice and Grammar-tagged ones to grammar notes", () => {
+    const suggestions = buildStartSuggestions({
+      summary: lowestFor("Vocabulary"),
+      areaTags: FULL_AREA_TAGS,
+      resources: [
+        res({
+          id: "vocab-deck",
+          tagIds: ["t-vocab"],
+        }),
+        res({
+          id: "grammar-guide",
+          tagIds: ["t-grammar"],
+        }),
+      ],
+      now: NOW,
+    });
+    expect(suggestions.find(s => s.id === "resource-vocab-deck")?.to).toBe("/practice");
+    expect(suggestions.find(s => s.id === "resource-grammar-guide")?.to).toBe("/grammar-notes");
+  });
+});
+
+describe("drill nudge", () => {
+  it("suggests a drill session by default", () => {
+    const suggestions = buildStartSuggestions({
+      summary: summary({}),
+      now: NOW,
+    });
+    const nudge = suggestions.find(s => s.id === "drill-nudge");
+    expect(nudge?.to).toBe("/drill-sessions/new");
+    expect(nudge?.area).toBe("Grammar");
+  });
+
+  it("drops the drill nudge when drills are excluded for the day", () => {
+    const suggestions = buildStartSuggestions({
+      summary: summary({}),
+      exclusions: {
+        mediaTypes: [],
+        sessionTypes: ["drills"],
+        learningAreas: [],
+      },
+      now: NOW,
+    });
+    expect(suggestions.find(s => s.id === "drill-nudge")).toBeUndefined();
+  });
+
+  it("drops the drill nudge when the Grammar area is excluded", () => {
+    const suggestions = buildStartSuggestions({
+      summary: summary({}),
+      exclusions: {
+        mediaTypes: [],
+        sessionTypes: [],
+        learningAreas: ["Grammar"],
+      },
+      now: NOW,
+    });
+    expect(suggestions.find(s => s.id === "drill-nudge")).toBeUndefined();
+  });
+});
