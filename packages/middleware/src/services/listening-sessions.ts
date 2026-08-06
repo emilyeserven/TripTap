@@ -6,6 +6,7 @@ import type {
 } from "@sentence-bank/types";
 import { db } from "@/db";
 import { listeningSessions, type ListeningSessionRow } from "@/db/schema";
+import { toIso } from "@/services/rows";
 
 /** Map a DB row to the shared `ListeningSession` wire type. */
 function toListeningSession(row: ListeningSessionRow): ListeningSession {
@@ -25,10 +26,8 @@ function toListeningSession(row: ListeningSessionRow): ListeningSession {
     terms: row.terms ?? null,
     learningArea: row.learningArea ?? null,
     countsTowardXp: row.countsTowardXp,
-    createdAt:
-      row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
-    updatedAt:
-      row.updatedAt instanceof Date ? row.updatedAt.toISOString() : String(row.updatedAt),
+    createdAt: toIso(row.createdAt),
+    updatedAt: toIso(row.updatedAt),
   };
 }
 

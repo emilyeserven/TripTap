@@ -6,6 +6,7 @@ import type {
 } from "@sentence-bank/types";
 import { db } from "@/db";
 import { tutors, type TutorRow } from "@/db/schema";
+import { toIso } from "@/services/rows";
 
 /** Map a DB row to the shared `Tutor` wire type. */
 function toTutor(row: TutorRow): Tutor {
@@ -13,10 +14,8 @@ function toTutor(row: TutorRow): Tutor {
     id: row.id,
     name: row.name,
     notes: row.notes,
-    createdAt:
-      row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
-    updatedAt:
-      row.updatedAt instanceof Date ? row.updatedAt.toISOString() : String(row.updatedAt),
+    createdAt: toIso(row.createdAt),
+    updatedAt: toIso(row.updatedAt),
   };
 }
 

@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { sentences, sentenceVocab, vocab, type VocabRow } from "@/db/schema";
 import { toSentence } from "@/services/sentences";
 import { deleteMedia, getMedia, type StoredMedia } from "@/services/media";
+import { toIso } from "@/services/rows";
 
 /** Map a DB row to the shared `Vocab` wire type. */
 export function toVocab(row: VocabRow): Vocab {
@@ -21,8 +22,7 @@ export function toVocab(row: VocabRow): Vocab {
     captureId: row.captureId,
     hasAudio: row.audioKey != null,
     hasImage: row.imageKey != null,
-    createdAt:
-      row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
+    createdAt: toIso(row.createdAt),
   };
 }
 

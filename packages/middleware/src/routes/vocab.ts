@@ -9,7 +9,7 @@ import {
   listVocab,
   updateVocab,
 } from "@/services/vocab";
-import { MediaNotConfiguredError, MediaUnavailableError } from "@/services/media";
+import { handleUpstreamError } from "@/routes/upstream-errors";
 
 const vocabParams = {
   type: "object",
@@ -110,13 +110,7 @@ export async function vocabRoutes(app: FastifyInstance): Promise<void> {
         return reply.send(media.body);
       }
       catch (err) {
-        if (err instanceof MediaNotConfiguredError) return reply.code(503).send({
-          message: err.message,
-        });
-        if (err instanceof MediaUnavailableError) return reply.code(502).send({
-          message: err.message,
-        });
-        throw err;
+        return handleUpstreamError(err, reply);
       }
     });
   }

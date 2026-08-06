@@ -6,6 +6,7 @@ import type {
 } from "@sentence-bank/types";
 import { db } from "@/db";
 import { lessons, type LessonRow } from "@/db/schema";
+import { toIso } from "@/services/rows";
 
 /** Map a DB row to the shared `Lesson` wire type. */
 function toLesson(row: LessonRow): Lesson {
@@ -22,10 +23,8 @@ function toLesson(row: LessonRow): Lesson {
     durationMinutes: row.durationMinutes,
     learningArea: row.learningArea ?? null,
     countsTowardXp: row.countsTowardXp,
-    createdAt:
-      row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
-    updatedAt:
-      row.updatedAt instanceof Date ? row.updatedAt.toISOString() : String(row.updatedAt),
+    createdAt: toIso(row.createdAt),
+    updatedAt: toIso(row.updatedAt),
   };
 }
 

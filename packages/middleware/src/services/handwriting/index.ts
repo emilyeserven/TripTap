@@ -17,8 +17,6 @@ import type { HandwritingStroke, RecognizeHandwritingInput } from "@sentence-ban
 import { fetchJsonWithTimeout } from "@/services/http";
 import { HandwritingUnavailableError } from "@/services/handwriting/errors";
 
-export { HandwritingUnavailableError } from "@/services/handwriting/errors";
-
 const DEFAULT_BASE_URL = "https://inputtools.google.com";
 const REQUEST_TIMEOUT_MS = 10_000;
 const DEFAULT_LIMIT = 8;

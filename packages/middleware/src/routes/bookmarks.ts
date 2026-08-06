@@ -1,8 +1,7 @@
-import type { FastifyInstance, FastifyReply } from "fastify";
+import { handleUpstreamError } from "@/routes/upstream-errors";
+import type { FastifyInstance } from "fastify";
 import type { SentenceTermCategory } from "@sentence-bank/types";
 import {
-  BookmarksNotConfiguredError,
-  BookmarksUnavailableError,
   createVocabularyTerm,
   fetchTags,
   fetchTaxonomies,
@@ -17,21 +16,6 @@ import {
   listBookmarksForCategory,
   listSectionsByTag,
 } from "@/services/bookmarks";
-
-/** Map a bookmarks domain error to its HTTP status; rethrow anything else. */
-function handleError(err: unknown, reply: FastifyReply): FastifyReply {
-  if (err instanceof BookmarksNotConfiguredError) {
-    return reply.code(503).send({
-      message: err.message,
-    });
-  }
-  if (err instanceof BookmarksUnavailableError) {
-    return reply.code(502).send({
-      message: err.message,
-    });
-  }
-  throw err;
-}
 
 const taxonomyParams = {
   type: "object",
@@ -140,7 +124,7 @@ export async function bookmarksRoutes(app: FastifyInstance): Promise<void> {
       return await fetchTags();
     }
     catch (err) {
-      return handleError(err, reply);
+      return handleUpstreamError(err, reply);
     }
   });
 
@@ -153,7 +137,7 @@ export async function bookmarksRoutes(app: FastifyInstance): Promise<void> {
       return await fetchTaxonomies();
     }
     catch (err) {
-      return handleError(err, reply);
+      return handleUpstreamError(err, reply);
     }
   });
 
@@ -170,7 +154,7 @@ export async function bookmarksRoutes(app: FastifyInstance): Promise<void> {
       return await fetchTerms(id);
     }
     catch (err) {
-      return handleError(err, reply);
+      return handleUpstreamError(err, reply);
     }
   });
 
@@ -187,7 +171,7 @@ export async function bookmarksRoutes(app: FastifyInstance): Promise<void> {
       return await fetchVocabulary(category);
     }
     catch (err) {
-      return handleError(err, reply);
+      return handleUpstreamError(err, reply);
     }
   });
 
@@ -204,7 +188,7 @@ export async function bookmarksRoutes(app: FastifyInstance): Promise<void> {
       return await listBookmarksForCategory(category);
     }
     catch (err) {
-      return handleError(err, reply);
+      return handleUpstreamError(err, reply);
     }
   });
 
@@ -217,7 +201,7 @@ export async function bookmarksRoutes(app: FastifyInstance): Promise<void> {
       return await listBookmarkResources();
     }
     catch (err) {
-      return handleError(err, reply);
+      return handleUpstreamError(err, reply);
     }
   });
 
@@ -234,7 +218,7 @@ export async function bookmarksRoutes(app: FastifyInstance): Promise<void> {
       return await listBookmarksByTag(tagId);
     }
     catch (err) {
-      return handleError(err, reply);
+      return handleUpstreamError(err, reply);
     }
   });
 
@@ -247,7 +231,7 @@ export async function bookmarksRoutes(app: FastifyInstance): Promise<void> {
       return await listAllSections();
     }
     catch (err) {
-      return handleError(err, reply);
+      return handleUpstreamError(err, reply);
     }
   });
 
@@ -264,7 +248,7 @@ export async function bookmarksRoutes(app: FastifyInstance): Promise<void> {
       return await listSectionsByTag(tagId);
     }
     catch (err) {
-      return handleError(err, reply);
+      return handleUpstreamError(err, reply);
     }
   });
 
@@ -287,7 +271,7 @@ export async function bookmarksRoutes(app: FastifyInstance): Promise<void> {
       return reply.send(image.body);
     }
     catch (err) {
-      return handleError(err, reply);
+      return handleUpstreamError(err, reply);
     }
   });
 
@@ -309,7 +293,7 @@ export async function bookmarksRoutes(app: FastifyInstance): Promise<void> {
       return reply.send(image.body);
     }
     catch (err) {
-      return handleError(err, reply);
+      return handleUpstreamError(err, reply);
     }
   });
 
@@ -330,7 +314,7 @@ export async function bookmarksRoutes(app: FastifyInstance): Promise<void> {
       return record;
     }
     catch (err) {
-      return handleError(err, reply);
+      return handleUpstreamError(err, reply);
     }
   });
 
@@ -348,7 +332,7 @@ export async function bookmarksRoutes(app: FastifyInstance): Promise<void> {
       return await createVocabularyTerm(name, category);
     }
     catch (err) {
-      return handleError(err, reply);
+      return handleUpstreamError(err, reply);
     }
   });
 }

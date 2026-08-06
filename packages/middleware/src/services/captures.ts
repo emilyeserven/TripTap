@@ -8,6 +8,7 @@ import type {
 } from "@sentence-bank/types";
 import { db } from "@/db";
 import { captures, type CaptureRow } from "@/db/schema";
+import { toIso } from "@/services/rows";
 
 /** The image-carrying details of a stored capture, for the dedicated image endpoint. */
 export interface CaptureImage {
@@ -36,10 +37,6 @@ type SummaryRow = Pick<
   CaptureRow,
   "id" | "title" | "text" | "cleanedText" | "engines" | "sourceId" | "page" | "notes" | "status" | "imageWidth" | "imageHeight" | "createdAt"
 > & { hasImage: boolean };
-
-function toIso(value: Date | string): string {
-  return value instanceof Date ? value.toISOString() : String(value);
-}
 
 function toSummary(row: SummaryRow): CaptureSummary {
   return {

@@ -3,8 +3,6 @@ import { getDictionarySettings } from "@/services/settings";
 import { DictionaryNotConfiguredError } from "@/services/dictionary/errors";
 import { fetchDictionaryJson } from "@/services/dictionary/util";
 
-export { DictionaryNotConfiguredError, DictionaryUnavailableError } from "@/services/dictionary/errors";
-
 /** Fallback base URL when neither the DB settings nor the environment configures one. */
 const DEFAULT_DICTIONARY_URL = "https://jisho.org";
 

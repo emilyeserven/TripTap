@@ -7,6 +7,7 @@ import type {
 } from "@sentence-bank/types";
 import { db } from "@/db";
 import { readingSessions, type ReadingSessionRow } from "@/db/schema";
+import { toIso } from "@/services/rows";
 
 /** Coalesce a possibly-null stored mode to the default. */
 function toMode(mode: string | null): ReadingTranslationMode {
@@ -40,10 +41,8 @@ function toReadingSession(row: ReadingSessionRow): ReadingSession {
     section: row.section ?? null,
     learningArea: row.learningArea ?? null,
     countsTowardXp: row.countsTowardXp,
-    createdAt:
-      row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
-    updatedAt:
-      row.updatedAt instanceof Date ? row.updatedAt.toISOString() : String(row.updatedAt),
+    createdAt: toIso(row.createdAt),
+    updatedAt: toIso(row.updatedAt),
   };
 }
 

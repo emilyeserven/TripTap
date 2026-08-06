@@ -1,5 +1,7 @@
+import { UpstreamNotConfiguredError, UpstreamUnavailableError } from "@/services/upstream-errors";
+
 /** No Renshuu API key is configured (neither DB setting nor env). Surfaced as HTTP 503. */
-export class RenshuuNotConfiguredError extends Error {
+export class RenshuuNotConfiguredError extends UpstreamNotConfiguredError {
   constructor(message = "No Renshuu API key configured. Add one on the Settings page.") {
     super(message);
     this.name = "RenshuuNotConfiguredError";
@@ -7,7 +9,7 @@ export class RenshuuNotConfiguredError extends Error {
 }
 
 /** The Renshuu host was unreachable, timed out, or returned an error (incl. a rejected key). HTTP 502. */
-export class RenshuuUnavailableError extends Error {
+export class RenshuuUnavailableError extends UpstreamUnavailableError {
   constructor(message: string) {
     super(message);
     this.name = "RenshuuUnavailableError";

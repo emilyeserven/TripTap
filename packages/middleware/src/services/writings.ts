@@ -6,6 +6,7 @@ import type {
 } from "@sentence-bank/types";
 import { db } from "@/db";
 import { writings, type WritingRow } from "@/db/schema";
+import { toIso } from "@/services/rows";
 
 /** Map a DB row to the shared `Writing` wire type. */
 function toWriting(row: WritingRow): Writing {
@@ -21,10 +22,8 @@ function toWriting(row: WritingRow): Writing {
     corrections: row.corrections ?? null,
     promptTitle: row.promptTitle ?? null,
     promptText: row.promptText ?? null,
-    createdAt:
-      row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
-    updatedAt:
-      row.updatedAt instanceof Date ? row.updatedAt.toISOString() : String(row.updatedAt),
+    createdAt: toIso(row.createdAt),
+    updatedAt: toIso(row.updatedAt),
   };
 }
 
