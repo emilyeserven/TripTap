@@ -10,6 +10,7 @@ import { speak } from "@/components/ai-lesson/speak";
 import { DialogueLineBubble } from "@/components/DialogueLineBubble";
 import { Button } from "@/components/ui/button";
 import { ChatMessageList } from "@/components/ui/chat-bubble";
+import { useDialogueStepMotion } from "@/hooks/useDialogueStepMotion";
 import { useHiddenDialogueLines } from "@/hooks/useHiddenDialogueLines";
 import { cn } from "@/lib/utils";
 
@@ -23,6 +24,9 @@ import { cn } from "@/lib/utils";
  * `autoRead` on, a line spoken by anyone who isn't the learner is read aloud when it appears, which
  * turns the stepper into a one-sided conversation partner: the app says the other side's turn, the
  * learner says theirs. Narration lines (no speaker) are never read.
+ *
+ * A step is animated — the bubbles drift up on the way forward and down on the way back — by
+ * `useDialogueStepMotion`, which measures them rather than re-mounting them.
  */
 export function DialogueStepper({
   lines,
@@ -48,6 +52,7 @@ export function DialogueStepper({
   } = useHiddenDialogueLines(hiddenSpeakers);
 
   const clamped = Math.min(index, Math.max(0, lines.length - 1));
+  const listRef = useDialogueStepMotion(clamped, direction);
   const current = lines.length > 0 ? lines[clamped] : undefined;
   const prior = clamped > 0 ? lines[clamped - 1] : null;
   const atEnd = clamped >= lines.length - 1;
@@ -77,43 +82,38 @@ export function DialogueStepper({
 
   if (current === undefined) return null;
 
-  // Advancing floats the bubbles up and stepping back floats them down, so a step reads as movement
-  // through the dialogue instead of a swap. A CSS enter animation only replays on a fresh element, so
-  // each slot's key carries its line id to force a remount per step — and the two keys are prefixed
-  // per slot, because a bare line id is shared by both slots for one step (the current line becomes
-  // the prior one) and React would then *move* that node between slots instead of remounting it,
-  // leaving whichever bubble it reused sitting still while the other floated.
-  const float = cn(
-    `
-      animate-in duration-300 fade-in
-      motion-reduce:animate-none
-    `,
-    direction === "forward" ? "slide-in-from-bottom-4" : "slide-in-from-top-4",
-  );
+  // Both bubbles are keyed by line id alone, in one keyspace, so the line that steps from the current
+  // slot into the prior one is *moved* by React rather than re-created. Keeping that node is what
+  // stops it flashing: it is already on screen, so it should glide and dim, never blink out and fade
+  // back in. `useDialogueStepMotion` does the gliding; the dimming is this CSS transition.
+  const settle = `
+    transition-opacity duration-300
+    motion-reduce:transition-none
+  `;
 
   return (
     <div className="space-y-4">
       <FuriganaScope>
-        <ChatMessageList>
+        <ChatMessageList ref={listRef}>
           {prior && (
             <DialogueLineBubble
-              key={`prior-${prior.id}`}
+              key={prior.id}
               line={prior}
               selfSpeakers={selfSpeakers}
               showTranslation={showTranslations}
               hidden={isHidden(prior)}
               onReveal={() => reveal(prior.id)}
-              className={cn("opacity-40", float)}
+              className={cn("opacity-40", settle)}
             />
           )}
           <DialogueLineBubble
-            key={`current-${current.id}`}
+            key={current.id}
             line={current}
             selfSpeakers={selfSpeakers}
             showTranslation={showTranslations}
             hidden={isHidden(current)}
             onReveal={() => reveal(current.id)}
-            className={float}
+            className={settle}
           />
         </ChatMessageList>
       </FuriganaScope>

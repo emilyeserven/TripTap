@@ -24,6 +24,9 @@ import { cn } from "@/lib/utils";
  * clicking it calls `onReveal`. That's what makes a dialogue practisable: the shape of the
  * conversation stays visible while the words are not, and a hint still tells the learner what the
  * turn is *for*. Narration has no speaker to hide, so it is never hidden.
+ *
+ * `data-dialogue-line` carries the line's id for `useDialogueStepMotion`, which measures the bubbles
+ * to animate a step in the line-by-line view.
  */
 export function DialogueLineBubble({
   line,
@@ -51,6 +54,7 @@ export function DialogueLineBubble({
   if (line.speaker === null) {
     return (
       <p
+        data-dialogue-line={line.id}
         className={cn(
           `
             self-center px-4 py-1 text-center text-xs text-muted-foreground
@@ -68,6 +72,7 @@ export function DialogueLineBubble({
   // avatar keeps aligning with the bubble instead of sinking to the bottom of a taller row.
   return (
     <div
+      data-dialogue-line={line.id}
       className={cn(
         "flex max-w-full flex-col gap-1",
         self ? "items-end self-end" : "items-start self-start",
