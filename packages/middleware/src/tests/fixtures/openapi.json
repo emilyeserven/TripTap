@@ -3861,6 +3861,20 @@
                           "items": {
                             "$ref": "#/components/schemas/def-0"
                           }
+                        },
+                        "answerType": {
+                          "type": "string",
+                          "enum": [
+                            "text",
+                            "boolean",
+                            "choice"
+                          ]
+                        },
+                        "choices": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
                         }
                       }
                     }
@@ -4147,6 +4161,20 @@
                           "type": "array",
                           "items": {
                             "$ref": "#/components/schemas/def-0"
+                          }
+                        },
+                        "answerType": {
+                          "type": "string",
+                          "enum": [
+                            "text",
+                            "boolean",
+                            "choice"
+                          ]
+                        },
+                        "choices": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
                           }
                         }
                       }

@@ -132,6 +132,11 @@ export function QuestionSheetForm({
   const submit = async () => {
     if (!canSubmit) return;
     const cleanColumns = columns.map(c => c.trim()).filter(c => c.length > 0);
+    // A section chosen in the picker but not yet committed with "Add section" is easy to leave
+    // pending on save — fold it in so a picked-but-not-added section still attaches.
+    const finalSections = pendingSection && !sections.some(s => s.id === pendingSection.id)
+      ? [...sections, pendingSection]
+      : sections;
     const input = {
       title: title.trim(),
       layout,
@@ -140,7 +145,7 @@ export function QuestionSheetForm({
       bookmarkId,
       bookmarkTitle,
       bookmarkUrl,
-      sections,
+      sections: finalSections,
       firstQuestionNumber: firstNumber,
       dueDate: dueDate ? new Date(dueDate).toISOString() : null,
       learningAreas,

@@ -39,6 +39,7 @@ export function SentenceCorrector({
   reasoning: initialReasoning,
   onSave,
   saveLabel = "Save correction",
+  startWithNote = false,
 }: {
   text: string;
   /** Existing correct-spans to re-apply when re-opening a correction; omit for a fresh one. */
@@ -46,6 +47,8 @@ export function SentenceCorrector({
   reasoning?: string | null;
   onSave: (result: SentenceCorrectionResult) => void;
   saveLabel?: string;
+  /** Open straight into "just add a note" mode (the explanation field), skipping the toggle. */
+  startWithNote?: boolean;
 }) {
   const [reasoning, setReasoning] = useState(initialReasoning ?? "");
   const [derived, setDerived] = useState<{ correction: string;
@@ -57,7 +60,7 @@ export function SentenceCorrector({
   // Reveal the surrounding chrome only once the learner has started changing the sentence — or has
   // said it needs no change, so an already-correct sentence can still be saved with an explanation.
   const [hasEdited, setHasEdited] = useState(false);
-  const [noChangeNeeded, setNoChangeNeeded] = useState(false);
+  const [noChangeNeeded, setNoChangeNeeded] = useState(startWithNote);
   const showDetails = hasEdited || noChangeNeeded;
 
   const editor = useEditor({

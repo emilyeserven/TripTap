@@ -5,6 +5,7 @@ import { useState } from "react";
 import { ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react";
 
 import { PartsEditor } from "@/components/PartsEditor";
+import { QuestionAnswerTypeEditor } from "@/components/QuestionAnswerTypeEditor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -153,6 +154,12 @@ export function QuestionListEditor({
               </Button>
             </div>
           </div>
+
+          <QuestionAnswerTypeEditor
+            answerType={q.answerType}
+            choices={q.choices ?? []}
+            onChange={patch => updateQuestion(q.id, patch)}
+          />
 
           <PartsEditor
             parts={q.parts ?? []}
