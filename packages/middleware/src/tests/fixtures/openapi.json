@@ -565,51 +565,55 @@
                     ]
                   },
                   "terms": {
-                    "type": [
-                      "array",
-                      "null"
-                    ],
-                    "items": {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "required": [
-                        "id",
-                        "name",
-                        "kind",
-                        "sourceId",
-                        "sourceLabel"
-                      ],
-                      "properties": {
-                        "id": {
-                          "type": "string"
-                        },
-                        "name": {
-                          "type": "string"
-                        },
-                        "kind": {
-                          "type": "string",
-                          "enum": [
-                            "tag",
-                            "taxonomy"
-                          ]
-                        },
-                        "sourceId": {
-                          "type": "string"
-                        },
-                        "sourceLabel": {
-                          "type": "string"
-                        },
-                        "category": {
-                          "type": "string",
-                          "enum": [
-                            "vocabulary",
-                            "grammar",
-                            "general",
-                            "resource"
-                          ]
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "tag",
+                                "taxonomy"
+                              ]
+                            },
+                            "sourceId": {
+                              "type": "string"
+                            },
+                            "sourceLabel": {
+                              "type": "string"
+                            },
+                            "category": {
+                              "type": "string",
+                              "enum": [
+                                "vocabulary",
+                                "grammar",
+                                "general",
+                                "resource"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "name",
+                            "kind",
+                            "sourceId",
+                            "sourceLabel"
+                          ],
+                          "additionalProperties": false
                         }
+                      },
+                      {
+                        "type": "null"
                       }
-                    }
+                    ]
                   },
                   "captureId": {
                     "type": [
@@ -720,51 +724,55 @@
                     ]
                   },
                   "terms": {
-                    "type": [
-                      "array",
-                      "null"
-                    ],
-                    "items": {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "required": [
-                        "id",
-                        "name",
-                        "kind",
-                        "sourceId",
-                        "sourceLabel"
-                      ],
-                      "properties": {
-                        "id": {
-                          "type": "string"
-                        },
-                        "name": {
-                          "type": "string"
-                        },
-                        "kind": {
-                          "type": "string",
-                          "enum": [
-                            "tag",
-                            "taxonomy"
-                          ]
-                        },
-                        "sourceId": {
-                          "type": "string"
-                        },
-                        "sourceLabel": {
-                          "type": "string"
-                        },
-                        "category": {
-                          "type": "string",
-                          "enum": [
-                            "vocabulary",
-                            "grammar",
-                            "general",
-                            "resource"
-                          ]
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "tag",
+                                "taxonomy"
+                              ]
+                            },
+                            "sourceId": {
+                              "type": "string"
+                            },
+                            "sourceLabel": {
+                              "type": "string"
+                            },
+                            "category": {
+                              "type": "string",
+                              "enum": [
+                                "vocabulary",
+                                "grammar",
+                                "general",
+                                "resource"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "name",
+                            "kind",
+                            "sourceId",
+                            "sourceLabel"
+                          ],
+                          "additionalProperties": false
                         }
+                      },
+                      {
+                        "type": "null"
                       }
-                    }
+                    ]
                   },
                   "captureId": {
                     "type": [
@@ -970,51 +978,55 @@
                           ]
                         },
                         "terms": {
-                          "type": [
-                            "array",
-                            "null"
-                          ],
-                          "items": {
-                            "type": "object",
-                            "additionalProperties": false,
-                            "required": [
-                              "id",
-                              "name",
-                              "kind",
-                              "sourceId",
-                              "sourceLabel"
-                            ],
-                            "properties": {
-                              "id": {
-                                "type": "string"
-                              },
-                              "name": {
-                                "type": "string"
-                              },
-                              "kind": {
-                                "type": "string",
-                                "enum": [
-                                  "tag",
-                                  "taxonomy"
-                                ]
-                              },
-                              "sourceId": {
-                                "type": "string"
-                              },
-                              "sourceLabel": {
-                                "type": "string"
-                              },
-                              "category": {
-                                "type": "string",
-                                "enum": [
-                                  "vocabulary",
-                                  "grammar",
-                                  "general",
-                                  "resource"
-                                ]
+                          "anyOf": [
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "id": {
+                                    "type": "string"
+                                  },
+                                  "name": {
+                                    "type": "string"
+                                  },
+                                  "kind": {
+                                    "type": "string",
+                                    "enum": [
+                                      "tag",
+                                      "taxonomy"
+                                    ]
+                                  },
+                                  "sourceId": {
+                                    "type": "string"
+                                  },
+                                  "sourceLabel": {
+                                    "type": "string"
+                                  },
+                                  "category": {
+                                    "type": "string",
+                                    "enum": [
+                                      "vocabulary",
+                                      "grammar",
+                                      "general",
+                                      "resource"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "id",
+                                  "name",
+                                  "kind",
+                                  "sourceId",
+                                  "sourceLabel"
+                                ],
+                                "additionalProperties": false
                               }
+                            },
+                            {
+                              "type": "null"
                             }
-                          }
+                          ]
                         },
                         "captureId": {
                           "type": [
@@ -1302,51 +1314,55 @@
                     }
                   },
                   "terms": {
-                    "type": [
-                      "array",
-                      "null"
-                    ],
-                    "items": {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "required": [
-                        "id",
-                        "name",
-                        "kind",
-                        "sourceId",
-                        "sourceLabel"
-                      ],
-                      "properties": {
-                        "id": {
-                          "type": "string"
-                        },
-                        "name": {
-                          "type": "string"
-                        },
-                        "kind": {
-                          "type": "string",
-                          "enum": [
-                            "tag",
-                            "taxonomy"
-                          ]
-                        },
-                        "sourceId": {
-                          "type": "string"
-                        },
-                        "sourceLabel": {
-                          "type": "string"
-                        },
-                        "category": {
-                          "type": "string",
-                          "enum": [
-                            "vocabulary",
-                            "grammar",
-                            "general",
-                            "resource"
-                          ]
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "tag",
+                                "taxonomy"
+                              ]
+                            },
+                            "sourceId": {
+                              "type": "string"
+                            },
+                            "sourceLabel": {
+                              "type": "string"
+                            },
+                            "category": {
+                              "type": "string",
+                              "enum": [
+                                "vocabulary",
+                                "grammar",
+                                "general",
+                                "resource"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "name",
+                            "kind",
+                            "sourceId",
+                            "sourceLabel"
+                          ],
+                          "additionalProperties": false
                         }
+                      },
+                      {
+                        "type": "null"
                       }
-                    }
+                    ]
                   },
                   "passes": {
                     "type": [
@@ -1594,51 +1610,55 @@
                     }
                   },
                   "terms": {
-                    "type": [
-                      "array",
-                      "null"
-                    ],
-                    "items": {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "required": [
-                        "id",
-                        "name",
-                        "kind",
-                        "sourceId",
-                        "sourceLabel"
-                      ],
-                      "properties": {
-                        "id": {
-                          "type": "string"
-                        },
-                        "name": {
-                          "type": "string"
-                        },
-                        "kind": {
-                          "type": "string",
-                          "enum": [
-                            "tag",
-                            "taxonomy"
-                          ]
-                        },
-                        "sourceId": {
-                          "type": "string"
-                        },
-                        "sourceLabel": {
-                          "type": "string"
-                        },
-                        "category": {
-                          "type": "string",
-                          "enum": [
-                            "vocabulary",
-                            "grammar",
-                            "general",
-                            "resource"
-                          ]
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "tag",
+                                "taxonomy"
+                              ]
+                            },
+                            "sourceId": {
+                              "type": "string"
+                            },
+                            "sourceLabel": {
+                              "type": "string"
+                            },
+                            "category": {
+                              "type": "string",
+                              "enum": [
+                                "vocabulary",
+                                "grammar",
+                                "general",
+                                "resource"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "name",
+                            "kind",
+                            "sourceId",
+                            "sourceLabel"
+                          ],
+                          "additionalProperties": false
                         }
+                      },
+                      {
+                        "type": "null"
                       }
-                    }
+                    ]
                   },
                   "passes": {
                     "type": [
@@ -1910,51 +1930,55 @@
                           }
                         },
                         "terms": {
-                          "type": [
-                            "array",
-                            "null"
-                          ],
-                          "items": {
-                            "type": "object",
-                            "additionalProperties": false,
-                            "required": [
-                              "id",
-                              "name",
-                              "kind",
-                              "sourceId",
-                              "sourceLabel"
-                            ],
-                            "properties": {
-                              "id": {
-                                "type": "string"
-                              },
-                              "name": {
-                                "type": "string"
-                              },
-                              "kind": {
-                                "type": "string",
-                                "enum": [
-                                  "tag",
-                                  "taxonomy"
-                                ]
-                              },
-                              "sourceId": {
-                                "type": "string"
-                              },
-                              "sourceLabel": {
-                                "type": "string"
-                              },
-                              "category": {
-                                "type": "string",
-                                "enum": [
-                                  "vocabulary",
-                                  "grammar",
-                                  "general",
-                                  "resource"
-                                ]
+                          "anyOf": [
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "id": {
+                                    "type": "string"
+                                  },
+                                  "name": {
+                                    "type": "string"
+                                  },
+                                  "kind": {
+                                    "type": "string",
+                                    "enum": [
+                                      "tag",
+                                      "taxonomy"
+                                    ]
+                                  },
+                                  "sourceId": {
+                                    "type": "string"
+                                  },
+                                  "sourceLabel": {
+                                    "type": "string"
+                                  },
+                                  "category": {
+                                    "type": "string",
+                                    "enum": [
+                                      "vocabulary",
+                                      "grammar",
+                                      "general",
+                                      "resource"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "id",
+                                  "name",
+                                  "kind",
+                                  "sourceId",
+                                  "sourceLabel"
+                                ],
+                                "additionalProperties": false
                               }
+                            },
+                            {
+                              "type": "null"
                             }
-                          }
+                          ]
                         },
                         "passes": {
                           "type": [
@@ -2462,98 +2486,106 @@
                     ]
                   },
                   "terms": {
-                    "type": [
-                      "array",
-                      "null"
-                    ],
-                    "items": {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "required": [
-                        "id",
-                        "name",
-                        "kind",
-                        "sourceId",
-                        "sourceLabel"
-                      ],
-                      "properties": {
-                        "id": {
-                          "type": "string"
-                        },
-                        "name": {
-                          "type": "string"
-                        },
-                        "kind": {
-                          "type": "string",
-                          "enum": [
-                            "tag",
-                            "taxonomy"
-                          ]
-                        },
-                        "sourceId": {
-                          "type": "string"
-                        },
-                        "sourceLabel": {
-                          "type": "string"
-                        },
-                        "category": {
-                          "type": "string",
-                          "enum": [
-                            "vocabulary",
-                            "grammar",
-                            "general",
-                            "resource"
-                          ]
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "tag",
+                                "taxonomy"
+                              ]
+                            },
+                            "sourceId": {
+                              "type": "string"
+                            },
+                            "sourceLabel": {
+                              "type": "string"
+                            },
+                            "category": {
+                              "type": "string",
+                              "enum": [
+                                "vocabulary",
+                                "grammar",
+                                "general",
+                                "resource"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "name",
+                            "kind",
+                            "sourceId",
+                            "sourceLabel"
+                          ],
+                          "additionalProperties": false
                         }
+                      },
+                      {
+                        "type": "null"
                       }
-                    }
+                    ]
                   },
                   "incorrectGrammarTerms": {
-                    "type": [
-                      "array",
-                      "null"
-                    ],
-                    "items": {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "required": [
-                        "id",
-                        "name",
-                        "kind",
-                        "sourceId",
-                        "sourceLabel"
-                      ],
-                      "properties": {
-                        "id": {
-                          "type": "string"
-                        },
-                        "name": {
-                          "type": "string"
-                        },
-                        "kind": {
-                          "type": "string",
-                          "enum": [
-                            "tag",
-                            "taxonomy"
-                          ]
-                        },
-                        "sourceId": {
-                          "type": "string"
-                        },
-                        "sourceLabel": {
-                          "type": "string"
-                        },
-                        "category": {
-                          "type": "string",
-                          "enum": [
-                            "vocabulary",
-                            "grammar",
-                            "general",
-                            "resource"
-                          ]
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "tag",
+                                "taxonomy"
+                              ]
+                            },
+                            "sourceId": {
+                              "type": "string"
+                            },
+                            "sourceLabel": {
+                              "type": "string"
+                            },
+                            "category": {
+                              "type": "string",
+                              "enum": [
+                                "vocabulary",
+                                "grammar",
+                                "general",
+                                "resource"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "name",
+                            "kind",
+                            "sourceId",
+                            "sourceLabel"
+                          ],
+                          "additionalProperties": false
                         }
+                      },
+                      {
+                        "type": "null"
                       }
-                    }
+                    ]
                   },
                   "reasons": {
                     "type": [
@@ -2717,98 +2749,106 @@
                     ]
                   },
                   "terms": {
-                    "type": [
-                      "array",
-                      "null"
-                    ],
-                    "items": {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "required": [
-                        "id",
-                        "name",
-                        "kind",
-                        "sourceId",
-                        "sourceLabel"
-                      ],
-                      "properties": {
-                        "id": {
-                          "type": "string"
-                        },
-                        "name": {
-                          "type": "string"
-                        },
-                        "kind": {
-                          "type": "string",
-                          "enum": [
-                            "tag",
-                            "taxonomy"
-                          ]
-                        },
-                        "sourceId": {
-                          "type": "string"
-                        },
-                        "sourceLabel": {
-                          "type": "string"
-                        },
-                        "category": {
-                          "type": "string",
-                          "enum": [
-                            "vocabulary",
-                            "grammar",
-                            "general",
-                            "resource"
-                          ]
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "tag",
+                                "taxonomy"
+                              ]
+                            },
+                            "sourceId": {
+                              "type": "string"
+                            },
+                            "sourceLabel": {
+                              "type": "string"
+                            },
+                            "category": {
+                              "type": "string",
+                              "enum": [
+                                "vocabulary",
+                                "grammar",
+                                "general",
+                                "resource"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "name",
+                            "kind",
+                            "sourceId",
+                            "sourceLabel"
+                          ],
+                          "additionalProperties": false
                         }
+                      },
+                      {
+                        "type": "null"
                       }
-                    }
+                    ]
                   },
                   "incorrectGrammarTerms": {
-                    "type": [
-                      "array",
-                      "null"
-                    ],
-                    "items": {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "required": [
-                        "id",
-                        "name",
-                        "kind",
-                        "sourceId",
-                        "sourceLabel"
-                      ],
-                      "properties": {
-                        "id": {
-                          "type": "string"
-                        },
-                        "name": {
-                          "type": "string"
-                        },
-                        "kind": {
-                          "type": "string",
-                          "enum": [
-                            "tag",
-                            "taxonomy"
-                          ]
-                        },
-                        "sourceId": {
-                          "type": "string"
-                        },
-                        "sourceLabel": {
-                          "type": "string"
-                        },
-                        "category": {
-                          "type": "string",
-                          "enum": [
-                            "vocabulary",
-                            "grammar",
-                            "general",
-                            "resource"
-                          ]
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "tag",
+                                "taxonomy"
+                              ]
+                            },
+                            "sourceId": {
+                              "type": "string"
+                            },
+                            "sourceLabel": {
+                              "type": "string"
+                            },
+                            "category": {
+                              "type": "string",
+                              "enum": [
+                                "vocabulary",
+                                "grammar",
+                                "general",
+                                "resource"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "name",
+                            "kind",
+                            "sourceId",
+                            "sourceLabel"
+                          ],
+                          "additionalProperties": false
                         }
+                      },
+                      {
+                        "type": "null"
                       }
-                    }
+                    ]
                   },
                   "reasons": {
                     "type": [
@@ -2996,98 +3036,106 @@
                           ]
                         },
                         "terms": {
-                          "type": [
-                            "array",
-                            "null"
-                          ],
-                          "items": {
-                            "type": "object",
-                            "additionalProperties": false,
-                            "required": [
-                              "id",
-                              "name",
-                              "kind",
-                              "sourceId",
-                              "sourceLabel"
-                            ],
-                            "properties": {
-                              "id": {
-                                "type": "string"
-                              },
-                              "name": {
-                                "type": "string"
-                              },
-                              "kind": {
-                                "type": "string",
-                                "enum": [
-                                  "tag",
-                                  "taxonomy"
-                                ]
-                              },
-                              "sourceId": {
-                                "type": "string"
-                              },
-                              "sourceLabel": {
-                                "type": "string"
-                              },
-                              "category": {
-                                "type": "string",
-                                "enum": [
-                                  "vocabulary",
-                                  "grammar",
-                                  "general",
-                                  "resource"
-                                ]
+                          "anyOf": [
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "id": {
+                                    "type": "string"
+                                  },
+                                  "name": {
+                                    "type": "string"
+                                  },
+                                  "kind": {
+                                    "type": "string",
+                                    "enum": [
+                                      "tag",
+                                      "taxonomy"
+                                    ]
+                                  },
+                                  "sourceId": {
+                                    "type": "string"
+                                  },
+                                  "sourceLabel": {
+                                    "type": "string"
+                                  },
+                                  "category": {
+                                    "type": "string",
+                                    "enum": [
+                                      "vocabulary",
+                                      "grammar",
+                                      "general",
+                                      "resource"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "id",
+                                  "name",
+                                  "kind",
+                                  "sourceId",
+                                  "sourceLabel"
+                                ],
+                                "additionalProperties": false
                               }
+                            },
+                            {
+                              "type": "null"
                             }
-                          }
+                          ]
                         },
                         "incorrectGrammarTerms": {
-                          "type": [
-                            "array",
-                            "null"
-                          ],
-                          "items": {
-                            "type": "object",
-                            "additionalProperties": false,
-                            "required": [
-                              "id",
-                              "name",
-                              "kind",
-                              "sourceId",
-                              "sourceLabel"
-                            ],
-                            "properties": {
-                              "id": {
-                                "type": "string"
-                              },
-                              "name": {
-                                "type": "string"
-                              },
-                              "kind": {
-                                "type": "string",
-                                "enum": [
-                                  "tag",
-                                  "taxonomy"
-                                ]
-                              },
-                              "sourceId": {
-                                "type": "string"
-                              },
-                              "sourceLabel": {
-                                "type": "string"
-                              },
-                              "category": {
-                                "type": "string",
-                                "enum": [
-                                  "vocabulary",
-                                  "grammar",
-                                  "general",
-                                  "resource"
-                                ]
+                          "anyOf": [
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "id": {
+                                    "type": "string"
+                                  },
+                                  "name": {
+                                    "type": "string"
+                                  },
+                                  "kind": {
+                                    "type": "string",
+                                    "enum": [
+                                      "tag",
+                                      "taxonomy"
+                                    ]
+                                  },
+                                  "sourceId": {
+                                    "type": "string"
+                                  },
+                                  "sourceLabel": {
+                                    "type": "string"
+                                  },
+                                  "category": {
+                                    "type": "string",
+                                    "enum": [
+                                      "vocabulary",
+                                      "grammar",
+                                      "general",
+                                      "resource"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "id",
+                                  "name",
+                                  "kind",
+                                  "sourceId",
+                                  "sourceLabel"
+                                ],
+                                "additionalProperties": false
                               }
+                            },
+                            {
+                              "type": "null"
                             }
-                          }
+                          ]
                         },
                         "reasons": {
                           "type": [
@@ -3218,51 +3266,55 @@
                     "type": "boolean"
                   },
                   "terms": {
-                    "type": [
-                      "array",
-                      "null"
-                    ],
-                    "items": {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "required": [
-                        "id",
-                        "name",
-                        "kind",
-                        "sourceId",
-                        "sourceLabel"
-                      ],
-                      "properties": {
-                        "id": {
-                          "type": "string"
-                        },
-                        "name": {
-                          "type": "string"
-                        },
-                        "kind": {
-                          "type": "string",
-                          "enum": [
-                            "tag",
-                            "taxonomy"
-                          ]
-                        },
-                        "sourceId": {
-                          "type": "string"
-                        },
-                        "sourceLabel": {
-                          "type": "string"
-                        },
-                        "category": {
-                          "type": "string",
-                          "enum": [
-                            "vocabulary",
-                            "grammar",
-                            "general",
-                            "resource"
-                          ]
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "tag",
+                                "taxonomy"
+                              ]
+                            },
+                            "sourceId": {
+                              "type": "string"
+                            },
+                            "sourceLabel": {
+                              "type": "string"
+                            },
+                            "category": {
+                              "type": "string",
+                              "enum": [
+                                "vocabulary",
+                                "grammar",
+                                "general",
+                                "resource"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "name",
+                            "kind",
+                            "sourceId",
+                            "sourceLabel"
+                          ],
+                          "additionalProperties": false
                         }
+                      },
+                      {
+                        "type": "null"
                       }
-                    }
+                    ]
                   },
                   "corrections": {
                     "type": [
@@ -3413,51 +3465,55 @@
                     "type": "boolean"
                   },
                   "terms": {
-                    "type": [
-                      "array",
-                      "null"
-                    ],
-                    "items": {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "required": [
-                        "id",
-                        "name",
-                        "kind",
-                        "sourceId",
-                        "sourceLabel"
-                      ],
-                      "properties": {
-                        "id": {
-                          "type": "string"
-                        },
-                        "name": {
-                          "type": "string"
-                        },
-                        "kind": {
-                          "type": "string",
-                          "enum": [
-                            "tag",
-                            "taxonomy"
-                          ]
-                        },
-                        "sourceId": {
-                          "type": "string"
-                        },
-                        "sourceLabel": {
-                          "type": "string"
-                        },
-                        "category": {
-                          "type": "string",
-                          "enum": [
-                            "vocabulary",
-                            "grammar",
-                            "general",
-                            "resource"
-                          ]
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "tag",
+                                "taxonomy"
+                              ]
+                            },
+                            "sourceId": {
+                              "type": "string"
+                            },
+                            "sourceLabel": {
+                              "type": "string"
+                            },
+                            "category": {
+                              "type": "string",
+                              "enum": [
+                                "vocabulary",
+                                "grammar",
+                                "general",
+                                "resource"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "name",
+                            "kind",
+                            "sourceId",
+                            "sourceLabel"
+                          ],
+                          "additionalProperties": false
                         }
+                      },
+                      {
+                        "type": "null"
                       }
-                    }
+                    ]
                   },
                   "corrections": {
                     "type": [
@@ -3719,51 +3775,55 @@
                     }
                   },
                   "grammarTerms": {
-                    "type": [
-                      "array",
-                      "null"
-                    ],
-                    "items": {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "required": [
-                        "id",
-                        "name",
-                        "kind",
-                        "sourceId",
-                        "sourceLabel"
-                      ],
-                      "properties": {
-                        "id": {
-                          "type": "string"
-                        },
-                        "name": {
-                          "type": "string"
-                        },
-                        "kind": {
-                          "type": "string",
-                          "enum": [
-                            "tag",
-                            "taxonomy"
-                          ]
-                        },
-                        "sourceId": {
-                          "type": "string"
-                        },
-                        "sourceLabel": {
-                          "type": "string"
-                        },
-                        "category": {
-                          "type": "string",
-                          "enum": [
-                            "vocabulary",
-                            "grammar",
-                            "general",
-                            "resource"
-                          ]
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "tag",
+                                "taxonomy"
+                              ]
+                            },
+                            "sourceId": {
+                              "type": "string"
+                            },
+                            "sourceLabel": {
+                              "type": "string"
+                            },
+                            "category": {
+                              "type": "string",
+                              "enum": [
+                                "vocabulary",
+                                "grammar",
+                                "general",
+                                "resource"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "name",
+                            "kind",
+                            "sourceId",
+                            "sourceLabel"
+                          ],
+                          "additionalProperties": false
                         }
+                      },
+                      {
+                        "type": "null"
                       }
-                    }
+                    ]
                   },
                   "questions": {
                     "type": "array",
@@ -3987,51 +4047,55 @@
                     }
                   },
                   "grammarTerms": {
-                    "type": [
-                      "array",
-                      "null"
-                    ],
-                    "items": {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "required": [
-                        "id",
-                        "name",
-                        "kind",
-                        "sourceId",
-                        "sourceLabel"
-                      ],
-                      "properties": {
-                        "id": {
-                          "type": "string"
-                        },
-                        "name": {
-                          "type": "string"
-                        },
-                        "kind": {
-                          "type": "string",
-                          "enum": [
-                            "tag",
-                            "taxonomy"
-                          ]
-                        },
-                        "sourceId": {
-                          "type": "string"
-                        },
-                        "sourceLabel": {
-                          "type": "string"
-                        },
-                        "category": {
-                          "type": "string",
-                          "enum": [
-                            "vocabulary",
-                            "grammar",
-                            "general",
-                            "resource"
-                          ]
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "tag",
+                                "taxonomy"
+                              ]
+                            },
+                            "sourceId": {
+                              "type": "string"
+                            },
+                            "sourceLabel": {
+                              "type": "string"
+                            },
+                            "category": {
+                              "type": "string",
+                              "enum": [
+                                "vocabulary",
+                                "grammar",
+                                "general",
+                                "resource"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "name",
+                            "kind",
+                            "sourceId",
+                            "sourceLabel"
+                          ],
+                          "additionalProperties": false
                         }
+                      },
+                      {
+                        "type": "null"
                       }
-                    }
+                    ]
                   },
                   "questions": {
                     "type": "array",
@@ -4626,51 +4690,55 @@
                     "minimum": 0
                   },
                   "terms": {
-                    "type": [
-                      "array",
-                      "null"
-                    ],
-                    "items": {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "required": [
-                        "id",
-                        "name",
-                        "kind",
-                        "sourceId",
-                        "sourceLabel"
-                      ],
-                      "properties": {
-                        "id": {
-                          "type": "string"
-                        },
-                        "name": {
-                          "type": "string"
-                        },
-                        "kind": {
-                          "type": "string",
-                          "enum": [
-                            "tag",
-                            "taxonomy"
-                          ]
-                        },
-                        "sourceId": {
-                          "type": "string"
-                        },
-                        "sourceLabel": {
-                          "type": "string"
-                        },
-                        "category": {
-                          "type": "string",
-                          "enum": [
-                            "vocabulary",
-                            "grammar",
-                            "general",
-                            "resource"
-                          ]
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "tag",
+                                "taxonomy"
+                              ]
+                            },
+                            "sourceId": {
+                              "type": "string"
+                            },
+                            "sourceLabel": {
+                              "type": "string"
+                            },
+                            "category": {
+                              "type": "string",
+                              "enum": [
+                                "vocabulary",
+                                "grammar",
+                                "general",
+                                "resource"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "name",
+                            "kind",
+                            "sourceId",
+                            "sourceLabel"
+                          ],
+                          "additionalProperties": false
                         }
+                      },
+                      {
+                        "type": "null"
                       }
-                    }
+                    ]
                   },
                   "learningArea": {
                     "type": [
@@ -4867,51 +4935,55 @@
                     "minimum": 0
                   },
                   "terms": {
-                    "type": [
-                      "array",
-                      "null"
-                    ],
-                    "items": {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "required": [
-                        "id",
-                        "name",
-                        "kind",
-                        "sourceId",
-                        "sourceLabel"
-                      ],
-                      "properties": {
-                        "id": {
-                          "type": "string"
-                        },
-                        "name": {
-                          "type": "string"
-                        },
-                        "kind": {
-                          "type": "string",
-                          "enum": [
-                            "tag",
-                            "taxonomy"
-                          ]
-                        },
-                        "sourceId": {
-                          "type": "string"
-                        },
-                        "sourceLabel": {
-                          "type": "string"
-                        },
-                        "category": {
-                          "type": "string",
-                          "enum": [
-                            "vocabulary",
-                            "grammar",
-                            "general",
-                            "resource"
-                          ]
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "tag",
+                                "taxonomy"
+                              ]
+                            },
+                            "sourceId": {
+                              "type": "string"
+                            },
+                            "sourceLabel": {
+                              "type": "string"
+                            },
+                            "category": {
+                              "type": "string",
+                              "enum": [
+                                "vocabulary",
+                                "grammar",
+                                "general",
+                                "resource"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "name",
+                            "kind",
+                            "sourceId",
+                            "sourceLabel"
+                          ],
+                          "additionalProperties": false
                         }
+                      },
+                      {
+                        "type": "null"
                       }
-                    }
+                    ]
                   },
                   "learningArea": {
                     "type": [
@@ -5652,51 +5724,55 @@
                     }
                   },
                   "terms": {
-                    "type": [
-                      "array",
-                      "null"
-                    ],
-                    "items": {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "required": [
-                        "id",
-                        "name",
-                        "kind",
-                        "sourceId",
-                        "sourceLabel"
-                      ],
-                      "properties": {
-                        "id": {
-                          "type": "string"
-                        },
-                        "name": {
-                          "type": "string"
-                        },
-                        "kind": {
-                          "type": "string",
-                          "enum": [
-                            "tag",
-                            "taxonomy"
-                          ]
-                        },
-                        "sourceId": {
-                          "type": "string"
-                        },
-                        "sourceLabel": {
-                          "type": "string"
-                        },
-                        "category": {
-                          "type": "string",
-                          "enum": [
-                            "vocabulary",
-                            "grammar",
-                            "general",
-                            "resource"
-                          ]
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "tag",
+                                "taxonomy"
+                              ]
+                            },
+                            "sourceId": {
+                              "type": "string"
+                            },
+                            "sourceLabel": {
+                              "type": "string"
+                            },
+                            "category": {
+                              "type": "string",
+                              "enum": [
+                                "vocabulary",
+                                "grammar",
+                                "general",
+                                "resource"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "name",
+                            "kind",
+                            "sourceId",
+                            "sourceLabel"
+                          ],
+                          "additionalProperties": false
                         }
+                      },
+                      {
+                        "type": "null"
                       }
-                    }
+                    ]
                   },
                   "learningArea": {
                     "type": [
@@ -5984,51 +6060,55 @@
                     }
                   },
                   "terms": {
-                    "type": [
-                      "array",
-                      "null"
-                    ],
-                    "items": {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "required": [
-                        "id",
-                        "name",
-                        "kind",
-                        "sourceId",
-                        "sourceLabel"
-                      ],
-                      "properties": {
-                        "id": {
-                          "type": "string"
-                        },
-                        "name": {
-                          "type": "string"
-                        },
-                        "kind": {
-                          "type": "string",
-                          "enum": [
-                            "tag",
-                            "taxonomy"
-                          ]
-                        },
-                        "sourceId": {
-                          "type": "string"
-                        },
-                        "sourceLabel": {
-                          "type": "string"
-                        },
-                        "category": {
-                          "type": "string",
-                          "enum": [
-                            "vocabulary",
-                            "grammar",
-                            "general",
-                            "resource"
-                          ]
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "tag",
+                                "taxonomy"
+                              ]
+                            },
+                            "sourceId": {
+                              "type": "string"
+                            },
+                            "sourceLabel": {
+                              "type": "string"
+                            },
+                            "category": {
+                              "type": "string",
+                              "enum": [
+                                "vocabulary",
+                                "grammar",
+                                "general",
+                                "resource"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "name",
+                            "kind",
+                            "sourceId",
+                            "sourceLabel"
+                          ],
+                          "additionalProperties": false
                         }
+                      },
+                      {
+                        "type": "null"
                       }
-                    }
+                    ]
                   },
                   "learningArea": {
                     "type": [
@@ -6499,51 +6579,55 @@
                           "type": "boolean"
                         },
                         "grammarTerms": {
-                          "type": [
-                            "array",
-                            "null"
-                          ],
-                          "items": {
-                            "type": "object",
-                            "additionalProperties": false,
-                            "required": [
-                              "id",
-                              "name",
-                              "kind",
-                              "sourceId",
-                              "sourceLabel"
-                            ],
-                            "properties": {
-                              "id": {
-                                "type": "string"
-                              },
-                              "name": {
-                                "type": "string"
-                              },
-                              "kind": {
-                                "type": "string",
-                                "enum": [
-                                  "tag",
-                                  "taxonomy"
-                                ]
-                              },
-                              "sourceId": {
-                                "type": "string"
-                              },
-                              "sourceLabel": {
-                                "type": "string"
-                              },
-                              "category": {
-                                "type": "string",
-                                "enum": [
-                                  "vocabulary",
-                                  "grammar",
-                                  "general",
-                                  "resource"
-                                ]
+                          "anyOf": [
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "id": {
+                                    "type": "string"
+                                  },
+                                  "name": {
+                                    "type": "string"
+                                  },
+                                  "kind": {
+                                    "type": "string",
+                                    "enum": [
+                                      "tag",
+                                      "taxonomy"
+                                    ]
+                                  },
+                                  "sourceId": {
+                                    "type": "string"
+                                  },
+                                  "sourceLabel": {
+                                    "type": "string"
+                                  },
+                                  "category": {
+                                    "type": "string",
+                                    "enum": [
+                                      "vocabulary",
+                                      "grammar",
+                                      "general",
+                                      "resource"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "id",
+                                  "name",
+                                  "kind",
+                                  "sourceId",
+                                  "sourceLabel"
+                                ],
+                                "additionalProperties": false
                               }
+                            },
+                            {
+                              "type": "null"
                             }
-                          }
+                          ]
                         }
                       }
                     }
@@ -6875,51 +6959,55 @@
                           "type": "boolean"
                         },
                         "grammarTerms": {
-                          "type": [
-                            "array",
-                            "null"
-                          ],
-                          "items": {
-                            "type": "object",
-                            "additionalProperties": false,
-                            "required": [
-                              "id",
-                              "name",
-                              "kind",
-                              "sourceId",
-                              "sourceLabel"
-                            ],
-                            "properties": {
-                              "id": {
-                                "type": "string"
-                              },
-                              "name": {
-                                "type": "string"
-                              },
-                              "kind": {
-                                "type": "string",
-                                "enum": [
-                                  "tag",
-                                  "taxonomy"
-                                ]
-                              },
-                              "sourceId": {
-                                "type": "string"
-                              },
-                              "sourceLabel": {
-                                "type": "string"
-                              },
-                              "category": {
-                                "type": "string",
-                                "enum": [
-                                  "vocabulary",
-                                  "grammar",
-                                  "general",
-                                  "resource"
-                                ]
+                          "anyOf": [
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "id": {
+                                    "type": "string"
+                                  },
+                                  "name": {
+                                    "type": "string"
+                                  },
+                                  "kind": {
+                                    "type": "string",
+                                    "enum": [
+                                      "tag",
+                                      "taxonomy"
+                                    ]
+                                  },
+                                  "sourceId": {
+                                    "type": "string"
+                                  },
+                                  "sourceLabel": {
+                                    "type": "string"
+                                  },
+                                  "category": {
+                                    "type": "string",
+                                    "enum": [
+                                      "vocabulary",
+                                      "grammar",
+                                      "general",
+                                      "resource"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "id",
+                                  "name",
+                                  "kind",
+                                  "sourceId",
+                                  "sourceLabel"
+                                ],
+                                "additionalProperties": false
                               }
+                            },
+                            {
+                              "type": "null"
                             }
-                          }
+                          ]
                         }
                       }
                     }
@@ -12489,51 +12577,55 @@
                 ],
                 "properties": {
                   "grammarTerms": {
-                    "type": [
-                      "array",
-                      "null"
-                    ],
-                    "items": {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "required": [
-                        "id",
-                        "name",
-                        "kind",
-                        "sourceId",
-                        "sourceLabel"
-                      ],
-                      "properties": {
-                        "id": {
-                          "type": "string"
-                        },
-                        "name": {
-                          "type": "string"
-                        },
-                        "kind": {
-                          "type": "string",
-                          "enum": [
-                            "tag",
-                            "taxonomy"
-                          ]
-                        },
-                        "sourceId": {
-                          "type": "string"
-                        },
-                        "sourceLabel": {
-                          "type": "string"
-                        },
-                        "category": {
-                          "type": "string",
-                          "enum": [
-                            "vocabulary",
-                            "grammar",
-                            "general",
-                            "resource"
-                          ]
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "tag",
+                                "taxonomy"
+                              ]
+                            },
+                            "sourceId": {
+                              "type": "string"
+                            },
+                            "sourceLabel": {
+                              "type": "string"
+                            },
+                            "category": {
+                              "type": "string",
+                              "enum": [
+                                "vocabulary",
+                                "grammar",
+                                "general",
+                                "resource"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "name",
+                            "kind",
+                            "sourceId",
+                            "sourceLabel"
+                          ],
+                          "additionalProperties": false
                         }
+                      },
+                      {
+                        "type": "null"
                       }
-                    }
+                    ]
                   }
                 }
               }
@@ -12575,51 +12667,55 @@
                 ],
                 "properties": {
                   "grammarTerms": {
-                    "type": [
-                      "array",
-                      "null"
-                    ],
-                    "items": {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "required": [
-                        "id",
-                        "name",
-                        "kind",
-                        "sourceId",
-                        "sourceLabel"
-                      ],
-                      "properties": {
-                        "id": {
-                          "type": "string"
-                        },
-                        "name": {
-                          "type": "string"
-                        },
-                        "kind": {
-                          "type": "string",
-                          "enum": [
-                            "tag",
-                            "taxonomy"
-                          ]
-                        },
-                        "sourceId": {
-                          "type": "string"
-                        },
-                        "sourceLabel": {
-                          "type": "string"
-                        },
-                        "category": {
-                          "type": "string",
-                          "enum": [
-                            "vocabulary",
-                            "grammar",
-                            "general",
-                            "resource"
-                          ]
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "tag",
+                                "taxonomy"
+                              ]
+                            },
+                            "sourceId": {
+                              "type": "string"
+                            },
+                            "sourceLabel": {
+                              "type": "string"
+                            },
+                            "category": {
+                              "type": "string",
+                              "enum": [
+                                "vocabulary",
+                                "grammar",
+                                "general",
+                                "resource"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "name",
+                            "kind",
+                            "sourceId",
+                            "sourceLabel"
+                          ],
+                          "additionalProperties": false
                         }
+                      },
+                      {
+                        "type": "null"
                       }
-                    }
+                    ]
                   }
                 }
               }

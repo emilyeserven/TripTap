@@ -52,6 +52,22 @@ export function nonNegativeInt() {
   });
 }
 
+/**
+ * The draft-07 JSON Schema for a *fragment* — a field's shape rather than a whole body.
+ *
+ * Converting a fragment directly would stamp a top-level `$schema` onto it, which is meaningless
+ * nested inside a body's `properties`. Wrapping it in a throwaway object and lifting the property
+ * back out yields the clean sub-schema the route fragments need.
+ */
+export function fieldJsonSchema(schema: z.ZodType): Record<string, unknown> {
+  const wrapped = z.toJSONSchema(z.object({
+    field: schema,
+  }), {
+    target: "draft-7",
+  }) as unknown as { properties: { field: Record<string, unknown> } };
+  return wrapped.properties.field;
+}
+
 /** The parts of a generated object schema the route layer reads. */
 export interface GeneratedObjectSchema {
   type: "object";
