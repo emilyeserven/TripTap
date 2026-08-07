@@ -565,55 +565,51 @@
                     ]
                   },
                   "terms": {
-                    "anyOf": [
-                      {
-                        "type": "array",
-                        "items": {
-                          "type": "object",
-                          "properties": {
-                            "id": {
-                              "type": "string"
-                            },
-                            "name": {
-                              "type": "string"
-                            },
-                            "kind": {
-                              "type": "string",
-                              "enum": [
-                                "tag",
-                                "taxonomy"
-                              ]
-                            },
-                            "sourceId": {
-                              "type": "string"
-                            },
-                            "sourceLabel": {
-                              "type": "string"
-                            },
-                            "category": {
-                              "type": "string",
-                              "enum": [
-                                "vocabulary",
-                                "grammar",
-                                "general",
-                                "resource"
-                              ]
-                            }
-                          },
-                          "required": [
-                            "id",
-                            "name",
-                            "kind",
-                            "sourceId",
-                            "sourceLabel"
-                          ],
-                          "additionalProperties": false
+                    "type": [
+                      "array",
+                      "null"
+                    ],
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "tag",
+                            "taxonomy"
+                          ]
+                        },
+                        "sourceId": {
+                          "type": "string"
+                        },
+                        "sourceLabel": {
+                          "type": "string"
+                        },
+                        "category": {
+                          "type": "string",
+                          "enum": [
+                            "vocabulary",
+                            "grammar",
+                            "general",
+                            "resource"
+                          ]
                         }
                       },
-                      {
-                        "type": "null"
-                      }
-                    ]
+                      "required": [
+                        "id",
+                        "name",
+                        "kind",
+                        "sourceId",
+                        "sourceLabel"
+                      ],
+                      "additionalProperties": false
+                    }
                   },
                   "captureId": {
                     "type": [
@@ -724,55 +720,51 @@
                     ]
                   },
                   "terms": {
-                    "anyOf": [
-                      {
-                        "type": "array",
-                        "items": {
-                          "type": "object",
-                          "properties": {
-                            "id": {
-                              "type": "string"
-                            },
-                            "name": {
-                              "type": "string"
-                            },
-                            "kind": {
-                              "type": "string",
-                              "enum": [
-                                "tag",
-                                "taxonomy"
-                              ]
-                            },
-                            "sourceId": {
-                              "type": "string"
-                            },
-                            "sourceLabel": {
-                              "type": "string"
-                            },
-                            "category": {
-                              "type": "string",
-                              "enum": [
-                                "vocabulary",
-                                "grammar",
-                                "general",
-                                "resource"
-                              ]
-                            }
-                          },
-                          "required": [
-                            "id",
-                            "name",
-                            "kind",
-                            "sourceId",
-                            "sourceLabel"
-                          ],
-                          "additionalProperties": false
+                    "type": [
+                      "array",
+                      "null"
+                    ],
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "tag",
+                            "taxonomy"
+                          ]
+                        },
+                        "sourceId": {
+                          "type": "string"
+                        },
+                        "sourceLabel": {
+                          "type": "string"
+                        },
+                        "category": {
+                          "type": "string",
+                          "enum": [
+                            "vocabulary",
+                            "grammar",
+                            "general",
+                            "resource"
+                          ]
                         }
                       },
-                      {
-                        "type": "null"
-                      }
-                    ]
+                      "required": [
+                        "id",
+                        "name",
+                        "kind",
+                        "sourceId",
+                        "sourceLabel"
+                      ],
+                      "additionalProperties": false
+                    }
                   },
                   "captureId": {
                     "type": [
@@ -978,55 +970,51 @@
                           ]
                         },
                         "terms": {
-                          "anyOf": [
-                            {
-                              "type": "array",
-                              "items": {
-                                "type": "object",
-                                "properties": {
-                                  "id": {
-                                    "type": "string"
-                                  },
-                                  "name": {
-                                    "type": "string"
-                                  },
-                                  "kind": {
-                                    "type": "string",
-                                    "enum": [
-                                      "tag",
-                                      "taxonomy"
-                                    ]
-                                  },
-                                  "sourceId": {
-                                    "type": "string"
-                                  },
-                                  "sourceLabel": {
-                                    "type": "string"
-                                  },
-                                  "category": {
-                                    "type": "string",
-                                    "enum": [
-                                      "vocabulary",
-                                      "grammar",
-                                      "general",
-                                      "resource"
-                                    ]
-                                  }
-                                },
-                                "required": [
-                                  "id",
-                                  "name",
-                                  "kind",
-                                  "sourceId",
-                                  "sourceLabel"
-                                ],
-                                "additionalProperties": false
+                          "type": [
+                            "array",
+                            "null"
+                          ],
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string"
+                              },
+                              "name": {
+                                "type": "string"
+                              },
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "tag",
+                                  "taxonomy"
+                                ]
+                              },
+                              "sourceId": {
+                                "type": "string"
+                              },
+                              "sourceLabel": {
+                                "type": "string"
+                              },
+                              "category": {
+                                "type": "string",
+                                "enum": [
+                                  "vocabulary",
+                                  "grammar",
+                                  "general",
+                                  "resource"
+                                ]
                               }
                             },
-                            {
-                              "type": "null"
-                            }
-                          ]
+                            "required": [
+                              "id",
+                              "name",
+                              "kind",
+                              "sourceId",
+                              "sourceLabel"
+                            ],
+                            "additionalProperties": false
+                          }
                         },
                         "captureId": {
                           "type": [
@@ -1314,55 +1302,51 @@
                     }
                   },
                   "terms": {
-                    "anyOf": [
-                      {
-                        "type": "array",
-                        "items": {
-                          "type": "object",
-                          "properties": {
-                            "id": {
-                              "type": "string"
-                            },
-                            "name": {
-                              "type": "string"
-                            },
-                            "kind": {
-                              "type": "string",
-                              "enum": [
-                                "tag",
-                                "taxonomy"
-                              ]
-                            },
-                            "sourceId": {
-                              "type": "string"
-                            },
-                            "sourceLabel": {
-                              "type": "string"
-                            },
-                            "category": {
-                              "type": "string",
-                              "enum": [
-                                "vocabulary",
-                                "grammar",
-                                "general",
-                                "resource"
-                              ]
-                            }
-                          },
-                          "required": [
-                            "id",
-                            "name",
-                            "kind",
-                            "sourceId",
-                            "sourceLabel"
-                          ],
-                          "additionalProperties": false
+                    "type": [
+                      "array",
+                      "null"
+                    ],
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "tag",
+                            "taxonomy"
+                          ]
+                        },
+                        "sourceId": {
+                          "type": "string"
+                        },
+                        "sourceLabel": {
+                          "type": "string"
+                        },
+                        "category": {
+                          "type": "string",
+                          "enum": [
+                            "vocabulary",
+                            "grammar",
+                            "general",
+                            "resource"
+                          ]
                         }
                       },
-                      {
-                        "type": "null"
-                      }
-                    ]
+                      "required": [
+                        "id",
+                        "name",
+                        "kind",
+                        "sourceId",
+                        "sourceLabel"
+                      ],
+                      "additionalProperties": false
+                    }
                   },
                   "passes": {
                     "type": [
@@ -1610,55 +1594,51 @@
                     }
                   },
                   "terms": {
-                    "anyOf": [
-                      {
-                        "type": "array",
-                        "items": {
-                          "type": "object",
-                          "properties": {
-                            "id": {
-                              "type": "string"
-                            },
-                            "name": {
-                              "type": "string"
-                            },
-                            "kind": {
-                              "type": "string",
-                              "enum": [
-                                "tag",
-                                "taxonomy"
-                              ]
-                            },
-                            "sourceId": {
-                              "type": "string"
-                            },
-                            "sourceLabel": {
-                              "type": "string"
-                            },
-                            "category": {
-                              "type": "string",
-                              "enum": [
-                                "vocabulary",
-                                "grammar",
-                                "general",
-                                "resource"
-                              ]
-                            }
-                          },
-                          "required": [
-                            "id",
-                            "name",
-                            "kind",
-                            "sourceId",
-                            "sourceLabel"
-                          ],
-                          "additionalProperties": false
+                    "type": [
+                      "array",
+                      "null"
+                    ],
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "tag",
+                            "taxonomy"
+                          ]
+                        },
+                        "sourceId": {
+                          "type": "string"
+                        },
+                        "sourceLabel": {
+                          "type": "string"
+                        },
+                        "category": {
+                          "type": "string",
+                          "enum": [
+                            "vocabulary",
+                            "grammar",
+                            "general",
+                            "resource"
+                          ]
                         }
                       },
-                      {
-                        "type": "null"
-                      }
-                    ]
+                      "required": [
+                        "id",
+                        "name",
+                        "kind",
+                        "sourceId",
+                        "sourceLabel"
+                      ],
+                      "additionalProperties": false
+                    }
                   },
                   "passes": {
                     "type": [
@@ -1930,55 +1910,51 @@
                           }
                         },
                         "terms": {
-                          "anyOf": [
-                            {
-                              "type": "array",
-                              "items": {
-                                "type": "object",
-                                "properties": {
-                                  "id": {
-                                    "type": "string"
-                                  },
-                                  "name": {
-                                    "type": "string"
-                                  },
-                                  "kind": {
-                                    "type": "string",
-                                    "enum": [
-                                      "tag",
-                                      "taxonomy"
-                                    ]
-                                  },
-                                  "sourceId": {
-                                    "type": "string"
-                                  },
-                                  "sourceLabel": {
-                                    "type": "string"
-                                  },
-                                  "category": {
-                                    "type": "string",
-                                    "enum": [
-                                      "vocabulary",
-                                      "grammar",
-                                      "general",
-                                      "resource"
-                                    ]
-                                  }
-                                },
-                                "required": [
-                                  "id",
-                                  "name",
-                                  "kind",
-                                  "sourceId",
-                                  "sourceLabel"
-                                ],
-                                "additionalProperties": false
+                          "type": [
+                            "array",
+                            "null"
+                          ],
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string"
+                              },
+                              "name": {
+                                "type": "string"
+                              },
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "tag",
+                                  "taxonomy"
+                                ]
+                              },
+                              "sourceId": {
+                                "type": "string"
+                              },
+                              "sourceLabel": {
+                                "type": "string"
+                              },
+                              "category": {
+                                "type": "string",
+                                "enum": [
+                                  "vocabulary",
+                                  "grammar",
+                                  "general",
+                                  "resource"
+                                ]
                               }
                             },
-                            {
-                              "type": "null"
-                            }
-                          ]
+                            "required": [
+                              "id",
+                              "name",
+                              "kind",
+                              "sourceId",
+                              "sourceLabel"
+                            ],
+                            "additionalProperties": false
+                          }
                         },
                         "passes": {
                           "type": [
@@ -2486,106 +2462,98 @@
                     ]
                   },
                   "terms": {
-                    "anyOf": [
-                      {
-                        "type": "array",
-                        "items": {
-                          "type": "object",
-                          "properties": {
-                            "id": {
-                              "type": "string"
-                            },
-                            "name": {
-                              "type": "string"
-                            },
-                            "kind": {
-                              "type": "string",
-                              "enum": [
-                                "tag",
-                                "taxonomy"
-                              ]
-                            },
-                            "sourceId": {
-                              "type": "string"
-                            },
-                            "sourceLabel": {
-                              "type": "string"
-                            },
-                            "category": {
-                              "type": "string",
-                              "enum": [
-                                "vocabulary",
-                                "grammar",
-                                "general",
-                                "resource"
-                              ]
-                            }
-                          },
-                          "required": [
-                            "id",
-                            "name",
-                            "kind",
-                            "sourceId",
-                            "sourceLabel"
-                          ],
-                          "additionalProperties": false
+                    "type": [
+                      "array",
+                      "null"
+                    ],
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "tag",
+                            "taxonomy"
+                          ]
+                        },
+                        "sourceId": {
+                          "type": "string"
+                        },
+                        "sourceLabel": {
+                          "type": "string"
+                        },
+                        "category": {
+                          "type": "string",
+                          "enum": [
+                            "vocabulary",
+                            "grammar",
+                            "general",
+                            "resource"
+                          ]
                         }
                       },
-                      {
-                        "type": "null"
-                      }
-                    ]
+                      "required": [
+                        "id",
+                        "name",
+                        "kind",
+                        "sourceId",
+                        "sourceLabel"
+                      ],
+                      "additionalProperties": false
+                    }
                   },
                   "incorrectGrammarTerms": {
-                    "anyOf": [
-                      {
-                        "type": "array",
-                        "items": {
-                          "type": "object",
-                          "properties": {
-                            "id": {
-                              "type": "string"
-                            },
-                            "name": {
-                              "type": "string"
-                            },
-                            "kind": {
-                              "type": "string",
-                              "enum": [
-                                "tag",
-                                "taxonomy"
-                              ]
-                            },
-                            "sourceId": {
-                              "type": "string"
-                            },
-                            "sourceLabel": {
-                              "type": "string"
-                            },
-                            "category": {
-                              "type": "string",
-                              "enum": [
-                                "vocabulary",
-                                "grammar",
-                                "general",
-                                "resource"
-                              ]
-                            }
-                          },
-                          "required": [
-                            "id",
-                            "name",
-                            "kind",
-                            "sourceId",
-                            "sourceLabel"
-                          ],
-                          "additionalProperties": false
+                    "type": [
+                      "array",
+                      "null"
+                    ],
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "tag",
+                            "taxonomy"
+                          ]
+                        },
+                        "sourceId": {
+                          "type": "string"
+                        },
+                        "sourceLabel": {
+                          "type": "string"
+                        },
+                        "category": {
+                          "type": "string",
+                          "enum": [
+                            "vocabulary",
+                            "grammar",
+                            "general",
+                            "resource"
+                          ]
                         }
                       },
-                      {
-                        "type": "null"
-                      }
-                    ]
+                      "required": [
+                        "id",
+                        "name",
+                        "kind",
+                        "sourceId",
+                        "sourceLabel"
+                      ],
+                      "additionalProperties": false
+                    }
                   },
                   "reasons": {
                     "type": [
@@ -2749,106 +2717,98 @@
                     ]
                   },
                   "terms": {
-                    "anyOf": [
-                      {
-                        "type": "array",
-                        "items": {
-                          "type": "object",
-                          "properties": {
-                            "id": {
-                              "type": "string"
-                            },
-                            "name": {
-                              "type": "string"
-                            },
-                            "kind": {
-                              "type": "string",
-                              "enum": [
-                                "tag",
-                                "taxonomy"
-                              ]
-                            },
-                            "sourceId": {
-                              "type": "string"
-                            },
-                            "sourceLabel": {
-                              "type": "string"
-                            },
-                            "category": {
-                              "type": "string",
-                              "enum": [
-                                "vocabulary",
-                                "grammar",
-                                "general",
-                                "resource"
-                              ]
-                            }
-                          },
-                          "required": [
-                            "id",
-                            "name",
-                            "kind",
-                            "sourceId",
-                            "sourceLabel"
-                          ],
-                          "additionalProperties": false
+                    "type": [
+                      "array",
+                      "null"
+                    ],
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "tag",
+                            "taxonomy"
+                          ]
+                        },
+                        "sourceId": {
+                          "type": "string"
+                        },
+                        "sourceLabel": {
+                          "type": "string"
+                        },
+                        "category": {
+                          "type": "string",
+                          "enum": [
+                            "vocabulary",
+                            "grammar",
+                            "general",
+                            "resource"
+                          ]
                         }
                       },
-                      {
-                        "type": "null"
-                      }
-                    ]
+                      "required": [
+                        "id",
+                        "name",
+                        "kind",
+                        "sourceId",
+                        "sourceLabel"
+                      ],
+                      "additionalProperties": false
+                    }
                   },
                   "incorrectGrammarTerms": {
-                    "anyOf": [
-                      {
-                        "type": "array",
-                        "items": {
-                          "type": "object",
-                          "properties": {
-                            "id": {
-                              "type": "string"
-                            },
-                            "name": {
-                              "type": "string"
-                            },
-                            "kind": {
-                              "type": "string",
-                              "enum": [
-                                "tag",
-                                "taxonomy"
-                              ]
-                            },
-                            "sourceId": {
-                              "type": "string"
-                            },
-                            "sourceLabel": {
-                              "type": "string"
-                            },
-                            "category": {
-                              "type": "string",
-                              "enum": [
-                                "vocabulary",
-                                "grammar",
-                                "general",
-                                "resource"
-                              ]
-                            }
-                          },
-                          "required": [
-                            "id",
-                            "name",
-                            "kind",
-                            "sourceId",
-                            "sourceLabel"
-                          ],
-                          "additionalProperties": false
+                    "type": [
+                      "array",
+                      "null"
+                    ],
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "tag",
+                            "taxonomy"
+                          ]
+                        },
+                        "sourceId": {
+                          "type": "string"
+                        },
+                        "sourceLabel": {
+                          "type": "string"
+                        },
+                        "category": {
+                          "type": "string",
+                          "enum": [
+                            "vocabulary",
+                            "grammar",
+                            "general",
+                            "resource"
+                          ]
                         }
                       },
-                      {
-                        "type": "null"
-                      }
-                    ]
+                      "required": [
+                        "id",
+                        "name",
+                        "kind",
+                        "sourceId",
+                        "sourceLabel"
+                      ],
+                      "additionalProperties": false
+                    }
                   },
                   "reasons": {
                     "type": [
@@ -3036,106 +2996,98 @@
                           ]
                         },
                         "terms": {
-                          "anyOf": [
-                            {
-                              "type": "array",
-                              "items": {
-                                "type": "object",
-                                "properties": {
-                                  "id": {
-                                    "type": "string"
-                                  },
-                                  "name": {
-                                    "type": "string"
-                                  },
-                                  "kind": {
-                                    "type": "string",
-                                    "enum": [
-                                      "tag",
-                                      "taxonomy"
-                                    ]
-                                  },
-                                  "sourceId": {
-                                    "type": "string"
-                                  },
-                                  "sourceLabel": {
-                                    "type": "string"
-                                  },
-                                  "category": {
-                                    "type": "string",
-                                    "enum": [
-                                      "vocabulary",
-                                      "grammar",
-                                      "general",
-                                      "resource"
-                                    ]
-                                  }
-                                },
-                                "required": [
-                                  "id",
-                                  "name",
-                                  "kind",
-                                  "sourceId",
-                                  "sourceLabel"
-                                ],
-                                "additionalProperties": false
+                          "type": [
+                            "array",
+                            "null"
+                          ],
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string"
+                              },
+                              "name": {
+                                "type": "string"
+                              },
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "tag",
+                                  "taxonomy"
+                                ]
+                              },
+                              "sourceId": {
+                                "type": "string"
+                              },
+                              "sourceLabel": {
+                                "type": "string"
+                              },
+                              "category": {
+                                "type": "string",
+                                "enum": [
+                                  "vocabulary",
+                                  "grammar",
+                                  "general",
+                                  "resource"
+                                ]
                               }
                             },
-                            {
-                              "type": "null"
-                            }
-                          ]
+                            "required": [
+                              "id",
+                              "name",
+                              "kind",
+                              "sourceId",
+                              "sourceLabel"
+                            ],
+                            "additionalProperties": false
+                          }
                         },
                         "incorrectGrammarTerms": {
-                          "anyOf": [
-                            {
-                              "type": "array",
-                              "items": {
-                                "type": "object",
-                                "properties": {
-                                  "id": {
-                                    "type": "string"
-                                  },
-                                  "name": {
-                                    "type": "string"
-                                  },
-                                  "kind": {
-                                    "type": "string",
-                                    "enum": [
-                                      "tag",
-                                      "taxonomy"
-                                    ]
-                                  },
-                                  "sourceId": {
-                                    "type": "string"
-                                  },
-                                  "sourceLabel": {
-                                    "type": "string"
-                                  },
-                                  "category": {
-                                    "type": "string",
-                                    "enum": [
-                                      "vocabulary",
-                                      "grammar",
-                                      "general",
-                                      "resource"
-                                    ]
-                                  }
-                                },
-                                "required": [
-                                  "id",
-                                  "name",
-                                  "kind",
-                                  "sourceId",
-                                  "sourceLabel"
-                                ],
-                                "additionalProperties": false
+                          "type": [
+                            "array",
+                            "null"
+                          ],
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string"
+                              },
+                              "name": {
+                                "type": "string"
+                              },
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "tag",
+                                  "taxonomy"
+                                ]
+                              },
+                              "sourceId": {
+                                "type": "string"
+                              },
+                              "sourceLabel": {
+                                "type": "string"
+                              },
+                              "category": {
+                                "type": "string",
+                                "enum": [
+                                  "vocabulary",
+                                  "grammar",
+                                  "general",
+                                  "resource"
+                                ]
                               }
                             },
-                            {
-                              "type": "null"
-                            }
-                          ]
+                            "required": [
+                              "id",
+                              "name",
+                              "kind",
+                              "sourceId",
+                              "sourceLabel"
+                            ],
+                            "additionalProperties": false
+                          }
                         },
                         "reasons": {
                           "type": [
@@ -3266,55 +3218,51 @@
                     "type": "boolean"
                   },
                   "terms": {
-                    "anyOf": [
-                      {
-                        "type": "array",
-                        "items": {
-                          "type": "object",
-                          "properties": {
-                            "id": {
-                              "type": "string"
-                            },
-                            "name": {
-                              "type": "string"
-                            },
-                            "kind": {
-                              "type": "string",
-                              "enum": [
-                                "tag",
-                                "taxonomy"
-                              ]
-                            },
-                            "sourceId": {
-                              "type": "string"
-                            },
-                            "sourceLabel": {
-                              "type": "string"
-                            },
-                            "category": {
-                              "type": "string",
-                              "enum": [
-                                "vocabulary",
-                                "grammar",
-                                "general",
-                                "resource"
-                              ]
-                            }
-                          },
-                          "required": [
-                            "id",
-                            "name",
-                            "kind",
-                            "sourceId",
-                            "sourceLabel"
-                          ],
-                          "additionalProperties": false
+                    "type": [
+                      "array",
+                      "null"
+                    ],
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "tag",
+                            "taxonomy"
+                          ]
+                        },
+                        "sourceId": {
+                          "type": "string"
+                        },
+                        "sourceLabel": {
+                          "type": "string"
+                        },
+                        "category": {
+                          "type": "string",
+                          "enum": [
+                            "vocabulary",
+                            "grammar",
+                            "general",
+                            "resource"
+                          ]
                         }
                       },
-                      {
-                        "type": "null"
-                      }
-                    ]
+                      "required": [
+                        "id",
+                        "name",
+                        "kind",
+                        "sourceId",
+                        "sourceLabel"
+                      ],
+                      "additionalProperties": false
+                    }
                   },
                   "corrections": {
                     "type": [
@@ -3465,55 +3413,51 @@
                     "type": "boolean"
                   },
                   "terms": {
-                    "anyOf": [
-                      {
-                        "type": "array",
-                        "items": {
-                          "type": "object",
-                          "properties": {
-                            "id": {
-                              "type": "string"
-                            },
-                            "name": {
-                              "type": "string"
-                            },
-                            "kind": {
-                              "type": "string",
-                              "enum": [
-                                "tag",
-                                "taxonomy"
-                              ]
-                            },
-                            "sourceId": {
-                              "type": "string"
-                            },
-                            "sourceLabel": {
-                              "type": "string"
-                            },
-                            "category": {
-                              "type": "string",
-                              "enum": [
-                                "vocabulary",
-                                "grammar",
-                                "general",
-                                "resource"
-                              ]
-                            }
-                          },
-                          "required": [
-                            "id",
-                            "name",
-                            "kind",
-                            "sourceId",
-                            "sourceLabel"
-                          ],
-                          "additionalProperties": false
+                    "type": [
+                      "array",
+                      "null"
+                    ],
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "tag",
+                            "taxonomy"
+                          ]
+                        },
+                        "sourceId": {
+                          "type": "string"
+                        },
+                        "sourceLabel": {
+                          "type": "string"
+                        },
+                        "category": {
+                          "type": "string",
+                          "enum": [
+                            "vocabulary",
+                            "grammar",
+                            "general",
+                            "resource"
+                          ]
                         }
                       },
-                      {
-                        "type": "null"
-                      }
-                    ]
+                      "required": [
+                        "id",
+                        "name",
+                        "kind",
+                        "sourceId",
+                        "sourceLabel"
+                      ],
+                      "additionalProperties": false
+                    }
                   },
                   "corrections": {
                     "type": [
@@ -3709,57 +3653,45 @@
                       "null"
                     ],
                     "items": {
-                      "anyOf": [
-                        {
-                          "type": "object",
-                          "properties": {
-                            "id": {
-                              "type": "string"
-                            },
-                            "label": {
-                              "type": "string"
-                            },
-                            "type": {
-                              "type": "string",
-                              "enum": [
-                                "name",
-                                "url",
-                                "page",
-                                "timestamp"
-                              ]
-                            },
-                            "startValue": {
-                              "anyOf": [
-                                {
-                                  "type": "string"
-                                },
-                                {
-                                  "type": "null"
-                                }
-                              ]
-                            },
-                            "endValue": {
-                              "anyOf": [
-                                {
-                                  "type": "string"
-                                },
-                                {
-                                  "type": "null"
-                                }
-                              ]
-                            }
-                          },
-                          "required": [
-                            "id",
-                            "label",
-                            "type"
-                          ],
-                          "additionalProperties": false
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "id": {
+                          "type": "string"
                         },
-                        {
-                          "type": "null"
+                        "label": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "name",
+                            "url",
+                            "page",
+                            "timestamp"
+                          ]
+                        },
+                        "startValue": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "endValue": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
                         }
-                      ]
+                      },
+                      "required": [
+                        "id",
+                        "label",
+                        "type"
+                      ],
+                      "additionalProperties": false
                     }
                   },
                   "dueDate": {
@@ -3790,55 +3722,51 @@
                     }
                   },
                   "grammarTerms": {
-                    "anyOf": [
-                      {
-                        "type": "array",
-                        "items": {
-                          "type": "object",
-                          "properties": {
-                            "id": {
-                              "type": "string"
-                            },
-                            "name": {
-                              "type": "string"
-                            },
-                            "kind": {
-                              "type": "string",
-                              "enum": [
-                                "tag",
-                                "taxonomy"
-                              ]
-                            },
-                            "sourceId": {
-                              "type": "string"
-                            },
-                            "sourceLabel": {
-                              "type": "string"
-                            },
-                            "category": {
-                              "type": "string",
-                              "enum": [
-                                "vocabulary",
-                                "grammar",
-                                "general",
-                                "resource"
-                              ]
-                            }
-                          },
-                          "required": [
-                            "id",
-                            "name",
-                            "kind",
-                            "sourceId",
-                            "sourceLabel"
-                          ],
-                          "additionalProperties": false
+                    "type": [
+                      "array",
+                      "null"
+                    ],
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "tag",
+                            "taxonomy"
+                          ]
+                        },
+                        "sourceId": {
+                          "type": "string"
+                        },
+                        "sourceLabel": {
+                          "type": "string"
+                        },
+                        "category": {
+                          "type": "string",
+                          "enum": [
+                            "vocabulary",
+                            "grammar",
+                            "general",
+                            "resource"
+                          ]
                         }
                       },
-                      {
-                        "type": "null"
-                      }
-                    ]
+                      "required": [
+                        "id",
+                        "name",
+                        "kind",
+                        "sourceId",
+                        "sourceLabel"
+                      ],
+                      "additionalProperties": false
+                    }
                   },
                   "questions": {
                     "type": "array",
@@ -4010,57 +3938,45 @@
                       "null"
                     ],
                     "items": {
-                      "anyOf": [
-                        {
-                          "type": "object",
-                          "properties": {
-                            "id": {
-                              "type": "string"
-                            },
-                            "label": {
-                              "type": "string"
-                            },
-                            "type": {
-                              "type": "string",
-                              "enum": [
-                                "name",
-                                "url",
-                                "page",
-                                "timestamp"
-                              ]
-                            },
-                            "startValue": {
-                              "anyOf": [
-                                {
-                                  "type": "string"
-                                },
-                                {
-                                  "type": "null"
-                                }
-                              ]
-                            },
-                            "endValue": {
-                              "anyOf": [
-                                {
-                                  "type": "string"
-                                },
-                                {
-                                  "type": "null"
-                                }
-                              ]
-                            }
-                          },
-                          "required": [
-                            "id",
-                            "label",
-                            "type"
-                          ],
-                          "additionalProperties": false
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "id": {
+                          "type": "string"
                         },
-                        {
-                          "type": "null"
+                        "label": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "name",
+                            "url",
+                            "page",
+                            "timestamp"
+                          ]
+                        },
+                        "startValue": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "endValue": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
                         }
-                      ]
+                      },
+                      "required": [
+                        "id",
+                        "label",
+                        "type"
+                      ],
+                      "additionalProperties": false
                     }
                   },
                   "dueDate": {
@@ -4091,55 +4007,51 @@
                     }
                   },
                   "grammarTerms": {
-                    "anyOf": [
-                      {
-                        "type": "array",
-                        "items": {
-                          "type": "object",
-                          "properties": {
-                            "id": {
-                              "type": "string"
-                            },
-                            "name": {
-                              "type": "string"
-                            },
-                            "kind": {
-                              "type": "string",
-                              "enum": [
-                                "tag",
-                                "taxonomy"
-                              ]
-                            },
-                            "sourceId": {
-                              "type": "string"
-                            },
-                            "sourceLabel": {
-                              "type": "string"
-                            },
-                            "category": {
-                              "type": "string",
-                              "enum": [
-                                "vocabulary",
-                                "grammar",
-                                "general",
-                                "resource"
-                              ]
-                            }
-                          },
-                          "required": [
-                            "id",
-                            "name",
-                            "kind",
-                            "sourceId",
-                            "sourceLabel"
-                          ],
-                          "additionalProperties": false
+                    "type": [
+                      "array",
+                      "null"
+                    ],
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "tag",
+                            "taxonomy"
+                          ]
+                        },
+                        "sourceId": {
+                          "type": "string"
+                        },
+                        "sourceLabel": {
+                          "type": "string"
+                        },
+                        "category": {
+                          "type": "string",
+                          "enum": [
+                            "vocabulary",
+                            "grammar",
+                            "general",
+                            "resource"
+                          ]
                         }
                       },
-                      {
-                        "type": "null"
-                      }
-                    ]
+                      "required": [
+                        "id",
+                        "name",
+                        "kind",
+                        "sourceId",
+                        "sourceLabel"
+                      ],
+                      "additionalProperties": false
+                    }
                   },
                   "questions": {
                     "type": "array",
@@ -4294,14 +4206,11 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "questionSheetId"
-                ],
-                "additionalProperties": false,
                 "properties": {
                   "questionSheetId": {
                     "type": "string",
-                    "format": "uuid"
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
                   },
                   "title": {
                     "type": [
@@ -4319,11 +4228,6 @@
                     "type": "array",
                     "items": {
                       "type": "object",
-                      "additionalProperties": false,
-                      "required": [
-                        "slotId",
-                        "value"
-                      ],
                       "properties": {
                         "slotId": {
                           "type": "string"
@@ -4368,12 +4272,6 @@
                           ],
                           "items": {
                             "type": "object",
-                            "additionalProperties": false,
-                            "required": [
-                              "start",
-                              "end",
-                              "correct"
-                            ],
                             "properties": {
                               "start": {
                                 "type": "integer"
@@ -4384,10 +4282,21 @@
                               "correct": {
                                 "type": "boolean"
                               }
-                            }
+                            },
+                            "required": [
+                              "start",
+                              "end",
+                              "correct"
+                            ],
+                            "additionalProperties": false
                           }
                         }
-                      }
+                      },
+                      "required": [
+                        "slotId",
+                        "value"
+                      ],
+                      "additionalProperties": false
                     }
                   },
                   "hiddenPartIds": {
@@ -4399,7 +4308,11 @@
                       "type": "string"
                     }
                   }
-                }
+                },
+                "required": [
+                  "questionSheetId"
+                ],
+                "additionalProperties": false
               }
             }
           }
@@ -4447,7 +4360,8 @@
                 "properties": {
                   "questionSheetId": {
                     "type": "string",
-                    "format": "uuid"
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
                   },
                   "title": {
                     "type": [
@@ -4465,11 +4379,6 @@
                     "type": "array",
                     "items": {
                       "type": "object",
-                      "additionalProperties": false,
-                      "required": [
-                        "slotId",
-                        "value"
-                      ],
                       "properties": {
                         "slotId": {
                           "type": "string"
@@ -4514,12 +4423,6 @@
                           ],
                           "items": {
                             "type": "object",
-                            "additionalProperties": false,
-                            "required": [
-                              "start",
-                              "end",
-                              "correct"
-                            ],
                             "properties": {
                               "start": {
                                 "type": "integer"
@@ -4530,10 +4433,21 @@
                               "correct": {
                                 "type": "boolean"
                               }
-                            }
+                            },
+                            "required": [
+                              "start",
+                              "end",
+                              "correct"
+                            ],
+                            "additionalProperties": false
                           }
                         }
-                      }
+                      },
+                      "required": [
+                        "slotId",
+                        "value"
+                      ],
+                      "additionalProperties": false
                     }
                   },
                   "hiddenPartIds": {
@@ -4654,57 +4568,45 @@
                     ]
                   },
                   "section": {
-                    "anyOf": [
-                      {
-                        "type": "object",
-                        "properties": {
-                          "id": {
-                            "type": "string"
-                          },
-                          "label": {
-                            "type": "string"
-                          },
-                          "type": {
-                            "type": "string",
-                            "enum": [
-                              "name",
-                              "url",
-                              "page",
-                              "timestamp"
-                            ]
-                          },
-                          "startValue": {
-                            "anyOf": [
-                              {
-                                "type": "string"
-                              },
-                              {
-                                "type": "null"
-                              }
-                            ]
-                          },
-                          "endValue": {
-                            "anyOf": [
-                              {
-                                "type": "string"
-                              },
-                              {
-                                "type": "null"
-                              }
-                            ]
-                          }
-                        },
-                        "required": [
-                          "id",
-                          "label",
-                          "type"
-                        ],
-                        "additionalProperties": false
+                    "type": [
+                      "object",
+                      "null"
+                    ],
+                    "properties": {
+                      "id": {
+                        "type": "string"
                       },
-                      {
-                        "type": "null"
+                      "label": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": "string",
+                        "enum": [
+                          "name",
+                          "url",
+                          "page",
+                          "timestamp"
+                        ]
+                      },
+                      "startValue": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "endValue": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
                       }
-                    ]
+                    },
+                    "required": [
+                      "id",
+                      "label",
+                      "type"
+                    ],
+                    "additionalProperties": false
                   },
                   "entries": {
                     "type": [
@@ -4760,55 +4662,51 @@
                     "minimum": 0
                   },
                   "terms": {
-                    "anyOf": [
-                      {
-                        "type": "array",
-                        "items": {
-                          "type": "object",
-                          "properties": {
-                            "id": {
-                              "type": "string"
-                            },
-                            "name": {
-                              "type": "string"
-                            },
-                            "kind": {
-                              "type": "string",
-                              "enum": [
-                                "tag",
-                                "taxonomy"
-                              ]
-                            },
-                            "sourceId": {
-                              "type": "string"
-                            },
-                            "sourceLabel": {
-                              "type": "string"
-                            },
-                            "category": {
-                              "type": "string",
-                              "enum": [
-                                "vocabulary",
-                                "grammar",
-                                "general",
-                                "resource"
-                              ]
-                            }
-                          },
-                          "required": [
-                            "id",
-                            "name",
-                            "kind",
-                            "sourceId",
-                            "sourceLabel"
-                          ],
-                          "additionalProperties": false
+                    "type": [
+                      "array",
+                      "null"
+                    ],
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "tag",
+                            "taxonomy"
+                          ]
+                        },
+                        "sourceId": {
+                          "type": "string"
+                        },
+                        "sourceLabel": {
+                          "type": "string"
+                        },
+                        "category": {
+                          "type": "string",
+                          "enum": [
+                            "vocabulary",
+                            "grammar",
+                            "general",
+                            "resource"
+                          ]
                         }
                       },
-                      {
-                        "type": "null"
-                      }
-                    ]
+                      "required": [
+                        "id",
+                        "name",
+                        "kind",
+                        "sourceId",
+                        "sourceLabel"
+                      ],
+                      "additionalProperties": false
+                    }
                   },
                   "learningArea": {
                     "type": [
@@ -4911,57 +4809,45 @@
                     ]
                   },
                   "section": {
-                    "anyOf": [
-                      {
-                        "type": "object",
-                        "properties": {
-                          "id": {
-                            "type": "string"
-                          },
-                          "label": {
-                            "type": "string"
-                          },
-                          "type": {
-                            "type": "string",
-                            "enum": [
-                              "name",
-                              "url",
-                              "page",
-                              "timestamp"
-                            ]
-                          },
-                          "startValue": {
-                            "anyOf": [
-                              {
-                                "type": "string"
-                              },
-                              {
-                                "type": "null"
-                              }
-                            ]
-                          },
-                          "endValue": {
-                            "anyOf": [
-                              {
-                                "type": "string"
-                              },
-                              {
-                                "type": "null"
-                              }
-                            ]
-                          }
-                        },
-                        "required": [
-                          "id",
-                          "label",
-                          "type"
-                        ],
-                        "additionalProperties": false
+                    "type": [
+                      "object",
+                      "null"
+                    ],
+                    "properties": {
+                      "id": {
+                        "type": "string"
                       },
-                      {
-                        "type": "null"
+                      "label": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": "string",
+                        "enum": [
+                          "name",
+                          "url",
+                          "page",
+                          "timestamp"
+                        ]
+                      },
+                      "startValue": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "endValue": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
                       }
-                    ]
+                    },
+                    "required": [
+                      "id",
+                      "label",
+                      "type"
+                    ],
+                    "additionalProperties": false
                   },
                   "entries": {
                     "type": [
@@ -5017,55 +4903,51 @@
                     "minimum": 0
                   },
                   "terms": {
-                    "anyOf": [
-                      {
-                        "type": "array",
-                        "items": {
-                          "type": "object",
-                          "properties": {
-                            "id": {
-                              "type": "string"
-                            },
-                            "name": {
-                              "type": "string"
-                            },
-                            "kind": {
-                              "type": "string",
-                              "enum": [
-                                "tag",
-                                "taxonomy"
-                              ]
-                            },
-                            "sourceId": {
-                              "type": "string"
-                            },
-                            "sourceLabel": {
-                              "type": "string"
-                            },
-                            "category": {
-                              "type": "string",
-                              "enum": [
-                                "vocabulary",
-                                "grammar",
-                                "general",
-                                "resource"
-                              ]
-                            }
-                          },
-                          "required": [
-                            "id",
-                            "name",
-                            "kind",
-                            "sourceId",
-                            "sourceLabel"
-                          ],
-                          "additionalProperties": false
+                    "type": [
+                      "array",
+                      "null"
+                    ],
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "tag",
+                            "taxonomy"
+                          ]
+                        },
+                        "sourceId": {
+                          "type": "string"
+                        },
+                        "sourceLabel": {
+                          "type": "string"
+                        },
+                        "category": {
+                          "type": "string",
+                          "enum": [
+                            "vocabulary",
+                            "grammar",
+                            "general",
+                            "resource"
+                          ]
                         }
                       },
-                      {
-                        "type": "null"
-                      }
-                    ]
+                      "required": [
+                        "id",
+                        "name",
+                        "kind",
+                        "sourceId",
+                        "sourceLabel"
+                      ],
+                      "additionalProperties": false
+                    }
                   },
                   "learningArea": {
                     "type": [
@@ -5264,57 +5146,45 @@
                     ]
                   },
                   "section": {
-                    "anyOf": [
-                      {
-                        "type": "object",
-                        "properties": {
-                          "id": {
-                            "type": "string"
-                          },
-                          "label": {
-                            "type": "string"
-                          },
-                          "type": {
-                            "type": "string",
-                            "enum": [
-                              "name",
-                              "url",
-                              "page",
-                              "timestamp"
-                            ]
-                          },
-                          "startValue": {
-                            "anyOf": [
-                              {
-                                "type": "string"
-                              },
-                              {
-                                "type": "null"
-                              }
-                            ]
-                          },
-                          "endValue": {
-                            "anyOf": [
-                              {
-                                "type": "string"
-                              },
-                              {
-                                "type": "null"
-                              }
-                            ]
-                          }
-                        },
-                        "required": [
-                          "id",
-                          "label",
-                          "type"
-                        ],
-                        "additionalProperties": false
+                    "type": [
+                      "object",
+                      "null"
+                    ],
+                    "properties": {
+                      "id": {
+                        "type": "string"
                       },
-                      {
-                        "type": "null"
+                      "label": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": "string",
+                        "enum": [
+                          "name",
+                          "url",
+                          "page",
+                          "timestamp"
+                        ]
+                      },
+                      "startValue": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "endValue": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
                       }
-                    ]
+                    },
+                    "required": [
+                      "id",
+                      "label",
+                      "type"
+                    ],
+                    "additionalProperties": false
                   },
                   "selfSpeakers": {
                     "type": [
@@ -5495,57 +5365,45 @@
                     ]
                   },
                   "section": {
-                    "anyOf": [
-                      {
-                        "type": "object",
-                        "properties": {
-                          "id": {
-                            "type": "string"
-                          },
-                          "label": {
-                            "type": "string"
-                          },
-                          "type": {
-                            "type": "string",
-                            "enum": [
-                              "name",
-                              "url",
-                              "page",
-                              "timestamp"
-                            ]
-                          },
-                          "startValue": {
-                            "anyOf": [
-                              {
-                                "type": "string"
-                              },
-                              {
-                                "type": "null"
-                              }
-                            ]
-                          },
-                          "endValue": {
-                            "anyOf": [
-                              {
-                                "type": "string"
-                              },
-                              {
-                                "type": "null"
-                              }
-                            ]
-                          }
-                        },
-                        "required": [
-                          "id",
-                          "label",
-                          "type"
-                        ],
-                        "additionalProperties": false
+                    "type": [
+                      "object",
+                      "null"
+                    ],
+                    "properties": {
+                      "id": {
+                        "type": "string"
                       },
-                      {
-                        "type": "null"
+                      "label": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": "string",
+                        "enum": [
+                          "name",
+                          "url",
+                          "page",
+                          "timestamp"
+                        ]
+                      },
+                      "startValue": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "endValue": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
                       }
-                    ]
+                    },
+                    "required": [
+                      "id",
+                      "label",
+                      "type"
+                    ],
+                    "additionalProperties": false
                   },
                   "selfSpeakers": {
                     "type": [
@@ -5683,57 +5541,45 @@
                     ]
                   },
                   "section": {
-                    "anyOf": [
-                      {
-                        "type": "object",
-                        "properties": {
-                          "id": {
-                            "type": "string"
-                          },
-                          "label": {
-                            "type": "string"
-                          },
-                          "type": {
-                            "type": "string",
-                            "enum": [
-                              "name",
-                              "url",
-                              "page",
-                              "timestamp"
-                            ]
-                          },
-                          "startValue": {
-                            "anyOf": [
-                              {
-                                "type": "string"
-                              },
-                              {
-                                "type": "null"
-                              }
-                            ]
-                          },
-                          "endValue": {
-                            "anyOf": [
-                              {
-                                "type": "string"
-                              },
-                              {
-                                "type": "null"
-                              }
-                            ]
-                          }
-                        },
-                        "required": [
-                          "id",
-                          "label",
-                          "type"
-                        ],
-                        "additionalProperties": false
+                    "type": [
+                      "object",
+                      "null"
+                    ],
+                    "properties": {
+                      "id": {
+                        "type": "string"
                       },
-                      {
-                        "type": "null"
+                      "label": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": "string",
+                        "enum": [
+                          "name",
+                          "url",
+                          "page",
+                          "timestamp"
+                        ]
+                      },
+                      "startValue": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "endValue": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
                       }
-                    ]
+                    },
+                    "required": [
+                      "id",
+                      "label",
+                      "type"
+                    ],
+                    "additionalProperties": false
                   },
                   "defaultMaxReplays": {
                     "type": "integer",
@@ -5842,55 +5688,51 @@
                     }
                   },
                   "terms": {
-                    "anyOf": [
-                      {
-                        "type": "array",
-                        "items": {
-                          "type": "object",
-                          "properties": {
-                            "id": {
-                              "type": "string"
-                            },
-                            "name": {
-                              "type": "string"
-                            },
-                            "kind": {
-                              "type": "string",
-                              "enum": [
-                                "tag",
-                                "taxonomy"
-                              ]
-                            },
-                            "sourceId": {
-                              "type": "string"
-                            },
-                            "sourceLabel": {
-                              "type": "string"
-                            },
-                            "category": {
-                              "type": "string",
-                              "enum": [
-                                "vocabulary",
-                                "grammar",
-                                "general",
-                                "resource"
-                              ]
-                            }
-                          },
-                          "required": [
-                            "id",
-                            "name",
-                            "kind",
-                            "sourceId",
-                            "sourceLabel"
-                          ],
-                          "additionalProperties": false
+                    "type": [
+                      "array",
+                      "null"
+                    ],
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "tag",
+                            "taxonomy"
+                          ]
+                        },
+                        "sourceId": {
+                          "type": "string"
+                        },
+                        "sourceLabel": {
+                          "type": "string"
+                        },
+                        "category": {
+                          "type": "string",
+                          "enum": [
+                            "vocabulary",
+                            "grammar",
+                            "general",
+                            "resource"
+                          ]
                         }
                       },
-                      {
-                        "type": "null"
-                      }
-                    ]
+                      "required": [
+                        "id",
+                        "name",
+                        "kind",
+                        "sourceId",
+                        "sourceLabel"
+                      ],
+                      "additionalProperties": false
+                    }
                   },
                   "learningArea": {
                     "type": [
@@ -6031,57 +5873,45 @@
                     ]
                   },
                   "section": {
-                    "anyOf": [
-                      {
-                        "type": "object",
-                        "properties": {
-                          "id": {
-                            "type": "string"
-                          },
-                          "label": {
-                            "type": "string"
-                          },
-                          "type": {
-                            "type": "string",
-                            "enum": [
-                              "name",
-                              "url",
-                              "page",
-                              "timestamp"
-                            ]
-                          },
-                          "startValue": {
-                            "anyOf": [
-                              {
-                                "type": "string"
-                              },
-                              {
-                                "type": "null"
-                              }
-                            ]
-                          },
-                          "endValue": {
-                            "anyOf": [
-                              {
-                                "type": "string"
-                              },
-                              {
-                                "type": "null"
-                              }
-                            ]
-                          }
-                        },
-                        "required": [
-                          "id",
-                          "label",
-                          "type"
-                        ],
-                        "additionalProperties": false
+                    "type": [
+                      "object",
+                      "null"
+                    ],
+                    "properties": {
+                      "id": {
+                        "type": "string"
                       },
-                      {
-                        "type": "null"
+                      "label": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": "string",
+                        "enum": [
+                          "name",
+                          "url",
+                          "page",
+                          "timestamp"
+                        ]
+                      },
+                      "startValue": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "endValue": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
                       }
-                    ]
+                    },
+                    "required": [
+                      "id",
+                      "label",
+                      "type"
+                    ],
+                    "additionalProperties": false
                   },
                   "defaultMaxReplays": {
                     "type": "integer",
@@ -6190,55 +6020,51 @@
                     }
                   },
                   "terms": {
-                    "anyOf": [
-                      {
-                        "type": "array",
-                        "items": {
-                          "type": "object",
-                          "properties": {
-                            "id": {
-                              "type": "string"
-                            },
-                            "name": {
-                              "type": "string"
-                            },
-                            "kind": {
-                              "type": "string",
-                              "enum": [
-                                "tag",
-                                "taxonomy"
-                              ]
-                            },
-                            "sourceId": {
-                              "type": "string"
-                            },
-                            "sourceLabel": {
-                              "type": "string"
-                            },
-                            "category": {
-                              "type": "string",
-                              "enum": [
-                                "vocabulary",
-                                "grammar",
-                                "general",
-                                "resource"
-                              ]
-                            }
-                          },
-                          "required": [
-                            "id",
-                            "name",
-                            "kind",
-                            "sourceId",
-                            "sourceLabel"
-                          ],
-                          "additionalProperties": false
+                    "type": [
+                      "array",
+                      "null"
+                    ],
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "tag",
+                            "taxonomy"
+                          ]
+                        },
+                        "sourceId": {
+                          "type": "string"
+                        },
+                        "sourceLabel": {
+                          "type": "string"
+                        },
+                        "category": {
+                          "type": "string",
+                          "enum": [
+                            "vocabulary",
+                            "grammar",
+                            "general",
+                            "resource"
+                          ]
                         }
                       },
-                      {
-                        "type": "null"
-                      }
-                    ]
+                      "required": [
+                        "id",
+                        "name",
+                        "kind",
+                        "sourceId",
+                        "sourceLabel"
+                      ],
+                      "additionalProperties": false
+                    }
                   },
                   "learningArea": {
                     "type": [
@@ -6380,13 +6206,9 @@
                     "minLength": 1
                   },
                   "notes": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
+                    "type": [
+                      "string",
+                      "null"
                     ]
                   },
                   "sentenceIds": {
@@ -6460,13 +6282,9 @@
                     "minLength": 1
                   },
                   "notes": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
+                    "type": [
+                      "string",
+                      "null"
                     ]
                   },
                   "sentenceIds": {
@@ -6709,55 +6527,51 @@
                           "type": "boolean"
                         },
                         "grammarTerms": {
-                          "anyOf": [
-                            {
-                              "type": "array",
-                              "items": {
-                                "type": "object",
-                                "properties": {
-                                  "id": {
-                                    "type": "string"
-                                  },
-                                  "name": {
-                                    "type": "string"
-                                  },
-                                  "kind": {
-                                    "type": "string",
-                                    "enum": [
-                                      "tag",
-                                      "taxonomy"
-                                    ]
-                                  },
-                                  "sourceId": {
-                                    "type": "string"
-                                  },
-                                  "sourceLabel": {
-                                    "type": "string"
-                                  },
-                                  "category": {
-                                    "type": "string",
-                                    "enum": [
-                                      "vocabulary",
-                                      "grammar",
-                                      "general",
-                                      "resource"
-                                    ]
-                                  }
-                                },
-                                "required": [
-                                  "id",
-                                  "name",
-                                  "kind",
-                                  "sourceId",
-                                  "sourceLabel"
-                                ],
-                                "additionalProperties": false
+                          "type": [
+                            "array",
+                            "null"
+                          ],
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string"
+                              },
+                              "name": {
+                                "type": "string"
+                              },
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "tag",
+                                  "taxonomy"
+                                ]
+                              },
+                              "sourceId": {
+                                "type": "string"
+                              },
+                              "sourceLabel": {
+                                "type": "string"
+                              },
+                              "category": {
+                                "type": "string",
+                                "enum": [
+                                  "vocabulary",
+                                  "grammar",
+                                  "general",
+                                  "resource"
+                                ]
                               }
                             },
-                            {
-                              "type": "null"
-                            }
-                          ]
+                            "required": [
+                              "id",
+                              "name",
+                              "kind",
+                              "sourceId",
+                              "sourceLabel"
+                            ],
+                            "additionalProperties": false
+                          }
                         }
                       }
                     }
@@ -6833,57 +6647,45 @@
                     ]
                   },
                   "section": {
-                    "anyOf": [
-                      {
-                        "type": "object",
-                        "properties": {
-                          "id": {
-                            "type": "string"
-                          },
-                          "label": {
-                            "type": "string"
-                          },
-                          "type": {
-                            "type": "string",
-                            "enum": [
-                              "name",
-                              "url",
-                              "page",
-                              "timestamp"
-                            ]
-                          },
-                          "startValue": {
-                            "anyOf": [
-                              {
-                                "type": "string"
-                              },
-                              {
-                                "type": "null"
-                              }
-                            ]
-                          },
-                          "endValue": {
-                            "anyOf": [
-                              {
-                                "type": "string"
-                              },
-                              {
-                                "type": "null"
-                              }
-                            ]
-                          }
-                        },
-                        "required": [
-                          "id",
-                          "label",
-                          "type"
-                        ],
-                        "additionalProperties": false
+                    "type": [
+                      "object",
+                      "null"
+                    ],
+                    "properties": {
+                      "id": {
+                        "type": "string"
                       },
-                      {
-                        "type": "null"
+                      "label": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": "string",
+                        "enum": [
+                          "name",
+                          "url",
+                          "page",
+                          "timestamp"
+                        ]
+                      },
+                      "startValue": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "endValue": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
                       }
-                    ]
+                    },
+                    "required": [
+                      "id",
+                      "label",
+                      "type"
+                    ],
+                    "additionalProperties": false
                   },
                   "learningArea": {
                     "type": [
@@ -7101,55 +6903,51 @@
                           "type": "boolean"
                         },
                         "grammarTerms": {
-                          "anyOf": [
-                            {
-                              "type": "array",
-                              "items": {
-                                "type": "object",
-                                "properties": {
-                                  "id": {
-                                    "type": "string"
-                                  },
-                                  "name": {
-                                    "type": "string"
-                                  },
-                                  "kind": {
-                                    "type": "string",
-                                    "enum": [
-                                      "tag",
-                                      "taxonomy"
-                                    ]
-                                  },
-                                  "sourceId": {
-                                    "type": "string"
-                                  },
-                                  "sourceLabel": {
-                                    "type": "string"
-                                  },
-                                  "category": {
-                                    "type": "string",
-                                    "enum": [
-                                      "vocabulary",
-                                      "grammar",
-                                      "general",
-                                      "resource"
-                                    ]
-                                  }
-                                },
-                                "required": [
-                                  "id",
-                                  "name",
-                                  "kind",
-                                  "sourceId",
-                                  "sourceLabel"
-                                ],
-                                "additionalProperties": false
+                          "type": [
+                            "array",
+                            "null"
+                          ],
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string"
+                              },
+                              "name": {
+                                "type": "string"
+                              },
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "tag",
+                                  "taxonomy"
+                                ]
+                              },
+                              "sourceId": {
+                                "type": "string"
+                              },
+                              "sourceLabel": {
+                                "type": "string"
+                              },
+                              "category": {
+                                "type": "string",
+                                "enum": [
+                                  "vocabulary",
+                                  "grammar",
+                                  "general",
+                                  "resource"
+                                ]
                               }
                             },
-                            {
-                              "type": "null"
-                            }
-                          ]
+                            "required": [
+                              "id",
+                              "name",
+                              "kind",
+                              "sourceId",
+                              "sourceLabel"
+                            ],
+                            "additionalProperties": false
+                          }
                         }
                       }
                     }
@@ -7225,57 +7023,45 @@
                     ]
                   },
                   "section": {
-                    "anyOf": [
-                      {
-                        "type": "object",
-                        "properties": {
-                          "id": {
-                            "type": "string"
-                          },
-                          "label": {
-                            "type": "string"
-                          },
-                          "type": {
-                            "type": "string",
-                            "enum": [
-                              "name",
-                              "url",
-                              "page",
-                              "timestamp"
-                            ]
-                          },
-                          "startValue": {
-                            "anyOf": [
-                              {
-                                "type": "string"
-                              },
-                              {
-                                "type": "null"
-                              }
-                            ]
-                          },
-                          "endValue": {
-                            "anyOf": [
-                              {
-                                "type": "string"
-                              },
-                              {
-                                "type": "null"
-                              }
-                            ]
-                          }
-                        },
-                        "required": [
-                          "id",
-                          "label",
-                          "type"
-                        ],
-                        "additionalProperties": false
+                    "type": [
+                      "object",
+                      "null"
+                    ],
+                    "properties": {
+                      "id": {
+                        "type": "string"
                       },
-                      {
-                        "type": "null"
+                      "label": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": "string",
+                        "enum": [
+                          "name",
+                          "url",
+                          "page",
+                          "timestamp"
+                        ]
+                      },
+                      "startValue": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "endValue": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
                       }
-                    ]
+                    },
+                    "required": [
+                      "id",
+                      "label",
+                      "type"
+                    ],
+                    "additionalProperties": false
                   },
                   "learningArea": {
                     "type": [
@@ -7362,23 +7148,15 @@
                 "type": "object",
                 "properties": {
                   "title": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
+                    "type": [
+                      "string",
+                      "null"
                     ]
                   },
                   "titleEn": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
+                    "type": [
+                      "string",
+                      "null"
                     ]
                   },
                   "text": {
@@ -7386,13 +7164,9 @@
                     "minLength": 1
                   },
                   "textEn": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
+                    "type": [
+                      "string",
+                      "null"
                     ]
                   },
                   "difficulty": {
@@ -7461,23 +7235,15 @@
                 "additionalProperties": false,
                 "properties": {
                   "title": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
+                    "type": [
+                      "string",
+                      "null"
                     ]
                   },
                   "titleEn": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
+                    "type": [
+                      "string",
+                      "null"
                     ]
                   },
                   "text": {
@@ -7485,13 +7251,9 @@
                     "minLength": 1
                   },
                   "textEn": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
+                    "type": [
+                      "string",
+                      "null"
                     ]
                   },
                   "difficulty": {
@@ -7575,23 +7337,15 @@
                       "type": "object",
                       "properties": {
                         "title": {
-                          "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "type": "null"
-                            }
+                          "type": [
+                            "string",
+                            "null"
                           ]
                         },
                         "titleEn": {
-                          "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "type": "null"
-                            }
+                          "type": [
+                            "string",
+                            "null"
                           ]
                         },
                         "text": {
@@ -7599,13 +7353,9 @@
                           "minLength": 1
                         },
                         "textEn": {
-                          "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "type": "null"
-                            }
+                          "type": [
+                            "string",
+                            "null"
                           ]
                         },
                         "difficulty": {
@@ -7669,13 +7419,9 @@
                     "minLength": 1
                   },
                   "notes": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
+                    "type": [
+                      "string",
+                      "null"
                     ]
                   }
                 },
@@ -7733,13 +7479,9 @@
                     "minLength": 1
                   },
                   "notes": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
+                    "type": [
+                      "string",
+                      "null"
                     ]
                   }
                 }
@@ -8875,10 +8617,6 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "name"
-                ],
-                "additionalProperties": false,
                 "properties": {
                   "name": {
                     "type": "string",
@@ -8891,12 +8629,6 @@
                     ],
                     "items": {
                       "type": "object",
-                      "additionalProperties": false,
-                      "required": [
-                        "id",
-                        "name",
-                        "reasons"
-                      ],
                       "properties": {
                         "id": {
                           "type": "string"
@@ -8908,11 +8640,6 @@
                           "type": "array",
                           "items": {
                             "type": "object",
-                            "additionalProperties": false,
-                            "required": [
-                              "id",
-                              "name"
-                            ],
                             "properties": {
                               "id": {
                                 "type": "string"
@@ -8920,10 +8647,21 @@
                               "name": {
                                 "type": "string"
                               }
-                            }
+                            },
+                            "required": [
+                              "id",
+                              "name"
+                            ],
+                            "additionalProperties": false
                           }
                         }
-                      }
+                      },
+                      "required": [
+                        "id",
+                        "name",
+                        "reasons"
+                      ],
+                      "additionalProperties": false
                     }
                   },
                   "reasons": {
@@ -8933,11 +8671,6 @@
                     ],
                     "items": {
                       "type": "object",
-                      "additionalProperties": false,
-                      "required": [
-                        "id",
-                        "name"
-                      ],
                       "properties": {
                         "id": {
                           "type": "string"
@@ -8945,10 +8678,19 @@
                         "name": {
                           "type": "string"
                         }
-                      }
+                      },
+                      "required": [
+                        "id",
+                        "name"
+                      ],
+                      "additionalProperties": false
                     }
                   }
-                }
+                },
+                "required": [
+                  "name"
+                ],
+                "additionalProperties": false
               }
             }
           }
@@ -9005,12 +8747,6 @@
                     ],
                     "items": {
                       "type": "object",
-                      "additionalProperties": false,
-                      "required": [
-                        "id",
-                        "name",
-                        "reasons"
-                      ],
                       "properties": {
                         "id": {
                           "type": "string"
@@ -9022,11 +8758,6 @@
                           "type": "array",
                           "items": {
                             "type": "object",
-                            "additionalProperties": false,
-                            "required": [
-                              "id",
-                              "name"
-                            ],
                             "properties": {
                               "id": {
                                 "type": "string"
@@ -9034,10 +8765,21 @@
                               "name": {
                                 "type": "string"
                               }
-                            }
+                            },
+                            "required": [
+                              "id",
+                              "name"
+                            ],
+                            "additionalProperties": false
                           }
                         }
-                      }
+                      },
+                      "required": [
+                        "id",
+                        "name",
+                        "reasons"
+                      ],
+                      "additionalProperties": false
                     }
                   },
                   "reasons": {
@@ -9047,11 +8789,6 @@
                     ],
                     "items": {
                       "type": "object",
-                      "additionalProperties": false,
-                      "required": [
-                        "id",
-                        "name"
-                      ],
                       "properties": {
                         "id": {
                           "type": "string"
@@ -9059,7 +8796,12 @@
                         "name": {
                           "type": "string"
                         }
-                      }
+                      },
+                      "required": [
+                        "id",
+                        "name"
+                      ],
+                      "additionalProperties": false
                     }
                   }
                 }
@@ -9271,57 +9013,45 @@
                     ]
                   },
                   "section": {
-                    "anyOf": [
-                      {
-                        "type": "object",
-                        "properties": {
-                          "id": {
-                            "type": "string"
-                          },
-                          "label": {
-                            "type": "string"
-                          },
-                          "type": {
-                            "type": "string",
-                            "enum": [
-                              "name",
-                              "url",
-                              "page",
-                              "timestamp"
-                            ]
-                          },
-                          "startValue": {
-                            "anyOf": [
-                              {
-                                "type": "string"
-                              },
-                              {
-                                "type": "null"
-                              }
-                            ]
-                          },
-                          "endValue": {
-                            "anyOf": [
-                              {
-                                "type": "string"
-                              },
-                              {
-                                "type": "null"
-                              }
-                            ]
-                          }
-                        },
-                        "required": [
-                          "id",
-                          "label",
-                          "type"
-                        ],
-                        "additionalProperties": false
+                    "type": [
+                      "object",
+                      "null"
+                    ],
+                    "properties": {
+                      "id": {
+                        "type": "string"
                       },
-                      {
-                        "type": "null"
+                      "label": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": "string",
+                        "enum": [
+                          "name",
+                          "url",
+                          "page",
+                          "timestamp"
+                        ]
+                      },
+                      "startValue": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "endValue": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
                       }
-                    ]
+                    },
+                    "required": [
+                      "id",
+                      "label",
+                      "type"
+                    ],
+                    "additionalProperties": false
                   }
                 }
               }
@@ -9508,57 +9238,45 @@
                     ]
                   },
                   "section": {
-                    "anyOf": [
-                      {
-                        "type": "object",
-                        "properties": {
-                          "id": {
-                            "type": "string"
-                          },
-                          "label": {
-                            "type": "string"
-                          },
-                          "type": {
-                            "type": "string",
-                            "enum": [
-                              "name",
-                              "url",
-                              "page",
-                              "timestamp"
-                            ]
-                          },
-                          "startValue": {
-                            "anyOf": [
-                              {
-                                "type": "string"
-                              },
-                              {
-                                "type": "null"
-                              }
-                            ]
-                          },
-                          "endValue": {
-                            "anyOf": [
-                              {
-                                "type": "string"
-                              },
-                              {
-                                "type": "null"
-                              }
-                            ]
-                          }
-                        },
-                        "required": [
-                          "id",
-                          "label",
-                          "type"
-                        ],
-                        "additionalProperties": false
+                    "type": [
+                      "object",
+                      "null"
+                    ],
+                    "properties": {
+                      "id": {
+                        "type": "string"
                       },
-                      {
-                        "type": "null"
+                      "label": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": "string",
+                        "enum": [
+                          "name",
+                          "url",
+                          "page",
+                          "timestamp"
+                        ]
+                      },
+                      "startValue": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "endValue": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
                       }
-                    ]
+                    },
+                    "required": [
+                      "id",
+                      "label",
+                      "type"
+                    ],
+                    "additionalProperties": false
                   }
                 }
               }
@@ -9638,82 +9356,60 @@
                     ]
                   },
                   "title": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
+                    "type": [
+                      "string",
+                      "null"
                     ]
                   },
                   "pages": {
-                    "anyOf": [
-                      {
-                        "type": "integer",
-                        "minimum": 0
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "minimum": 0
                   },
                   "density": {
-                    "anyOf": [
-                      {
-                        "type": "string",
-                        "enum": [
-                          "dense",
-                          "medium",
-                          "light"
-                        ]
-                      },
-                      {
-                        "type": "null"
-                      }
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "enum": [
+                      "dense",
+                      "medium",
+                      "light",
+                      null
                     ]
                   },
                   "wordCount": {
-                    "anyOf": [
-                      {
-                        "type": "integer",
-                        "minimum": 0
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "minimum": 0
                   },
                   "notesCount": {
                     "type": "integer",
                     "minimum": 0
                   },
                   "notes": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
+                    "type": [
+                      "string",
+                      "null"
                     ]
                   },
                   "learningArea": {
-                    "anyOf": [
-                      {
-                        "type": "string",
-                        "enum": [
-                          "Speaking",
-                          "Listening",
-                          "Reading",
-                          "Writing",
-                          "Grammar",
-                          "Vocabulary"
-                        ]
-                      },
-                      {
-                        "type": "null"
-                      }
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "enum": [
+                      "Speaking",
+                      "Listening",
+                      "Reading",
+                      "Writing",
+                      "Grammar",
+                      "Vocabulary",
+                      null
                     ]
                   }
                 },
@@ -9779,82 +9475,60 @@
                     ]
                   },
                   "title": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
+                    "type": [
+                      "string",
+                      "null"
                     ]
                   },
                   "pages": {
-                    "anyOf": [
-                      {
-                        "type": "integer",
-                        "minimum": 0
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "minimum": 0
                   },
                   "density": {
-                    "anyOf": [
-                      {
-                        "type": "string",
-                        "enum": [
-                          "dense",
-                          "medium",
-                          "light"
-                        ]
-                      },
-                      {
-                        "type": "null"
-                      }
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "enum": [
+                      "dense",
+                      "medium",
+                      "light",
+                      null
                     ]
                   },
                   "wordCount": {
-                    "anyOf": [
-                      {
-                        "type": "integer",
-                        "minimum": 0
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "minimum": 0
                   },
                   "notesCount": {
                     "type": "integer",
                     "minimum": 0
                   },
                   "notes": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
+                    "type": [
+                      "string",
+                      "null"
                     ]
                   },
                   "learningArea": {
-                    "anyOf": [
-                      {
-                        "type": "string",
-                        "enum": [
-                          "Speaking",
-                          "Listening",
-                          "Reading",
-                          "Writing",
-                          "Grammar",
-                          "Vocabulary"
-                        ]
-                      },
-                      {
-                        "type": "null"
-                      }
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "enum": [
+                      "Speaking",
+                      "Listening",
+                      "Reading",
+                      "Writing",
+                      "Grammar",
+                      "Vocabulary",
+                      null
                     ]
                   }
                 }
@@ -10589,12 +10263,6 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "ruleTagKey",
-                  "axis",
-                  "items"
-                ],
-                "additionalProperties": false,
                 "properties": {
                   "ruleTagKey": {
                     "type": "string",
@@ -10605,29 +10273,17 @@
                     "minLength": 1
                   },
                   "items": {
-                    "type": "array",
                     "minItems": 4,
                     "maxItems": 6,
+                    "type": "array",
                     "items": {
                       "type": "object",
-                      "additionalProperties": false,
-                      "required": [
-                        "id",
-                        "a",
-                        "b",
-                        "options"
-                      ],
                       "properties": {
                         "id": {
                           "type": "string"
                         },
                         "a": {
                           "type": "object",
-                          "additionalProperties": false,
-                          "required": [
-                            "jp",
-                            "en"
-                          ],
                           "properties": {
                             "jp": {
                               "type": "string"
@@ -10635,15 +10291,15 @@
                             "en": {
                               "type": "string"
                             }
-                          }
+                          },
+                          "required": [
+                            "jp",
+                            "en"
+                          ],
+                          "additionalProperties": false
                         },
                         "b": {
                           "type": "object",
-                          "additionalProperties": false,
-                          "required": [
-                            "jp",
-                            "en"
-                          ],
                           "properties": {
                             "jp": {
                               "type": "string"
@@ -10651,17 +10307,29 @@
                             "en": {
                               "type": "string"
                             }
-                          }
+                          },
+                          "required": [
+                            "jp",
+                            "en"
+                          ],
+                          "additionalProperties": false
                         },
                         "options": {
-                          "type": "array",
                           "minItems": 2,
                           "maxItems": 2,
+                          "type": "array",
                           "items": {
                             "type": "string"
                           }
                         }
-                      }
+                      },
+                      "required": [
+                        "id",
+                        "a",
+                        "b",
+                        "options"
+                      ],
+                      "additionalProperties": false
                     }
                   },
                   "seedCorrectionIds": {
@@ -10678,7 +10346,13 @@
                       "suspended"
                     ]
                   }
-                }
+                },
+                "required": [
+                  "ruleTagKey",
+                  "axis",
+                  "items"
+                ],
+                "additionalProperties": false
               }
             }
           }
@@ -10729,29 +10403,17 @@
                     "minLength": 1
                   },
                   "items": {
-                    "type": "array",
                     "minItems": 4,
                     "maxItems": 6,
+                    "type": "array",
                     "items": {
                       "type": "object",
-                      "additionalProperties": false,
-                      "required": [
-                        "id",
-                        "a",
-                        "b",
-                        "options"
-                      ],
                       "properties": {
                         "id": {
                           "type": "string"
                         },
                         "a": {
                           "type": "object",
-                          "additionalProperties": false,
-                          "required": [
-                            "jp",
-                            "en"
-                          ],
                           "properties": {
                             "jp": {
                               "type": "string"
@@ -10759,15 +10421,15 @@
                             "en": {
                               "type": "string"
                             }
-                          }
+                          },
+                          "required": [
+                            "jp",
+                            "en"
+                          ],
+                          "additionalProperties": false
                         },
                         "b": {
                           "type": "object",
-                          "additionalProperties": false,
-                          "required": [
-                            "jp",
-                            "en"
-                          ],
                           "properties": {
                             "jp": {
                               "type": "string"
@@ -10775,17 +10437,29 @@
                             "en": {
                               "type": "string"
                             }
-                          }
+                          },
+                          "required": [
+                            "jp",
+                            "en"
+                          ],
+                          "additionalProperties": false
                         },
                         "options": {
-                          "type": "array",
                           "minItems": 2,
                           "maxItems": 2,
+                          "type": "array",
                           "items": {
                             "type": "string"
                           }
                         }
-                      }
+                      },
+                      "required": [
+                        "id",
+                        "a",
+                        "b",
+                        "options"
+                      ],
+                      "additionalProperties": false
                     }
                   },
                   "seedCorrectionIds": {
@@ -10892,16 +10566,12 @@
                 "type": "object",
                 "properties": {
                   "correctionId": {
-                    "anyOf": [
-                      {
-                        "type": "string",
-                        "format": "uuid",
-                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
                   },
                   "batchId": {
                     "type": "string",
@@ -10931,13 +10601,9 @@
                     "minLength": 1
                   },
                   "wrongForm": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
+                    "type": [
+                      "string",
+                      "null"
                     ]
                   }
                 },
@@ -11107,56 +10773,36 @@
                     "minLength": 1
                   },
                   "type": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
+                    "type": [
+                      "string",
+                      "null"
                     ]
                   },
                   "author": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
+                    "type": [
+                      "string",
+                      "null"
                     ]
                   },
                   "url": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
+                    "type": [
+                      "string",
+                      "null"
                     ]
                   },
                   "notes": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
+                    "type": [
+                      "string",
+                      "null"
                     ]
                   },
                   "parentId": {
-                    "anyOf": [
-                      {
-                        "type": "string",
-                        "format": "uuid",
-                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
                   }
                 },
                 "required": [
@@ -11192,56 +10838,36 @@
                     "minLength": 1
                   },
                   "type": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
+                    "type": [
+                      "string",
+                      "null"
                     ]
                   },
                   "author": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
+                    "type": [
+                      "string",
+                      "null"
                     ]
                   },
                   "url": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
+                    "type": [
+                      "string",
+                      "null"
                     ]
                   },
                   "notes": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
+                    "type": [
+                      "string",
+                      "null"
                     ]
                   },
                   "parentId": {
-                    "anyOf": [
-                      {
-                        "type": "string",
-                        "format": "uuid",
-                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
                   }
                 }
               }
@@ -11314,23 +10940,15 @@
                     "minLength": 1
                   },
                   "reading": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
+                    "type": [
+                      "string",
+                      "null"
                     ]
                   },
                   "meaning": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
+                    "type": [
+                      "string",
+                      "null"
                     ]
                   },
                   "language": {
@@ -11338,61 +10956,41 @@
                     "minLength": 1
                   },
                   "sourceId": {
-                    "anyOf": [
-                      {
-                        "type": "string",
-                        "format": "uuid",
-                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
                   },
                   "page": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
+                    "type": [
+                      "string",
+                      "null"
                     ]
                   },
                   "tags": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
+                    "type": [
+                      "string",
+                      "null"
                     ]
                   },
                   "notes": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
+                    "type": [
+                      "string",
+                      "null"
                     ]
                   },
                   "starred": {
                     "type": "boolean"
                   },
                   "captureId": {
-                    "anyOf": [
-                      {
-                        "type": "string",
-                        "format": "uuid",
-                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
                   }
                 },
                 "required": [
@@ -11483,23 +11081,15 @@
                           "minLength": 1
                         },
                         "reading": {
-                          "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "type": "null"
-                            }
+                          "type": [
+                            "string",
+                            "null"
                           ]
                         },
                         "meaning": {
-                          "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "type": "null"
-                            }
+                          "type": [
+                            "string",
+                            "null"
                           ]
                         },
                         "language": {
@@ -11507,61 +11097,41 @@
                           "minLength": 1
                         },
                         "sourceId": {
-                          "anyOf": [
-                            {
-                              "type": "string",
-                              "format": "uuid",
-                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
-                            },
-                            {
-                              "type": "null"
-                            }
-                          ]
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
                         },
                         "page": {
-                          "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "type": "null"
-                            }
+                          "type": [
+                            "string",
+                            "null"
                           ]
                         },
                         "tags": {
-                          "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "type": "null"
-                            }
+                          "type": [
+                            "string",
+                            "null"
                           ]
                         },
                         "notes": {
-                          "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "type": "null"
-                            }
+                          "type": [
+                            "string",
+                            "null"
                           ]
                         },
                         "starred": {
                           "type": "boolean"
                         },
                         "captureId": {
-                          "anyOf": [
-                            {
-                              "type": "string",
-                              "format": "uuid",
-                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
-                            },
-                            {
-                              "type": "null"
-                            }
-                          ]
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
                         }
                       },
                       "required": [
@@ -11624,23 +11194,15 @@
                     "minLength": 1
                   },
                   "reading": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
+                    "type": [
+                      "string",
+                      "null"
                     ]
                   },
                   "meaning": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
+                    "type": [
+                      "string",
+                      "null"
                     ]
                   },
                   "language": {
@@ -11648,61 +11210,41 @@
                     "minLength": 1
                   },
                   "sourceId": {
-                    "anyOf": [
-                      {
-                        "type": "string",
-                        "format": "uuid",
-                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
                   },
                   "page": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
+                    "type": [
+                      "string",
+                      "null"
                     ]
                   },
                   "tags": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
+                    "type": [
+                      "string",
+                      "null"
                     ]
                   },
                   "notes": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
+                    "type": [
+                      "string",
+                      "null"
                     ]
                   },
                   "starred": {
                     "type": "boolean"
                   },
                   "captureId": {
-                    "anyOf": [
-                      {
-                        "type": "string",
-                        "format": "uuid",
-                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
                   }
                 }
               }
@@ -12755,55 +12297,51 @@
                 ],
                 "properties": {
                   "grammarTerms": {
-                    "anyOf": [
-                      {
-                        "type": "array",
-                        "items": {
-                          "type": "object",
-                          "properties": {
-                            "id": {
-                              "type": "string"
-                            },
-                            "name": {
-                              "type": "string"
-                            },
-                            "kind": {
-                              "type": "string",
-                              "enum": [
-                                "tag",
-                                "taxonomy"
-                              ]
-                            },
-                            "sourceId": {
-                              "type": "string"
-                            },
-                            "sourceLabel": {
-                              "type": "string"
-                            },
-                            "category": {
-                              "type": "string",
-                              "enum": [
-                                "vocabulary",
-                                "grammar",
-                                "general",
-                                "resource"
-                              ]
-                            }
-                          },
-                          "required": [
-                            "id",
-                            "name",
-                            "kind",
-                            "sourceId",
-                            "sourceLabel"
-                          ],
-                          "additionalProperties": false
+                    "type": [
+                      "array",
+                      "null"
+                    ],
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "tag",
+                            "taxonomy"
+                          ]
+                        },
+                        "sourceId": {
+                          "type": "string"
+                        },
+                        "sourceLabel": {
+                          "type": "string"
+                        },
+                        "category": {
+                          "type": "string",
+                          "enum": [
+                            "vocabulary",
+                            "grammar",
+                            "general",
+                            "resource"
+                          ]
                         }
                       },
-                      {
-                        "type": "null"
-                      }
-                    ]
+                      "required": [
+                        "id",
+                        "name",
+                        "kind",
+                        "sourceId",
+                        "sourceLabel"
+                      ],
+                      "additionalProperties": false
+                    }
                   }
                 }
               }
@@ -12845,55 +12383,51 @@
                 ],
                 "properties": {
                   "grammarTerms": {
-                    "anyOf": [
-                      {
-                        "type": "array",
-                        "items": {
-                          "type": "object",
-                          "properties": {
-                            "id": {
-                              "type": "string"
-                            },
-                            "name": {
-                              "type": "string"
-                            },
-                            "kind": {
-                              "type": "string",
-                              "enum": [
-                                "tag",
-                                "taxonomy"
-                              ]
-                            },
-                            "sourceId": {
-                              "type": "string"
-                            },
-                            "sourceLabel": {
-                              "type": "string"
-                            },
-                            "category": {
-                              "type": "string",
-                              "enum": [
-                                "vocabulary",
-                                "grammar",
-                                "general",
-                                "resource"
-                              ]
-                            }
-                          },
-                          "required": [
-                            "id",
-                            "name",
-                            "kind",
-                            "sourceId",
-                            "sourceLabel"
-                          ],
-                          "additionalProperties": false
+                    "type": [
+                      "array",
+                      "null"
+                    ],
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "tag",
+                            "taxonomy"
+                          ]
+                        },
+                        "sourceId": {
+                          "type": "string"
+                        },
+                        "sourceLabel": {
+                          "type": "string"
+                        },
+                        "category": {
+                          "type": "string",
+                          "enum": [
+                            "vocabulary",
+                            "grammar",
+                            "general",
+                            "resource"
+                          ]
                         }
                       },
-                      {
-                        "type": "null"
-                      }
-                    ]
+                      "required": [
+                        "id",
+                        "name",
+                        "kind",
+                        "sourceId",
+                        "sourceLabel"
+                      ],
+                      "additionalProperties": false
+                    }
                   }
                 }
               }

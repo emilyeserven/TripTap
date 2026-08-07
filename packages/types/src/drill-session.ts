@@ -11,6 +11,10 @@
 import type { LearningArea } from "./question-sheet.js";
 import type { BookmarkRef } from "./session.js";
 
+import { z } from "zod";
+
+import { objectJsonSchema } from "./json-schema.js";
+
 /* ── Drill type ───────────────────────────────────────────────────────────────────────────────── */
 
 /**
@@ -54,11 +58,25 @@ export interface DrillReasonCategory {
 }
 
 /** Payload for creating a reason category. Only `name` is required. */
-export interface CreateDrillReasonCategoryInput {
-  name: string;
-  subcategories?: DrillSubcategory[] | null;
-  reasons?: DrillReason[] | null;
-}
+const drillReasonSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+});
+
+export const createDrillReasonCategorySchema = z.object({
+  name: z.string().min(1),
+  subcategories: z.array(z.object({
+    id: z.string(),
+    name: z.string(),
+    reasons: z.array(drillReasonSchema),
+  })).nullable().optional(),
+  reasons: z.array(drillReasonSchema).nullable().optional(),
+});
+
+/** JSON Schema (draft-07) for the create payload, used verbatim as the route body. */
+export const createDrillReasonCategoryJsonSchema = objectJsonSchema(createDrillReasonCategorySchema);
+
+export type CreateDrillReasonCategoryInput = z.infer<typeof createDrillReasonCategorySchema>;
 
 /** Payload for partially updating a reason category. */
 export type UpdateDrillReasonCategoryInput = Partial<CreateDrillReasonCategoryInput>;

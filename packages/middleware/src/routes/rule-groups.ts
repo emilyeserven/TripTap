@@ -2,7 +2,7 @@ import type { FastifyInstance } from "fastify";
 import { idOf, notFound } from "@/routes/handlers";
 import { idParams } from "@/routes/schemas/params";
 import type { CreateRuleGroupInput, UpdateRuleGroupInput } from "@sentence-bank/types";
-import { MAX_GROUP_PAIRS, MIN_GROUP_PAIRS } from "@sentence-bank/types";
+import { createRuleGroupJsonSchema } from "@sentence-bank/types";
 import {
   createRuleGroup,
   deleteRuleGroup,
@@ -14,76 +14,9 @@ import {
   updateRuleGroup,
 } from "@/services/rule-groups";
 
-const contrastSideSchema = {
-  type: "object",
-  additionalProperties: false,
-  required: ["jp", "en"],
-  properties: {
-    jp: {
-      type: "string",
-    },
-    en: {
-      type: "string",
-    },
-  },
-} as const;
-
-const itemsSchema = {
-  type: "array",
-  minItems: MIN_GROUP_PAIRS,
-  maxItems: MAX_GROUP_PAIRS,
-  items: {
-    type: "object",
-    additionalProperties: false,
-    required: ["id", "a", "b", "options"],
-    properties: {
-      id: {
-        type: "string",
-      },
-      a: contrastSideSchema,
-      b: contrastSideSchema,
-      // Both options on the front — the discrimination point (spec §6 inv.4).
-      options: {
-        type: "array",
-        minItems: 2,
-        maxItems: 2,
-        items: {
-          type: "string",
-        },
-      },
-    },
-  },
-} as const;
-
 const statusEnum = ["proposed", "active", "suspended"] as const;
 
-const createRuleGroupBody = {
-  type: "object",
-  required: ["ruleTagKey", "axis", "items"],
-  additionalProperties: false,
-  properties: {
-    ruleTagKey: {
-      type: "string",
-      minLength: 1,
-    },
-    // A single named axis (spec §6 inv.10) — structurally forced alongside a/b/options above.
-    axis: {
-      type: "string",
-      minLength: 1,
-    },
-    items: itemsSchema,
-    seedCorrectionIds: {
-      type: "array",
-      items: {
-        type: "string",
-      },
-    },
-    status: {
-      type: "string",
-      enum: statusEnum,
-    },
-  },
-} as const;
+const createRuleGroupBody = createRuleGroupJsonSchema;
 
 const updateRuleGroupBody = {
   type: "object",
@@ -93,7 +26,8 @@ const updateRuleGroupBody = {
       type: "string",
       minLength: 1,
     },
-    items: itemsSchema,
+    // Same shape as the create body, which is the generated one — not a second copy.
+    items: createRuleGroupJsonSchema.properties.items,
     seedCorrectionIds: {
       type: "array",
       items: {

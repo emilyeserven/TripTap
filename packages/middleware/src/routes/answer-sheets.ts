@@ -5,6 +5,7 @@ import type {
   CreateAnswerSheetInput,
   UpdateAnswerSheetInput,
 } from "@sentence-bank/types";
+import { createAnswerSheetJsonSchema } from "@sentence-bank/types";
 import {
   createAnswerSheet,
   deleteAnswerSheet,
@@ -24,81 +25,7 @@ const listQuery = {
   },
 } as const;
 
-const entriesSchema = {
-  type: "array",
-  items: {
-    type: "object",
-    additionalProperties: false,
-    required: ["slotId", "value"],
-    properties: {
-      slotId: {
-        type: "string",
-      },
-      value: {
-        type: "string",
-      },
-      correct: {
-        type: ["boolean", "null"],
-      },
-      correction: {
-        type: ["string", "null"],
-      },
-      reasoning: {
-        type: ["string", "null"],
-      },
-      intendedMeaning: {
-        type: ["string", "null"],
-      },
-      actualMeaning: {
-        type: ["string", "null"],
-      },
-      marks: {
-        type: ["array", "null"],
-        items: {
-          type: "object",
-          additionalProperties: false,
-          required: ["start", "end", "correct"],
-          properties: {
-            start: {
-              type: "integer",
-            },
-            end: {
-              type: "integer",
-            },
-            correct: {
-              type: "boolean",
-            },
-          },
-        },
-      },
-    },
-  },
-} as const;
-
-const createAnswerSheetBody = {
-  type: "object",
-  required: ["questionSheetId"],
-  additionalProperties: false,
-  properties: {
-    questionSheetId: {
-      type: "string",
-      format: "uuid",
-    },
-    title: {
-      type: ["string", "null"],
-    },
-    date: {
-      type: ["string", "null"],
-    },
-    entries: entriesSchema,
-    hiddenPartIds: {
-      type: ["array", "null"],
-      items: {
-        type: "string",
-      },
-    },
-  },
-} as const;
+const createAnswerSheetBody = createAnswerSheetJsonSchema;
 
 const updateAnswerSheetBody = updateBodyOf(createAnswerSheetBody);
 

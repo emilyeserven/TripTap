@@ -1,5 +1,9 @@
 import type { SentenceMark } from "./sentence-mark.js";
 
+import { z } from "zod";
+
+import { anyInt, objectJsonSchema } from "./json-schema.js";
+
 /**
  * One filled-in answer for a single slot of the referenced {@link QuestionSheet}. Only slots the user
  * has touched get an entry. The correction fields mirror the {@link MySentence} entity's phrasing:
@@ -45,12 +49,42 @@ export interface AnswerSheet {
   updatedAt: string;
 }
 
-export interface CreateAnswerSheetInput {
-  questionSheetId: string;
-  title?: string | null;
-  date?: string | null;
+const answerSheetEntrySchema = z.object({
+  slotId: z.string(),
+  value: z.string(),
+  correct: z.boolean().nullable().optional(),
+  correction: z.string().nullable().optional(),
+  reasoning: z.string().nullable().optional(),
+  intendedMeaning: z.string().nullable().optional(),
+  actualMeaning: z.string().nullable().optional(),
+  marks: z.array(z.object({
+    start: anyInt(),
+    end: anyInt(),
+    correct: z.boolean(),
+  })).nullable().optional(),
+});
+
+export const createAnswerSheetSchema = z.object({
+  questionSheetId: z.guid(),
+  title: z.string().nullable().optional(),
+  date: z.string().nullable().optional(),
+  entries: z.array(answerSheetEntrySchema).optional(),
+  hiddenPartIds: z.array(z.string()).nullable().optional(),
+});
+
+/** JSON Schema (draft-07) for the create payload, used verbatim as the route body. */
+export const createAnswerSheetJsonSchema = objectJsonSchema(createAnswerSheetSchema);
+
+/**
+ * `entries` is overridden rather than inferred, and the reason is a latent mismatch worth naming:
+ * the route has only ever required `slotId` and `value` on an entry, while {@link AnswerSheetEntry}
+ * declares every field (nullable, but present). Inferring would loosen the stored type across every
+ * reader; narrowing the schema would start rejecting partial entries the API accepts today. Neither
+ * belongs in a mechanical conversion, so both sides keep what they have — the same call made for
+ * `SentenceTermRef.category` before it was resolved deliberately in #267.
+ */
+export type CreateAnswerSheetInput = Omit<z.infer<typeof createAnswerSheetSchema>, "entries"> & {
   entries?: AnswerSheetEntry[];
-  hiddenPartIds?: string[] | null;
-}
+};
 
 export type UpdateAnswerSheetInput = Partial<CreateAnswerSheetInput>;

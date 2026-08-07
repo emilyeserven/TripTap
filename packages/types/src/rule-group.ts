@@ -8,6 +8,10 @@
  * cards); Anki owns the actual review/scheduling. Consumed by both the Fastify API and the React client.
  */
 
+import { z } from "zod";
+
+import { objectJsonSchema } from "./json-schema.js";
+
 /** Minimum / maximum pairs in a group (spec §6 inv.9) — fewer teaches no boundary, more blows the budget. */
 export const MIN_GROUP_PAIRS = 4;
 export const MAX_GROUP_PAIRS = 6;
@@ -59,13 +63,39 @@ export interface RuleGroup {
 }
 
 /** Payload for creating a rule group. `ruleTagKey`, `axis`, and 4–6 `items` are required. */
-export interface CreateRuleGroupInput {
-  ruleTagKey: string;
-  axis: string;
+const contrastSideSchema = z.object({
+  jp: z.string(),
+  en: z.string(),
+});
+
+export const createRuleGroupSchema = z.object({
+  ruleTagKey: z.string().min(1),
+  // A single named axis (spec §6 inv.10) — structurally forced alongside a/b/options below.
+  axis: z.string().min(1),
+  items: z.array(z.object({
+    id: z.string(),
+    a: contrastSideSchema,
+    b: contrastSideSchema,
+    // Both options on the front — the discrimination point (spec §6 inv.4).
+    options: z.array(z.string()).min(2).max(2),
+  })).min(MIN_GROUP_PAIRS).max(MAX_GROUP_PAIRS),
+  seedCorrectionIds: z.array(z.string()).optional(),
+  status: z.enum(["proposed", "active", "suspended"]).optional(),
+});
+
+/** JSON Schema (draft-07) for the create payload, used verbatim as the route body. */
+export const createRuleGroupJsonSchema = objectJsonSchema(createRuleGroupSchema);
+
+/**
+ * `options` is overridden rather than inferred: the wire schema spells the pair as an array with
+ * `minItems`/`maxItems` (what the route has always validated), and Zod infers that as `string[]`.
+ * `z.tuple` would infer the tuple correctly but emit a different JSON Schema shape — draft-7's
+ * `items: [a, b]` form — changing the published contract. The type keeps the precision; the
+ * validator keeps the shape.
+ */
+export type CreateRuleGroupInput = Omit<z.infer<typeof createRuleGroupSchema>, "items"> & {
   items: ContrastPair[];
-  seedCorrectionIds?: string[];
-  status?: RuleGroupStatus;
-}
+};
 
 /** Payload for partially updating a rule group. The rule tag (its identity) is immutable. */
 export type UpdateRuleGroupInput = Partial<Omit<CreateRuleGroupInput, "ruleTagKey">> & {
