@@ -1,5 +1,5 @@
 import type { FastifyInstance } from "fastify";
-import { idOf, notFound } from "@/routes/handlers";
+import { idOf, notFound, sendMedia } from "@/routes/handlers";
 import { idParams, updateBodyOf } from "@/routes/schemas/params";
 import type {
   CreateShadowingSessionInput,
@@ -136,12 +136,7 @@ export async function shadowingSessionsRoutes(app: FastifyInstance): Promise<voi
   }, async (req, reply) => {
     try {
       const media = await getShadowingSessionMedia(idOf(req));
-      if (!media) return reply.code(404).send({
-        message: "No audio for this session",
-      });
-      reply.header("Content-Type", media.contentType);
-      reply.header("Cache-Control", "private, max-age=86400");
-      return reply.send(media.body);
+      return sendMedia(reply, media, "No audio for this session");
     }
     catch (err) {
       return handleUpstreamError(err, reply);

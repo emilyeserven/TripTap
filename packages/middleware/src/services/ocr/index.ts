@@ -9,8 +9,6 @@ import { googleVisionProvider } from "@/services/ocr/google-vision";
 import { ocrSpaceProvider } from "@/services/ocr/ocr-space";
 import { selfHostedProvider } from "@/services/ocr/self-hosted";
 
-export type { OcrConfig, OcrProvider } from "@/services/ocr/types";
-
 const DEFAULT_OCR_SPACE_URL = "https://api.ocr.space/parse/image";
 const DEFAULT_OCR_SPACE_ENGINE = "2"; // Engine 2 supports Japanese, including vertical text.
 const DEFAULT_OCR_SPACE_LANGUAGE = "jpn";

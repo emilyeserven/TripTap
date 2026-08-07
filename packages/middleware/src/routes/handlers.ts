@@ -28,3 +28,43 @@ export function notFound(reply: FastifyReply, noun: string): FastifyReply {
     message: `${noun} not found`,
   });
 }
+
+/** A binary payload a media route streams back — `StoredMedia` and `BookmarksImage` both fit. */
+interface MediaPayload {
+  contentType: string;
+  body: Buffer;
+}
+
+/**
+ * Stream a media payload, or 404 with `missing` when there is none.
+ *
+ * Five media routes — sentence audio/image, vocab audio/image, shadowing audio, and the two
+ * bookmark image proxies — each set the same `Content-Type` + `Cache-Control` pair and send the
+ * body. The day-long private cache is the part worth having in one place: a route that forgets it
+ * re-fetches an unchanged image on every render, and nothing fails loudly when it does.
+ */
+export function sendMedia(
+  reply: FastifyReply,
+  media: MediaPayload | null | undefined,
+  missing: string,
+): FastifyReply {
+  if (!media) {
+    return reply.code(404).send({
+      message: missing,
+    });
+  }
+  reply.header("Content-Type", media.contentType);
+  reply.header("Cache-Control", "private, max-age=86400");
+  return reply.send(media.body);
+}
+
+/**
+ * The raw query string of a request, `?` included, or `""` when there is none.
+ *
+ * The bookmark image proxies forward the caller's query verbatim to the upstream host (it carries
+ * the host's own sizing/format parameters), so they need the unparsed string rather than `req.query`.
+ */
+export function rawQuery(req: FastifyRequest): string {
+  const start = req.url.indexOf("?");
+  return start >= 0 ? req.url.slice(start) : "";
+}

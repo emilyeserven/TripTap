@@ -1,5 +1,5 @@
 import type { FastifyInstance } from "fastify";
-import { idOf, notFound } from "@/routes/handlers";
+import { idOf, notFound, sendMedia } from "@/routes/handlers";
 import type { CreateSentenceInput, UpdateSentenceInput } from "@sentence-bank/types";
 import { idParams } from "@/routes/schemas/params";
 import { getVocabForSentence, setVocabForSentence } from "@/services/vocab-links";
@@ -87,12 +87,7 @@ export async function sentenceRoutes(app: FastifyInstance): Promise<void> {
     }, async (req, reply) => {
       try {
         const media = await getSentenceMedia(idOf(req), which);
-        if (!media) return reply.code(404).send({
-          message: `No ${which} for this sentence`,
-        });
-        reply.header("Content-Type", media.contentType);
-        reply.header("Cache-Control", "private, max-age=86400");
-        return reply.send(media.body);
+        return sendMedia(reply, media, `No ${which} for this sentence`);
       }
       catch (err) {
         return handleUpstreamError(err, reply);
