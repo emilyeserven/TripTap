@@ -4,6 +4,7 @@ import { Link } from "@tanstack/react-router";
 import { CalendarCheck } from "lucide-react";
 
 import { LearningAreaBadges } from "@/components/LearningAreaBadges";
+import { SectionBadges } from "@/components/SectionBadges";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -79,13 +80,7 @@ export function QuestionSheetCard({
               </Badge>
             )
             : null}
-          {qs.sections.map(s => (
-            <Badge
-              key={s.id}
-              variant="outline"
-            >§ {s.label}
-            </Badge>
-          ))}
+          <SectionBadges sections={qs.sections} />
           {qs.dueDate
             ? met
               ? (

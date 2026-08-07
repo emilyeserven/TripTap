@@ -13,6 +13,7 @@ import { AnswerSheetPartsProgress } from "@/components/AnswerSheetPartsProgress"
 import { AnswerSheetScoreBadge } from "@/components/AnswerSheetScoreBadge";
 import { GrammarTermBadges } from "@/components/GrammarTermBadges";
 import { LearningAreaBadges } from "@/components/LearningAreaBadges";
+import { SectionBadges } from "@/components/SectionBadges";
 import { Badge } from "@/components/ui/badge";
 import { useUpdateAnswerSheet } from "@/hooks/useAnswerSheets";
 import { useQuestionSheets } from "@/hooks/useQuestionSheets";
@@ -170,6 +171,7 @@ export function AnswerSheetView({
             )
             : <span>From a question sheet</span>}
           {sheet ? <LearningAreaBadges areas={sheet.learningAreas} /> : null}
+          {sheet ? <SectionBadges sections={sheet.sections} /> : null}
           {sheet ? <GrammarTermBadges terms={sheet.grammarTerms} /> : null}
           <Badge variant="secondary">
             {as.entries.length} {as.entries.length === 1 ? "answer" : "answers"}
