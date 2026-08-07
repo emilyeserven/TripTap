@@ -1,3 +1,4 @@
+import type { QuestionLabelStyle } from "@/lib/question-sheet-parts";
 import type { QuestionSheetQuestion } from "@sentence-bank/types";
 
 import { useState } from "react";
@@ -9,8 +10,46 @@ import { QuestionAnswerTypeEditor } from "@/components/QuestionAnswerTypeEditor"
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { newSheetItemId } from "@/lib/question-sheet-parts";
+import { newSheetItemId, questionLabel } from "@/lib/question-sheet-parts";
+
+/** Quick-fill prompt styles: "blank" leaves prompts empty, the rest prefill a plain running label. */
+type QuickFillStyle = "blank" | QuestionLabelStyle;
+
+const QUICK_FILL_STYLES: { value: QuickFillStyle;
+  label: string; }[] = [
+  {
+    value: "blank",
+    label: "Blank",
+  },
+  {
+    value: "decimal",
+    label: "1, 2, 3",
+  },
+  {
+    value: "upper-alpha",
+    label: "A, B, C",
+  },
+  {
+    value: "lower-alpha",
+    label: "a, b, c",
+  },
+  {
+    value: "upper-roman",
+    label: "I, II, III",
+  },
+  {
+    value: "lower-roman",
+    label: "i, ii, iii",
+  },
+];
 
 /**
  * The "list of questions" editor of the question-sheet form: a quick-fill count box plus a dynamic
@@ -28,6 +67,7 @@ export function QuestionListEditor({
   firstNumber?: number;
 }) {
   const [quickCount, setQuickCount] = useState("");
+  const [quickStyle, setQuickStyle] = useState<QuickFillStyle>("blank");
 
   function addQuestion() {
     onChange([...questions, {
@@ -36,10 +76,11 @@ export function QuestionListEditor({
     }]);
   }
   /**
-   * Quick-fill: replace the questions with `n` blank slots. Lets the user say "there are 12 questions"
-   * without typing each one — the answer sheet then renders the right number of inputs, each labelled
-   * "Question N" via {@link questionSheetSlots}'s positional fallback. Existing questions are replaced
-   * (the count is authoritative).
+   * Quick-fill: replace the questions with `n` slots. Lets the user say "there are 12 questions"
+   * without typing each one — the answer sheet then renders the right number of inputs. With a label
+   * style picked, each prompt is prefilled with a running label (worksheets often number their
+   * sections "A, B, C" or "I, II, III"); "Blank" leaves them empty (labelled "Question N" via
+   * {@link questionSheetSlots}'s positional fallback). Existing questions are replaced (count is authoritative).
    */
   function quickFill() {
     const n = Math.floor(Number(quickCount));
@@ -47,9 +88,9 @@ export function QuestionListEditor({
     onChange(
       Array.from({
         length: Math.min(n, 200),
-      }, () => ({
+      }, (_, i) => ({
         id: newSheetItemId("q"),
-        prompt: "",
+        prompt: quickStyle === "blank" ? "" : questionLabel(quickStyle, i),
       })),
     );
   }
@@ -91,6 +132,30 @@ export function QuestionListEditor({
             className="w-24"
           />
         </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs text-muted-foreground">Prefill labels</Label>
+          <Select
+            value={quickStyle}
+            onValueChange={v => setQuickStyle(v as QuickFillStyle)}
+          >
+            <SelectTrigger
+              className="w-28"
+              aria-label="Question label style"
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {QUICK_FILL_STYLES.map(s => (
+                <SelectItem
+                  key={s.value}
+                  value={s.value}
+                >
+                  {s.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
         <Button
           type="button"
           variant="secondary"
@@ -99,8 +164,9 @@ export function QuestionListEditor({
           Set questions
         </Button>
         <p className="w-full text-xs text-muted-foreground">
-          Generates that many numbered questions so the answer sheet has the right number of
-          inputs — you don’t have to type each one. Editing below still works.
+          Generates that many questions so the answer sheet has the right number of inputs — you
+          don’t have to type each one. Pick a label style (A, B, C / I, II, III / 1, 2, 3…) to
+          prefill each question’s prompt, or “Blank” for empty prompts. Editing below still works.
         </p>
       </div>
       {questions.map((q, index) => (

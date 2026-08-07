@@ -1,10 +1,13 @@
 import type { QuestionAnswerType } from "@sentence-bank/types";
 
+import { useState } from "react";
+
 import { Plus, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { expandLabelRange } from "@/lib/question-sheet-parts";
 import { cn } from "@/lib/utils";
 
 /** The answer-type choices offered when authoring a question, in display order. */
@@ -46,6 +49,10 @@ export function QuestionAnswerTypeEditor({
     onChange({
       choices: shownChoices.map((c, i) => (i === index ? value : c)),
     });
+
+  // "Fill from a range" — e.g. a–e or 1–5 — replaces the options with the expanded sequence.
+  const [range, setRange] = useState("");
+  const rangePreview = expandLabelRange(range);
 
   return (
     <div className="space-y-2">
@@ -89,6 +96,51 @@ export function QuestionAnswerTypeEditor({
       {answerType === "choice"
         ? (
           <div className="space-y-1.5">
+            <div
+              className="
+                flex flex-wrap items-end gap-2 rounded-md border border-dashed
+                p-2
+              "
+            >
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Fill from a range</Label>
+                <Input
+                  value={range}
+                  onChange={e => setRange(e.target.value)}
+                  placeholder="a–e or 1–5"
+                  aria-label="Option range"
+                  className="w-28"
+                />
+              </div>
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                disabled={!rangePreview}
+                onClick={() => {
+                  if (!rangePreview) return;
+                  onChange({
+                    choices: rangePreview,
+                  });
+                  setRange("");
+                }}
+              >
+                Fill options
+              </Button>
+              {rangePreview
+                ? (
+                  <span className="text-xs text-muted-foreground">
+                    → {rangePreview.join(", ")}
+                  </span>
+                )
+                : range.trim()
+                  ? (
+                    <span className="text-xs text-destructive">
+                      Enter a range like a–e or 1–5
+                    </span>
+                  )
+                  : null}
+            </div>
             {shownChoices.map((choice, index) => (
               <div
                 key={index}
