@@ -14,6 +14,7 @@ import {
   isEntryAnswered,
   isEntryTouched,
   matchesResource,
+  questionLeafSlots,
   questionSheetSlots,
   resourceFilterOptions,
   visibleSlots,
@@ -620,6 +621,88 @@ describe("questionSheetSlots", () => {
         id: "p2",
         label: "Q — (b)",
         choices: null,
+      },
+    ]);
+  });
+});
+
+describe("questionLeafSlots", () => {
+  it("returns a single unlabelled slot for a question with no parts", () => {
+    expect(questionLeafSlots({
+      id: "q1",
+      prompt: "One",
+    })).toEqual([{
+      id: "q1",
+      label: "",
+    }]);
+  });
+
+  it("labels flat parts by their own label, without the prompt", () => {
+    expect(questionLeafSlots({
+      id: "q1",
+      prompt: "Conjugate",
+      parts: [
+        {
+          id: "p1",
+          label: "(a)",
+        },
+        {
+          id: "p2",
+          label: "(b)",
+        },
+      ],
+    })).toEqual([
+      {
+        id: "p1",
+        label: "(a)",
+      },
+      {
+        id: "p2",
+        label: "(b)",
+      },
+    ]);
+  });
+
+  it("recurses through sub-sub parts, chaining part labels and skipping headings", () => {
+    expect(questionLeafSlots({
+      id: "q2",
+      prompt: "II",
+      parts: [
+        {
+          id: "h1",
+          label: "(1)",
+          parts: [
+            {
+              id: "l1i",
+              label: "(i)",
+            },
+            {
+              id: "l1ii",
+              label: "(ii)",
+            },
+          ],
+        },
+        {
+          id: "h2",
+          label: "(2)",
+          parts: [{
+            id: "l2i",
+            label: "(i)",
+          }],
+        },
+      ],
+    })).toEqual([
+      {
+        id: "l1i",
+        label: "(1) — (i)",
+      },
+      {
+        id: "l1ii",
+        label: "(1) — (ii)",
+      },
+      {
+        id: "l2i",
+        label: "(2) — (i)",
       },
     ]);
   });
