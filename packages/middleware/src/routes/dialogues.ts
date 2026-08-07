@@ -2,7 +2,7 @@ import type { FastifyInstance } from "fastify";
 import { idOf, notFound } from "@/routes/handlers";
 import { idParams, updateBodyOf } from "@/routes/schemas/params";
 import type { CreateDialogueInput, UpdateDialogueInput } from "@sentence-bank/types";
-import { LEARNING_AREAS } from "@sentence-bank/types";
+import { LEARNING_AREAS, bookmarkSectionRefJsonSchema } from "@sentence-bank/types";
 import {
   createDialogue,
   deleteDialogue,
@@ -62,29 +62,6 @@ const linesSchema = {
 } as const;
 
 /** A reference to one section of a bookmark (denormalized), or null. */
-const bookmarkSectionRefSchema = {
-  type: ["object", "null"],
-  additionalProperties: false,
-  required: ["id", "label", "type"],
-  properties: {
-    id: {
-      type: "string",
-    },
-    label: {
-      type: "string",
-    },
-    type: {
-      type: "string",
-      enum: ["name", "url", "page", "timestamp"],
-    },
-    startValue: {
-      type: ["string", "null"],
-    },
-    endValue: {
-      type: ["string", "null"],
-    },
-  },
-} as const;
 
 const createDialogueBody = {
   type: "object",
@@ -117,7 +94,7 @@ const createDialogueBody = {
     bookmarkUrl: {
       type: ["string", "null"],
     },
-    section: bookmarkSectionRefSchema,
+    section: bookmarkSectionRefJsonSchema,
     selfSpeakers: {
       type: ["array", "null"],
       items: {

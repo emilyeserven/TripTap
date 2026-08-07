@@ -21,7 +21,7 @@ import {
   fetchCaptionSegments,
 } from "@/services/youtube-captions";
 import { termsSchema } from "@/routes/schemas/terms";
-import { LEARNING_AREAS } from "@sentence-bank/types";
+import { LEARNING_AREAS, bookmarkSectionRefJsonSchema } from "@sentence-bank/types";
 
 /** An uploaded audio file can be large, but well under a `.apkg` — cap at 100 MiB. */
 const MAX_AUDIO_BYTES = 100 * 1024 * 1024;
@@ -92,29 +92,6 @@ const segmentsSchema = {
 } as const;
 
 /** A reference to one section of a bookmark (denormalized), or null. */
-const bookmarkSectionRefSchema = {
-  type: ["object", "null"],
-  additionalProperties: false,
-  required: ["id", "label", "type"],
-  properties: {
-    id: {
-      type: "string",
-    },
-    label: {
-      type: "string",
-    },
-    type: {
-      type: "string",
-      enum: ["name", "url", "page", "timestamp"],
-    },
-    startValue: {
-      type: ["string", "null"],
-    },
-    endValue: {
-      type: ["string", "null"],
-    },
-  },
-} as const;
 
 const createShadowingSessionBody = {
   type: "object",
@@ -145,7 +122,7 @@ const createShadowingSessionBody = {
     bookmarkUrl: {
       type: ["string", "null"],
     },
-    section: bookmarkSectionRefSchema,
+    section: bookmarkSectionRefJsonSchema,
     defaultMaxReplays: {
       type: "integer",
       minimum: 1,
