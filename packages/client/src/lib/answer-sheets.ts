@@ -6,27 +6,41 @@ import type {
   QuestionSheetPart,
 } from "@sentence-bank/types";
 
+import { questionAnswerChoices } from "@sentence-bank/types";
+
 /** One answerable cell of a question sheet: a stable `id` and a human label for the input. */
 export interface QuestionSheetSlot {
   id: string;
   label: string;
+  /**
+   * The button-group options this slot answers with (from its question's answer type), or `null` for
+   * free text. Every leaf slot of a question shares the question's options.
+   */
+  choices: string[] | null;
 }
 
 /**
  * Walk a part subtree, appending one slot per **leaf** part (a part with no sub-parts). A part that has
  * sub-parts is a heading, not a slot — only its leaf descendants are answerable. `base` is the label
- * built from the ancestors so far (question prompt + any parent part labels).
+ * built from the ancestors so far (question prompt + any parent part labels). `choices` is the owning
+ * question's answer options (or null), inherited by every leaf slot.
  */
-function collectPartSlots(base: string, parts: QuestionSheetPart[], slots: QuestionSheetSlot[]): void {
+function collectPartSlots(
+  base: string,
+  parts: QuestionSheetPart[],
+  choices: string[] | null,
+  slots: QuestionSheetSlot[],
+): void {
   for (const part of parts) {
     const label = `${base} — ${part.label}`;
     if (part.parts && part.parts.length > 0) {
-      collectPartSlots(label, part.parts, slots);
+      collectPartSlots(label, part.parts, choices, slots);
     }
     else {
       slots.push({
         id: part.id,
         label,
+        choices,
       });
     }
   }
@@ -52,6 +66,7 @@ export function questionSheetSlots(qs: QuestionSheet): QuestionSheetSlot[] {
         slots.push({
           id: `${row.id}:${colIndex}`,
           label: `${row.label} · ${column}`,
+          choices: null,
         });
       });
     }
@@ -65,13 +80,15 @@ export function questionSheetSlots(qs: QuestionSheet): QuestionSheetSlot[] {
   qs.questions.forEach((question, index) => {
     // Blank prompts (e.g. from the "quick fill" count shortcut) fall back to a positional label.
     const base = question.prompt.trim() || `Question ${firstNumber + index}`;
+    const choices = questionAnswerChoices(question);
     if (question.parts && question.parts.length > 0) {
-      collectPartSlots(base, question.parts, slots);
+      collectPartSlots(base, question.parts, choices, slots);
     }
     else {
       slots.push({
         id: question.id,
         label: base,
+        choices,
       });
     }
   });

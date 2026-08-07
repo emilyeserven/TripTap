@@ -6,6 +6,7 @@ import type {
 
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { AnswerChoiceGroup } from "@/components/AnswerChoiceGroup";
 import { AnswerSheetPartsProgress } from "@/components/AnswerSheetPartsProgress";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -296,6 +297,7 @@ export function AnswerSheetForm({
                   key={slot.id}
                   anchorId={`slot-${slot.id}`}
                   label={slot.label}
+                  choices={slot.choices}
                   entry={getEntry(slot.id)}
                   answerMode={isGrid ? "preview" : "edit"}
                   showDetails={showDetails}
@@ -313,6 +315,7 @@ export function AnswerSheetForm({
 function SlotBlock({
   anchorId,
   label,
+  choices,
   entry,
   answerMode,
   showDetails,
@@ -322,6 +325,8 @@ function SlotBlock({
   /** DOM id for scroll anchoring (a scheduled task's `?part` jumps to the part's first slot). */
   anchorId?: string;
   label: string;
+  /** Button-group options when the question has a T/F or multiple-choice answer type; null for free text. */
+  choices: string[] | null;
   entry: AnswerSheetEntry;
   answerMode: "edit" | "preview";
   /** Show the review-phase correction/explanation/meaning fields; when false, only the answer shows. */
@@ -338,14 +343,26 @@ function SlotBlock({
         ? (
           <div className="space-y-1.5">
             <Label>{label}</Label>
-            <Textarea
-              value={entry.value}
-              onChange={e => onField("value", e.target.value)}
-              onBlur={flush}
-              placeholder="Your answer"
-              rows={2}
-              aria-label={label}
-            />
+            {choices && choices.length > 0
+              ? (
+                <AnswerChoiceGroup
+                  value={entry.value}
+                  choices={choices}
+                  ariaLabel={label}
+                  // Autosave (debounced on `entries`) persists the pick, like a typed answer would.
+                  onSelect={value => onField("value", value)}
+                />
+              )
+              : (
+                <Textarea
+                  value={entry.value}
+                  onChange={e => onField("value", e.target.value)}
+                  onBlur={flush}
+                  placeholder="Your answer"
+                  rows={2}
+                  aria-label={label}
+                />
+              )}
           </div>
         )
         : (

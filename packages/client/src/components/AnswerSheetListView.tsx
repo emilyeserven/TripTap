@@ -13,14 +13,14 @@ export function AnswerSheetListView({
   questions,
   getEntry,
   markCorrect,
-  markWrong,
+  markIncorrect,
   editCorrections,
   saveCorrection,
 }: {
   questions: QuestionSheetQuestion[];
   getEntry: (slotId: string) => AnswerSheetEntry;
   markCorrect: (slotId: string) => void;
-  markWrong: (slotId: string) => void;
+  markIncorrect: (slotId: string) => void;
   editCorrections: (slotId: string) => void;
   saveCorrection: SaveCorrection;
 }) {
@@ -75,7 +75,7 @@ export function AnswerSheetListView({
                   label={c.hasParts ? s.label : c.base}
                   entry={getEntry(s.id)}
                   markCorrect={markCorrect}
-                  markWrong={markWrong}
+                  markIncorrect={markIncorrect}
                   editCorrections={editCorrections}
                   saveCorrection={saveCorrection}
                 />

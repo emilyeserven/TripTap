@@ -60,6 +60,18 @@ const questionsSchema = {
           $ref: "questionSheetPart",
         },
       },
+      // How the question's answer slot(s) are entered; "boolean"/"choice" render a button group.
+      answerType: {
+        type: "string",
+        enum: ["text", "boolean", "choice"],
+      },
+      // The button-group options when answerType === "choice".
+      choices: {
+        type: "array",
+        items: {
+          type: "string",
+        },
+      },
     },
   },
 } as const;
