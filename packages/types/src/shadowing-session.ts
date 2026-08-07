@@ -12,6 +12,13 @@ import type { SentenceTermRef } from "./index.js";
 import type { ListeningEntry } from "./listening-session.js";
 import type { BookmarkRef, SessionXp, SessionXpInput } from "./session.js";
 
+import { z } from "zod";
+
+import { intAtLeast, isoDateString, nonNegativeInt, objectJsonSchema } from "./json-schema.js";
+import { listeningEntrySchema } from "./listening-session.js";
+import { bookmarkRefWriteFields, learningAreaField } from "./session.js";
+import { termsListSchema } from "./terms.js";
+
 /** One looped practice segment of the video. `startMs`/`endMs` are playback positions in ms. */
 export interface ShadowingSegment {
   /** Stable client-generated id for this segment (via `crypto.randomUUID()`). */
@@ -54,25 +61,55 @@ export interface ShadowingSession extends SessionXp, BookmarkRef {
   updatedAt: string;
 }
 
+const segmentSchema = z.object({
+  id: z.string(),
+  label: z.string().nullable().optional(),
+  startMs: z.number().min(0),
+  endMs: z.number().min(0),
+  maxReplays: intAtLeast(1).nullable().optional(),
+  gapMs: nonNegativeInt().nullable().optional(),
+});
+
 /** Payload for creating a shadowing session. `title`, `language`, and `date` are required. */
-export interface CreateShadowingSessionInput extends SessionXpInput, Partial<BookmarkRef> {
-  title: string;
-  language: string;
+export const createShadowingSessionSchema = z.object({
+  title: z.string().min(1),
+  language: z.string().min(1),
   /** ISO date (YYYY-MM-DD) the session happened. */
-  date: string;
-  videoUrl?: string | null;
+  date: isoDateString(),
+  videoUrl: z.string().nullable().optional(),
+  ...bookmarkRefWriteFields,
   /** Defaults to 3 server-side when omitted. */
-  defaultMaxReplays?: number;
+  defaultMaxReplays: intAtLeast(1).optional(),
   /** Defaults to 0 server-side when omitted. */
-  defaultGapMs?: number;
+  completedLoops: nonNegativeInt().optional(),
   /** Defaults to 0 server-side when omitted. */
-  completedLoops?: number;
-  segments?: ShadowingSegment[] | null;
-  entries?: ListeningEntry[] | null;
-  terms?: SentenceTermRef[] | null;
+  defaultGapMs: nonNegativeInt().optional(),
+  segments: z.array(segmentSchema).nullable().optional(),
+  entries: z.array(listeningEntrySchema).nullable().optional(),
+  terms: termsListSchema.optional(),
+  learningArea: learningAreaField(),
+  countsTowardXp: z.boolean().optional(),
   /** Links the session to a shadowing list to practise from; null/omitted for ad-hoc sessions. */
-  shadowingListId?: string | null;
-}
+  shadowingListId: z.guid().nullable().optional(),
+});
+
+/** JSON Schema (draft-07) for the create payload, used verbatim as the route body. */
+export const createShadowingSessionJsonSchema = objectJsonSchema(createShadowingSessionSchema);
+
+/**
+ * Payload for creating a shadowing session.
+ *
+ * `segments` is overridden rather than inferred: the route requires only `id`, `startMs` and
+ * `endMs`, while {@link ShadowingSegment} declares `label`/`maxReplays`/`gapMs` present-but-nullable.
+ * See {@link bookmarkRefWriteFields} on the bookmark `Omit`.
+ */
+export type CreateShadowingSessionInput
+  = Omit<
+    z.infer<typeof createShadowingSessionSchema>,
+    keyof BookmarkRef | keyof SessionXpInput | "segments"
+  > & Partial<BookmarkRef> & SessionXpInput & {
+    segments?: ShadowingSegment[] | null;
+  };
 
 /** Payload for partially updating a shadowing session. */
 export type UpdateShadowingSessionInput = Partial<CreateShadowingSessionInput>;

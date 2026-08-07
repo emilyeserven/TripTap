@@ -12,91 +12,9 @@ import {
   listListeningSessions,
   updateListeningSession,
 } from "@/services/listening-sessions";
-import { termsSchema } from "@/routes/schemas/terms";
-import { LEARNING_AREAS, bookmarkSectionRefJsonSchema } from "@sentence-bank/types";
+import { createListeningSessionJsonSchema } from "@sentence-bank/types";
 
-const entriesSchema = {
-  type: ["array", "null"],
-  items: {
-    type: "object",
-    additionalProperties: false,
-    required: ["id", "text", "timestampMs", "mode", "source"],
-    properties: {
-      id: {
-        type: "string",
-      },
-      text: {
-        type: "string",
-      },
-      context: {
-        type: "string",
-      },
-      timestampMs: {
-        type: "number",
-        minimum: 0,
-      },
-      mode: {
-        type: "string",
-        enum: ["typing-start", "submit"],
-      },
-      source: {
-        type: "string",
-        enum: ["video", "stopwatch"],
-      },
-    },
-  },
-} as const;
-
-/** A reference to one section of a bookmark (denormalized), or null. */
-
-const createListeningSessionBody = {
-  type: "object",
-  required: ["title", "language", "date"],
-  additionalProperties: false,
-  properties: {
-    title: {
-      type: "string",
-      minLength: 1,
-    },
-    language: {
-      type: "string",
-      minLength: 1,
-    },
-    date: {
-      type: "string",
-      format: "date",
-    },
-    videoUrl: {
-      type: ["string", "null"],
-    },
-    bookmarkId: {
-      type: ["string", "null"],
-    },
-    bookmarkTitle: {
-      type: ["string", "null"],
-    },
-    bookmarkUrl: {
-      type: ["string", "null"],
-    },
-    section: bookmarkSectionRefJsonSchema,
-    entries: entriesSchema,
-    passive: {
-      type: "boolean",
-    },
-    durationMinutes: {
-      type: "integer",
-      minimum: 0,
-    },
-    terms: termsSchema,
-    learningArea: {
-      type: ["string", "null"],
-      enum: [...LEARNING_AREAS, null],
-    },
-    countsTowardXp: {
-      type: "boolean",
-    },
-  },
-} as const;
+const createListeningSessionBody = createListeningSessionJsonSchema;
 
 const updateListeningSessionBody = updateBodyOf(createListeningSessionBody);
 

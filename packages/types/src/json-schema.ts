@@ -47,7 +47,12 @@ export function isoDateString() {
  * schema; the Zod type stays a true integer.
  */
 export function nonNegativeInt() {
-  return z.int().min(0).meta({
+  return intAtLeast(0);
+}
+
+/** An integer with a floor other than zero (a replay count, a repetition), and no ceiling. */
+export function intAtLeast(min: number) {
+  return z.int().min(min).meta({
     maximum: undefined,
   });
 }

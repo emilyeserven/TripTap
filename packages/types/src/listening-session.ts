@@ -10,6 +10,12 @@
 import type { SentenceTermRef } from "./index.js";
 import type { BookmarkRef, SessionXp, SessionXpInput } from "./session.js";
 
+import { z } from "zod";
+
+import { isoDateString, nonNegativeInt, objectJsonSchema } from "./json-schema.js";
+import { bookmarkRefWriteFields, learningAreaField } from "./session.js";
+import { termsListSchema } from "./terms.js";
+
 /**
  * One timestamped note within a session. `timestampMs` is the playback (or stopwatch) position in
  * whole milliseconds. `mode` records whether the stamp was taken when the learner started typing or
@@ -60,18 +66,39 @@ export interface ListeningSession extends SessionXp, BookmarkRef {
   updatedAt: string;
 }
 
+/** One timestamped note, as a route body accepts it — shared with shadowing sessions. */
+export const listeningEntrySchema = z.object({
+  id: z.string(),
+  text: z.string(),
+  context: z.string().optional(),
+  timestampMs: z.number().min(0),
+  mode: z.enum(["typing-start", "submit"]),
+  source: z.enum(["video", "stopwatch"]),
+});
+
 /** Payload for creating a listening session. `title`, `language`, and `date` are required. */
-export interface CreateListeningSessionInput extends SessionXpInput, Partial<BookmarkRef> {
-  title: string;
-  language: string;
+export const createListeningSessionSchema = z.object({
+  title: z.string().min(1),
+  language: z.string().min(1),
   /** ISO date (YYYY-MM-DD) the session happened. */
-  date: string;
-  videoUrl?: string | null;
-  entries?: ListeningEntry[] | null;
-  passive?: boolean;
-  durationMinutes?: number;
-  terms?: SentenceTermRef[] | null;
-}
+  date: isoDateString(),
+  videoUrl: z.string().nullable().optional(),
+  ...bookmarkRefWriteFields,
+  entries: z.array(listeningEntrySchema).nullable().optional(),
+  passive: z.boolean().optional(),
+  durationMinutes: nonNegativeInt().optional(),
+  terms: termsListSchema.optional(),
+  learningArea: learningAreaField(),
+  countsTowardXp: z.boolean().optional(),
+});
+
+/** JSON Schema (draft-07) for the create payload, used verbatim as the route body. */
+export const createListeningSessionJsonSchema = objectJsonSchema(createListeningSessionSchema);
+
+/** Payload for creating a listening session — see {@link bookmarkRefWriteFields} on the `Omit`. */
+export type CreateListeningSessionInput
+  = Omit<z.infer<typeof createListeningSessionSchema>, keyof BookmarkRef | keyof SessionXpInput>
+    & Partial<BookmarkRef> & SessionXpInput;
 
 /** Payload for partially updating a listening session. */
 export type UpdateListeningSessionInput = Partial<CreateListeningSessionInput>;

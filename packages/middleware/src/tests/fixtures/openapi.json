@@ -4524,12 +4524,6 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "title",
-                  "language",
-                  "date"
-                ],
-                "additionalProperties": false,
                 "properties": {
                   "title": {
                     "type": "string",
@@ -4615,14 +4609,6 @@
                     ],
                     "items": {
                       "type": "object",
-                      "additionalProperties": false,
-                      "required": [
-                        "id",
-                        "text",
-                        "timestampMs",
-                        "mode",
-                        "source"
-                      ],
                       "properties": {
                         "id": {
                           "type": "string"
@@ -4651,7 +4637,15 @@
                             "stopwatch"
                           ]
                         }
-                      }
+                      },
+                      "required": [
+                        "id",
+                        "text",
+                        "timestampMs",
+                        "mode",
+                        "source"
+                      ],
+                      "additionalProperties": false
                     }
                   },
                   "passive": {
@@ -4726,7 +4720,13 @@
                   "countsTowardXp": {
                     "type": "boolean"
                   }
-                }
+                },
+                "required": [
+                  "title",
+                  "language",
+                  "date"
+                ],
+                "additionalProperties": false
               }
             }
           }
@@ -4856,14 +4856,6 @@
                     ],
                     "items": {
                       "type": "object",
-                      "additionalProperties": false,
-                      "required": [
-                        "id",
-                        "text",
-                        "timestampMs",
-                        "mode",
-                        "source"
-                      ],
                       "properties": {
                         "id": {
                           "type": "string"
@@ -4892,7 +4884,15 @@
                             "stopwatch"
                           ]
                         }
-                      }
+                      },
+                      "required": [
+                        "id",
+                        "text",
+                        "timestampMs",
+                        "mode",
+                        "source"
+                      ],
+                      "additionalProperties": false
                     }
                   },
                   "passive": {
@@ -5497,12 +5497,6 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "title",
-                  "language",
-                  "date"
-                ],
-                "additionalProperties": false,
                 "properties": {
                   "title": {
                     "type": "string",
@@ -5600,12 +5594,6 @@
                     ],
                     "items": {
                       "type": "object",
-                      "additionalProperties": false,
-                      "required": [
-                        "id",
-                        "startMs",
-                        "endMs"
-                      ],
                       "properties": {
                         "id": {
                           "type": "string"
@@ -5638,7 +5626,13 @@
                           ],
                           "minimum": 0
                         }
-                      }
+                      },
+                      "required": [
+                        "id",
+                        "startMs",
+                        "endMs"
+                      ],
+                      "additionalProperties": false
                     }
                   },
                   "entries": {
@@ -5648,14 +5642,6 @@
                     ],
                     "items": {
                       "type": "object",
-                      "additionalProperties": false,
-                      "required": [
-                        "id",
-                        "text",
-                        "timestampMs",
-                        "mode",
-                        "source"
-                      ],
                       "properties": {
                         "id": {
                           "type": "string"
@@ -5684,7 +5670,15 @@
                             "stopwatch"
                           ]
                         }
-                      }
+                      },
+                      "required": [
+                        "id",
+                        "text",
+                        "timestampMs",
+                        "mode",
+                        "source"
+                      ],
+                      "additionalProperties": false
                     }
                   },
                   "terms": {
@@ -5757,9 +5751,16 @@
                       "string",
                       "null"
                     ],
-                    "format": "uuid"
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
                   }
-                }
+                },
+                "required": [
+                  "title",
+                  "language",
+                  "date"
+                ],
+                "additionalProperties": false
               }
             }
           }
@@ -5932,12 +5933,6 @@
                     ],
                     "items": {
                       "type": "object",
-                      "additionalProperties": false,
-                      "required": [
-                        "id",
-                        "startMs",
-                        "endMs"
-                      ],
                       "properties": {
                         "id": {
                           "type": "string"
@@ -5970,7 +5965,13 @@
                           ],
                           "minimum": 0
                         }
-                      }
+                      },
+                      "required": [
+                        "id",
+                        "startMs",
+                        "endMs"
+                      ],
+                      "additionalProperties": false
                     }
                   },
                   "entries": {
@@ -5980,14 +5981,6 @@
                     ],
                     "items": {
                       "type": "object",
-                      "additionalProperties": false,
-                      "required": [
-                        "id",
-                        "text",
-                        "timestampMs",
-                        "mode",
-                        "source"
-                      ],
                       "properties": {
                         "id": {
                           "type": "string"
@@ -6016,7 +6009,15 @@
                             "stopwatch"
                           ]
                         }
-                      }
+                      },
+                      "required": [
+                        "id",
+                        "text",
+                        "timestampMs",
+                        "mode",
+                        "source"
+                      ],
+                      "additionalProperties": false
                     }
                   },
                   "terms": {
@@ -6089,7 +6090,8 @@
                       "string",
                       "null"
                     ],
-                    "format": "uuid"
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
                   }
                 }
               }
@@ -6368,12 +6370,6 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "title",
-                  "language",
-                  "date"
-                ],
-                "additionalProperties": false,
                 "properties": {
                   "title": {
                     "type": "string",
@@ -6476,13 +6472,6 @@
                     ],
                     "items": {
                       "type": "object",
-                      "additionalProperties": false,
-                      "required": [
-                        "id",
-                        "text",
-                        "summaryOnly",
-                        "needsCorrection"
-                      ],
                       "properties": {
                         "id": {
                           "type": "string"
@@ -6573,7 +6562,14 @@
                             "additionalProperties": false
                           }
                         }
-                      }
+                      },
+                      "required": [
+                        "id",
+                        "text",
+                        "summaryOnly",
+                        "needsCorrection"
+                      ],
+                      "additionalProperties": false
                     }
                   },
                   "wordNotes": {
@@ -6583,13 +6579,6 @@
                     ],
                     "items": {
                       "type": "object",
-                      "additionalProperties": false,
-                      "required": [
-                        "id",
-                        "word",
-                        "status",
-                        "flashcard"
-                      ],
                       "properties": {
                         "id": {
                           "type": "string"
@@ -6625,7 +6614,14 @@
                             "null"
                           ]
                         }
-                      }
+                      },
+                      "required": [
+                        "id",
+                        "word",
+                        "status",
+                        "flashcard"
+                      ],
+                      "additionalProperties": false
                     }
                   },
                   "bookmarkId": {
@@ -6705,7 +6701,13 @@
                   "countsTowardXp": {
                     "type": "boolean"
                   }
-                }
+                },
+                "required": [
+                  "title",
+                  "language",
+                  "date"
+                ],
+                "additionalProperties": false
               }
             }
           }
@@ -6852,13 +6854,6 @@
                     ],
                     "items": {
                       "type": "object",
-                      "additionalProperties": false,
-                      "required": [
-                        "id",
-                        "text",
-                        "summaryOnly",
-                        "needsCorrection"
-                      ],
                       "properties": {
                         "id": {
                           "type": "string"
@@ -6949,7 +6944,14 @@
                             "additionalProperties": false
                           }
                         }
-                      }
+                      },
+                      "required": [
+                        "id",
+                        "text",
+                        "summaryOnly",
+                        "needsCorrection"
+                      ],
+                      "additionalProperties": false
                     }
                   },
                   "wordNotes": {
@@ -6959,13 +6961,6 @@
                     ],
                     "items": {
                       "type": "object",
-                      "additionalProperties": false,
-                      "required": [
-                        "id",
-                        "word",
-                        "status",
-                        "flashcard"
-                      ],
                       "properties": {
                         "id": {
                           "type": "string"
@@ -7001,7 +6996,14 @@
                             "null"
                           ]
                         }
-                      }
+                      },
+                      "required": [
+                        "id",
+                        "word",
+                        "status",
+                        "flashcard"
+                      ],
+                      "additionalProperties": false
                     }
                   },
                   "bookmarkId": {
@@ -8873,10 +8875,6 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "date"
-                ],
-                "additionalProperties": false,
                 "properties": {
                   "date": {
                     "type": "string",
@@ -8901,12 +8899,6 @@
                     ],
                     "items": {
                       "type": "object",
-                      "additionalProperties": false,
-                      "required": [
-                        "id",
-                        "prompt",
-                        "reasons"
-                      ],
                       "properties": {
                         "id": {
                           "type": "string"
@@ -8942,10 +8934,6 @@
                           "type": "array",
                           "items": {
                             "type": "object",
-                            "additionalProperties": false,
-                            "required": [
-                              "categoryId"
-                            ],
                             "properties": {
                               "categoryId": {
                                 "type": "string"
@@ -8962,10 +8950,20 @@
                                   "null"
                                 ]
                               }
-                            }
+                            },
+                            "required": [
+                              "categoryId"
+                            ],
+                            "additionalProperties": false
                           }
                         }
-                      }
+                      },
+                      "required": [
+                        "id",
+                        "prompt",
+                        "reasons"
+                      ],
+                      "additionalProperties": false
                     }
                   },
                   "questions": {
@@ -9057,7 +9055,11 @@
                     ],
                     "additionalProperties": false
                   }
-                }
+                },
+                "required": [
+                  "date"
+                ],
+                "additionalProperties": false
               }
             }
           }
@@ -9126,12 +9128,6 @@
                     ],
                     "items": {
                       "type": "object",
-                      "additionalProperties": false,
-                      "required": [
-                        "id",
-                        "prompt",
-                        "reasons"
-                      ],
                       "properties": {
                         "id": {
                           "type": "string"
@@ -9167,10 +9163,6 @@
                           "type": "array",
                           "items": {
                             "type": "object",
-                            "additionalProperties": false,
-                            "required": [
-                              "categoryId"
-                            ],
                             "properties": {
                               "categoryId": {
                                 "type": "string"
@@ -9187,10 +9179,20 @@
                                   "null"
                                 ]
                               }
-                            }
+                            },
+                            "required": [
+                              "categoryId"
+                            ],
+                            "additionalProperties": false
                           }
                         }
-                      }
+                      },
+                      "required": [
+                        "id",
+                        "prompt",
+                        "reasons"
+                      ],
+                      "additionalProperties": false
                     }
                   },
                   "questions": {
