@@ -5,7 +5,7 @@ import type {
   CreateDrillSessionInput,
   UpdateDrillSessionInput,
 } from "@sentence-bank/types";
-import { DRILL_TYPES, LEARNING_AREAS } from "@sentence-bank/types";
+import { DRILL_TYPES, LEARNING_AREAS, bookmarkSectionRefJsonSchema } from "@sentence-bank/types";
 import {
   createDrillSession,
   deleteDrillSession,
@@ -63,29 +63,6 @@ const mistakesSchema = {
 } as const;
 
 /** A reference to one section of a bookmark (denormalized), or null. */
-const bookmarkSectionRefSchema = {
-  type: ["object", "null"],
-  additionalProperties: false,
-  required: ["id", "label", "type"],
-  properties: {
-    id: {
-      type: "string",
-    },
-    label: {
-      type: "string",
-    },
-    type: {
-      type: "string",
-      enum: ["name", "url", "page", "timestamp"],
-    },
-    startValue: {
-      type: ["string", "null"],
-    },
-    endValue: {
-      type: ["string", "null"],
-    },
-  },
-} as const;
 
 const createSessionBody = {
   type: "object",
@@ -124,7 +101,7 @@ const createSessionBody = {
     bookmarkUrl: {
       type: ["string", "null"],
     },
-    section: bookmarkSectionRefSchema,
+    section: bookmarkSectionRefJsonSchema,
   },
 } as const;
 

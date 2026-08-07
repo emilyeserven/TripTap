@@ -12,6 +12,10 @@
 import type { BookmarkSectionRef } from "./index.js";
 import type { LearningArea } from "./question-sheet.js";
 
+import { z } from "zod";
+
+import { fieldJsonSchema } from "./json-schema.js";
+
 /**
  * A session's link back to the external bookmark it was based on, denormalized at selection time so
  * display never needs a live bookmarks call. Repeated verbatim on drill, listening, shadowing and
@@ -51,3 +55,27 @@ export interface SessionXpInput {
   learningArea?: LearningArea | null;
   countsTowardXp?: boolean;
 }
+
+/**
+ * One stored bookmark-section reference, as a route body accepts it.
+ *
+ * Six route files each carried a verbatim copy of this shape — the same duplication Phase 1a
+ * removed for term refs, still sitting in the session routes. Declared once here so a change lands
+ * in one place.
+ *
+ * Deliberately narrower than {@link BookmarkSectionRef}: that type also carries `name`, `parentId`
+ * and `completed`, which are populated only on live tag-match results and are not part of what a
+ * client stores. The routes have always stripped them (`additionalProperties: false`), so this
+ * mirrors the *validator*, not the type — widening it to the full type would start accepting fields
+ * the API currently drops.
+ */
+export const bookmarkSectionRefWriteSchema = z.object({
+  id: z.string(),
+  label: z.string(),
+  type: z.enum(["name", "url", "page", "timestamp"]),
+  startValue: z.string().nullable().optional(),
+  endValue: z.string().nullable().optional(),
+}).nullable();
+
+/** JSON Schema (draft-07) for a stored section reference — the routes' `section` field. */
+export const bookmarkSectionRefJsonSchema = fieldJsonSchema(bookmarkSectionRefWriteSchema);

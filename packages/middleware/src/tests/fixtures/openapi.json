@@ -3709,42 +3709,57 @@
                       "null"
                     ],
                     "items": {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "required": [
-                        "id",
-                        "label",
-                        "type"
-                      ],
-                      "properties": {
-                        "id": {
-                          "type": "string"
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "label": {
+                              "type": "string"
+                            },
+                            "type": {
+                              "type": "string",
+                              "enum": [
+                                "name",
+                                "url",
+                                "page",
+                                "timestamp"
+                              ]
+                            },
+                            "startValue": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "endValue": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "label",
+                            "type"
+                          ],
+                          "additionalProperties": false
                         },
-                        "label": {
-                          "type": "string"
-                        },
-                        "type": {
-                          "type": "string",
-                          "enum": [
-                            "name",
-                            "url",
-                            "page",
-                            "timestamp"
-                          ]
-                        },
-                        "startValue": {
-                          "type": [
-                            "string",
-                            "null"
-                          ]
-                        },
-                        "endValue": {
-                          "type": [
-                            "string",
-                            "null"
-                          ]
+                        {
+                          "type": "null"
                         }
-                      }
+                      ]
                     }
                   },
                   "dueDate": {
@@ -3981,42 +3996,57 @@
                       "null"
                     ],
                     "items": {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "required": [
-                        "id",
-                        "label",
-                        "type"
-                      ],
-                      "properties": {
-                        "id": {
-                          "type": "string"
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "label": {
+                              "type": "string"
+                            },
+                            "type": {
+                              "type": "string",
+                              "enum": [
+                                "name",
+                                "url",
+                                "page",
+                                "timestamp"
+                              ]
+                            },
+                            "startValue": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "endValue": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "label",
+                            "type"
+                          ],
+                          "additionalProperties": false
                         },
-                        "label": {
-                          "type": "string"
-                        },
-                        "type": {
-                          "type": "string",
-                          "enum": [
-                            "name",
-                            "url",
-                            "page",
-                            "timestamp"
-                          ]
-                        },
-                        "startValue": {
-                          "type": [
-                            "string",
-                            "null"
-                          ]
-                        },
-                        "endValue": {
-                          "type": [
-                            "string",
-                            "null"
-                          ]
+                        {
+                          "type": "null"
                         }
-                      }
+                      ]
                     }
                   },
                   "dueDate": {
@@ -4596,45 +4626,57 @@
                     ]
                   },
                   "section": {
-                    "type": [
-                      "object",
-                      "null"
-                    ],
-                    "additionalProperties": false,
-                    "required": [
-                      "id",
-                      "label",
-                      "type"
-                    ],
-                    "properties": {
-                      "id": {
-                        "type": "string"
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "label": {
+                            "type": "string"
+                          },
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "name",
+                              "url",
+                              "page",
+                              "timestamp"
+                            ]
+                          },
+                          "startValue": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "endValue": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "label",
+                          "type"
+                        ],
+                        "additionalProperties": false
                       },
-                      "label": {
-                        "type": "string"
-                      },
-                      "type": {
-                        "type": "string",
-                        "enum": [
-                          "name",
-                          "url",
-                          "page",
-                          "timestamp"
-                        ]
-                      },
-                      "startValue": {
-                        "type": [
-                          "string",
-                          "null"
-                        ]
-                      },
-                      "endValue": {
-                        "type": [
-                          "string",
-                          "null"
-                        ]
+                      {
+                        "type": "null"
                       }
-                    }
+                    ]
                   },
                   "entries": {
                     "type": [
@@ -4841,45 +4883,57 @@
                     ]
                   },
                   "section": {
-                    "type": [
-                      "object",
-                      "null"
-                    ],
-                    "additionalProperties": false,
-                    "required": [
-                      "id",
-                      "label",
-                      "type"
-                    ],
-                    "properties": {
-                      "id": {
-                        "type": "string"
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "label": {
+                            "type": "string"
+                          },
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "name",
+                              "url",
+                              "page",
+                              "timestamp"
+                            ]
+                          },
+                          "startValue": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "endValue": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "label",
+                          "type"
+                        ],
+                        "additionalProperties": false
                       },
-                      "label": {
-                        "type": "string"
-                      },
-                      "type": {
-                        "type": "string",
-                        "enum": [
-                          "name",
-                          "url",
-                          "page",
-                          "timestamp"
-                        ]
-                      },
-                      "startValue": {
-                        "type": [
-                          "string",
-                          "null"
-                        ]
-                      },
-                      "endValue": {
-                        "type": [
-                          "string",
-                          "null"
-                        ]
+                      {
+                        "type": "null"
                       }
-                    }
+                    ]
                   },
                   "entries": {
                     "type": [
@@ -5182,45 +5236,57 @@
                     ]
                   },
                   "section": {
-                    "type": [
-                      "object",
-                      "null"
-                    ],
-                    "additionalProperties": false,
-                    "required": [
-                      "id",
-                      "label",
-                      "type"
-                    ],
-                    "properties": {
-                      "id": {
-                        "type": "string"
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "label": {
+                            "type": "string"
+                          },
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "name",
+                              "url",
+                              "page",
+                              "timestamp"
+                            ]
+                          },
+                          "startValue": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "endValue": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "label",
+                          "type"
+                        ],
+                        "additionalProperties": false
                       },
-                      "label": {
-                        "type": "string"
-                      },
-                      "type": {
-                        "type": "string",
-                        "enum": [
-                          "name",
-                          "url",
-                          "page",
-                          "timestamp"
-                        ]
-                      },
-                      "startValue": {
-                        "type": [
-                          "string",
-                          "null"
-                        ]
-                      },
-                      "endValue": {
-                        "type": [
-                          "string",
-                          "null"
-                        ]
+                      {
+                        "type": "null"
                       }
-                    }
+                    ]
                   },
                   "selfSpeakers": {
                     "type": [
@@ -5401,45 +5467,57 @@
                     ]
                   },
                   "section": {
-                    "type": [
-                      "object",
-                      "null"
-                    ],
-                    "additionalProperties": false,
-                    "required": [
-                      "id",
-                      "label",
-                      "type"
-                    ],
-                    "properties": {
-                      "id": {
-                        "type": "string"
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "label": {
+                            "type": "string"
+                          },
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "name",
+                              "url",
+                              "page",
+                              "timestamp"
+                            ]
+                          },
+                          "startValue": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "endValue": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "label",
+                          "type"
+                        ],
+                        "additionalProperties": false
                       },
-                      "label": {
-                        "type": "string"
-                      },
-                      "type": {
-                        "type": "string",
-                        "enum": [
-                          "name",
-                          "url",
-                          "page",
-                          "timestamp"
-                        ]
-                      },
-                      "startValue": {
-                        "type": [
-                          "string",
-                          "null"
-                        ]
-                      },
-                      "endValue": {
-                        "type": [
-                          "string",
-                          "null"
-                        ]
+                      {
+                        "type": "null"
                       }
-                    }
+                    ]
                   },
                   "selfSpeakers": {
                     "type": [
@@ -5577,45 +5655,57 @@
                     ]
                   },
                   "section": {
-                    "type": [
-                      "object",
-                      "null"
-                    ],
-                    "additionalProperties": false,
-                    "required": [
-                      "id",
-                      "label",
-                      "type"
-                    ],
-                    "properties": {
-                      "id": {
-                        "type": "string"
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "label": {
+                            "type": "string"
+                          },
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "name",
+                              "url",
+                              "page",
+                              "timestamp"
+                            ]
+                          },
+                          "startValue": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "endValue": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "label",
+                          "type"
+                        ],
+                        "additionalProperties": false
                       },
-                      "label": {
-                        "type": "string"
-                      },
-                      "type": {
-                        "type": "string",
-                        "enum": [
-                          "name",
-                          "url",
-                          "page",
-                          "timestamp"
-                        ]
-                      },
-                      "startValue": {
-                        "type": [
-                          "string",
-                          "null"
-                        ]
-                      },
-                      "endValue": {
-                        "type": [
-                          "string",
-                          "null"
-                        ]
+                      {
+                        "type": "null"
                       }
-                    }
+                    ]
                   },
                   "defaultMaxReplays": {
                     "type": "integer",
@@ -5913,45 +6003,57 @@
                     ]
                   },
                   "section": {
-                    "type": [
-                      "object",
-                      "null"
-                    ],
-                    "additionalProperties": false,
-                    "required": [
-                      "id",
-                      "label",
-                      "type"
-                    ],
-                    "properties": {
-                      "id": {
-                        "type": "string"
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "label": {
+                            "type": "string"
+                          },
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "name",
+                              "url",
+                              "page",
+                              "timestamp"
+                            ]
+                          },
+                          "startValue": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "endValue": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "label",
+                          "type"
+                        ],
+                        "additionalProperties": false
                       },
-                      "label": {
-                        "type": "string"
-                      },
-                      "type": {
-                        "type": "string",
-                        "enum": [
-                          "name",
-                          "url",
-                          "page",
-                          "timestamp"
-                        ]
-                      },
-                      "startValue": {
-                        "type": [
-                          "string",
-                          "null"
-                        ]
-                      },
-                      "endValue": {
-                        "type": [
-                          "string",
-                          "null"
-                        ]
+                      {
+                        "type": "null"
                       }
-                    }
+                    ]
                   },
                   "defaultMaxReplays": {
                     "type": "integer",
@@ -6703,45 +6805,57 @@
                     ]
                   },
                   "section": {
-                    "type": [
-                      "object",
-                      "null"
-                    ],
-                    "additionalProperties": false,
-                    "required": [
-                      "id",
-                      "label",
-                      "type"
-                    ],
-                    "properties": {
-                      "id": {
-                        "type": "string"
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "label": {
+                            "type": "string"
+                          },
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "name",
+                              "url",
+                              "page",
+                              "timestamp"
+                            ]
+                          },
+                          "startValue": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "endValue": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "label",
+                          "type"
+                        ],
+                        "additionalProperties": false
                       },
-                      "label": {
-                        "type": "string"
-                      },
-                      "type": {
-                        "type": "string",
-                        "enum": [
-                          "name",
-                          "url",
-                          "page",
-                          "timestamp"
-                        ]
-                      },
-                      "startValue": {
-                        "type": [
-                          "string",
-                          "null"
-                        ]
-                      },
-                      "endValue": {
-                        "type": [
-                          "string",
-                          "null"
-                        ]
+                      {
+                        "type": "null"
                       }
-                    }
+                    ]
                   },
                   "learningArea": {
                     "type": [
@@ -7083,45 +7197,57 @@
                     ]
                   },
                   "section": {
-                    "type": [
-                      "object",
-                      "null"
-                    ],
-                    "additionalProperties": false,
-                    "required": [
-                      "id",
-                      "label",
-                      "type"
-                    ],
-                    "properties": {
-                      "id": {
-                        "type": "string"
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "label": {
+                            "type": "string"
+                          },
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "name",
+                              "url",
+                              "page",
+                              "timestamp"
+                            ]
+                          },
+                          "startValue": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "endValue": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "label",
+                          "type"
+                        ],
+                        "additionalProperties": false
                       },
-                      "label": {
-                        "type": "string"
-                      },
-                      "type": {
-                        "type": "string",
-                        "enum": [
-                          "name",
-                          "url",
-                          "page",
-                          "timestamp"
-                        ]
-                      },
-                      "startValue": {
-                        "type": [
-                          "string",
-                          "null"
-                        ]
-                      },
-                      "endValue": {
-                        "type": [
-                          "string",
-                          "null"
-                        ]
+                      {
+                        "type": "null"
                       }
-                    }
+                    ]
                   },
                   "learningArea": {
                     "type": [
@@ -9117,45 +9243,57 @@
                     ]
                   },
                   "section": {
-                    "type": [
-                      "object",
-                      "null"
-                    ],
-                    "additionalProperties": false,
-                    "required": [
-                      "id",
-                      "label",
-                      "type"
-                    ],
-                    "properties": {
-                      "id": {
-                        "type": "string"
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "label": {
+                            "type": "string"
+                          },
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "name",
+                              "url",
+                              "page",
+                              "timestamp"
+                            ]
+                          },
+                          "startValue": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "endValue": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "label",
+                          "type"
+                        ],
+                        "additionalProperties": false
                       },
-                      "label": {
-                        "type": "string"
-                      },
-                      "type": {
-                        "type": "string",
-                        "enum": [
-                          "name",
-                          "url",
-                          "page",
-                          "timestamp"
-                        ]
-                      },
-                      "startValue": {
-                        "type": [
-                          "string",
-                          "null"
-                        ]
-                      },
-                      "endValue": {
-                        "type": [
-                          "string",
-                          "null"
-                        ]
+                      {
+                        "type": "null"
                       }
-                    }
+                    ]
                   }
                 }
               }
@@ -9342,45 +9480,57 @@
                     ]
                   },
                   "section": {
-                    "type": [
-                      "object",
-                      "null"
-                    ],
-                    "additionalProperties": false,
-                    "required": [
-                      "id",
-                      "label",
-                      "type"
-                    ],
-                    "properties": {
-                      "id": {
-                        "type": "string"
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "label": {
+                            "type": "string"
+                          },
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "name",
+                              "url",
+                              "page",
+                              "timestamp"
+                            ]
+                          },
+                          "startValue": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "endValue": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "label",
+                          "type"
+                        ],
+                        "additionalProperties": false
                       },
-                      "label": {
-                        "type": "string"
-                      },
-                      "type": {
-                        "type": "string",
-                        "enum": [
-                          "name",
-                          "url",
-                          "page",
-                          "timestamp"
-                        ]
-                      },
-                      "startValue": {
-                        "type": [
-                          "string",
-                          "null"
-                        ]
-                      },
-                      "endValue": {
-                        "type": [
-                          "string",
-                          "null"
-                        ]
+                      {
+                        "type": "null"
                       }
-                    }
+                    ]
                   }
                 }
               }
