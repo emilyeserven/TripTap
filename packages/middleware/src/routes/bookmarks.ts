@@ -2,6 +2,7 @@ import { handleUpstreamError } from "@/routes/upstream-errors";
 import { idOf, notFound } from "@/routes/handlers";
 import type { FastifyInstance } from "fastify";
 import type { SentenceTermCategory } from "@sentence-bank/types";
+import { createBookmarksTermJsonSchema } from "@sentence-bank/types";
 import {
   createVocabularyTerm,
   fetchTags,
@@ -40,21 +41,7 @@ const vocabularyQuery = {
   },
 } as const;
 
-const createTermBody = {
-  type: "object",
-  additionalProperties: false,
-  required: ["name"],
-  properties: {
-    name: {
-      type: "string",
-      minLength: 1,
-    },
-    category: {
-      type: "string",
-      enum: CATEGORY_ENUM,
-    },
-  },
-} as const;
+const createTermBody = createBookmarksTermJsonSchema;
 
 const recordsQuery = {
   type: "object",

@@ -2,6 +2,7 @@ import type { FastifyInstance } from "fastify";
 import { idOf, notFound } from "@/routes/handlers";
 import { idParams, updateBodyOf } from "@/routes/schemas/params";
 import type { CreateWritingInput, UpdateWritingInput } from "@sentence-bank/types";
+import { createWritingJsonSchema } from "@sentence-bank/types";
 import {
   createWriting,
   deleteWriting,
@@ -9,88 +10,8 @@ import {
   listWritings,
   updateWriting,
 } from "@/services/writings";
-import { termsSchema } from "@/routes/schemas/terms";
 
-const correctionsSchema = {
-  type: ["array", "null"],
-  items: {
-    type: "object",
-    additionalProperties: false,
-    required: ["id", "original", "corrected"],
-    properties: {
-      id: {
-        type: "string",
-      },
-      original: {
-        type: "string",
-      },
-      corrected: {
-        type: "string",
-      },
-      note: {
-        type: ["string", "null"],
-      },
-      marks: {
-        type: ["array", "null"],
-        items: {
-          type: "object",
-          additionalProperties: false,
-          required: ["start", "end", "correct"],
-          properties: {
-            start: {
-              type: "integer",
-            },
-            end: {
-              type: "integer",
-            },
-            correct: {
-              type: "boolean",
-            },
-          },
-        },
-      },
-      mySentenceId: {
-        type: ["string", "null"],
-      },
-    },
-  },
-} as const;
-
-const createWritingBody = {
-  type: "object",
-  required: ["text", "language", "date"],
-  additionalProperties: false,
-  properties: {
-    text: {
-      type: "string",
-    },
-    language: {
-      type: "string",
-      minLength: 1,
-    },
-    date: {
-      type: "string",
-      format: "date",
-    },
-    meaning: {
-      type: ["string", "null"],
-    },
-    comments: {
-      type: ["string", "null"],
-    },
-    readyToReview: {
-      type: "boolean",
-    },
-    terms: termsSchema,
-    corrections: correctionsSchema,
-    promptTitle: {
-      type: ["string", "null"],
-    },
-    promptText: {
-      type: ["string", "null"],
-    },
-  },
-} as const;
+const createWritingBody = createWritingJsonSchema;
 
 const updateWritingBody = updateBodyOf(createWritingBody);
 
