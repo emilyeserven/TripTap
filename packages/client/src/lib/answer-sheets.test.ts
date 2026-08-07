@@ -446,10 +446,12 @@ describe("questionSheetSlots", () => {
       {
         id: "q1",
         label: "One",
+        choices: null,
       },
       {
         id: "q2",
         label: "Two",
+        choices: null,
       },
     ]);
   });
@@ -464,7 +466,68 @@ describe("questionSheetSlots", () => {
     expect(slots).toEqual([{
       id: "q1",
       label: "Question 1",
+      choices: null,
     }]);
+  });
+
+  it("carries a boolean question's True/False options onto its slot", () => {
+    const slots = questionSheetSlots(listSheet({
+      questions: [{
+        id: "q1",
+        prompt: "It is raining.",
+        answerType: "boolean",
+      }],
+    }));
+    expect(slots).toEqual([{
+      id: "q1",
+      label: "It is raining.",
+      choices: ["True", "False"],
+    }]);
+  });
+
+  it("carries a choice question's options onto every leaf slot, dropping blanks", () => {
+    const slots = questionSheetSlots(listSheet({
+      questions: [{
+        id: "q1",
+        prompt: "Pick the particle",
+        answerType: "choice",
+        choices: ["は", "  ", "が", "を"],
+        parts: [
+          {
+            id: "p1",
+            label: "(a)",
+          },
+          {
+            id: "p2",
+            label: "(b)",
+          },
+        ],
+      }],
+    }));
+    expect(slots).toEqual([
+      {
+        id: "p1",
+        label: "Pick the particle — (a)",
+        choices: ["は", "が", "を"],
+      },
+      {
+        id: "p2",
+        label: "Pick the particle — (b)",
+        choices: ["は", "が", "を"],
+      },
+    ]);
+  });
+
+  it("treats a choice question with no non-blank options as free text", () => {
+    const slots = questionSheetSlots(listSheet({
+      questions: [{
+        id: "q1",
+        prompt: "Anything",
+        answerType: "choice",
+        choices: ["  ", ""],
+      }],
+    }));
+    expect(slots[0].choices).toBeNull();
   });
 
   it("offsets positional labels by firstQuestionNumber", () => {
@@ -505,10 +568,12 @@ describe("questionSheetSlots", () => {
       {
         id: "p1",
         label: "Conjugate — (a)",
+        choices: null,
       },
       {
         id: "p2",
         label: "Conjugate — (b)",
+        choices: null,
       },
     ]);
   });
@@ -544,14 +609,17 @@ describe("questionSheetSlots", () => {
       {
         id: "p1i",
         label: "Q — (a) — (i)",
+        choices: null,
       },
       {
         id: "p1ii",
         label: "Q — (a) — (ii)",
+        choices: null,
       },
       {
         id: "p2",
         label: "Q — (b)",
+        choices: null,
       },
     ]);
   });

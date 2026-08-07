@@ -104,6 +104,12 @@ export function AnswerSheetView({
       correct: true,
     });
   }
+  /** Mark a slot wrong (used by the list controls). The grid's ✗ uses {@link markWrong} to also pop the modal. */
+  function markIncorrect(slotId: string) {
+    commitField(slotId, {
+      correct: false,
+    });
+  }
   function markWrong(slotId: string) {
     commitField(slotId, {
       correct: false,
@@ -114,7 +120,11 @@ export function AnswerSheetView({
   function editCorrections(slotId: string) {
     setCorrectingSlotId(slotId);
   }
-  /** Commit an inline correction (built from span marks + typed insertions) for a slot. */
+  /**
+   * Commit an inline correction (built from span marks + typed insertions) for a slot. The verdict is
+   * owned by the explicit ✓ / ✗ buttons, so it is left as-is when already set; only an *un-reviewed*
+   * slot infers one here — a real edit ⇒ wrong, a bare note (no change) ⇒ correct.
+   */
   function saveCorrection(
     slotId: string,
     {
@@ -123,11 +133,13 @@ export function AnswerSheetView({
       marks: AnswerSheetEntry["marks"];
       reasoning: string | null; },
   ) {
+    const entry = getEntry(slotId);
+    const changed = correction.trim() !== entry.value.trim() || (marks?.length ?? 0) > 0;
     commitField(slotId, {
-      correction,
-      marks,
+      correction: changed ? correction : null,
+      marks: changed ? marks : null,
       reasoning,
-      correct: false,
+      correct: entry.correct == null ? !changed : entry.correct,
     });
   }
   function closeModal() {
@@ -185,7 +197,9 @@ export function AnswerSheetView({
               </Badge>
             )
             : null}
-          <span className="text-muted-foreground">Hover an answer to mark it ✓ or ✗.</span>
+          <span className="text-muted-foreground">
+            Mark each answer ✓ or ✗ with the buttons beneath it.
+          </span>
         </div>
       </div>
 
@@ -229,7 +243,7 @@ export function AnswerSheetView({
               questions={(sheet?.questions ?? []).filter(q => !hiddenParts.has(q.id))}
               getEntry={getEntry}
               markCorrect={markCorrect}
-              markWrong={markWrong}
+              markIncorrect={markIncorrect}
               editCorrections={editCorrections}
               saveCorrection={saveCorrection}
             />

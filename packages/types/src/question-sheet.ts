@@ -27,11 +27,49 @@ export interface QuestionSheetPart {
   parts?: QuestionSheetPart[];
 }
 
+/**
+ * How a question's answer slot(s) are entered:
+ * - `text` (default): free text.
+ * - `boolean`: a True/False button group (values {@link BOOLEAN_ANSWER_CHOICES}).
+ * - `choice`: a button group of the question's own {@link QuestionSheetQuestion.choices}.
+ */
+export const QUESTION_ANSWER_TYPES = ["text", "boolean", "choice"] as const;
+
+/** One answer type from {@link QUESTION_ANSWER_TYPES}. */
+export type QuestionAnswerType = (typeof QUESTION_ANSWER_TYPES)[number];
+
+/** The fixed options a `boolean` answer type offers, in order. The picked value is stored verbatim. */
+export const BOOLEAN_ANSWER_CHOICES = ["True", "False"] as const;
+
 /** One question in a "list" layout. A question with no parts is a single slot; each part is a slot. */
 export interface QuestionSheetQuestion {
   id: string;
   prompt: string;
   parts?: QuestionSheetPart[];
+  /**
+   * How this question's answer slot(s) are entered. Defaults to `text` when absent. `boolean` and
+   * `choice` render a button group in the answer sheet; the type applies to every leaf slot of the
+   * question (each part answers with the same options).
+   */
+  answerType?: QuestionAnswerType;
+  /** The button-group options for `answerType === "choice"`, in order. Ignored for other types. */
+  choices?: string[];
+}
+
+/**
+ * The button-group options a question offers when answering, or `null` for free text. `boolean` yields
+ * the fixed {@link BOOLEAN_ANSWER_CHOICES}; `choice` yields the question's own non-blank `choices`;
+ * anything else (including an unset type) yields `null`.
+ */
+export function questionAnswerChoices(
+  question: Pick<QuestionSheetQuestion, "answerType" | "choices">,
+): string[] | null {
+  if (question.answerType === "boolean") return [...BOOLEAN_ANSWER_CHOICES];
+  if (question.answerType === "choice") {
+    const choices = (question.choices ?? []).map(c => c.trim()).filter(c => c.length > 0);
+    return choices.length > 0 ? choices : null;
+  }
+  return null;
 }
 
 /** One row in a "grid" layout (e.g. one verb in a conjugation table). */
