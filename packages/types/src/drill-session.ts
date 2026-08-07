@@ -133,6 +133,16 @@ export interface DrillSession extends BookmarkRef {
   updatedAt: string;
 }
 
+/**
+ * One reason tag on a mistake, as a route body accepts it. Drill sessions and My Sentences both
+ * store these, and both routes carried a verbatim copy of the shape.
+ */
+export const drillMistakeReasonRefSchema = z.object({
+  categoryId: z.string(),
+  subcategoryId: z.string().nullable().optional(),
+  reasonId: z.string().nullable().optional(),
+});
+
 const mistakeSchema = z.object({
   id: z.string(),
   question: z.string().nullable().optional(),
@@ -140,11 +150,7 @@ const mistakeSchema = z.object({
   prompt: z.string(),
   correctAnswer: z.string().nullable().optional(),
   reflection: z.string().nullable().optional(),
-  reasons: z.array(z.object({
-    categoryId: z.string(),
-    subcategoryId: z.string().nullable().optional(),
-    reasonId: z.string().nullable().optional(),
-  })),
+  reasons: z.array(drillMistakeReasonRefSchema),
 });
 
 /** Payload for creating a drill session. Only `date` is required. */

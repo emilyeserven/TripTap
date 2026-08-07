@@ -14,6 +14,7 @@ export * from "./dialogue.js";
 export * from "./dictionary.js";
 export * from "./rule-group.js";
 export * from "./drill-session.js";
+export * from "./furigana.js";
 export * from "./grammar-note.js";
 export * from "./handwriting.js";
 export * from "./lesson.js";
@@ -48,7 +49,9 @@ import type { LearningArea } from "./question-sheet.js";
 
 import { z } from "zod";
 
-import { objectJsonSchema } from "./json-schema.js";
+import { furiTokenSchema } from "./furigana.js";
+import { fieldJsonSchema, objectJsonSchema } from "./json-schema.js";
+import { termsListSchema } from "./terms.js";
 
 /**
  * A reusable origin for sentences (a book, show, article, …) — the "source taxonomy".
@@ -153,22 +156,30 @@ export interface Sentence {
 }
 
 /** Payload for creating a sentence. */
-export interface CreateSentenceInput {
-  text: string;
-  translation?: string | null;
-  language: string;
-  source?: string | null;
-  sourceId?: string | null;
-  page?: string | null;
-  notes?: string | null;
-  tags?: string | null;
+export const createSentenceSchema = z.object({
+  text: z.string().min(1),
+  translation: z.string().nullable().optional(),
+  language: z.string().min(1),
+  source: z.string().nullable().optional(),
+  sourceId: z.guid().nullable().optional(),
+  page: z.string().nullable().optional(),
+  notes: z.string().nullable().optional(),
+  tags: z.string().nullable().optional(),
   /** Structured taxonomy terms borrowed from the bookmarks app; see {@link SentenceTermRef}. */
-  terms?: SentenceTermRef[] | null;
-  captureId?: string | null;
+  terms: termsListSchema.optional(),
+  captureId: z.guid().nullable().optional(),
   /** Vocab items to link to this sentence (many-to-many). */
-  vocabIds?: string[];
-  shadowingCandidate?: boolean;
-}
+  vocabIds: z.array(z.guid()).optional(),
+  shadowingCandidate: z.boolean().optional(),
+});
+
+/** JSON Schema (draft-07) for the create payload, used verbatim as the route body. */
+export const createSentenceJsonSchema = objectJsonSchema(createSentenceSchema);
+
+/** JSON Schema (draft-07) for a manual furigana override — the sentence PATCH body's `reading`. */
+export const sentenceReadingJsonSchema = fieldJsonSchema(z.array(furiTokenSchema).nullable());
+
+export type CreateSentenceInput = z.infer<typeof createSentenceSchema>;
 
 /** A standalone vocabulary entry (peer of {@link Sentence}). */
 export interface Vocab {

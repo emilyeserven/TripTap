@@ -15,6 +15,12 @@ import type { FuriToken } from "./index.js";
 import type { LearningArea } from "./question-sheet.js";
 import type { BookmarkRef } from "./session.js";
 
+import { z } from "zod";
+
+import { furiTokenPartialSchema } from "./furigana.js";
+import { isoDateString, objectJsonSchema } from "./json-schema.js";
+import { bookmarkRefWriteFields, learningAreaField } from "./session.js";
+
 /** Both the full-width (Japanese) and ASCII colons are accepted as the speaker separator. */
 const SPEAKER_SEPARATORS = ["：", ":"];
 
@@ -97,18 +103,50 @@ export interface Dialogue extends BookmarkRef {
 }
 
 /** Payload for creating a dialogue. `title`, `date`, `language`, and `script` are required. */
-export interface CreateDialogueInput extends Partial<BookmarkRef> {
-  title: string;
+/**
+ * Lines are accepted so the client can send back edited translations and practice hints. Their
+ * `speaker`/`text` are re-derived from `script` on write, so what arrives here only ever contributes
+ * those annotations.
+ */
+const lineSchema = z.object({
+  id: z.string(),
+  speaker: z.string().nullable(),
+  text: z.string(),
+  reading: z.array(furiTokenPartialSchema).nullable().optional(),
+  readingError: z.string().nullable().optional(),
+  translation: z.string().nullable().optional(),
+  hint: z.string().nullable().optional(),
+});
+
+export const createDialogueSchema = z.object({
+  title: z.string().min(1),
+  language: z.string().min(1),
   /** ISO date (YYYY-MM-DD). */
-  date: string;
-  language: string;
-  script: string;
+  date: isoDateString(),
+  script: z.string().min(1),
   /** Per-line annotations to keep; speakers and text are always re-derived from `script`. */
-  lines?: DialogueLine[] | null;
-  selfSpeakers?: string[] | null;
-  countsTowardXp?: boolean;
-  learningArea?: LearningArea | null;
-}
+  lines: z.array(lineSchema).nullable().optional(),
+  ...bookmarkRefWriteFields,
+  selfSpeakers: z.array(z.string()).nullable().optional(),
+  countsTowardXp: z.boolean().optional(),
+  learningArea: learningAreaField(),
+});
+
+/** JSON Schema (draft-07) for the create payload, used verbatim as the route body. */
+export const createDialogueJsonSchema = objectJsonSchema(createDialogueSchema);
+
+/**
+ * Payload for creating a dialogue.
+ *
+ * `lines` is overridden rather than inferred: the route requires only `id`, `speaker` and `text` on a
+ * line, while {@link DialogueLine} declares the annotations present-but-nullable. See
+ * {@link bookmarkRefWriteFields} on the bookmark `Omit`.
+ */
+export type CreateDialogueInput
+  = Omit<z.infer<typeof createDialogueSchema>, keyof BookmarkRef | "lines">
+    & Partial<BookmarkRef> & {
+      lines?: DialogueLine[] | null;
+    };
 
 /** Payload for updating a dialogue; every field is optional. */
 export interface UpdateDialogueInput extends Partial<BookmarkRef> {

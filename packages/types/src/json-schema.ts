@@ -88,16 +88,20 @@ export function fieldJsonSchema(schema: z.ZodType): Record<string, unknown> {
 }
 
 /**
- * Collapse Zod's nullable `anyOf` back to the `type: [X, "null"]` form the hand-written schemas use.
+ * Collapse Zod's `anyOf` unions back to the `type: [X, Y]` form the hand-written schemas use.
  *
  * **This is not cosmetic.** Fastify configures Ajv with `coerceTypes: "array"`, and the two forms
  * behave differently under it: `{ anyOf: [{type:"string"}, {type:"null"}] }` coerces a
  * single-element array to its element and accepts it, while `{ type: ["string","null"] }` rejects
- * it. Emitting `anyOf` therefore *widens* every nullable field — the API starts accepting
+ * it. Emitting `anyOf` therefore *widens* every union field — the API starts accepting
  * `["2026-07-15"]` where it used to reject it. An existing answer-sheets test caught exactly that.
  *
- * The enum case needs care: `type: ["string","null"]` with `enum: ["a","b"]` would reject `null`,
- * so the hand-written schemas list `null` in the enum too. The collapse reproduces that.
+ * Two shapes collapse. A **nullable** union (`X | null`) keeps the non-null branch's other
+ * keywords; its enum case needs care, since `type: ["string","null"]` with `enum: ["a","b"]` would
+ * reject `null` — the hand-written schemas list `null` in the enum too, and this reproduces that.
+ * A union of **bare types** (`boolean | string`, a practice-sentence pass value) becomes the plain
+ * type array. Anything else is left alone: a union whose branches carry their own constraints is
+ * not expressible as a type array, so rewriting it would change what it accepts.
  */
 function collapseNullableUnions(node: unknown): unknown {
   if (Array.isArray(node)) return node.map(collapseNullableUnions);
@@ -105,24 +109,35 @@ function collapseNullableUnions(node: unknown): unknown {
 
   const obj = node as Record<string, unknown>;
   const branches = obj.anyOf;
-  if (Array.isArray(branches) && branches.length === 2 && Object.keys(obj).length === 1) {
-    const [first, second] = branches as Record<string, unknown>[];
-    const isNull = (b: Record<string, unknown>) =>
-      b && typeof b === "object" && b.type === "null" && Object.keys(b).length === 1;
-    const value = isNull(second) ? first : isNull(first) ? second : null;
-    if (value && typeof value.type === "string") {
-      const {
-        type, enum: values, ...rest
-      } = value;
+  if (Array.isArray(branches) && Object.keys(obj).length === 1) {
+    const isBareType = (b: unknown): b is { type: string } =>
+      !!b && typeof b === "object" && typeof (b as { type?: unknown }).type === "string"
+      && Object.keys(b).length === 1;
+
+    if (branches.length === 2) {
+      const [first, second] = branches as Record<string, unknown>[];
+      const isNull = (b: unknown) => isBareType(b) && b.type === "null";
+      const value = isNull(second) ? first : isNull(first) ? second : null;
+      if (value && typeof value.type === "string") {
+        const {
+          type, enum: values, ...rest
+        } = value;
+        return {
+          type: [type, "null"],
+          // A bare `type` union still has to admit null through the enum, as the originals did.
+          ...(Array.isArray(values)
+            ? {
+              enum: [...values, null],
+            }
+            : {}),
+          ...collapseNullableUnions(rest) as Record<string, unknown>,
+        };
+      }
+    }
+
+    if (branches.length > 1 && branches.every(isBareType)) {
       return {
-        type: [type, "null"],
-        // A bare `type` union still has to admit null through the enum, as the originals did.
-        ...(Array.isArray(values)
-          ? {
-            enum: [...values, null],
-          }
-          : {}),
-        ...collapseNullableUnions(rest) as Record<string, unknown>,
+        type: (branches as { type: string }[]).map(b => b.type),
       };
     }
   }
