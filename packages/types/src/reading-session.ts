@@ -11,6 +11,12 @@
 import type { SentenceTermRef } from "./index.js";
 import type { BookmarkRef, SessionXp, SessionXpInput } from "./session.js";
 
+import { z } from "zod";
+
+import { isoDateString, nonNegativeInt, objectJsonSchema } from "./json-schema.js";
+import { bookmarkRefWriteFields, learningAreaField } from "./session.js";
+import { termsListSchema } from "./terms.js";
+
 /** How the learner recorded meaning for the whole session. */
 export type ReadingTranslationMode = "freeform" | "line-by-line" | "summary";
 
@@ -115,27 +121,71 @@ export interface ReadingSession extends SessionXp, BookmarkRef {
   updatedAt: string;
 }
 
+const lineSchema = z.object({
+  id: z.string(),
+  text: z.string(),
+  translation: z.string().nullable().optional(),
+  summaryOnly: z.boolean(),
+  correction: z.string().nullable().optional(),
+  note: z.string().nullable().optional(),
+  verdict: z.enum(["correct", "partial", "incorrect"]).nullable().optional(),
+  needsCorrection: z.boolean(),
+  grammarTerms: termsListSchema.optional(),
+});
+
+const wordNoteSchema = z.object({
+  id: z.string(),
+  word: z.string(),
+  reading: z.string().nullable().optional(),
+  meaning: z.string().nullable().optional(),
+  status: z.enum(["shaky", "unknown"]),
+  flashcard: z.boolean(),
+  mySentenceId: z.string().nullable().optional(),
+});
+
 /** Payload for creating a reading session. `title`, `language`, and `date` are required. */
-export interface CreateReadingSessionInput extends SessionXpInput, Partial<BookmarkRef> {
-  title: string;
-  language: string;
+export const createReadingSessionSchema = z.object({
+  title: z.string().min(1),
+  language: z.string().min(1),
   /** ISO date (YYYY-MM-DD) the session happened. */
-  date: string;
-  sourceId?: string | null;
-  page?: string | null;
-  mode?: ReadingTranslationMode;
-  difficulty?: ReadingDifficulty | null;
-  passive?: boolean;
-  timeSpentMinutes?: number;
-  passage?: string | null;
-  freeformTranslation?: string | null;
-  freeformCorrection?: string | null;
-  freeformNote?: string | null;
-  freeformVerdict?: TranslationVerdict | null;
-  summary?: string | null;
-  lines?: ReadingLine[] | null;
-  wordNotes?: WordNote[] | null;
-}
+  date: isoDateString(),
+  sourceId: z.string().nullable().optional(),
+  page: z.string().nullable().optional(),
+  mode: z.enum(["freeform", "line-by-line", "summary"]).optional(),
+  difficulty: z.enum(["very-easy", "easy", "medium", "hard"]).nullable().optional(),
+  passive: z.boolean().optional(),
+  timeSpentMinutes: nonNegativeInt().optional(),
+  passage: z.string().nullable().optional(),
+  freeformTranslation: z.string().nullable().optional(),
+  freeformCorrection: z.string().nullable().optional(),
+  freeformNote: z.string().nullable().optional(),
+  freeformVerdict: z.enum(["correct", "partial", "incorrect"]).nullable().optional(),
+  summary: z.string().nullable().optional(),
+  lines: z.array(lineSchema).nullable().optional(),
+  wordNotes: z.array(wordNoteSchema).nullable().optional(),
+  ...bookmarkRefWriteFields,
+  learningArea: learningAreaField(),
+  countsTowardXp: z.boolean().optional(),
+});
+
+/** JSON Schema (draft-07) for the create payload, used verbatim as the route body. */
+export const createReadingSessionJsonSchema = objectJsonSchema(createReadingSessionSchema);
+
+/**
+ * Payload for creating a reading session.
+ *
+ * `lines` and `wordNotes` are overridden rather than inferred: the route requires only the
+ * identifying and boolean fields on an entry, while {@link ReadingLine} / {@link WordNote} declare
+ * the rest present-but-nullable. See {@link bookmarkRefWriteFields} on the bookmark `Omit`.
+ */
+export type CreateReadingSessionInput
+  = Omit<
+    z.infer<typeof createReadingSessionSchema>,
+    keyof BookmarkRef | keyof SessionXpInput | "lines" | "wordNotes"
+  > & Partial<BookmarkRef> & SessionXpInput & {
+    lines?: ReadingLine[] | null;
+    wordNotes?: WordNote[] | null;
+  };
 
 /** Payload for partially updating a reading session. */
 export type UpdateReadingSessionInput = Partial<CreateReadingSessionInput>;

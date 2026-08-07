@@ -13,7 +13,8 @@ import type { BookmarkRef } from "./session.js";
 
 import { z } from "zod";
 
-import { objectJsonSchema } from "./json-schema.js";
+import { isoDateString, nonNegativeInt, objectJsonSchema } from "./json-schema.js";
+import { bookmarkRefWriteFields, learningAreaField } from "./session.js";
 
 /* ── Drill type ───────────────────────────────────────────────────────────────────────────────── */
 
@@ -132,16 +133,39 @@ export interface DrillSession extends BookmarkRef {
   updatedAt: string;
 }
 
+const mistakeSchema = z.object({
+  id: z.string(),
+  question: z.string().nullable().optional(),
+  cue: z.string().nullable().optional(),
+  prompt: z.string(),
+  correctAnswer: z.string().nullable().optional(),
+  reflection: z.string().nullable().optional(),
+  reasons: z.array(z.object({
+    categoryId: z.string(),
+    subcategoryId: z.string().nullable().optional(),
+    reasonId: z.string().nullable().optional(),
+  })),
+});
+
 /** Payload for creating a drill session. Only `date` is required. */
-export interface CreateDrillSessionInput extends Partial<BookmarkRef> {
-  date: string;
-  title?: string | null;
-  notes?: string | null;
-  mistakes?: DrillMistake[] | null;
-  questions?: number;
-  type?: DrillType | null;
-  learningArea?: LearningArea | null;
-}
+export const createDrillSessionSchema = z.object({
+  /** ISO date (YYYY-MM-DD) the drilling happened. */
+  date: isoDateString(),
+  title: z.string().nullable().optional(),
+  notes: z.string().nullable().optional(),
+  mistakes: z.array(mistakeSchema).nullable().optional(),
+  questions: nonNegativeInt().optional(),
+  type: z.enum(DRILL_TYPES).nullable().optional(),
+  learningArea: learningAreaField(),
+  ...bookmarkRefWriteFields,
+});
+
+/** JSON Schema (draft-07) for the create payload, used verbatim as the route body. */
+export const createDrillSessionJsonSchema = objectJsonSchema(createDrillSessionSchema);
+
+/** Payload for creating a drill session — see {@link bookmarkRefWriteFields} on the `Omit`. */
+export type CreateDrillSessionInput
+  = Omit<z.infer<typeof createDrillSessionSchema>, keyof BookmarkRef> & Partial<BookmarkRef>;
 
 /** Payload for partially updating a drill session. */
 export type UpdateDrillSessionInput = Partial<CreateDrillSessionInput>;

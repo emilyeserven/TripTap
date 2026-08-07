@@ -15,6 +15,7 @@ import type { LearningArea } from "./question-sheet.js";
 import { z } from "zod";
 
 import { fieldJsonSchema } from "./json-schema.js";
+import { LEARNING_AREAS } from "./question-sheet.js";
 
 /**
  * A session's link back to the external bookmark it was based on, denormalized at selection time so
@@ -79,3 +80,28 @@ export const bookmarkSectionRefWriteSchema = z.object({
 
 /** JSON Schema (draft-07) for a stored section reference — the routes' `section` field. */
 export const bookmarkSectionRefJsonSchema = fieldJsonSchema(bookmarkSectionRefWriteSchema);
+
+/**
+ * The four bookmark columns of {@link BookmarkRef}, as route-body fields to spread into a session's
+ * Zod schema. Spread rather than `.extend()`ed so each session keeps the field order its
+ * hand-written body had — the four sit in the middle of some bodies and at the end of others.
+ *
+ * The matching input type is `Omit<z.infer<typeof schema>, keyof BookmarkRef> & Partial<BookmarkRef>`:
+ * the *validator* stores the narrow section shape (see {@link bookmarkSectionRefWriteSchema}), but
+ * the *type* has to keep accepting a full {@link BookmarkSectionRef}, since that is what a live
+ * tag-match hands the client to submit.
+ */
+export const bookmarkRefWriteFields = {
+  bookmarkId: z.string().nullable().optional(),
+  bookmarkTitle: z.string().nullable().optional(),
+  bookmarkUrl: z.string().nullable().optional(),
+  section: bookmarkSectionRefWriteSchema.optional(),
+};
+
+/**
+ * A session's learner-chosen learning area, as a route body accepts it — the same nullable
+ * {@link LEARNING_AREAS} enum restated on every session route.
+ */
+export function learningAreaField() {
+  return z.enum(LEARNING_AREAS).nullable().optional();
+}

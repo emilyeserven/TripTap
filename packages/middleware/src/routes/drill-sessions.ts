@@ -5,7 +5,7 @@ import type {
   CreateDrillSessionInput,
   UpdateDrillSessionInput,
 } from "@sentence-bank/types";
-import { DRILL_TYPES, LEARNING_AREAS, bookmarkSectionRefJsonSchema } from "@sentence-bank/types";
+import { createDrillSessionJsonSchema } from "@sentence-bank/types";
 import {
   createDrillSession,
   deleteDrillSession,
@@ -14,96 +14,7 @@ import {
   updateDrillSession,
 } from "@/services/drill-sessions";
 
-const mistakesSchema = {
-  type: ["array", "null"],
-  items: {
-    type: "object",
-    additionalProperties: false,
-    required: ["id", "prompt", "reasons"],
-    properties: {
-      id: {
-        type: "string",
-      },
-      question: {
-        type: ["string", "null"],
-      },
-      cue: {
-        type: ["string", "null"],
-      },
-      prompt: {
-        type: "string",
-      },
-      correctAnswer: {
-        type: ["string", "null"],
-      },
-      reflection: {
-        type: ["string", "null"],
-      },
-      reasons: {
-        type: "array",
-        items: {
-          type: "object",
-          additionalProperties: false,
-          required: ["categoryId"],
-          properties: {
-            categoryId: {
-              type: "string",
-            },
-            subcategoryId: {
-              type: ["string", "null"],
-            },
-            reasonId: {
-              type: ["string", "null"],
-            },
-          },
-        },
-      },
-    },
-  },
-} as const;
-
-/** A reference to one section of a bookmark (denormalized), or null. */
-
-const createSessionBody = {
-  type: "object",
-  required: ["date"],
-  additionalProperties: false,
-  properties: {
-    date: {
-      type: "string",
-      format: "date",
-    },
-    title: {
-      type: ["string", "null"],
-    },
-    notes: {
-      type: ["string", "null"],
-    },
-    mistakes: mistakesSchema,
-    questions: {
-      type: "integer",
-      minimum: 0,
-    },
-    type: {
-      type: ["string", "null"],
-      enum: [...DRILL_TYPES, null],
-    },
-    learningArea: {
-      type: ["string", "null"],
-      enum: [...LEARNING_AREAS, null],
-    },
-    bookmarkId: {
-      type: ["string", "null"],
-    },
-    bookmarkTitle: {
-      type: ["string", "null"],
-    },
-    bookmarkUrl: {
-      type: ["string", "null"],
-    },
-    section: bookmarkSectionRefJsonSchema,
-  },
-} as const;
+const createSessionBody = createDrillSessionJsonSchema;
 
 const updateSessionBody = updateBodyOf(createSessionBody);
 
