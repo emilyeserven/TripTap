@@ -5,6 +5,7 @@ import type {
   CreateDrillReasonCategoryInput,
   UpdateDrillReasonCategoryInput,
 } from "@sentence-bank/types";
+import { createDrillReasonCategoryJsonSchema } from "@sentence-bank/types";
 import {
   createDrillReasonCategory,
   deleteDrillReasonCategory,
@@ -13,60 +14,9 @@ import {
   updateDrillReasonCategory,
 } from "@/services/drill-reason-categories";
 
-const reasonsSchema = {
-  type: "array",
-  items: {
-    type: "object",
-    additionalProperties: false,
-    required: ["id", "name"],
-    properties: {
-      id: {
-        type: "string",
-      },
-      name: {
-        type: "string",
-      },
-    },
-  },
-} as const;
-
-const subcategoriesSchema = {
-  type: ["array", "null"],
-  items: {
-    type: "object",
-    additionalProperties: false,
-    required: ["id", "name", "reasons"],
-    properties: {
-      id: {
-        type: "string",
-      },
-      name: {
-        type: "string",
-      },
-      reasons: reasonsSchema,
-    },
-  },
-} as const;
-
 /** Reasons attached directly to a category, with no subcategory. */
-const categoryReasonsSchema = {
-  type: ["array", "null"],
-  items: reasonsSchema.items,
-} as const;
 
-const createCategoryBody = {
-  type: "object",
-  required: ["name"],
-  additionalProperties: false,
-  properties: {
-    name: {
-      type: "string",
-      minLength: 1,
-    },
-    subcategories: subcategoriesSchema,
-    reasons: categoryReasonsSchema,
-  },
-} as const;
+const createCategoryBody = createDrillReasonCategoryJsonSchema;
 
 const updateCategoryBody = updateBodyOf(createCategoryBody);
 

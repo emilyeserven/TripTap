@@ -53,6 +53,20 @@ export function nonNegativeInt() {
 }
 
 /**
+ * A plain integer with no bounds, exactly as the hand-written schemas spell it.
+ *
+ * `z.int()` emits *both* a `minimum` and a `maximum` at the safe-integer limits. {@link
+ * nonNegativeInt} only has to drop the ceiling because `.min(0)` replaces the floor; an unbounded
+ * integer has to drop both.
+ */
+export function anyInt() {
+  return z.int().meta({
+    minimum: undefined,
+    maximum: undefined,
+  });
+}
+
+/**
  * The draft-07 JSON Schema for a *fragment* — a field's shape rather than a whole body.
  *
  * Converting a fragment directly would stamp a top-level `$schema` onto it, which is meaningless
@@ -65,7 +79,50 @@ export function fieldJsonSchema(schema: z.ZodType): Record<string, unknown> {
   }), {
     target: "draft-7",
   }) as unknown as { properties: { field: Record<string, unknown> } };
-  return wrapped.properties.field;
+  return collapseNullableUnions(wrapped.properties.field) as Record<string, unknown>;
+}
+
+/**
+ * Collapse Zod's nullable `anyOf` back to the `type: [X, "null"]` form the hand-written schemas use.
+ *
+ * **This is not cosmetic.** Fastify configures Ajv with `coerceTypes: "array"`, and the two forms
+ * behave differently under it: `{ anyOf: [{type:"string"}, {type:"null"}] }` coerces a
+ * single-element array to its element and accepts it, while `{ type: ["string","null"] }` rejects
+ * it. Emitting `anyOf` therefore *widens* every nullable field — the API starts accepting
+ * `["2026-07-15"]` where it used to reject it. An existing answer-sheets test caught exactly that.
+ *
+ * The enum case needs care: `type: ["string","null"]` with `enum: ["a","b"]` would reject `null`,
+ * so the hand-written schemas list `null` in the enum too. The collapse reproduces that.
+ */
+function collapseNullableUnions(node: unknown): unknown {
+  if (Array.isArray(node)) return node.map(collapseNullableUnions);
+  if (node === null || typeof node !== "object") return node;
+
+  const obj = node as Record<string, unknown>;
+  const branches = obj.anyOf;
+  if (Array.isArray(branches) && branches.length === 2 && Object.keys(obj).length === 1) {
+    const [first, second] = branches as Record<string, unknown>[];
+    const isNull = (b: Record<string, unknown>) =>
+      b && typeof b === "object" && b.type === "null" && Object.keys(b).length === 1;
+    const value = isNull(second) ? first : isNull(first) ? second : null;
+    if (value && typeof value.type === "string") {
+      const {
+        type, enum: values, ...rest
+      } = value;
+      return {
+        type: [type, "null"],
+        // A bare `type` union still has to admit null through the enum, as the originals did.
+        ...(Array.isArray(values)
+          ? {
+            enum: [...values, null],
+          }
+          : {}),
+        ...collapseNullableUnions(rest) as Record<string, unknown>,
+      };
+    }
+  }
+
+  return Object.fromEntries(Object.entries(obj).map(([k, v]) => [k, collapseNullableUnions(v)]));
 }
 
 /** The parts of a generated object schema the route layer reads. */
@@ -84,7 +141,7 @@ export interface GeneratedObjectSchema {
  * published document, and the existing `practiceSentenceImportJsonSchema` has shipped that way.
  */
 export function objectJsonSchema(schema: z.ZodType): GeneratedObjectSchema {
-  return z.toJSONSchema(schema, {
+  return collapseNullableUnions(z.toJSONSchema(schema, {
     target: "draft-7",
-  }) as unknown as GeneratedObjectSchema;
+  })) as GeneratedObjectSchema;
 }
