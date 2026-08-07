@@ -10,6 +10,11 @@
 import type { WordNoteStatus } from "./reading-session.js";
 import type { SessionXp, SessionXpInput } from "./session.js";
 
+import { z } from "zod";
+
+import { isoDateString, nonNegativeInt, objectJsonSchema } from "./json-schema.js";
+import { LEARNING_AREAS } from "./question-sheet.js";
+
 /**
  * One note logged while listening during a lesson. Unlike a listening-session entry there's no
  * timestamp — just the note and optional untranslated English context kept out of any kana conversion.
@@ -72,18 +77,55 @@ export interface Lesson extends SessionXp {
   updatedAt: string;
 }
 
+const listeningNoteSchema = z.object({
+  id: z.string(),
+  text: z.string(),
+  context: z.string().nullable().optional(),
+});
+
+const wordNoteSchema = z.object({
+  id: z.string(),
+  word: z.string().nullable(),
+  reading: z.string().nullable(),
+  meaning: z.string().nullable(),
+  notes: z.string().nullable(),
+  status: z.enum(["shaky", "unknown"]),
+  flashcard: z.boolean(),
+});
+
 /** Payload for creating a lesson. Only `date` is required. */
-export interface CreateLessonInput extends SessionXpInput {
-  date: string;
-  language?: string;
-  title?: string | null;
-  tutorId?: string | null;
-  notes?: string | null;
+export const createLessonSchema = z.object({
+  /** The date the lesson took place, as "YYYY-MM-DD". */
+  date: isoDateString(),
+  language: z.string().optional(),
+  title: z.string().nullable().optional(),
+  tutorId: z.guid().nullable().optional(),
+  notes: z.string().nullable().optional(),
+  listeningNotes: z.array(listeningNoteSchema).nullable().optional(),
+  wordNotes: z.array(wordNoteSchema).nullable().optional(),
+  answerSheetIds: z.array(z.guid()).nullable().optional(),
+  durationMinutes: nonNegativeInt().optional(),
+  learningArea: z.enum(LEARNING_AREAS).nullable().optional(),
+  countsTowardXp: z.boolean().optional(),
+});
+
+/** JSON Schema (draft-07) for the create payload, used verbatim as the route body. */
+export const createLessonJsonSchema = objectJsonSchema(createLessonSchema);
+
+/**
+ * `listeningNotes` is overridden rather than inferred: the route requires only `id` and `text` on an
+ * entry, while {@link LessonListeningNote} also declares `context`. Inferring would loosen the stored
+ * type for every reader; narrowing the schema would reject entries the API accepts today.
+ *
+ * `SessionXpInput` is still extended for the two XP fields so the shared session contract stays the
+ * one declaration of what "how this counts" means.
+ */
+export type CreateLessonInput = Omit<
+  z.infer<typeof createLessonSchema>,
+  "listeningNotes" | "learningArea" | "countsTowardXp"
+> & SessionXpInput & {
   listeningNotes?: LessonListeningNote[] | null;
-  wordNotes?: LessonWordNote[] | null;
-  answerSheetIds?: string[] | null;
-  durationMinutes?: number;
-}
+};
 
 /** Payload for partially updating a lesson. */
 export type UpdateLessonInput = Partial<CreateLessonInput>;

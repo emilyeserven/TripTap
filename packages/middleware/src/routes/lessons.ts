@@ -5,6 +5,7 @@ import type {
   CreateLessonInput,
   UpdateLessonInput,
 } from "@sentence-bank/types";
+import { createLessonJsonSchema } from "@sentence-bank/types";
 import {
   createLesson,
   deleteLesson,
@@ -12,7 +13,6 @@ import {
   listLessons,
   updateLesson,
 } from "@/services/lessons";
-import { LEARNING_AREAS } from "@sentence-bank/types";
 
 const listQuery = {
   type: "object",
@@ -25,105 +25,7 @@ const listQuery = {
   },
 } as const;
 
-const listeningNotesSchema = {
-  type: ["array", "null"],
-  items: {
-    type: "object",
-    additionalProperties: false,
-    required: ["id", "text"],
-    properties: {
-      id: {
-        type: "string",
-      },
-      text: {
-        type: "string",
-      },
-      context: {
-        type: ["string", "null"],
-      },
-    },
-  },
-} as const;
-
-const wordNotesSchema = {
-  type: ["array", "null"],
-  items: {
-    type: "object",
-    additionalProperties: false,
-    required: ["id", "word", "reading", "meaning", "notes", "status", "flashcard"],
-    properties: {
-      id: {
-        type: "string",
-      },
-      word: {
-        type: ["string", "null"],
-      },
-      reading: {
-        type: ["string", "null"],
-      },
-      meaning: {
-        type: ["string", "null"],
-      },
-      notes: {
-        type: ["string", "null"],
-      },
-      status: {
-        type: "string",
-        enum: ["shaky", "unknown"],
-      },
-      flashcard: {
-        type: "boolean",
-      },
-    },
-  },
-} as const;
-
-const answerSheetIdsSchema = {
-  type: ["array", "null"],
-  items: {
-    type: "string",
-    format: "uuid",
-  },
-} as const;
-
-const createLessonBody = {
-  type: "object",
-  required: ["date"],
-  additionalProperties: false,
-  properties: {
-    date: {
-      type: "string",
-      format: "date",
-    },
-    language: {
-      type: "string",
-    },
-    title: {
-      type: ["string", "null"],
-    },
-    tutorId: {
-      type: ["string", "null"],
-      format: "uuid",
-    },
-    notes: {
-      type: ["string", "null"],
-    },
-    listeningNotes: listeningNotesSchema,
-    wordNotes: wordNotesSchema,
-    answerSheetIds: answerSheetIdsSchema,
-    durationMinutes: {
-      type: "integer",
-      minimum: 0,
-    },
-    learningArea: {
-      type: ["string", "null"],
-      enum: [...LEARNING_AREAS, null],
-    },
-    countsTowardXp: {
-      type: "boolean",
-    },
-  },
-} as const;
+const createLessonBody = createLessonJsonSchema;
 
 const updateLessonBody = updateBodyOf(createLessonBody);
 

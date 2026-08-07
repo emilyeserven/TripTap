@@ -8,7 +8,12 @@ import type {
   TriageCorrectionInput,
   UpdateCorrectionInput,
 } from "@sentence-bank/types";
-import { CORRECTION_IMPORT_KINDS } from "@sentence-bank/types";
+import {
+  CORRECTION_IMPORT_KINDS,
+  createCorrectionJsonSchema,
+  importCorrectionsJsonSchema,
+  triageCorrectionJsonSchema,
+} from "@sentence-bank/types";
 import {
   importCorrections,
   listImportCandidates,
@@ -25,120 +30,11 @@ import {
   updateCorrection,
 } from "@/services/corrections";
 
-/** The four triage buckets. */
-const bucketEnum = ["slip", "rule_gap", "collocation", "register"] as const;
-
-/** A persisted triage verdict, as embedded on a correction row. */
-const triageSchema = {
-  type: ["object", "null"],
-  additionalProperties: false,
-  required: ["bucket", "path", "triagedAt", "producedCardIds"],
-  properties: {
-    bucket: {
-      type: "string",
-      enum: bucketEnum,
-    },
-    path: {
-      type: "array",
-      items: {
-        type: "string",
-        enum: ["q1", "q2", "q3", "q4"],
-      },
-    },
-    ruleTagKey: {
-      type: ["string", "null"],
-    },
-    scene: {
-      type: ["string", "null"],
-    },
-    triagedAt: {
-      type: "string",
-    },
-    producedCardIds: {
-      type: "array",
-      items: {
-        type: "string",
-      },
-    },
-  },
-} as const;
-
-const importedFromSchema = {
-  type: ["object", "null"],
-  additionalProperties: false,
-  required: ["kind", "id"],
-  properties: {
-    kind: {
-      type: "string",
-      enum: [...CORRECTION_IMPORT_KINDS],
-    },
-    id: {
-      type: "string",
-    },
-  },
-} as const;
-
-const createCorrectionBody = {
-  type: "object",
-  required: ["original"],
-  additionalProperties: false,
-  properties: {
-    original: {
-      type: "string",
-      minLength: 1,
-    },
-    // Null / omitted for a non-correction sentence added without a fix.
-    corrected: {
-      type: ["string", "null"],
-    },
-    context: {
-      type: ["string", "null"],
-    },
-    correctorNote: {
-      type: ["string", "null"],
-    },
-    source: {
-      type: "string",
-      enum: ["tutor", "native_speaker", "app", "self"],
-    },
-    lessonId: {
-      type: ["string", "null"],
-    },
-    importedFrom: importedFromSchema,
-    batchId: {
-      type: ["string", "null"],
-      format: "uuid",
-    },
-    triage: triageSchema,
-  },
-} as const;
+const createCorrectionBody = createCorrectionJsonSchema;
 
 const updateCorrectionBody = updateBodyOf(createCorrectionBody);
 
-const triageBody = {
-  type: "object",
-  required: ["bucket", "path"],
-  additionalProperties: false,
-  properties: {
-    bucket: {
-      type: "string",
-      enum: bucketEnum,
-    },
-    path: {
-      type: "array",
-      items: {
-        type: "string",
-        enum: ["q1", "q2", "q3", "q4"],
-      },
-    },
-    ruleTagKey: {
-      type: ["string", "null"],
-    },
-    scene: {
-      type: ["string", "null"],
-    },
-  },
-} as const;
+const triageBody = triageCorrectionJsonSchema;
 
 const listCorrectionsQuery = {
   type: "object",
@@ -178,36 +74,7 @@ const importableQuery = {
   },
 } as const;
 
-const importRefSchema = {
-  type: "object",
-  additionalProperties: false,
-  required: ["kind", "id"],
-  properties: {
-    kind: {
-      type: "string",
-      enum: importKindEnum,
-    },
-    id: {
-      type: "string",
-    },
-  },
-} as const;
-
-const importBody = {
-  type: "object",
-  required: ["refs"],
-  additionalProperties: false,
-  properties: {
-    refs: {
-      type: "array",
-      items: importRefSchema,
-    },
-    batchId: {
-      type: ["string", "null"],
-      format: "uuid",
-    },
-  },
-} as const;
+const importBody = importCorrectionsJsonSchema;
 
 /** CRUD + triage + derived-log routes for corrections, mounted under `/api/corrections`. */
 export async function correctionsRoutes(app: FastifyInstance): Promise<void> {
