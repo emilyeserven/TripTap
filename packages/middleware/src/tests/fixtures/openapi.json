@@ -299,10 +299,6 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": false,
-                "required": [
-                  "name"
-                ],
                 "properties": {
                   "name": {
                     "type": "string",
@@ -317,7 +313,11 @@
                       "resource"
                     ]
                   }
-                }
+                },
+                "required": [
+                  "name"
+                ],
+                "additionalProperties": false
               }
             }
           }
@@ -3184,12 +3184,6 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "text",
-                  "language",
-                  "date"
-                ],
-                "additionalProperties": false,
                 "properties": {
                   "text": {
                     "type": "string"
@@ -3271,12 +3265,6 @@
                     ],
                     "items": {
                       "type": "object",
-                      "additionalProperties": false,
-                      "required": [
-                        "id",
-                        "original",
-                        "corrected"
-                      ],
                       "properties": {
                         "id": {
                           "type": "string"
@@ -3300,12 +3288,6 @@
                           ],
                           "items": {
                             "type": "object",
-                            "additionalProperties": false,
-                            "required": [
-                              "start",
-                              "end",
-                              "correct"
-                            ],
                             "properties": {
                               "start": {
                                 "type": "integer"
@@ -3316,7 +3298,13 @@
                               "correct": {
                                 "type": "boolean"
                               }
-                            }
+                            },
+                            "required": [
+                              "start",
+                              "end",
+                              "correct"
+                            ],
+                            "additionalProperties": false
                           }
                         },
                         "mySentenceId": {
@@ -3325,7 +3313,13 @@
                             "null"
                           ]
                         }
-                      }
+                      },
+                      "required": [
+                        "id",
+                        "original",
+                        "corrected"
+                      ],
+                      "additionalProperties": false
                     }
                   },
                   "promptTitle": {
@@ -3340,7 +3334,13 @@
                       "null"
                     ]
                   }
-                }
+                },
+                "required": [
+                  "text",
+                  "language",
+                  "date"
+                ],
+                "additionalProperties": false
               }
             }
           }
@@ -3466,12 +3466,6 @@
                     ],
                     "items": {
                       "type": "object",
-                      "additionalProperties": false,
-                      "required": [
-                        "id",
-                        "original",
-                        "corrected"
-                      ],
                       "properties": {
                         "id": {
                           "type": "string"
@@ -3495,12 +3489,6 @@
                           ],
                           "items": {
                             "type": "object",
-                            "additionalProperties": false,
-                            "required": [
-                              "start",
-                              "end",
-                              "correct"
-                            ],
                             "properties": {
                               "start": {
                                 "type": "integer"
@@ -3511,7 +3499,13 @@
                               "correct": {
                                 "type": "boolean"
                               }
-                            }
+                            },
+                            "required": [
+                              "start",
+                              "end",
+                              "correct"
+                            ],
+                            "additionalProperties": false
                           }
                         },
                         "mySentenceId": {
@@ -3520,7 +3514,13 @@
                             "null"
                           ]
                         }
-                      }
+                      },
+                      "required": [
+                        "id",
+                        "original",
+                        "corrected"
+                      ],
+                      "additionalProperties": false
                     }
                   },
                   "promptTitle": {

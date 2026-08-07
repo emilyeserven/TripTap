@@ -11,6 +11,12 @@
 import type { SentenceTermRef } from "./index.js";
 import type { SentenceMark } from "./sentence-mark.js";
 
+import { z } from "zod";
+
+import { isoDateString, objectJsonSchema } from "./json-schema.js";
+import { sentenceMarkSchema } from "./sentence-mark.js";
+import { termsListSchema } from "./terms.js";
+
 /**
  * One corrected sentence within a writing. Created client-side (`id` via `crypto.randomUUID()`); once
  * "officially added" to My Sentences, `mySentenceId` points at the created row.
@@ -70,22 +76,45 @@ export interface Writing {
 }
 
 /** Payload for creating a writing. `text`, `language`, and `date` are required. */
-export interface CreateWritingInput {
-  text: string;
-  language: string;
+const writingCorrectionSchema = z.object({
+  id: z.string(),
+  original: z.string(),
+  corrected: z.string(),
+  note: z.string().nullable().optional(),
+  marks: z.array(sentenceMarkSchema).nullable().optional(),
+  mySentenceId: z.string().nullable().optional(),
+});
+
+export const createWritingSchema = z.object({
+  text: z.string(),
+  language: z.string().min(1),
   /** ISO date (YYYY-MM-DD) the writing was worked on. */
-  date: string;
-  meaning?: string | null;
-  comments?: string | null;
+  date: isoDateString(),
+  meaning: z.string().nullable().optional(),
+  comments: z.string().nullable().optional(),
   /** Defaults to false server-side when omitted. */
-  readyToReview?: boolean;
-  terms?: SentenceTermRef[] | null;
-  corrections?: WritingCorrection[] | null;
+  readyToReview: z.boolean().optional(),
+  terms: termsListSchema.optional(),
+  corrections: z.array(writingCorrectionSchema).nullable().optional(),
   /** Title of the writing prompt this entry was started from; null/omitted if freeform. */
-  promptTitle?: string | null;
+  promptTitle: z.string().nullable().optional(),
   /** Body of the writing prompt this entry was started from; null/omitted if freeform. */
-  promptText?: string | null;
-}
+  promptText: z.string().nullable().optional(),
+});
+
+/** JSON Schema (draft-07) for the create payload, used verbatim as the route body. */
+export const createWritingJsonSchema = objectJsonSchema(createWritingSchema);
+
+/**
+ * `corrections` is overridden rather than inferred: the route requires only `id`, `original` and
+ * `corrected` on an entry, while {@link WritingCorrection} declares `note`, `marks` and
+ * `mySentenceId` too (nullable, but present). Inferring would loosen the stored type across every
+ * reader; narrowing the schema would reject partial corrections the API accepts today. Same call as
+ * `CreateAnswerSheetInput.entries`.
+ */
+export type CreateWritingInput = Omit<z.infer<typeof createWritingSchema>, "corrections"> & {
+  corrections?: WritingCorrection[] | null;
+};
 
 /** Payload for partially updating a writing. */
 export type UpdateWritingInput = Partial<CreateWritingInput>;

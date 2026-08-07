@@ -814,3 +814,12 @@ export interface BookmarkResourceList {
   resources: BookmarkResource[];
   complexityScale: ComplexityScale | null;
 }
+
+/** Payload for creating a term in the external bookmarks app, under a channel's configured source. */
+export const createBookmarksTermSchema = z.object({
+  name: z.string().min(1),
+  category: z.enum(["vocabulary", "grammar", "general", "resource"]).optional(),
+});
+
+/** JSON Schema (draft-07) for the create payload, used verbatim as the route body. */
+export const createBookmarksTermJsonSchema = objectJsonSchema(createBookmarksTermSchema);
