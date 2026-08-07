@@ -97,4 +97,46 @@ describe("QuestionAnswerTypeEditor", () => {
     }));
     expect(onChange).toHaveBeenLastCalledWith("choice", ["が"]);
   });
+
+  it("fills options from a letter range", () => {
+    const onChange = vi.fn();
+    render(<Harness onChange={onChange} />);
+    fireEvent.click(screen.getByRole("button", {
+      name: "Multiple choice",
+    }));
+
+    const fill = screen.getByRole("button", {
+      name: "Fill options",
+    });
+    // Disabled until the range parses.
+    expect(fill).toBeDisabled();
+
+    fireEvent.change(screen.getByLabelText("Option range"), {
+      target: {
+        value: "a-e",
+      },
+    });
+    // Preview shows the expansion and the button enables.
+    expect(screen.getByText("→ a, b, c, d, e")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", {
+      name: "Fill options",
+    }));
+    expect(onChange).toHaveBeenLastCalledWith("choice", ["a", "b", "c", "d", "e"]);
+  });
+
+  it("keeps the fill action disabled for an invalid range", () => {
+    render(<Harness />);
+    fireEvent.click(screen.getByRole("button", {
+      name: "Multiple choice",
+    }));
+    fireEvent.change(screen.getByLabelText("Option range"), {
+      target: {
+        value: "e-a",
+      },
+    });
+    expect(screen.getByRole("button", {
+      name: "Fill options",
+    })).toBeDisabled();
+    expect(screen.getByText(/Enter a range like/)).toBeTruthy();
+  });
 });
