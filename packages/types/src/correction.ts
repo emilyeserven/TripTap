@@ -12,6 +12,10 @@
 
 import type { SentenceTermRef } from "./index.js";
 
+import { z } from "zod";
+
+import { objectJsonSchema } from "./json-schema.js";
+
 /* ── Triage decision tree (shipped as data — inspectable + testable) ─────────────────────────────── */
 
 /** The four buckets every correction resolves to. */
@@ -202,20 +206,62 @@ export interface Correction {
   createdAt: string;
 }
 
+/** The four buckets, as a literal tuple the schemas below enumerate. */
+const BUCKETS = ["slip", "rule_gap", "collocation", "register"] as const;
+
+/** The triage tree's question nodes, as a literal tuple the schemas below enumerate. */
+const NODE_IDS = ["q1", "q2", "q3", "q4"] as const;
+
+/**
+ * The verdict itself — the four fields a learner's answers produce. Shared by the *stored* shape
+ * ({@link triageRefSchema}, which stamps when it happened and what it produced) and the *submitted*
+ * shape ({@link triageCorrectionSchema}, which carries the rule tag's display fields).
+ */
+const triageVerdictSchema = z.object({
+  bucket: z.enum(BUCKETS),
+  path: z.array(z.enum(NODE_IDS)),
+  ruleTagKey: z.string().nullable().optional(),
+  scene: z.string().nullable().optional(),
+});
+
+/** A persisted triage verdict, as embedded on a correction row. */
+const triageRefSchema = triageVerdictSchema.extend({
+  triagedAt: z.string(),
+  producedCardIds: z.array(z.string()),
+}).nullable();
+
+const importRefSchema = z.object({
+  kind: z.enum(CORRECTION_IMPORT_KINDS),
+  id: z.string(),
+});
+
 /** Payload for creating a correction. Only `original` is required; omit `corrected` for a no-fix sentence. */
-export interface CreateCorrectionInput {
-  original: string;
-  corrected?: string | null;
-  context?: string | null;
-  correctorNote?: string | null;
+export const createCorrectionSchema = z.object({
+  original: z.string().min(1),
+  /** Null / omitted for a non-correction sentence added without a fix. */
+  corrected: z.string().nullable().optional(),
+  context: z.string().nullable().optional(),
+  correctorNote: z.string().nullable().optional(),
   /** Defaults to `"self"` server-side when omitted. */
-  source?: CorrectionSource;
-  lessonId?: string | null;
-  importedFrom?: CorrectionImportRef | null;
+  source: z.enum(CORRECTION_SOURCES).optional(),
+  lessonId: z.string().nullable().optional(),
+  importedFrom: importRefSchema.nullable().optional(),
   /** One capture session; a fresh batch id is minted server-side when omitted. */
-  batchId?: string | null;
+  batchId: z.guid().nullable().optional(),
+  triage: triageRefSchema.optional(),
+});
+
+/** JSON Schema (draft-07) for the create payload, used verbatim as the route body. */
+export const createCorrectionJsonSchema = objectJsonSchema(createCorrectionSchema);
+
+/**
+ * `triage` is overridden rather than inferred: the route requires only `bucket`, `path`, `triagedAt`
+ * and `producedCardIds`, while {@link Triage} declares `ruleTagKey`/`scene` as present-but-nullable.
+ * Inferring would loosen the stored type for every reader.
+ */
+export type CreateCorrectionInput = Omit<z.infer<typeof createCorrectionSchema>, "triage"> & {
   triage?: Triage | null;
-}
+};
 
 /** Payload for partially updating a correction (editing the text/note or re-triaging). */
 export type UpdateCorrectionInput = Partial<CreateCorrectionInput>;
@@ -238,26 +284,42 @@ export interface CorrectionImportCandidate {
 }
 
 /** Payload for `POST /api/corrections/import`: the refs to pull in, and the batch to file them under. */
-export interface ImportCorrectionsInput {
-  refs: CorrectionImportRef[];
+export const importCorrectionsSchema = z.object({
+  refs: z.array(importRefSchema),
   /** One capture session for the whole import; a fresh batch id is minted server-side when omitted. */
-  batchId?: string | null;
-}
+  batchId: z.guid().nullable().optional(),
+});
 
-/** Payload for submitting a triage verdict via `POST /api/corrections/:id/triage`. */
-export interface TriageCorrectionInput {
-  bucket: CorrectionBucket;
-  path: TriageNodeId[];
-  ruleTagKey?: string | null;
-  scene?: string | null;
+/** JSON Schema (draft-07) for the import payload, used verbatim as the route body. */
+export const importCorrectionsJsonSchema = objectJsonSchema(importCorrectionsSchema);
+
+/** Payload for `POST /api/corrections/import`. */
+export type ImportCorrectionsInput = z.infer<typeof importCorrectionsSchema>;
+
+/**
+ * Payload for submitting a triage verdict via `POST /api/corrections/:id/triage`.
+ *
+ * The last three fields are why this file declares its schemas: they were on the type and read by
+ * the service (`upsertRuleTag`), but the hand-written route body never listed them, so Ajv's
+ * `removeAdditional` stripped all three off every request. A rule tag created by triage therefore
+ * came out unlabelled and unlinked no matter what the client sent. Deriving the body from the type
+ * is what makes that unrepresentable.
+ */
+export const triageCorrectionSchema = triageVerdictSchema.extend({
   /**
    * For a `rule_gap`, the rule tag's display + optional grammar link. The server upserts a
    * {@link RuleTag} from these so the tag exists (with a label and any grammar join) after triage.
    */
-  ruleTagLabel?: string | null;
-  grammarTagId?: string | null;
-  grammarTagName?: string | null;
-}
+  ruleTagLabel: z.string().nullable().optional(),
+  grammarTagId: z.string().nullable().optional(),
+  grammarTagName: z.string().nullable().optional(),
+});
+
+/** JSON Schema (draft-07) for the triage payload, used verbatim as the route body. */
+export const triageCorrectionJsonSchema = objectJsonSchema(triageCorrectionSchema);
+
+/** Payload for submitting a triage verdict. */
+export type TriageCorrectionInput = z.infer<typeof triageCorrectionSchema>;
 
 /* ── Derived error log (computed on read; never persisted — counts would drift) ──────────────────── */
 

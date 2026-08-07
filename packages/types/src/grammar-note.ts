@@ -11,6 +11,12 @@
 
 import type { BookmarkSectionRef, SentenceTermRef } from "./index.js";
 
+import { z } from "zod";
+
+import { objectJsonSchema } from "./json-schema.js";
+import { bookmarkSectionRefWriteSchema } from "./session.js";
+import { termRefSchema } from "./terms.js";
+
 /**
  * One selectable alternative inside a {@link ConstructionSlot}: a word class ("Adj", "Verb") with
  * optional inflection forms, or a literal run of text (a particle etc.).
@@ -112,18 +118,87 @@ export interface GrammarNote {
   updatedAt: string;
 }
 
+const constructionAlternativeSchema = z.object({
+  id: z.string(),
+  label: z.string(),
+  forms: z.array(z.string()),
+  literal: z.boolean().optional(),
+  term: termRefSchema.nullable().optional(),
+});
+
+const constructionSlotSchema = z.object({
+  id: z.string(),
+  alternatives: z.array(constructionAlternativeSchema),
+});
+
+const constructionSchema = z.object({
+  id: z.string(),
+  pattern: z.string(),
+  slots: z.array(constructionSlotSchema).optional(),
+  meaning: z.string().nullable().optional(),
+  note: z.string().nullable().optional(),
+  sentenceIds: z.array(z.string()).optional(),
+});
+
+const relationSchema = z.object({
+  tagId: z.string(),
+  tagName: z.string(),
+  kind: z.enum(["similar", "antonym"]),
+  note: z.string().nullable().optional(),
+});
+
+const resourceSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  url: z.string().nullable().optional(),
+  note: z.string().nullable().optional(),
+  // The same stored bookmark-section shape the session routes accept — it was inlined here once more.
+  section: bookmarkSectionRefWriteSchema.optional(),
+});
+
 /** Payload for creating a grammar note. `tagId`, `tagName`, and `title` are required. */
-export interface CreateGrammarNoteInput {
-  tagId: string;
-  tagName: string;
-  title: string;
-  nuance?: string | null;
-  summary?: string | null;
+export const createGrammarNoteSchema = z.object({
+  tagId: z.string().min(1),
+  tagName: z.string().min(1),
+  title: z.string().min(1),
+  nuance: z.string().nullable().optional(),
+  summary: z.string().nullable().optional(),
+  constructions: z.array(constructionSchema).optional(),
+  relations: z.array(relationSchema).optional(),
+  resources: z.array(resourceSchema).optional(),
+  starred: z.boolean().optional(),
+});
+
+/** JSON Schema (draft-07) for the create payload, used verbatim as the route body. */
+export const createGrammarNoteJsonSchema = objectJsonSchema(createGrammarNoteSchema);
+
+/**
+ * JSON Schema (draft-07) for the PATCH body.
+ *
+ * Not `updateBodyOf(createGrammarNoteJsonSchema)` like most entities: `tagId` is the note's identity,
+ * and the hand-written PATCH body deliberately left it out so an update can't re-key a note. Derived
+ * with the same omission so that stays true.
+ */
+export const updateGrammarNoteJsonSchema
+  = objectJsonSchema(createGrammarNoteSchema.omit({
+    tagId: true,
+  }).partial());
+
+/**
+ * The three list fields are overridden rather than inferred: the route requires only the identifying
+ * fields on each entry (`note` on a construction/relation, `url`/`note` on a resource are optional
+ * there), while the stored types declare them present-but-nullable. Inferring would loosen the stored
+ * types across every reader; narrowing the schemas would reject payloads the API accepts today. Same
+ * call as `CreateWritingInput.corrections`.
+ */
+export type CreateGrammarNoteInput = Omit<
+  z.infer<typeof createGrammarNoteSchema>,
+  "constructions" | "relations" | "resources"
+> & {
   constructions?: GrammarConstruction[];
   relations?: GrammarRelation[];
   resources?: GrammarResourceRef[];
-  starred?: boolean;
-}
+};
 
 /** Payload for partially updating a grammar note. `tagId` is the note's identity and is immutable. */
 export type UpdateGrammarNoteInput = Partial<Omit<CreateGrammarNoteInput, "tagId">>;

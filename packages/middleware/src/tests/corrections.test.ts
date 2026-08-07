@@ -212,6 +212,39 @@ test("triage as register without a scene is rejected (spec §6, §11)", async ()
   await app.close();
 });
 
+/** Just enough of the generated OpenAPI document to read one POST body's declared properties. */
+interface SwaggerPaths {
+  paths: Record<string, {
+    post: {
+      requestBody: {
+        content: {
+          "application/json": {
+            schema: { properties: Record<string, unknown> };
+          };
+        };
+      };
+    };
+  }>;
+}
+
+// `upsertRuleTag` reads these three off the triage payload to give a first-sighting rule tag its
+// label and grammar link, and the client has always sent them — but the hand-written route body
+// never declared them, so Ajv's `removeAdditional` stripped all three before the service ran and
+// every triage-created tag came out unlabelled. The body is derived from the input type now; this
+// asserts the fields are still declared, since the failure mode is silent.
+test("the triage body accepts the rule-tag label and grammar link", async () => {
+  const app = await buildApp();
+  await app.ready();
+  const spec = app.swagger() as unknown as SwaggerPaths;
+  const body = spec
+    .paths["/api/corrections/{id}/triage"]
+    .post.requestBody.content["application/json"].schema;
+  for (const field of ["ruleTagLabel", "grammarTagId", "grammarTagName"]) {
+    assert.ok(field in body.properties, `${field} must survive validation`);
+  }
+  await app.close();
+});
+
 /* ── Import route schema validation (no DB) ──────────────────────────────────────────────────────── */
 
 test("GET /api/corrections/importable requires a known kind", async () => {

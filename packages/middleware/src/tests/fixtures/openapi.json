@@ -7549,12 +7549,6 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "tagId",
-                  "tagName",
-                  "title"
-                ],
-                "additionalProperties": false,
                 "properties": {
                   "tagId": {
                     "type": "string",
@@ -7584,11 +7578,6 @@
                     "type": "array",
                     "items": {
                       "type": "object",
-                      "required": [
-                        "id",
-                        "pattern"
-                      ],
-                      "additionalProperties": false,
                       "properties": {
                         "id": {
                           "type": "string"
@@ -7600,11 +7589,6 @@
                           "type": "array",
                           "items": {
                             "type": "object",
-                            "required": [
-                              "id",
-                              "alternatives"
-                            ],
-                            "additionalProperties": false,
                             "properties": {
                               "id": {
                                 "type": "string"
@@ -7613,12 +7597,6 @@
                                 "type": "array",
                                 "items": {
                                   "type": "object",
-                                  "required": [
-                                    "id",
-                                    "label",
-                                    "forms"
-                                  ],
-                                  "additionalProperties": false,
                                   "properties": {
                                     "id": {
                                       "type": "string"
@@ -7639,14 +7617,6 @@
                                       "type": [
                                         "object",
                                         "null"
-                                      ],
-                                      "additionalProperties": false,
-                                      "required": [
-                                        "id",
-                                        "name",
-                                        "kind",
-                                        "sourceId",
-                                        "sourceLabel"
                                       ],
                                       "properties": {
                                         "id": {
@@ -7677,12 +7647,31 @@
                                             "resource"
                                           ]
                                         }
-                                      }
+                                      },
+                                      "required": [
+                                        "id",
+                                        "name",
+                                        "kind",
+                                        "sourceId",
+                                        "sourceLabel"
+                                      ],
+                                      "additionalProperties": false
                                     }
-                                  }
+                                  },
+                                  "required": [
+                                    "id",
+                                    "label",
+                                    "forms"
+                                  ],
+                                  "additionalProperties": false
                                 }
                               }
-                            }
+                            },
+                            "required": [
+                              "id",
+                              "alternatives"
+                            ],
+                            "additionalProperties": false
                           }
                         },
                         "meaning": {
@@ -7703,19 +7692,18 @@
                             "type": "string"
                           }
                         }
-                      }
+                      },
+                      "required": [
+                        "id",
+                        "pattern"
+                      ],
+                      "additionalProperties": false
                     }
                   },
                   "relations": {
                     "type": "array",
                     "items": {
                       "type": "object",
-                      "required": [
-                        "tagId",
-                        "tagName",
-                        "kind"
-                      ],
-                      "additionalProperties": false,
                       "properties": {
                         "tagId": {
                           "type": "string"
@@ -7736,18 +7724,19 @@
                             "null"
                           ]
                         }
-                      }
+                      },
+                      "required": [
+                        "tagId",
+                        "tagName",
+                        "kind"
+                      ],
+                      "additionalProperties": false
                     }
                   },
                   "resources": {
                     "type": "array",
                     "items": {
                       "type": "object",
-                      "required": [
-                        "id",
-                        "title"
-                      ],
-                      "additionalProperties": false,
                       "properties": {
                         "id": {
                           "type": "string"
@@ -7771,12 +7760,6 @@
                           "type": [
                             "object",
                             "null"
-                          ],
-                          "additionalProperties": false,
-                          "required": [
-                            "id",
-                            "label",
-                            "type"
                           ],
                           "properties": {
                             "id": {
@@ -7806,15 +7789,32 @@
                                 "null"
                               ]
                             }
-                          }
+                          },
+                          "required": [
+                            "id",
+                            "label",
+                            "type"
+                          ],
+                          "additionalProperties": false
                         }
-                      }
+                      },
+                      "required": [
+                        "id",
+                        "title"
+                      ],
+                      "additionalProperties": false
                     }
                   },
                   "starred": {
                     "type": "boolean"
                   }
-                }
+                },
+                "required": [
+                  "tagId",
+                  "tagName",
+                  "title"
+                ],
+                "additionalProperties": false
               }
             }
           }
@@ -7881,7 +7881,6 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": false,
                 "properties": {
                   "tagName": {
                     "type": "string",
@@ -7907,11 +7906,6 @@
                     "type": "array",
                     "items": {
                       "type": "object",
-                      "required": [
-                        "id",
-                        "pattern"
-                      ],
-                      "additionalProperties": false,
                       "properties": {
                         "id": {
                           "type": "string"
@@ -7923,11 +7917,6 @@
                           "type": "array",
                           "items": {
                             "type": "object",
-                            "required": [
-                              "id",
-                              "alternatives"
-                            ],
-                            "additionalProperties": false,
                             "properties": {
                               "id": {
                                 "type": "string"
@@ -7936,12 +7925,6 @@
                                 "type": "array",
                                 "items": {
                                   "type": "object",
-                                  "required": [
-                                    "id",
-                                    "label",
-                                    "forms"
-                                  ],
-                                  "additionalProperties": false,
                                   "properties": {
                                     "id": {
                                       "type": "string"
@@ -7962,14 +7945,6 @@
                                       "type": [
                                         "object",
                                         "null"
-                                      ],
-                                      "additionalProperties": false,
-                                      "required": [
-                                        "id",
-                                        "name",
-                                        "kind",
-                                        "sourceId",
-                                        "sourceLabel"
                                       ],
                                       "properties": {
                                         "id": {
@@ -8000,12 +7975,31 @@
                                             "resource"
                                           ]
                                         }
-                                      }
+                                      },
+                                      "required": [
+                                        "id",
+                                        "name",
+                                        "kind",
+                                        "sourceId",
+                                        "sourceLabel"
+                                      ],
+                                      "additionalProperties": false
                                     }
-                                  }
+                                  },
+                                  "required": [
+                                    "id",
+                                    "label",
+                                    "forms"
+                                  ],
+                                  "additionalProperties": false
                                 }
                               }
-                            }
+                            },
+                            "required": [
+                              "id",
+                              "alternatives"
+                            ],
+                            "additionalProperties": false
                           }
                         },
                         "meaning": {
@@ -8026,19 +8020,18 @@
                             "type": "string"
                           }
                         }
-                      }
+                      },
+                      "required": [
+                        "id",
+                        "pattern"
+                      ],
+                      "additionalProperties": false
                     }
                   },
                   "relations": {
                     "type": "array",
                     "items": {
                       "type": "object",
-                      "required": [
-                        "tagId",
-                        "tagName",
-                        "kind"
-                      ],
-                      "additionalProperties": false,
                       "properties": {
                         "tagId": {
                           "type": "string"
@@ -8059,18 +8052,19 @@
                             "null"
                           ]
                         }
-                      }
+                      },
+                      "required": [
+                        "tagId",
+                        "tagName",
+                        "kind"
+                      ],
+                      "additionalProperties": false
                     }
                   },
                   "resources": {
                     "type": "array",
                     "items": {
                       "type": "object",
-                      "required": [
-                        "id",
-                        "title"
-                      ],
-                      "additionalProperties": false,
                       "properties": {
                         "id": {
                           "type": "string"
@@ -8094,12 +8088,6 @@
                           "type": [
                             "object",
                             "null"
-                          ],
-                          "additionalProperties": false,
-                          "required": [
-                            "id",
-                            "label",
-                            "type"
                           ],
                           "properties": {
                             "id": {
@@ -8129,15 +8117,27 @@
                                 "null"
                               ]
                             }
-                          }
+                          },
+                          "required": [
+                            "id",
+                            "label",
+                            "type"
+                          ],
+                          "additionalProperties": false
                         }
-                      }
+                      },
+                      "required": [
+                        "id",
+                        "title"
+                      ],
+                      "additionalProperties": false
                     }
                   },
                   "starred": {
                     "type": "boolean"
                   }
-                }
+                },
+                "additionalProperties": false
               }
             }
           }
@@ -8213,10 +8213,6 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "date"
-                ],
-                "additionalProperties": false,
                 "properties": {
                   "date": {
                     "type": "string",
@@ -8236,7 +8232,8 @@
                       "string",
                       "null"
                     ],
-                    "format": "uuid"
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
                   },
                   "notes": {
                     "type": [
@@ -8251,11 +8248,6 @@
                     ],
                     "items": {
                       "type": "object",
-                      "additionalProperties": false,
-                      "required": [
-                        "id",
-                        "text"
-                      ],
                       "properties": {
                         "id": {
                           "type": "string"
@@ -8269,7 +8261,12 @@
                             "null"
                           ]
                         }
-                      }
+                      },
+                      "required": [
+                        "id",
+                        "text"
+                      ],
+                      "additionalProperties": false
                     }
                   },
                   "wordNotes": {
@@ -8279,16 +8276,6 @@
                     ],
                     "items": {
                       "type": "object",
-                      "additionalProperties": false,
-                      "required": [
-                        "id",
-                        "word",
-                        "reading",
-                        "meaning",
-                        "notes",
-                        "status",
-                        "flashcard"
-                      ],
                       "properties": {
                         "id": {
                           "type": "string"
@@ -8327,7 +8314,17 @@
                         "flashcard": {
                           "type": "boolean"
                         }
-                      }
+                      },
+                      "required": [
+                        "id",
+                        "word",
+                        "reading",
+                        "meaning",
+                        "notes",
+                        "status",
+                        "flashcard"
+                      ],
+                      "additionalProperties": false
                     }
                   },
                   "answerSheetIds": {
@@ -8337,7 +8334,8 @@
                     ],
                     "items": {
                       "type": "string",
-                      "format": "uuid"
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
                     }
                   },
                   "durationMinutes": {
@@ -8362,7 +8360,11 @@
                   "countsTowardXp": {
                     "type": "boolean"
                   }
-                }
+                },
+                "required": [
+                  "date"
+                ],
+                "additionalProperties": false
               }
             }
           }
@@ -8426,7 +8428,8 @@
                       "string",
                       "null"
                     ],
-                    "format": "uuid"
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
                   },
                   "notes": {
                     "type": [
@@ -8441,11 +8444,6 @@
                     ],
                     "items": {
                       "type": "object",
-                      "additionalProperties": false,
-                      "required": [
-                        "id",
-                        "text"
-                      ],
                       "properties": {
                         "id": {
                           "type": "string"
@@ -8459,7 +8457,12 @@
                             "null"
                           ]
                         }
-                      }
+                      },
+                      "required": [
+                        "id",
+                        "text"
+                      ],
+                      "additionalProperties": false
                     }
                   },
                   "wordNotes": {
@@ -8469,16 +8472,6 @@
                     ],
                     "items": {
                       "type": "object",
-                      "additionalProperties": false,
-                      "required": [
-                        "id",
-                        "word",
-                        "reading",
-                        "meaning",
-                        "notes",
-                        "status",
-                        "flashcard"
-                      ],
                       "properties": {
                         "id": {
                           "type": "string"
@@ -8517,7 +8510,17 @@
                         "flashcard": {
                           "type": "boolean"
                         }
-                      }
+                      },
+                      "required": [
+                        "id",
+                        "word",
+                        "reading",
+                        "meaning",
+                        "notes",
+                        "status",
+                        "flashcard"
+                      ],
+                      "additionalProperties": false
                     }
                   },
                   "answerSheetIds": {
@@ -8527,7 +8530,8 @@
                     ],
                     "items": {
                       "type": "string",
-                      "format": "uuid"
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
                     }
                   },
                   "durationMinutes": {
@@ -9615,10 +9619,6 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "original"
-                ],
-                "additionalProperties": false,
                 "properties": {
                   "original": {
                     "type": "string",
@@ -9662,11 +9662,6 @@
                       "object",
                       "null"
                     ],
-                    "additionalProperties": false,
-                    "required": [
-                      "kind",
-                      "id"
-                    ],
                     "properties": {
                       "kind": {
                         "type": "string",
@@ -9681,26 +9676,25 @@
                       "id": {
                         "type": "string"
                       }
-                    }
+                    },
+                    "required": [
+                      "kind",
+                      "id"
+                    ],
+                    "additionalProperties": false
                   },
                   "batchId": {
                     "type": [
                       "string",
                       "null"
                     ],
-                    "format": "uuid"
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
                   },
                   "triage": {
                     "type": [
                       "object",
                       "null"
-                    ],
-                    "additionalProperties": false,
-                    "required": [
-                      "bucket",
-                      "path",
-                      "triagedAt",
-                      "producedCardIds"
                     ],
                     "properties": {
                       "bucket": {
@@ -9745,9 +9739,20 @@
                           "type": "string"
                         }
                       }
-                    }
+                    },
+                    "required": [
+                      "bucket",
+                      "path",
+                      "triagedAt",
+                      "producedCardIds"
+                    ],
+                    "additionalProperties": false
                   }
-                }
+                },
+                "required": [
+                  "original"
+                ],
+                "additionalProperties": false
               }
             }
           }
@@ -9834,20 +9839,11 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "refs"
-                ],
-                "additionalProperties": false,
                 "properties": {
                   "refs": {
                     "type": "array",
                     "items": {
                       "type": "object",
-                      "additionalProperties": false,
-                      "required": [
-                        "kind",
-                        "id"
-                      ],
                       "properties": {
                         "kind": {
                           "type": "string",
@@ -9862,7 +9858,12 @@
                         "id": {
                           "type": "string"
                         }
-                      }
+                      },
+                      "required": [
+                        "kind",
+                        "id"
+                      ],
+                      "additionalProperties": false
                     }
                   },
                   "batchId": {
@@ -9870,9 +9871,14 @@
                       "string",
                       "null"
                     ],
-                    "format": "uuid"
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
                   }
-                }
+                },
+                "required": [
+                  "refs"
+                ],
+                "additionalProperties": false
               }
             }
           }
@@ -9960,11 +9966,6 @@
                       "object",
                       "null"
                     ],
-                    "additionalProperties": false,
-                    "required": [
-                      "kind",
-                      "id"
-                    ],
                     "properties": {
                       "kind": {
                         "type": "string",
@@ -9979,26 +9980,25 @@
                       "id": {
                         "type": "string"
                       }
-                    }
+                    },
+                    "required": [
+                      "kind",
+                      "id"
+                    ],
+                    "additionalProperties": false
                   },
                   "batchId": {
                     "type": [
                       "string",
                       "null"
                     ],
-                    "format": "uuid"
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
                   },
                   "triage": {
                     "type": [
                       "object",
                       "null"
-                    ],
-                    "additionalProperties": false,
-                    "required": [
-                      "bucket",
-                      "path",
-                      "triagedAt",
-                      "producedCardIds"
                     ],
                     "properties": {
                       "bucket": {
@@ -10043,7 +10043,14 @@
                           "type": "string"
                         }
                       }
-                    }
+                    },
+                    "required": [
+                      "bucket",
+                      "path",
+                      "triagedAt",
+                      "producedCardIds"
+                    ],
+                    "additionalProperties": false
                   }
                 }
               }
@@ -10100,11 +10107,6 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "bucket",
-                  "path"
-                ],
-                "additionalProperties": false,
                 "properties": {
                   "bucket": {
                     "type": "string",
@@ -10138,8 +10140,31 @@
                       "string",
                       "null"
                     ]
+                  },
+                  "ruleTagLabel": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "grammarTagId": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "grammarTagName": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
                   }
-                }
+                },
+                "required": [
+                  "bucket",
+                  "path"
+                ],
+                "additionalProperties": false
               }
             }
           }
