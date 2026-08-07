@@ -5,7 +5,7 @@ import type {
   CreateQuestionSheetInput,
   UpdateQuestionSheetInput,
 } from "@sentence-bank/types";
-import { LEARNING_AREAS } from "@sentence-bank/types";
+import { LEARNING_AREAS, bookmarkSectionRefJsonSchema } from "@sentence-bank/types";
 import {
   createQuestionSheet,
   deleteQuestionSheet,
@@ -95,29 +95,6 @@ const gridSchema = {
 } as const;
 
 /** A reference to one section of a bookmark (denormalized). Shared item shape across surfaces. */
-const bookmarkSectionRefSchema = {
-  type: "object",
-  additionalProperties: false,
-  required: ["id", "label", "type"],
-  properties: {
-    id: {
-      type: "string",
-    },
-    label: {
-      type: "string",
-    },
-    type: {
-      type: "string",
-      enum: ["name", "url", "page", "timestamp"],
-    },
-    startValue: {
-      type: ["string", "null"],
-    },
-    endValue: {
-      type: ["string", "null"],
-    },
-  },
-} as const;
 
 const createQuestionSheetBody = {
   type: "object",
@@ -149,7 +126,7 @@ const createQuestionSheetBody = {
     },
     sections: {
       type: ["array", "null"],
-      items: bookmarkSectionRefSchema,
+      items: bookmarkSectionRefJsonSchema,
     },
     dueDate: {
       type: ["string", "null"],
