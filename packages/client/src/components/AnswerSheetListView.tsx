@@ -2,7 +2,7 @@ import type { SaveCorrection } from "@/lib/answer-sheets";
 import type { AnswerSheetEntry, QuestionSheetQuestion } from "@sentence-bank/types";
 
 import { AnswerEntry } from "@/components/AnswerEntry";
-import { isEntryAnswered } from "@/lib/answer-sheets";
+import { isEntryAnswered, questionLeafSlots } from "@/lib/answer-sheets";
 
 /**
  * List rendering: one card per question, with the question's parts separated inside. A question card
@@ -26,17 +26,13 @@ export function AnswerSheetListView({
 }) {
   const cards = questions.map((q, i) => {
     const base = q.prompt.trim() || `Question ${i + 1}`;
-    const parts = q.parts ?? [];
-    const hasParts = parts.length > 0;
-    const slots = hasParts
-      ? parts.map(p => ({
-        id: p.id,
-        label: p.label as string | null,
-      }))
-      : [{
-        id: q.id,
-        label: null as string | null,
-      }];
+    const hasParts = (q.parts?.length ?? 0) > 0;
+    // Leaf slots, recursing through nested parts — a heading part (with sub-parts) is not itself a
+    // slot, so its leaves ((1) → (i)…) are what carry answers and must be the ones rendered.
+    const slots = questionLeafSlots(q).map(s => ({
+      id: s.id,
+      label: (s.label || null) as string | null,
+    }));
     return {
       key: q.id || `q${i}`,
       base,

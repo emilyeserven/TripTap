@@ -95,18 +95,44 @@ export function questionSheetSlots(qs: QuestionSheet): QuestionSheetSlot[] {
   return slots;
 }
 
-/** Leaf slot ids belonging to one top-level question (the question itself, or its leaf parts). */
-function questionSlotIds(question: QuestionSheet["questions"][number]): string[] {
-  if (!question.parts || question.parts.length === 0) return [question.id];
-  const ids: string[] = [];
-  const walk = (parts: QuestionSheetPart[]): void => {
-    for (const p of parts) {
-      if (p.parts && p.parts.length > 0) walk(p.parts);
-      else ids.push(p.id);
+/** One leaf answer slot of a single question, labelled by its chain of part labels (no prompt). */
+export interface QuestionLeafSlot {
+  id: string;
+  /** The part-label chain, e.g. "(1) — (i)"; empty for a question with no parts (its own slot). */
+  label: string;
+}
+
+/**
+ * The leaf answer slots of one question, in order, each labelled by the chain of its part labels —
+ * **without** the question prompt, which callers render separately. A question with no parts is a
+ * single slot (`id = question.id`, empty label). Nested parts recurse to their leaves, so a sub-sub
+ * part like (1) → (i) yields the label "(1) — (i)". A part that has sub-parts is a heading, not a slot.
+ */
+export function questionLeafSlots(question: QuestionSheet["questions"][number]): QuestionLeafSlot[] {
+  const parts = question.parts ?? [];
+  if (parts.length === 0) return [{
+    id: question.id,
+    label: "",
+  }];
+  const out: QuestionLeafSlot[] = [];
+  const walk = (nodes: QuestionSheetPart[], prefix: string): void => {
+    for (const node of nodes) {
+      const label = prefix ? `${prefix} — ${node.label}` : node.label;
+      const kids = node.parts ?? [];
+      if (kids.length > 0) walk(kids, label);
+      else out.push({
+        id: node.id,
+        label,
+      });
     }
   };
-  walk(question.parts);
-  return ids;
+  walk(parts, "");
+  return out;
+}
+
+/** Leaf slot ids belonging to one top-level question (the question itself, or its leaf parts). */
+function questionSlotIds(question: QuestionSheet["questions"][number]): string[] {
+  return questionLeafSlots(question).map(s => s.id);
 }
 
 /** One selectable "part" of a question sheet — a top-level question. Empty for grid layout. */
