@@ -22,6 +22,7 @@ import {
   matchesLearningArea,
   matchesResource,
   questionSheetDisplayTitle,
+  questionSheetProgress,
   resourceFilterOptions,
 } from "@/lib/answer-sheets";
 import { buildTocIndex, groupSheetsByResource } from "@/lib/question-sheets";
@@ -107,6 +108,14 @@ function ExercisesPage() {
     () => groupSheetsByResource(shownQuestionSheets, tocIndex),
     [shownQuestionSheets, tocIndex],
   );
+
+  // Each question sheet's done/in-progress/untouched state, from its answer sheets — drives the row marker.
+  const progressBySheetId = useMemo(() => {
+    const all = answerSheets ?? [];
+    return new Map(
+      (questionSheets ?? []).map(qs => [qs.id, questionSheetProgress(qs, all)] as const),
+    );
+  }, [questionSheets, answerSheets]);
 
   // Answer sheets inherit resource/learning-area from their parent question sheet.
   const shownAnswerSheets = useMemo(() => {
@@ -246,6 +255,7 @@ function ExercisesPage() {
                     imageUrl={record?.imageUrl ?? null}
                     mediaType={record?.mediaType ?? null}
                     sheets={group.sheets}
+                    progressBySheetId={progressBySheetId}
                   />
                 );
               })}

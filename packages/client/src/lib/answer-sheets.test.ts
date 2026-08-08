@@ -20,6 +20,7 @@ import {
   questionLeafSlots,
   questionSheetDisplayTitle,
   questionSheetPartSlots,
+  questionSheetProgress,
   questionSheetSlots,
   resourceFilterOptions,
   visibleSlots,
@@ -562,6 +563,48 @@ describe("dueDateMet", () => {
 
   it("is false with no attempts", () => {
     expect(dueDateMet(listSheet(), [])).toBe(false);
+  });
+});
+
+describe("questionSheetProgress", () => {
+  it("is not-started with no attempts", () => {
+    expect(questionSheetProgress(listSheet(), [])).toBe("not-started");
+  });
+
+  it("is not-started when the only attempt has no answers", () => {
+    expect(questionSheetProgress(listSheet(), [answer({
+      entries: [],
+    })])).toBe("not-started");
+  });
+
+  it("is in-progress when an attempt has some but not all answers", () => {
+    expect(questionSheetProgress(listSheet(), [answer({
+      entries: [entry("q1", "答え1")],
+    })])).toBe("in-progress");
+  });
+
+  it("is finished when an attempt fills every slot", () => {
+    expect(questionSheetProgress(listSheet(), [answer()])).toBe("finished");
+  });
+
+  it("prefers finished when any attempt is complete", () => {
+    expect(questionSheetProgress(listSheet(), [
+      answer({
+        id: "partial",
+        entries: [entry("q1", "答え1")],
+      }),
+      answer({
+        id: "done",
+      }),
+    ])).toBe("finished");
+  });
+
+  it("ignores attempts belonging to other question sheets", () => {
+    expect(questionSheetProgress(listSheet(), [answer({
+      id: "elsewhere",
+      questionSheetId: "other-qs",
+      entries: [entry("q1", "答え1"), entry("q2", "答え2")],
+    })])).toBe("not-started");
   });
 });
 
