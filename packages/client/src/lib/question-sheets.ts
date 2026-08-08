@@ -47,6 +47,20 @@ function pageNumber(page: string | null): number {
 }
 
 /**
+ * Order two question sheets by their position within their resource: TOC rank first
+ * ({@link buildTocIndex}), then page number — so a section-less pair orders purely by page. Returns 0
+ * for a pair tied on both, letting a stable sort keep their incoming order. Shared by the question- and
+ * answer-sheet resource groupings so a book's sheets read in the same order on both tabs.
+ */
+export function compareSheetPosition(
+  a: QuestionSheet,
+  b: QuestionSheet,
+  tocIndex: Map<string, Map<string, number>>,
+): number {
+  return tocRank(a, tocIndex) - tocRank(b, tocIndex) || pageNumber(a.page) - pageNumber(b.page);
+}
+
+/**
  * Group question sheets by their resource (`bookmarkId`), preserving the input's first-seen resource
  * order and pushing the "no resource" bucket (bookmarkId `null`) to the end. Within each group, sheets
  * are ordered by their section's TOC position ({@link buildTocIndex}), then by page number — so a
@@ -70,9 +84,7 @@ export function groupSheetsByResource(
   for (const [bookmarkId, bucket] of buckets) {
     // Sort by TOC rank, then page number (so a section-less group orders purely by page). A stable
     // sort keeps sheets tied on both in their incoming createdAt-desc order.
-    const ordered = [...bucket].sort((a, b) =>
-      tocRank(a, tocIndex) - tocRank(b, tocIndex)
-      || pageNumber(a.page) - pageNumber(b.page));
+    const ordered = [...bucket].sort((a, b) => compareSheetPosition(a, b, tocIndex));
     const group = {
       bookmarkId,
       sheets: ordered,

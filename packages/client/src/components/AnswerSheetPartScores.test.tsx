@@ -64,12 +64,42 @@ function answer(overrides: Partial<AnswerSheet> = {}): AnswerSheet {
   };
 }
 
+/**
+ * A sheet whose questions each carry one sub-part, so it keeps a part per top-level question — the case
+ * where a per-part breakdown is meaningful. A flat sheet (like {@link sheet}) collapses to one part.
+ */
+function partedSheet(overrides: Partial<QuestionSheet> = {}): QuestionSheet {
+  return sheet({
+    questions: [
+      {
+        id: "q1",
+        prompt: "One",
+        parts: [{
+          id: "pa",
+          label: "(a)",
+        }],
+      },
+      {
+        id: "q2",
+        prompt: "Two",
+        parts: [{
+          id: "pb",
+          label: "(b)",
+        }],
+      },
+    ],
+    ...overrides,
+  });
+}
+
 describe("AnswerSheetPartScores", () => {
   it("shows a per-part breakdown and a total once graded", () => {
     render(
       <AnswerSheetPartScores
-        questionSheet={sheet()}
-        answerSheet={answer()}
+        questionSheet={partedSheet()}
+        answerSheet={answer({
+          entries: [entry("pa", "答えa", true), entry("pb", "答えb", false)],
+        })}
       />,
     );
     expect(screen.getByText("Scores by part")).toBeInTheDocument();
@@ -80,14 +110,27 @@ describe("AnswerSheetPartScores", () => {
     expect(screen.getByText("1/2 · 50%")).toBeInTheDocument();
   });
 
-  it("renders nothing before the sheet is complete", () => {
+  it("renders nothing for a flat sheet with no sub-parts", () => {
+    // A flat sheet collapses to a single part; its one score already sits in the header badge.
     const {
       container,
     } = render(
       <AnswerSheetPartScores
         questionSheet={sheet()}
+        answerSheet={answer()}
+      />,
+    );
+    expect(container).toBeEmptyDOMElement();
+  });
+
+  it("renders nothing before the sheet is complete", () => {
+    const {
+      container,
+    } = render(
+      <AnswerSheetPartScores
+        questionSheet={partedSheet()}
         answerSheet={answer({
-          entries: [entry("q1", "答え1", true)],
+          entries: [entry("pa", "答えa", true)],
         })}
       />,
     );
@@ -99,9 +142,9 @@ describe("AnswerSheetPartScores", () => {
       container,
     } = render(
       <AnswerSheetPartScores
-        questionSheet={sheet()}
+        questionSheet={partedSheet()}
         answerSheet={answer({
-          entries: [entry("q1", "答え1"), entry("q2", "答え2")],
+          entries: [entry("pa", "答えa"), entry("pb", "答えb")],
         })}
       />,
     );
@@ -114,14 +157,26 @@ describe("AnswerSheetPartScores", () => {
         {
           id: "q1",
           prompt: "One",
+          parts: [{
+            id: "pa",
+            label: "(a)",
+          }],
         },
         {
           id: "q2",
           prompt: "Two",
+          parts: [{
+            id: "pb",
+            label: "(b)",
+          }],
         },
         {
           id: "q3",
           prompt: "Three",
+          parts: [{
+            id: "pc",
+            label: "(c)",
+          }],
         },
       ],
     });
@@ -129,7 +184,7 @@ describe("AnswerSheetPartScores", () => {
       <AnswerSheetPartScores
         questionSheet={three}
         answerSheet={answer({
-          entries: [entry("q1", "答え1", true), entry("q3", "答え3", true)],
+          entries: [entry("pa", "答えa", true), entry("pc", "答えc", true)],
           hiddenPartIds: ["q2"],
         })}
       />,

@@ -8,6 +8,7 @@ import {
   answerSheetScore,
   dueDateMet,
   generateAnswerSheetTitle,
+  groupAnswerSheetsByResource,
   isAnswerSheetComplete,
   matchesLearningArea,
   hasCorrectionDetail,
@@ -16,6 +17,7 @@ import {
   matchesResource,
   questionLeafSlots,
   questionSheetDisplayTitle,
+  questionSheetPartSlots,
   questionSheetSlots,
   resourceFilterOptions,
   visibleSlots,
@@ -65,6 +67,37 @@ function listSheet(overrides: Partial<QuestionSheet> = {}): QuestionSheet {
     updatedAt: "2026-07-01T14:30:00.000Z",
     ...overrides,
   };
+}
+
+/**
+ * A sheet that keeps per-question parts: q1 has sub-parts (a)/(b), q2 is flat. Because at least one
+ * question has sub-parts, {@link questionSheetPartSlots} reports two parts (q1 owning pa+pb, q2 owning
+ * itself) rather than collapsing — unlike {@link listSheet}, whose flat questions collapse to one part.
+ */
+function partedSheet(overrides: Partial<QuestionSheet> = {}): QuestionSheet {
+  return listSheet({
+    questions: [
+      {
+        id: "q1",
+        prompt: "One",
+        parts: [
+          {
+            id: "pa",
+            label: "(a)",
+          },
+          {
+            id: "pb",
+            label: "(b)",
+          },
+        ],
+      },
+      {
+        id: "q2",
+        prompt: "Two",
+      },
+    ],
+    ...overrides,
+  });
 }
 
 function answer(overrides: Partial<AnswerSheet> = {}): AnswerSheet {
@@ -136,47 +169,90 @@ describe("answerSheetScore", () => {
   });
 
   it("excludes hidden parts from correct, graded, and total", () => {
-    const score = answerSheetScore(listSheet(), answer({
-      entries: [entry("q1", "答え1", true), entry("q2", "答え2", false)],
+    // Hiding part q2 drops its slot; only q1's slots (pa, pb) remain in play.
+    const score = answerSheetScore(partedSheet(), answer({
+      entries: [entry("pa", "答えa", true), entry("q2", "答え2", false)],
       hiddenPartIds: ["q2"],
     }));
     expect(score).toEqual({
       correct: 1,
       graded: 1,
-      total: 1,
+      total: 2,
     });
   });
 });
 
 describe("hidden parts", () => {
   it("visibleSlots drops slots in hidden parts", () => {
-    expect(visibleSlots(listSheet(), answer({
+    expect(visibleSlots(partedSheet(), answer({
       hiddenPartIds: ["q2"],
-    })).map(s => s.id)).toEqual(["q1"]);
+    })).map(s => s.id)).toEqual(["pa", "pb"]);
   });
 
   it("isAnswerSheetComplete ignores a hidden part's unanswered slot", () => {
-    // q2 is blank, but hidden — so the attempt still counts as complete.
-    expect(isAnswerSheetComplete(listSheet(), answer({
-      entries: [entry("q1", "答え1")],
+    // q2 is blank, but hidden — so the attempt still counts as complete once pa/pb are filled.
+    expect(isAnswerSheetComplete(partedSheet(), answer({
+      entries: [entry("pa", "答えa"), entry("pb", "答えb")],
       hiddenPartIds: ["q2"],
     }))).toBe(true);
   });
 });
 
+describe("questionSheetPartSlots", () => {
+  it("collapses a sheet with no sub-parts to a single whole-sheet part", () => {
+    expect(questionSheetPartSlots(listSheet())).toEqual([
+      {
+        id: "all",
+        label: "All questions",
+        slotIds: ["q1", "q2"],
+      },
+    ]);
+  });
+
+  it("keeps a part per top-level question once any question has sub-parts", () => {
+    expect(questionSheetPartSlots(partedSheet())).toEqual([
+      {
+        id: "q1",
+        label: "One",
+        slotIds: ["pa", "pb"],
+      },
+      {
+        id: "q2",
+        label: "Two",
+        slotIds: ["q2"],
+      },
+    ]);
+  });
+
+  it("reports a single 'grid' part for grid layout", () => {
+    const grid = listSheet({
+      layout: "grid",
+      grid: {
+        columns: ["A"],
+        rows: [{
+          id: "r1",
+          label: "Row 1",
+        }],
+      },
+    });
+    expect(questionSheetPartSlots(grid).map(p => p.id)).toEqual(["grid"]);
+  });
+});
+
 describe("answerSheetPartScores", () => {
   it("scores each top-level question separately and flags hidden parts", () => {
-    const scores = answerSheetPartScores(listSheet(), answer({
-      entries: [entry("q1", "答え1", true), entry("q2", "答え2", false)],
+    // q1 (parts a/b) and q2 (flat) stay distinct parts because q1 has sub-parts.
+    const scores = answerSheetPartScores(partedSheet(), answer({
+      entries: [entry("pa", "答えa", true), entry("pb", "答えb", true), entry("q2", "答え2", false)],
       hiddenPartIds: ["q2"],
     }));
     expect(scores).toEqual([
       {
         questionId: "q1",
         label: "One",
-        correct: 1,
-        graded: 1,
-        total: 1,
+        correct: 2,
+        graded: 2,
+        total: 2,
         hidden: false,
       },
       {
@@ -186,6 +262,22 @@ describe("answerSheetPartScores", () => {
         graded: 1,
         total: 1,
         hidden: true,
+      },
+    ]);
+  });
+
+  it("reports a flat sheet as one whole-sheet part", () => {
+    const scores = answerSheetPartScores(listSheet(), answer({
+      entries: [entry("q1", "答え1", true), entry("q2", "答え2", false)],
+    }));
+    expect(scores).toEqual([
+      {
+        questionId: "all",
+        label: "All questions",
+        correct: 1,
+        graded: 2,
+        total: 2,
+        hidden: false,
       },
     ]);
   });
@@ -262,8 +354,8 @@ describe("generateAnswerSheetTitle", () => {
   });
 
   it("names the included parts when a strict subset is in play", () => {
-    // Two parts, q2 hidden → only Part 1 included.
-    expect(generateAnswerSheetTitle(listSheet(), ["q2"], when))
+    // Two parts (q1 has sub-parts, so parts survive), q2 hidden → only Part 1 included.
+    expect(generateAnswerSheetTitle(partedSheet(), ["q2"], when))
       .toBe(`Genki L3 — Part 1 — ${when.toLocaleDateString()}`);
   });
 
@@ -273,6 +365,10 @@ describe("generateAnswerSheetTitle", () => {
         {
           id: "q1",
           prompt: "One",
+          parts: [{
+            id: "pa",
+            label: "(a)",
+          }],
         },
         {
           id: "q2",
@@ -287,6 +383,12 @@ describe("generateAnswerSheetTitle", () => {
     // q2 hidden → Parts 1 and 3 remain.
     expect(generateAnswerSheetTitle(sheet, ["q2"], when))
       .toBe(`Genki L3 — Parts 1, 3 — ${when.toLocaleDateString()}`);
+  });
+
+  it("does not annotate parts for a flat sheet, even with a stale hidden id", () => {
+    // A flat sheet collapses to one whole-sheet part, so there are no parts to name.
+    expect(generateAnswerSheetTitle(listSheet(), ["q2"], when))
+      .toBe(`Genki L3 — ${when.toLocaleDateString()}`);
   });
 });
 
@@ -418,6 +520,108 @@ describe("resourceFilterOptions", () => {
         label: "All resources",
       },
     ]);
+  });
+});
+
+describe("groupAnswerSheetsByResource", () => {
+  const parentSheet = (id: string, bookmarkId: string | null, overrides: Partial<QuestionSheet> = {}) =>
+    listSheet({
+      id,
+      bookmarkId,
+      bookmarkTitle: bookmarkId,
+      ...overrides,
+    });
+
+  it("buckets by the parent question sheet's bookmark, no-resource last", () => {
+    const parents = new Map([
+      ["qa", parentSheet("qa", "book-a")],
+      ["qb", parentSheet("qb", "book-b")],
+      ["qn", parentSheet("qn", null)],
+    ]);
+    const groups = groupAnswerSheetsByResource(
+      [
+        answer({
+          id: "a1",
+          questionSheetId: "qa",
+        }),
+        answer({
+          id: "n1",
+          questionSheetId: "qn",
+        }),
+        answer({
+          id: "b1",
+          questionSheetId: "qb",
+        }),
+        answer({
+          id: "a2",
+          questionSheetId: "qa",
+        }),
+      ],
+      parents,
+      new Map(),
+    );
+    expect(groups.map(g => g.bookmarkId)).toEqual(["book-a", "book-b", null]);
+    expect(groups[0].answerSheets.map(a => a.id)).toEqual(["a1", "a2"]);
+    expect(groups[2].answerSheets.map(a => a.id)).toEqual(["n1"]);
+  });
+
+  it("treats an attempt whose parent is missing as no-resource", () => {
+    const groups = groupAnswerSheetsByResource(
+      [answer({
+        id: "orphan",
+        questionSheetId: "gone",
+      })],
+      new Map(),
+      new Map(),
+    );
+    expect(groups.map(g => g.bookmarkId)).toEqual([null]);
+    expect(groups[0].answerSheets.map(a => a.id)).toEqual(["orphan"]);
+  });
+
+  it("orders attempts within a book by their parent's TOC position, keeping same-parent order", () => {
+    const section = (id: string) => [{
+      id,
+      label: id,
+      type: "name" as const,
+      startValue: null,
+      endValue: null,
+    }];
+    const parents = new Map([
+      ["q-s1", parentSheet("q-s1", "book-a", {
+        sections: section("s1"),
+      })],
+      ["q-s2", parentSheet("q-s2", "book-a", {
+        sections: section("s2"),
+      })],
+      ["q-s3", parentSheet("q-s3", "book-a", {
+        sections: section("s3"),
+      })],
+    ]);
+    const toc = new Map([["book-a", new Map([["s1", 0], ["s2", 1], ["s3", 2]])]]);
+    const groups = groupAnswerSheetsByResource(
+      [
+        answer({
+          id: "a-s3",
+          questionSheetId: "q-s3",
+        }),
+        answer({
+          id: "a-s2a",
+          questionSheetId: "q-s2",
+        }),
+        answer({
+          id: "a-s1",
+          questionSheetId: "q-s1",
+        }),
+        answer({
+          id: "a-s2b",
+          questionSheetId: "q-s2",
+        }),
+      ],
+      parents,
+      toc,
+    );
+    // s1 < s2 < s3 by TOC; the two s2 attempts keep their incoming order (a-s2a before a-s2b).
+    expect(groups[0].answerSheets.map(a => a.id)).toEqual(["a-s1", "a-s2a", "a-s2b", "a-s3"]);
   });
 });
 

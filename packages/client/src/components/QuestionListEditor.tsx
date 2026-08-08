@@ -1,5 +1,5 @@
 import type { QuestionLabelStyle } from "@/lib/question-sheet-parts";
-import type { QuestionSheetQuestion } from "@sentence-bank/types";
+import type { QuestionAnswerType, QuestionSheetQuestion } from "@sentence-bank/types";
 
 import { useState } from "react";
 
@@ -105,6 +105,14 @@ export function QuestionListEditor({
   function removeQuestion(id: string) {
     onChange(questions.filter(q => q.id !== id));
   }
+  /** Apply one answer-type patch to every question — the sheet-wide control for a sub-part-less sheet. */
+  function setAllAnswerType(patch: { answerType?: QuestionAnswerType;
+    choices?: string[]; }) {
+    onChange(questions.map(q => ({
+      ...q,
+      ...patch,
+    })));
+  }
   function moveQuestion(index: number, delta: number) {
     const next = [...questions];
     const target = index + delta;
@@ -112,6 +120,13 @@ export function QuestionListEditor({
     [next[index], next[target]] = [next[target], next[index]];
     onChange(next);
   }
+
+  // A sheet whose questions all lack sub-parts is uniform: its answer type is set once for the whole
+  // sheet (below) rather than per question. Adding sub-parts to any question flips back to per-question
+  // control (each question's parts share that question's type). The first question represents the shared
+  // type — {@link setAllAnswerType} keeps them in lockstep.
+  const hasSubparts = questions.some(q => (q.parts?.length ?? 0) > 0);
+  const first = questions[0];
 
   return (
     <div className="space-y-4">
@@ -169,6 +184,26 @@ export function QuestionListEditor({
           prefill each question’s prompt, or “Blank” for empty prompts. Editing below still works.
         </p>
       </div>
+
+      {questions.length > 0 && !hasSubparts
+        ? (
+          <div className="space-y-1.5 rounded-md border border-dashed p-3">
+            <p className="text-xs font-medium text-muted-foreground">
+              Answer type — applies to every question
+            </p>
+            <QuestionAnswerTypeEditor
+              answerType={first?.answerType}
+              choices={first?.choices ?? []}
+              onChange={setAllAnswerType}
+            />
+            <p className="text-xs text-muted-foreground">
+              Every question answers the same way. Add sub-parts to a question to give it its own
+              answer type.
+            </p>
+          </div>
+        )
+        : null}
+
       {questions.map((q, index) => (
         <div
           key={q.id}
@@ -221,11 +256,17 @@ export function QuestionListEditor({
             </div>
           </div>
 
-          <QuestionAnswerTypeEditor
-            answerType={q.answerType}
-            choices={q.choices ?? []}
-            onChange={patch => updateQuestion(q.id, patch)}
-          />
+          {/* Per-question answer type only once some question has sub-parts; a flat sheet uses the
+              single sheet-wide control above instead. */}
+          {hasSubparts
+            ? (
+              <QuestionAnswerTypeEditor
+                answerType={q.answerType}
+                choices={q.choices ?? []}
+                onChange={patch => updateQuestion(q.id, patch)}
+              />
+            )
+            : null}
 
           <PartsEditor
             parts={q.parts ?? []}
