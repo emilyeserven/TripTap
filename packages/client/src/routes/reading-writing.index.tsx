@@ -146,6 +146,7 @@ function ReadingWritingPage() {
           resources={rowResources}
           areaTags={areaTags}
           endpointUrl={settings.data?.endpointUrl}
+          loading={resources.isLoading}
           emptyText={
             areaResources.length === 0
               ? "No resources tagged Reading or Writing yet."
