@@ -4,27 +4,60 @@ import { ExternalLink, ImageOff, Star } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
 import { bookmarkAppUrl } from "@/lib/bookmarks";
 import { resourceLearningAreas } from "@/lib/collections";
+
+/** How many placeholder cards the loading row shows. */
+const SKELETON_COUNT = 4;
+
+/** A single placeholder card mirroring a resource card's shape (cover + title + badge + progress). */
+function ResourceCardSkeleton() {
+  return (
+    <div
+      className="flex w-56 shrink-0 flex-col overflow-hidden rounded-lg border"
+    >
+      <Skeleton className="aspect-video w-full rounded-none" />
+      <div className="flex flex-1 flex-col gap-2 p-3">
+        <Skeleton className="h-4 w-3/4" />
+        <Skeleton className="h-3 w-1/2" />
+        <Skeleton className="mt-auto h-1.5 w-full" />
+      </div>
+    </div>
+  );
+}
 
 /**
  * A horizontally-scrolling "mixed row" of compact resource cards for the section hub pages. Each card
  * shows the bookmark's thumbnail, title (linking to the bookmark in the bookmarks app, not its external
  * URL), favorite star, learning-area badges, and progress bar — a curated shortcut into the full
- * Resources page. Empty renders a muted note.
+ * Resources page. While `loading`, a row of placeholder cards shows (the bookmarks app is a remote
+ * service, so the fetch is visibly slow); an empty result renders a muted note.
  */
 export function ResourceRow({
   resources,
   areaTags,
   endpointUrl,
+  loading = false,
   emptyText = "No resources yet.",
 }: {
   resources: BookmarkResource[];
   areaTags: LearningAreaTagMap;
   /** The bookmarks-app base URL (Settings), used to link each card to its bookmark; falls back to the default. */
   endpointUrl?: string | null;
+  /** Show placeholder cards instead of the empty note while the resources are still loading. */
+  loading?: boolean;
   emptyText?: string;
 }) {
+  if (loading && resources.length === 0) {
+    return (
+      <div className="flex gap-3 overflow-x-auto pb-2">
+        {Array.from({
+          length: SKELETON_COUNT,
+        }, (_, i) => <ResourceCardSkeleton key={i} />)}
+      </div>
+    );
+  }
   if (resources.length === 0) {
     return <p className="text-sm text-muted-foreground">{emptyText}</p>;
   }

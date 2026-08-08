@@ -157,6 +157,7 @@ function ExercisesPage() {
         <ResourceRow
           resources={bookResources}
           areaTags={areaTags}
+          loading={bookmarkResources.isLoading}
           emptyText="No Book resources yet."
         />
       </HubSection>
