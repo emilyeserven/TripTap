@@ -139,7 +139,7 @@ function splitAcrossAreas(
   feature: XpFeature,
   xp: number,
   at: Date,
-  meta?: Pick<XpGrant, "sourceId" | "title" | "to" | "params">,
+  meta?: Pick<XpGrant, "sourceId" | "title" | "to" | "params" | "dateOnly">,
 ): XpGrant[] {
   const targets = areas && areas.length > 0 ? areas : ["Grammar" as const];
   return targets.map(area => ({
@@ -328,12 +328,21 @@ interface AnswerSheetXpRow {
   title: string | null;
   questionSheetId: string;
   entries: AnswerSheetEntry[] | null;
+  /** The attempt's learner-assigned date (the day the work was done); null when undated. */
+  date: Date | null;
   createdAt: Date;
+  /** When the attempt was last edited — the best proxy for "when answered" if it has no date. */
+  updatedAt: Date;
 }
 
 /**
  * 5xp per authored sheet; 2xp per answered entry (0.25xp on grid/table sheets) → the sheet's own
  * learning areas. Answer sheets whose sheet no longer exists fall back to Grammar at the list rate.
+ *
+ * Answering XP lands on the day the work was done — the attempt's learner-assigned `date` (falling back
+ * to when it was last edited) — not when the (initially-empty) attempt was created, so continuing a
+ * sheet on a later day still credits that day. Attempts carry a midnight-UTC `date`, so it's passed as
+ * a `dateOnly` calendar day to avoid a timezone shifting it onto the wrong day.
  */
 export function bookExercisesXp(
   sheets: QuestionSheetXpRow[],
@@ -362,11 +371,14 @@ export function bookExercisesXp(
     const rate = (sheet?.layout as QuestionSheetLayout) === "grid"
       ? rates.answerEntryGrid
       : rates.answerEntryList;
+    // Credit the day the work was done: the attempt's date, else when it was last edited (not the
+    // day the empty attempt was created). A dated attempt passes its calendar day as `dateOnly`.
+    const when = answer.date ?? answer.updatedAt;
     return splitAcrossAreas(
       sheet?.learningAreas ?? null,
       "bookExercises",
       entryCount * rate,
-      answer.createdAt,
+      when,
       {
         sourceId: answer.id,
         title: answer.title ?? sheet?.title ?? null,
@@ -374,6 +386,7 @@ export function bookExercisesXp(
         params: {
           id: answer.id,
         },
+        dateOnly: answer.date ? answer.date.toISOString().slice(0, 10) : undefined,
       },
     );
   });
@@ -989,7 +1002,9 @@ export async function loadXpGrants(): Promise<XpGrant[]> {
       title: answerSheets.title,
       questionSheetId: answerSheets.questionSheetId,
       entries: answerSheets.entries,
+      date: answerSheets.date,
       createdAt: answerSheets.createdAt,
+      updatedAt: answerSheets.updatedAt,
     }).from(answerSheets),
     db.select({
       id: listeningSessions.id,
