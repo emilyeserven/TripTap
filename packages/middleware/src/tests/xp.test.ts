@@ -316,6 +316,8 @@ test("bookExercisesXp splits sheet XP across areas and rates grid entries at 0.2
       id: "a1",
       title: null,
       questionSheetId: "s1",
+      date: RECENT,
+      updatedAt: RECENT,
       entries: [
         {
           slotId: "q1",
@@ -344,6 +346,8 @@ test("bookExercisesXp splits sheet XP across areas and rates grid entries at 0.2
       id: "a2",
       title: null,
       questionSheetId: "s2",
+      date: RECENT,
+      updatedAt: RECENT,
       entries: [
         {
           slotId: "r1c1",
@@ -363,6 +367,8 @@ test("bookExercisesXp splits sheet XP across areas and rates grid entries at 0.2
       id: "a3",
       title: null,
       questionSheetId: "gone",
+      date: null,
+      updatedAt: RECENT,
       entries: [
         {
           slotId: "q1",
@@ -385,6 +391,80 @@ test("bookExercisesXp splits sheet XP across areas and rates grid entries at 0.2
   assert.equal(byArea.get("Reading"), 4.5);
   // s2 authored (no areas → Grammar): 5; s2 answers: 1 × 0.25; orphan: 1 × 2.
   assert.equal(byArea.get("Grammar"), 2.5 + 2 + 5 + 0.25 + 2);
+});
+
+test("bookExercisesXp credits answering to the attempt date, not when the sheet was created", () => {
+  const sheets = [
+    {
+      id: "s1",
+      title: "Sheet 1",
+      layout: "list",
+      learningAreas: ["Grammar"] as "Grammar"[],
+      createdAt: OLD,
+    },
+  ];
+  const answers = [
+    {
+      id: "a1",
+      title: null,
+      questionSheetId: "s1",
+      entries: [{
+        slotId: "q1",
+        value: "a",
+        correct: null,
+        correction: null,
+        reasoning: null,
+        intendedMeaning: null,
+        actualMeaning: null,
+        marks: null,
+      }],
+      // Created long ago (empty), but worked on / dated recently.
+      date: new Date("2026-07-19T00:00:00Z"),
+      createdAt: OLD,
+      updatedAt: RECENT,
+    },
+  ];
+  const answered = bookExercisesXp(sheets, answers).filter(g => g.feature === "bookExercises" && g.sourceId === "a1");
+  assert.equal(answered.length, 1);
+  // The grant lands on the attempt's date (as a calendar day), not the old creation day.
+  assert.equal(answered[0].dateOnly, "2026-07-19");
+  assert.equal(answered[0].at.getTime(), new Date("2026-07-19T00:00:00Z").getTime());
+});
+
+test("bookExercisesXp falls back to the last-edited time when the attempt is undated", () => {
+  const sheets = [
+    {
+      id: "s1",
+      title: "Sheet 1",
+      layout: "list",
+      learningAreas: ["Grammar"] as "Grammar"[],
+      createdAt: OLD,
+    },
+  ];
+  const answers = [
+    {
+      id: "a1",
+      title: null,
+      questionSheetId: "s1",
+      entries: [{
+        slotId: "q1",
+        value: "a",
+        correct: null,
+        correction: null,
+        reasoning: null,
+        intendedMeaning: null,
+        actualMeaning: null,
+        marks: null,
+      }],
+      date: null,
+      createdAt: OLD,
+      updatedAt: RECENT,
+    },
+  ];
+  const [grant] = bookExercisesXp(sheets, answers).filter(g => g.sourceId === "a1");
+  // No date → use updatedAt for `at`, and leave dateOnly unset so the summary derives the local day.
+  assert.equal(grant.at.getTime(), RECENT.getTime());
+  assert.equal(grant.dateOnly, undefined);
 });
 
 test("listening, shadowing, and drill XP use their per-unit rates", () => {
