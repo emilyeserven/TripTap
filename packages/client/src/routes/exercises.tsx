@@ -20,6 +20,7 @@ import {
   ALL_FILTER,
   matchesLearningArea,
   matchesResource,
+  questionSheetDisplayTitle,
   resourceFilterOptions,
 } from "@/lib/answer-sheets";
 import { buildTocIndex, groupSheetsByResource } from "@/lib/question-sheets";
@@ -93,7 +94,8 @@ function ExercisesPage() {
   const shownQuestionSheets = useMemo(() => {
     const q = search.trim().toLowerCase();
     return (questionSheets ?? []).filter((s) => {
-      if (q && !s.title.toLowerCase().includes(q) && !(s.notes ?? "").toLowerCase().includes(q)) {
+      const title = questionSheetDisplayTitle(s).toLowerCase();
+      if (q && !title.includes(q) && !(s.notes ?? "").toLowerCase().includes(q)) {
         return false;
       }
       return matchesResource(s, resource) && matchesLearningArea(s, area);
@@ -109,8 +111,12 @@ function ExercisesPage() {
   const shownAnswerSheets = useMemo(() => {
     const q = search.trim().toLowerCase();
     return (answerSheets ?? []).filter((s) => {
-      if (q && !(s.title ?? "").toLowerCase().includes(q)) return false;
       const parent = parentById.get(s.questionSheetId);
+      if (q) {
+        const own = (s.title ?? "").toLowerCase();
+        const from = parent ? questionSheetDisplayTitle(parent).toLowerCase() : "";
+        if (!own.includes(q) && !from.includes(q)) return false;
+      }
       return matchesResource(parent, resource) && matchesLearningArea(parent, area);
     });
   }, [answerSheets, search, resource, area, parentById]);

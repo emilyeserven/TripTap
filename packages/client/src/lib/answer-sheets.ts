@@ -324,6 +324,21 @@ export function answerSheetScore(qs: QuestionSheet, as: AnswerSheet): AnswerShee
 }
 
 /**
+ * A question sheet's display title. When the sheet is tied to a specific resource **and** section(s),
+ * those identify it best, so we show "<resource> — <section>, <section>" in preference to whatever was
+ * typed as the title (which is often a rougher hand-entered name). Falls back to the stored title
+ * otherwise. Display-only — the stored `title` is left untouched and still used for search.
+ */
+export function questionSheetDisplayTitle(
+  qs: Pick<QuestionSheet, "title" | "bookmarkTitle" | "sections">,
+): string {
+  if (qs.bookmarkTitle && qs.sections.length > 0) {
+    return `${qs.bookmarkTitle} — ${qs.sections.map(s => s.label).join(", ")}`;
+  }
+  return qs.title;
+}
+
+/**
  * Build a default answer-sheet title from its question sheet, considering which parts are in play. When
  * a strict, non-empty subset of the sheet's parts is included (some are in `hiddenPartIds`), the
  * included parts are named — "Genki 3 — Parts 1, 3 — 8/1/2026"; otherwise it's just the sheet title and
@@ -334,7 +349,7 @@ export function generateAnswerSheetTitle(
   hiddenPartIds: string[] = [],
   now: Date = new Date(),
 ): string {
-  const base = qs.title?.trim() || "Answer sheet";
+  const base = questionSheetDisplayTitle(qs).trim() || "Answer sheet";
   const date = now.toLocaleDateString();
   const parts = questionSheetParts(qs);
   const hidden = new Set(hiddenPartIds);

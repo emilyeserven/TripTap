@@ -8,7 +8,7 @@ import { LearningAreaBadges } from "@/components/LearningAreaBadges";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { useQuestionSheets } from "@/hooks/useQuestionSheets";
-import { answerSheetMeetsDueDate } from "@/lib/answer-sheets";
+import { answerSheetMeetsDueDate, questionSheetDisplayTitle } from "@/lib/answer-sheets";
 import { formatDueDate } from "@/lib/due-date";
 
 /** Compact list-item for one Answer Sheet: title link, source sheet, and answer/correction counts. */
@@ -44,7 +44,7 @@ export function AnswerSheetCard({
             flex flex-wrap items-center gap-2 text-xs text-muted-foreground
           "
         >
-          {sheet ? <span>From: {sheet.title}</span> : null}
+          {sheet ? <span>From: {questionSheetDisplayTitle(sheet)}</span> : null}
           {sheet ? <LearningAreaBadges areas={sheet.learningAreas} /> : null}
           {as.date ? <span>Dated {formatDueDate(as.date)}</span> : null}
           <Badge variant="secondary">

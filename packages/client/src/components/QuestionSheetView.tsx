@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { useAnswerSheetsForQuestionSheet } from "@/hooks/useAnswerSheets";
 import { useResolvedBookmarkTitle } from "@/hooks/useBookmarks";
 import { useBookmarksSettings } from "@/hooks/useSettings";
-import { dueDateMet } from "@/lib/answer-sheets";
+import { dueDateMet, questionSheetDisplayTitle } from "@/lib/answer-sheets";
 import { bookmarkAppUrl } from "@/lib/bookmarks";
 import { formatDueDate, isOverdue } from "@/lib/due-date";
 
@@ -32,7 +32,7 @@ export function QuestionSheetView({
   return (
     <div className="space-y-4">
       <div>
-        <p className="text-xl font-semibold">{qs.title}</p>
+        <p className="text-xl font-semibold">{questionSheetDisplayTitle(qs)}</p>
         <div
           className="
             mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground
@@ -70,13 +70,6 @@ export function QuestionSheetView({
               </span>
             )
             : null}
-          {qs.sections.map(s => (
-            <Badge
-              key={s.id}
-              variant="outline"
-            >Section: {s.label}
-            </Badge>
-          ))}
           {qs.dueDate
             ? met
               ? (
