@@ -8,6 +8,8 @@ import type {
 
 import { questionAnswerChoices } from "@sentence-bank/types";
 
+import { compareSheetPosition } from "@/lib/question-sheets";
+
 /** One answerable cell of a question sheet: a stable `id` and a human label for the input. */
 export interface QuestionSheetSlot {
   id: string;
@@ -146,7 +148,18 @@ export interface QuestionSheetPartSlots extends QuestionSheetPartRef {
   slotIds: string[];
 }
 
-/** Every part of a sheet with its slot ids. Grid layout reports a single `"grid"` part. */
+/** The synthetic part id for a flat list sheet collapsed to a single whole-sheet part. */
+export const FLAT_SHEET_PART_ID = "all";
+
+/**
+ * Every part of a sheet with its slot ids. Grid layout reports a single `"grid"` part.
+ *
+ * A list sheet whose top-level questions **all lack sub-parts** isn't meaningfully divided into parts —
+ * each question is a single answer slot, so treating each as its own part would just fragment a plain
+ * list (noisy per-question "Part 1 / Part 2…" grading, progress, and hide toggles). Such a sheet
+ * collapses to one whole-sheet part, and the part breakdowns (which hide below two parts) fall away.
+ * Per-question parts are kept only once at least one question has sub-parts to group.
+ */
 export function questionSheetPartSlots(qs: QuestionSheet): QuestionSheetPartSlots[] {
   if (qs.layout === "grid") {
     return [{
@@ -156,11 +169,20 @@ export function questionSheetPartSlots(qs: QuestionSheet): QuestionSheetPartSlot
     }];
   }
   const firstNumber = qs.firstQuestionNumber ?? 1;
-  return qs.questions.map((q, i) => ({
+  const perQuestion = qs.questions.map((q, i) => ({
     id: q.id,
     label: q.prompt.trim() || `Question ${firstNumber + i}`,
     slotIds: questionSlotIds(q),
   }));
+  const hasSubparts = qs.questions.some(q => (q.parts?.length ?? 0) > 0);
+  if (perQuestion.length > 0 && !hasSubparts) {
+    return [{
+      id: FLAT_SHEET_PART_ID,
+      label: "All questions",
+      slotIds: perQuestion.flatMap(p => p.slotIds),
+    }];
+  }
+  return perQuestion;
 }
 
 /**
@@ -425,6 +447,52 @@ export function resourceFilterOptions(sheets: QuestionSheet[]): FilterOption[] {
       label,
     })),
   ];
+}
+
+/** One resource's worth of answer sheets: the bookmark id (null = no resource) and its sheets, ordered. */
+export interface AnswerSheetResourceGroup {
+  bookmarkId: string | null;
+  answerSheets: AnswerSheet[];
+}
+
+/**
+ * Group answer sheets by the resource (`bookmarkId`) of their parent question sheet — the same book
+ * organization the question-sheets tab uses — preserving first-seen resource order and pushing the
+ * "no resource" bucket (parent has no bookmark, or is missing from `parentById`) to the end. Within a
+ * group, sheets order by their parent's position in the book ({@link compareSheetPosition}: TOC rank,
+ * then page); attempts of the same question sheet keep their incoming order (createdAt desc).
+ */
+export function groupAnswerSheetsByResource(
+  answerSheets: AnswerSheet[],
+  parentById: Map<string, QuestionSheet>,
+  tocIndex: Map<string, Map<string, number>>,
+): AnswerSheetResourceGroup[] {
+  const buckets = new Map<string | null, AnswerSheet[]>();
+  for (const as of answerSheets) {
+    const key = parentById.get(as.questionSheetId)?.bookmarkId ?? null;
+    const bucket = buckets.get(key);
+    if (bucket) bucket.push(as);
+    else buckets.set(key, [as]);
+  }
+
+  const groups: AnswerSheetResourceGroup[] = [];
+  let noResource: AnswerSheetResourceGroup | null = null;
+  for (const [bookmarkId, bucket] of buckets) {
+    // A stable sort keeps same-parent attempts (tied on position) in their incoming order.
+    const ordered = [...bucket].sort((a, b) => {
+      const pa = parentById.get(a.questionSheetId);
+      const pb = parentById.get(b.questionSheetId);
+      return pa && pb ? compareSheetPosition(pa, pb, tocIndex) : 0;
+    });
+    const group = {
+      bookmarkId,
+      answerSheets: ordered,
+    };
+    if (bookmarkId === null) noResource = group;
+    else groups.push(group);
+  }
+  if (noResource) groups.push(noResource);
+  return groups;
 }
 
 /** True when a question sheet passes the resource filter (`ALL_FILTER` passes everything). */

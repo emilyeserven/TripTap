@@ -7,19 +7,34 @@ import { describe, expect, it, vi } from "vitest";
 
 import { QuestionListEditor } from "./QuestionListEditor";
 
-// PartsEditor / QuestionAnswerTypeEditor render per question; stub them so this focuses on quick-fill.
+// PartsEditor is stubbed out so these focus on quick-fill / the sheet-wide answer type. The
+// QuestionAnswerTypeEditor is stubbed with a button that reports a fixed patch, so we can assert both
+// how many instances render and that a change flows through.
 vi.mock("@/components/PartsEditor", () => ({
   PartsEditor: () => null,
 }));
 vi.mock("@/components/QuestionAnswerTypeEditor", () => ({
-  QuestionAnswerTypeEditor: () => null,
+  QuestionAnswerTypeEditor: ({
+    onChange,
+  }: { onChange: (patch: { answerType?: string }) => void }) => (
+    <button
+      type="button"
+      onClick={() => onChange({
+        answerType: "boolean",
+      })}
+    >
+      mock-answer-type
+    </button>
+  ),
 }));
 
 /** Controlled harness capturing the latest questions array. */
 function Harness({
   onQuestions,
-}: { onQuestions: (q: QuestionSheetQuestion[]) => void }) {
-  const [questions, setQuestions] = useState<QuestionSheetQuestion[]>([]);
+  initial = [],
+}: { onQuestions: (q: QuestionSheetQuestion[]) => void;
+  initial?: QuestionSheetQuestion[]; }) {
+  const [questions, setQuestions] = useState<QuestionSheetQuestion[]>(initial);
   return (
     <QuestionListEditor
       questions={questions}
@@ -67,5 +82,64 @@ describe("QuestionListEditor quick-fill", () => {
       name: "Set questions",
     }));
     expect(onQuestions).not.toHaveBeenCalled();
+  });
+});
+
+describe("QuestionListEditor sheet-wide answer type", () => {
+  /** Fill the editor with `n` flat questions via quick-fill. */
+  function fillQuestions(n: number) {
+    fireEvent.change(screen.getByLabelText("Quick fill — number of questions"), {
+      target: {
+        value: String(n),
+      },
+    });
+    fireEvent.click(screen.getByRole("button", {
+      name: "Set questions",
+    }));
+  }
+
+  it("shows no answer-type control until there are questions", () => {
+    render(<Harness onQuestions={vi.fn()} />);
+    expect(screen.queryByText("mock-answer-type")).not.toBeInTheDocument();
+  });
+
+  it("offers a single sheet-wide control for a flat sheet and applies it to every question", () => {
+    const onQuestions = vi.fn();
+    render(<Harness onQuestions={onQuestions} />);
+    fillQuestions(3);
+
+    // One control (sheet-wide) — flat questions don't each get their own.
+    const controls = screen.getAllByText("mock-answer-type");
+    expect(controls).toHaveLength(1);
+
+    fireEvent.click(controls[0]);
+    const last = onQuestions.mock.calls.at(-1)?.[0] as QuestionSheetQuestion[];
+    expect(last).toHaveLength(3);
+    expect(last.every(q => q.answerType === "boolean")).toBe(true);
+  });
+
+  it("falls back to a per-question control once any question has sub-parts", () => {
+    render(
+      <Harness
+        onQuestions={vi.fn()}
+        initial={[
+          {
+            id: "q1",
+            prompt: "One",
+            parts: [{
+              id: "pa",
+              label: "(a)",
+            }],
+          },
+          {
+            id: "q2",
+            prompt: "Two",
+          },
+        ]}
+      />,
+    );
+    // One control per question (2), and no sheet-wide label.
+    expect(screen.getAllByText("mock-answer-type")).toHaveLength(2);
+    expect(screen.queryByText("Answer type — applies to every question")).not.toBeInTheDocument();
   });
 });

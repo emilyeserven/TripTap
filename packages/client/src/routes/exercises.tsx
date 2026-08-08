@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
 
-import { AnswerSheetCard } from "@/components/AnswerSheetCard";
+import { AnswerSheetResourceGroup } from "@/components/AnswerSheetResourceGroup";
 import { HubSection, VIEW_ALL_CLASS } from "@/components/HubSection";
 import { QuestionSheetResourceGroup } from "@/components/QuestionSheetResourceGroup";
 import { ResourceRow } from "@/components/ResourceRow";
@@ -18,6 +18,7 @@ import { useQuestionSheets } from "@/hooks/useQuestionSheets";
 import { useBookmarksSettings } from "@/hooks/useSettings";
 import {
   ALL_FILTER,
+  groupAnswerSheetsByResource,
   matchesLearningArea,
   matchesResource,
   questionSheetDisplayTitle,
@@ -120,6 +121,12 @@ function ExercisesPage() {
       return matchesResource(parent, resource) && matchesLearningArea(parent, area);
     });
   }, [answerSheets, search, resource, area, parentById]);
+
+  // Answer sheets grouped by the book of their parent question sheet, mirroring the question tab.
+  const answerGroups = useMemo(
+    () => groupAnswerSheetsByResource(shownAnswerSheets, parentById, tocIndex),
+    [shownAnswerSheets, parentById, tocIndex],
+  );
 
   const setTab = (next: string) => {
     void navigate({
@@ -257,19 +264,28 @@ function ExercisesPage() {
                 </p>
               )
               : null}
-            <div
+            <ul
               className="
                 grid gap-4
                 sm:grid-cols-2
               "
             >
-              {shownAnswerSheets.map(as => (
-                <AnswerSheetCard
-                  key={as.id}
-                  answerSheet={as}
-                />
-              ))}
-            </div>
+              {answerGroups.map((group) => {
+                const record = group.bookmarkId ? recordById.get(group.bookmarkId) : undefined;
+                const parent = parentById.get(group.answerSheets[0]?.questionSheetId ?? "");
+                return (
+                  <AnswerSheetResourceGroup
+                    key={group.bookmarkId ?? "__none__"}
+                    bookmarkId={group.bookmarkId}
+                    bookmarkTitle={record?.title ?? parent?.bookmarkTitle ?? null}
+                    imageUrl={record?.imageUrl ?? null}
+                    mediaType={record?.mediaType ?? null}
+                    answerSheets={group.answerSheets}
+                    questionSheetById={parentById}
+                  />
+                );
+              })}
+            </ul>
           </>
         )}
     </section>

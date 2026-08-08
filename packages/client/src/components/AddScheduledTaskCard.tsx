@@ -210,7 +210,7 @@ export function AddScheduledTaskCard({
                       </SelectContent>
                     </Select>
                   </div>
-                  {parts.length > 0
+                  {parts.length > 1
                     ? (
                       <div className="space-y-1.5">
                         <Label>Part</Label>
