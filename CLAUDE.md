@@ -132,6 +132,18 @@ still pass. The two suites that require a live DB are gated behind `RUN_DB_TESTS
     PR title, so a bad title also pollutes `main`'s history and the changelog.
 - **Git hooks** (Husky): pre-commit runs `lint-staged`; commit-msg runs commitlint.
 - **Path alias:** the middleware uses `@/*` → `src/*` (resolved at build time by `tsc-alias`).
+- **`.fallowrc.json` — two knobs that are easy to confuse.** `duplicates.threshold` is *not*
+  detection sensitivity: it is the **maximum allowed duplication percentage**, a pass/fail gate
+  (currently `5`, against a measured 4.27%). What decides whether a given block is *reported* as a
+  clone is `duplicates.mode` + `minTokens` + `minLines`, all pinned explicitly. Changing `threshold`
+  moves no counter, which is why a PR that removed 445 lines of real duplication once appeared to
+  change nothing.
+- **`fallow --fail-on-issues` currently cannot fail the `audit` workflow.** It is piped through
+  `tee`, so the step's exit status is `tee`'s. Turning that honest (`set -o pipefail`) would make
+  the job red immediately — fallow exits non-zero on the standing dead-code/duplication/health
+  counts — so it stays as-is until those reach zero. Treat the audit output as advisory and compare
+  it against a `main` worktree by hand (symlinking `node_modules` at the root **and** per package,
+  or the baseline reports phantom unused dependencies).
 
 ## Generated files (do not edit)
 

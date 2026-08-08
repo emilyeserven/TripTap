@@ -22,7 +22,7 @@ import { cn } from "@/lib/utils";
 import { resolveTheme, useDisplayStore } from "@/stores/displayStore";
 import { usePageTitleStore } from "@/stores/pageTitleStore";
 
-export interface RouterContext {
+interface RouterContext {
   queryClient: QueryClient;
 }
 

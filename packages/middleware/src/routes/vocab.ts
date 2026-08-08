@@ -1,5 +1,5 @@
 import type { FastifyInstance } from "fastify";
-import { idOf, notFound } from "@/routes/handlers";
+import { idOf, notFound, sendMedia } from "@/routes/handlers";
 import { idParams } from "@/routes/schemas/params";
 import type { CreateVocabInput, UpdateVocabInput } from "@sentence-bank/types";
 import { createVocabJsonSchema } from "@sentence-bank/types";
@@ -51,12 +51,7 @@ export async function vocabRoutes(app: FastifyInstance): Promise<void> {
     }, async (req, reply) => {
       try {
         const media = await getVocabMedia(idOf(req), which);
-        if (!media) return reply.code(404).send({
-          message: `No ${which} for this vocab item`,
-        });
-        reply.header("Content-Type", media.contentType);
-        reply.header("Cache-Control", "private, max-age=86400");
-        return reply.send(media.body);
+        return sendMedia(reply, media, `No ${which} for this vocab item`);
       }
       catch (err) {
         return handleUpstreamError(err, reply);

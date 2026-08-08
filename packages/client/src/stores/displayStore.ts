@@ -8,7 +8,7 @@ export type Theme = "system" | "light" | "dark";
 export type TextSize = "regular" | "large" | "xl" | "xxl";
 
 /** Content column width: `normal` keeps the centered max-width column, `wide` goes full-bleed. */
-export type ContainerWidth = "normal" | "wide";
+type ContainerWidth = "normal" | "wide";
 
 /** Space between fields in super focus mode: increasing gaps. */
 export type SuperFocusSpace = "s" | "m" | "l";

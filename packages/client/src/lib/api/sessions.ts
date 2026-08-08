@@ -32,7 +32,7 @@ import { crudApi } from "./crud";
 import { BASE, request } from "./request";
 
 /** A caption-derived practice segment (no id yet — the client stamps `ShadowingSegment` ids). */
-export interface CaptionSegment {
+interface CaptionSegment {
   startMs: number;
   endMs: number;
   label: string;

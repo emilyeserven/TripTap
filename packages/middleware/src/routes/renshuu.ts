@@ -1,24 +1,6 @@
-import { handleUpstreamError } from "@/routes/upstream-errors";
 import type { FastifyInstance } from "fastify";
-import {
-  searchExampleSentences,
-} from "@/services/renshuu";
-
-const searchQuery = {
-  type: "object",
-  required: ["query"],
-  properties: {
-    query: {
-      type: "string",
-      minLength: 1,
-    },
-    limit: {
-      type: "integer",
-      minimum: 1,
-      maximum: 20,
-    },
-  },
-} as const;
+import { exampleSearchRoute } from "@/routes/example-search";
+import { searchExampleSentences } from "@/services/renshuu";
 
 /**
  * Renshuu proxy routes, mounted under `/api/renshuu`. Forwards an example-sentence lookup to
@@ -26,21 +8,9 @@ const searchQuery = {
  * when no key is configured, 502 when the host is unreachable or rejects the key.
  */
 export async function renshuuRoutes(app: FastifyInstance): Promise<void> {
-  app.get("/api/renshuu/search", {
-    schema: {
-      tags: ["renshuu"],
-      querystring: searchQuery,
-    },
-  }, async (req, reply) => {
-    const {
-      query, limit,
-    } = req.query as { query: string;
-      limit?: number; };
-    try {
-      return await searchExampleSentences(query, limit);
-    }
-    catch (err) {
-      return handleUpstreamError(err, reply);
-    }
+  exampleSearchRoute(app, {
+    path: "/api/renshuu/search",
+    tag: "renshuu",
+    search: searchExampleSentences,
   });
 }

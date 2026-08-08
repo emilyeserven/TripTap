@@ -16,14 +16,16 @@
   "rules": {
     "unused-files": "error",
     "unused-exports": "warn",
-    "unused-types": "off"
+    "unused-types": "warn"
   },
   "duplicates": {
     "enabled": true,
-    "threshold": 6.5,
+    "mode": "mild",
+    "minTokens": 50,
+    "minLines": 5,
+    "threshold": 5,
     "ignore": [
       "**/routeTree.gen.ts",
-      "packages/middleware/src/routes/**",
       "**/*.test.ts",
       "**/*.test.tsx"
     ]

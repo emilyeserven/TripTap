@@ -7,7 +7,7 @@ export type StudyLevel = "beginner" | "intermediate" | "advanced";
  * When a Listen-and-Shadow / Shadowing note gets stamped: at the moment the learner starts typing, or
  * at submit. Global UI pref (mirrors the reference note-taker app's single setting).
  */
-export type TimestampMode = "typing-start" | "submit";
+type TimestampMode = "typing-start" | "submit";
 
 /**
  * The kana script produced by kana-only note entry: romaji is converted to hiragana or katakana as the

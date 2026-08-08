@@ -1,5 +1,5 @@
 import { handleUpstreamError } from "@/routes/upstream-errors";
-import { idOf, notFound } from "@/routes/handlers";
+import { idOf, notFound, rawQuery, sendMedia } from "@/routes/handlers";
 import type { FastifyInstance } from "fastify";
 import type { SentenceTermCategory } from "@sentence-bank/types";
 import { createBookmarksTermJsonSchema } from "@sentence-bank/types";
@@ -247,13 +247,10 @@ export async function bookmarksRoutes(app: FastifyInstance): Promise<void> {
       bookmarkId, imageId,
     } = req.params as { bookmarkId: string;
       imageId: string; };
-    const qIndex = req.url.indexOf("?");
-    const query = qIndex >= 0 ? req.url.slice(qIndex) : "";
     try {
-      const image = await getBookmarkImage(bookmarkId, imageId, query);
-      reply.header("Content-Type", image.contentType);
-      reply.header("Cache-Control", "private, max-age=86400");
-      return reply.send(image.body);
+      // The caller's query carries the host's own sizing/format parameters — forward it verbatim.
+      const image = await getBookmarkImage(bookmarkId, imageId, rawQuery(req));
+      return sendMedia(reply, image, "No image");
     }
     catch (err) {
       return handleUpstreamError(err, reply);
@@ -269,13 +266,9 @@ export async function bookmarksRoutes(app: FastifyInstance): Promise<void> {
     const {
       bookmarkId,
     } = req.params as { bookmarkId: string };
-    const qIndex = req.url.indexOf("?");
-    const query = qIndex >= 0 ? req.url.slice(qIndex) : "";
     try {
-      const image = await getBookmarkScreenshot(bookmarkId, query);
-      reply.header("Content-Type", image.contentType);
-      reply.header("Cache-Control", "private, max-age=86400");
-      return reply.send(image.body);
+      const image = await getBookmarkScreenshot(bookmarkId, rawQuery(req));
+      return sendMedia(reply, image, "No screenshot");
     }
     catch (err) {
       return handleUpstreamError(err, reply);
