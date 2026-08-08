@@ -6,6 +6,7 @@ import {
   answerSheetMeetsDueDate,
   answerSheetPartScores,
   answerSheetScore,
+  answerSheetTitleWithoutResource,
   dueDateMet,
   generateAnswerSheetTitle,
   groupAnswerSheetsByResource,
@@ -326,6 +327,35 @@ describe("questionSheetDisplayTitle", () => {
         },
       ],
     }))).toBe("Genki I — L3, L4");
+  });
+});
+
+describe("answerSheetTitleWithoutResource", () => {
+  it("strips a leading resource-title prefix and its separator", () => {
+    expect(answerSheetTitleWithoutResource("Genki I — L3 vocab — 8/1/2026", "Genki I"))
+      .toBe("L3 vocab — 8/1/2026");
+  });
+
+  it("matches the prefix case-insensitively", () => {
+    expect(answerSheetTitleWithoutResource("GENKI I — 8/1/2026", "Genki I")).toBe("8/1/2026");
+  });
+
+  it("handles en-dash and hyphen separators", () => {
+    expect(answerSheetTitleWithoutResource("Tobira – Lesson 2", "Tobira")).toBe("Lesson 2");
+    expect(answerSheetTitleWithoutResource("Tobira - Lesson 2", "Tobira")).toBe("Lesson 2");
+  });
+
+  it("returns the full title when it doesn't start with the resource", () => {
+    expect(answerSheetTitleWithoutResource("My custom attempt", "Genki I")).toBe("My custom attempt");
+  });
+
+  it("returns the full title when there's no resource, keeping the fallback for a null title", () => {
+    expect(answerSheetTitleWithoutResource("Genki I — 8/1/2026", null)).toBe("Genki I — 8/1/2026");
+    expect(answerSheetTitleWithoutResource(null, null)).toBe("Answer sheet");
+  });
+
+  it("keeps the full title when stripping would leave nothing", () => {
+    expect(answerSheetTitleWithoutResource("Genki I", "Genki I")).toBe("Genki I");
   });
 });
 
