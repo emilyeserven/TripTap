@@ -4,7 +4,7 @@ import { Link } from "@tanstack/react-router";
 
 import { AnswerSheetScoreBadge } from "@/components/AnswerSheetScoreBadge";
 import { ResourceGroupCard } from "@/components/ResourceGroupCard";
-import { answerSheetTitleWithoutResource } from "@/lib/answer-sheets";
+import { answerSheetSectionDateLabel } from "@/lib/answer-sheets";
 
 /** One answer-sheet row: its title link, plus the score badge once it's complete and graded. */
 function AnswerSheetLink({
@@ -14,8 +14,8 @@ function AnswerSheetLink({
   answerSheet: AnswerSheet;
   questionSheet: QuestionSheet | undefined;
 }) {
-  // The book title is already the group heading, so drop it from the attempt's own title.
-  const label = answerSheetTitleWithoutResource(as.title, questionSheet?.bookmarkTitle ?? null);
+  // Inside a book group, identify the attempt by its section names + date (the book is the heading).
+  const label = answerSheetSectionDateLabel(as, questionSheet);
   return (
     <li className="flex items-center gap-2 text-sm">
       <Link

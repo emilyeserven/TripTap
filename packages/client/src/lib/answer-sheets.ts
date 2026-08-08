@@ -8,6 +8,7 @@ import type {
 
 import { questionAnswerChoices } from "@sentence-bank/types";
 
+import { formatDueDate } from "@/lib/due-date";
 import { compareSheetPosition } from "@/lib/question-sheets";
 
 /** One answerable cell of a question sheet: a stable `id` and a human label for the input. */
@@ -376,6 +377,27 @@ export function answerSheetTitleWithoutResource(
   if (!prefix || !full.toLowerCase().startsWith(prefix.toLowerCase())) return full;
   const rest = full.slice(prefix.length).replace(/^\s*[—–-]\s*/, "").trim();
   return rest.length > 0 ? rest : full;
+}
+
+/**
+ * The label for an answer sheet inside its book group: the parent question sheet's section names joined
+ * with the attempt's associated date — e.g. "L3 vocab — Aug 1, 2026". The book title is already the
+ * group heading, so it's left out. Falls back to the sheet's resource-stripped title when it has no
+ * sections, and omits the date when the attempt isn't dated.
+ */
+export function answerSheetSectionDateLabel(
+  answerSheet: Pick<AnswerSheet, "title" | "date">,
+  questionSheet: Pick<QuestionSheet, "title" | "bookmarkTitle" | "sections"> | undefined,
+): string {
+  const sections = questionSheet?.sections ?? [];
+  const name = sections.length > 0
+    ? sections.map(s => s.label).join(", ")
+    : answerSheetTitleWithoutResource(
+      questionSheet ? questionSheetDisplayTitle(questionSheet) : answerSheet.title,
+      questionSheet?.bookmarkTitle ?? null,
+    );
+  const date = answerSheet.date ? formatDueDate(answerSheet.date) : null;
+  return date ? `${name} — ${date}` : name;
 }
 
 /**

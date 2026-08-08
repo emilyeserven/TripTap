@@ -6,6 +6,7 @@ import {
   answerSheetMeetsDueDate,
   answerSheetPartScores,
   answerSheetScore,
+  answerSheetSectionDateLabel,
   answerSheetTitleWithoutResource,
   dueDateMet,
   generateAnswerSheetTitle,
@@ -23,6 +24,7 @@ import {
   resourceFilterOptions,
   visibleSlots,
 } from "./answer-sheets";
+import { formatDueDate } from "./due-date";
 
 function entry(slotId: string, value: string, correct: boolean | null = null): AnswerSheetEntry {
   return {
@@ -356,6 +358,65 @@ describe("answerSheetTitleWithoutResource", () => {
 
   it("keeps the full title when stripping would leave nothing", () => {
     expect(answerSheetTitleWithoutResource("Genki I", "Genki I")).toBe("Genki I");
+  });
+});
+
+describe("answerSheetSectionDateLabel", () => {
+  const section = (id: string, label: string) => ({
+    id,
+    label,
+    type: "name" as const,
+    startValue: null,
+    endValue: null,
+  });
+  const dated = "2026-08-01T00:00:00.000Z";
+
+  it("uses the parent's section name plus the attempt's date", () => {
+    const qs = listSheet({
+      bookmarkTitle: "Genki I",
+      sections: [section("s1", "L3 vocab")],
+    });
+    expect(answerSheetSectionDateLabel(answer({
+      date: dated,
+    }), qs)).toBe(`L3 vocab — ${formatDueDate(dated)}`);
+  });
+
+  it("joins multiple section names", () => {
+    const qs = listSheet({
+      bookmarkTitle: "Genki I",
+      sections: [section("s1", "L3"), section("s2", "L4")],
+    });
+    expect(answerSheetSectionDateLabel(answer({
+      date: dated,
+    }), qs)).toBe(`L3, L4 — ${formatDueDate(dated)}`);
+  });
+
+  it("falls back to the resource-stripped title when the sheet has no sections", () => {
+    const qs = listSheet({
+      title: "Genki I — Chapter 3",
+      bookmarkTitle: "Genki I",
+      sections: [],
+    });
+    expect(answerSheetSectionDateLabel(answer({
+      date: dated,
+    }), qs)).toBe(`Chapter 3 — ${formatDueDate(dated)}`);
+  });
+
+  it("omits the date when the attempt isn't dated", () => {
+    const qs = listSheet({
+      bookmarkTitle: "Genki I",
+      sections: [section("s1", "L3 vocab")],
+    });
+    expect(answerSheetSectionDateLabel(answer({
+      date: null,
+    }), qs)).toBe("L3 vocab");
+  });
+
+  it("uses the attempt title when the parent question sheet is missing", () => {
+    expect(answerSheetSectionDateLabel(answer({
+      title: "Some attempt",
+      date: null,
+    }), undefined)).toBe("Some attempt");
   });
 });
 
