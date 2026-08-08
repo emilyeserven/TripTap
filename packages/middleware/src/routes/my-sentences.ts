@@ -10,7 +10,7 @@ import {
   listMySentences,
   updateMySentence,
 } from "@/services/my-sentences";
-import { termsSchema } from "@/routes/schemas/terms";
+import { createMySentenceJsonSchema } from "@sentence-bank/types";
 
 const listQuery = {
   type: "object",
@@ -27,95 +27,7 @@ const listQuery = {
   },
 } as const;
 
-const reasonsSchema = {
-  type: ["array", "null"],
-  items: {
-    type: "object",
-    additionalProperties: false,
-    required: ["categoryId"],
-    properties: {
-      categoryId: {
-        type: "string",
-      },
-      subcategoryId: {
-        type: ["string", "null"],
-      },
-      reasonId: {
-        type: ["string", "null"],
-      },
-    },
-  },
-} as const;
-
-const marksSchema = {
-  type: ["array", "null"],
-  items: {
-    type: "object",
-    additionalProperties: false,
-    required: ["start", "end", "correct"],
-    properties: {
-      start: {
-        type: "integer",
-      },
-      end: {
-        type: "integer",
-      },
-      correct: {
-        type: "boolean",
-      },
-    },
-  },
-} as const;
-
-const createMySentenceBody = {
-  type: "object",
-  required: ["text", "language"],
-  additionalProperties: false,
-  properties: {
-    text: {
-      type: "string",
-      minLength: 1,
-    },
-    language: {
-      type: "string",
-      minLength: 1,
-    },
-    translation: {
-      type: ["string", "null"],
-    },
-    practiceSentenceId: {
-      type: ["string", "null"],
-      format: "uuid",
-    },
-    writingId: {
-      type: ["string", "null"],
-      format: "uuid",
-    },
-    lessonId: {
-      type: ["string", "null"],
-      format: "uuid",
-    },
-    needsCorrection: {
-      type: "boolean",
-    },
-    correction: {
-      type: ["string", "null"],
-    },
-    actualMeaning: {
-      type: ["string", "null"],
-    },
-    explanation: {
-      type: ["string", "null"],
-    },
-    terms: termsSchema,
-    incorrectGrammarTerms: termsSchema,
-    reasons: reasonsSchema,
-    marks: marksSchema,
-    shadowingCandidate: {
-      type: "boolean",
-    },
-  },
-} as const;
+const createMySentenceBody = createMySentenceJsonSchema;
 
 const updateMySentenceBody = updateBodyOf(createMySentenceBody);
 

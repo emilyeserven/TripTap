@@ -19,6 +19,14 @@ import { termsSchema } from "@/routes/schemas/terms";
  * A question-sheet part, defined as a shared schema so it can reference itself: parts nest recursively
  * (a part may carry its own `parts`). Registered on the Fastify instance via {@link app.addSchema} so
  * the `$ref` below resolves at route-registration time.
+ *
+ * **This route is deliberately the one body still written by hand** while every other entity derives
+ * its body from a Zod schema in `@sentence-bank/types`. `z.toJSONSchema` does express the recursion,
+ * but as a machine-named `definitions` entry (`__schema0`) that the body carries alongside its
+ * properties — and `updateBodyOf` builds the PATCH body by spreading `properties` alone, so the
+ * `$ref` would arrive with nothing to resolve against. Converting this one means teaching
+ * `updateBodyOf` to carry `definitions` and pinning a stable ref name; until that is worth doing, the
+ * hand-written pair stays, and `CreateQuestionSheetInput` stays hand-written to match it.
  */
 const partSchema = {
   $id: "questionSheetPart",

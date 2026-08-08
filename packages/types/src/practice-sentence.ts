@@ -13,6 +13,9 @@ import type { FuriToken, SentenceTermRef } from "./index.js";
 
 import { z } from "zod";
 
+import { objectJsonSchema } from "./json-schema.js";
+import { termsListSchema } from "./terms.js";
+
 /** One unknown word logged on a practice sentence: the word, its reading, and its meaning. */
 export interface PracticeWord {
   /** The word/term, e.g. "頭". */
@@ -106,30 +109,57 @@ export interface PracticeSentence {
 }
 
 /** Payload for creating a practice sentence. Only `text` + `language` are required. */
-export interface CreatePracticeSentenceInput {
-  text: string;
-  language: string;
-  readingNote?: string | null;
-  translation?: string | null;
-  target?: string | null;
-  targetKind?: PracticeTargetKind | null;
-  comprehension?: PracticeComprehension | null;
-  guess?: string | null;
-  literal?: string | null;
-  register?: string | null;
-  nuance?: string | null;
-  words?: PracticeWord[] | null;
-  grammar?: PracticeGrammar[] | null;
-  terms?: SentenceTermRef[] | null;
-  passes?: PracticePasses | null;
-  sourceId?: string | null;
-  page?: string | null;
-  captureId?: string | null;
-  sentenceId?: string | null;
+const practiceWordSchema = z.object({
+  w: z.string(),
+  r: z.string(),
+  m: z.string(),
+});
+
+const practiceGrammarSchema = z.object({
+  p: z.string(),
+  n: z.string(),
+});
+
+// A pass value is either a legacy boolean or the ISO timestamp of completion (see PracticePasses).
+const passValueSchema = z.union([z.boolean(), z.string()]).optional();
+
+const passesSchema = z.object({
+  read: passValueSchema,
+  guess: passValueSchema,
+  lookup: passValueSchema,
+  produce: passValueSchema,
+  card: passValueSchema,
+}).nullable();
+
+export const createPracticeSentenceSchema = z.object({
+  text: z.string().min(1),
+  language: z.string().min(1),
+  readingNote: z.string().nullable().optional(),
+  translation: z.string().nullable().optional(),
+  target: z.string().nullable().optional(),
+  targetKind: z.enum(["word", "grammar", "idiom", "collocation", "reading"]).nullable().optional(),
+  comprehension: z.enum(["ready", "studying", "skip"]).nullable().optional(),
+  guess: z.string().nullable().optional(),
+  literal: z.string().nullable().optional(),
+  register: z.string().nullable().optional(),
+  nuance: z.string().nullable().optional(),
+  words: z.array(practiceWordSchema).nullable().optional(),
+  grammar: z.array(practiceGrammarSchema).nullable().optional(),
+  terms: termsListSchema.optional(),
+  passes: passesSchema.optional(),
+  sourceId: z.guid().nullable().optional(),
+  page: z.string().nullable().optional(),
+  captureId: z.guid().nullable().optional(),
+  sentenceId: z.guid().nullable().optional(),
   /** Defaults to true server-side when omitted. */
-  needsCorrection?: boolean;
-  correction?: string | null;
-}
+  needsCorrection: z.boolean().optional(),
+  correction: z.string().nullable().optional(),
+});
+
+/** JSON Schema (draft-07) for the create payload, used verbatim as the route body. */
+export const createPracticeSentenceJsonSchema = objectJsonSchema(createPracticeSentenceSchema);
+
+export type CreatePracticeSentenceInput = z.infer<typeof createPracticeSentenceSchema>;
 
 /** Payload for partially updating a practice sentence. */
 export type UpdatePracticeSentenceInput = Partial<CreatePracticeSentenceInput>;

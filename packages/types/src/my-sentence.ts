@@ -13,6 +13,13 @@ import type { DrillMistakeReasonRef } from "./drill-session.js";
 import type { FuriToken, SentenceTermRef } from "./index.js";
 import type { SentenceMark } from "./sentence-mark.js";
 
+import { z } from "zod";
+
+import { drillMistakeReasonRefSchema } from "./drill-session.js";
+import { objectJsonSchema } from "./json-schema.js";
+import { sentenceMarkSchema } from "./sentence-mark.js";
+import { termsListSchema } from "./terms.js";
+
 /** A learner-produced sentence, awaiting correction. */
 export interface MySentence {
   id: string;
@@ -58,24 +65,29 @@ export interface MySentence {
 }
 
 /** Payload for creating a my-sentence. Only `text` + `language` are required. */
-export interface CreateMySentenceInput {
-  text: string;
-  language: string;
-  translation?: string | null;
-  practiceSentenceId?: string | null;
-  writingId?: string | null;
-  lessonId?: string | null;
+export const createMySentenceSchema = z.object({
+  text: z.string().min(1),
+  language: z.string().min(1),
+  translation: z.string().nullable().optional(),
+  practiceSentenceId: z.guid().nullable().optional(),
+  writingId: z.guid().nullable().optional(),
+  lessonId: z.guid().nullable().optional(),
   /** Defaults to true server-side when omitted. */
-  needsCorrection?: boolean;
-  correction?: string | null;
-  actualMeaning?: string | null;
-  explanation?: string | null;
-  terms?: SentenceTermRef[] | null;
-  incorrectGrammarTerms?: SentenceTermRef[] | null;
-  reasons?: DrillMistakeReasonRef[] | null;
-  marks?: SentenceMark[] | null;
-  shadowingCandidate?: boolean;
-}
+  needsCorrection: z.boolean().optional(),
+  correction: z.string().nullable().optional(),
+  actualMeaning: z.string().nullable().optional(),
+  explanation: z.string().nullable().optional(),
+  terms: termsListSchema.optional(),
+  incorrectGrammarTerms: termsListSchema.optional(),
+  reasons: z.array(drillMistakeReasonRefSchema).nullable().optional(),
+  marks: z.array(sentenceMarkSchema).nullable().optional(),
+  shadowingCandidate: z.boolean().optional(),
+});
+
+/** JSON Schema (draft-07) for the create payload, used verbatim as the route body. */
+export const createMySentenceJsonSchema = objectJsonSchema(createMySentenceSchema);
+
+export type CreateMySentenceInput = z.infer<typeof createMySentenceSchema>;
 
 /** Payload for partially updating a my-sentence. */
 export type UpdateMySentenceInput = Partial<CreateMySentenceInput>;

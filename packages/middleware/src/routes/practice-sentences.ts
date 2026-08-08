@@ -6,7 +6,10 @@ import type {
   PracticeSentenceImportInput,
   UpdatePracticeSentenceInput,
 } from "@sentence-bank/types";
-import { practiceSentenceImportJsonSchema } from "@sentence-bank/types";
+import {
+  createPracticeSentenceJsonSchema,
+  practiceSentenceImportJsonSchema,
+} from "@sentence-bank/types";
 import {
   getVocabForPracticeSentence,
   setVocabForPracticeSentence,
@@ -22,7 +25,6 @@ import {
   setPracticeSentenceImage,
   updatePracticeSentence,
 } from "@/services/practice-sentences";
-import { termsSchema } from "@/routes/schemas/terms";
 
 /** A context screenshot is capped well below a capture image — 15 MiB. */
 const MAX_IMAGE_BYTES = 15 * 1024 * 1024;
@@ -45,129 +47,7 @@ function importToCreateInput(input: PracticeSentenceImportInput): CreatePractice
   };
 }
 
-const wordsSchema = {
-  type: ["array", "null"],
-  items: {
-    type: "object",
-    additionalProperties: false,
-    required: ["w", "r", "m"],
-    properties: {
-      w: {
-        type: "string",
-      },
-      r: {
-        type: "string",
-      },
-      m: {
-        type: "string",
-      },
-    },
-  },
-} as const;
-
-const grammarSchema = {
-  type: ["array", "null"],
-  items: {
-    type: "object",
-    additionalProperties: false,
-    required: ["p", "n"],
-    properties: {
-      p: {
-        type: "string",
-      },
-      n: {
-        type: "string",
-      },
-    },
-  },
-} as const;
-
-// A pass value is either a legacy boolean or the ISO timestamp of completion (see PracticePasses).
-const passValueSchema = {
-  type: ["boolean", "string"],
-} as const;
-
-const passesSchema = {
-  type: ["object", "null"],
-  additionalProperties: false,
-  properties: {
-    read: passValueSchema,
-    guess: passValueSchema,
-    lookup: passValueSchema,
-    produce: passValueSchema,
-    card: passValueSchema,
-  },
-} as const;
-
-const createPracticeSentenceBody = {
-  type: "object",
-  required: ["text", "language"],
-  additionalProperties: false,
-  properties: {
-    text: {
-      type: "string",
-      minLength: 1,
-    },
-    language: {
-      type: "string",
-      minLength: 1,
-    },
-    readingNote: {
-      type: ["string", "null"],
-    },
-    translation: {
-      type: ["string", "null"],
-    },
-    target: {
-      type: ["string", "null"],
-    },
-    targetKind: {
-      type: ["string", "null"],
-      enum: ["word", "grammar", "idiom", "collocation", "reading", null],
-    },
-    comprehension: {
-      type: ["string", "null"],
-      enum: ["ready", "studying", "skip", null],
-    },
-    guess: {
-      type: ["string", "null"],
-    },
-    literal: {
-      type: ["string", "null"],
-    },
-    register: {
-      type: ["string", "null"],
-    },
-    nuance: {
-      type: ["string", "null"],
-    },
-    words: wordsSchema,
-    grammar: grammarSchema,
-    terms: termsSchema,
-    passes: passesSchema,
-    sourceId: {
-      type: ["string", "null"],
-      format: "uuid",
-    },
-    page: {
-      type: ["string", "null"],
-    },
-    captureId: {
-      type: ["string", "null"],
-      format: "uuid",
-    },
-    sentenceId: {
-      type: ["string", "null"],
-      format: "uuid",
-    },
-    needsCorrection: {
-      type: "boolean",
-    },
-    correction: {
-      type: ["string", "null"],
-    },
-  },
-} as const;
+const createPracticeSentenceBody = createPracticeSentenceJsonSchema;
 
 const updatePracticeSentenceBody = updateBodyOf(createPracticeSentenceBody);
 

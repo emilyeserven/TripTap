@@ -15,76 +15,12 @@ import {
   updateSentence,
 } from "@/services/sentences";
 import { handleUpstreamError } from "@/routes/upstream-errors";
-import { termsSchema } from "@/routes/schemas/terms";
+import {
+  createSentenceJsonSchema,
+  sentenceReadingJsonSchema,
+} from "@sentence-bank/types";
 
-const createSentenceBody = {
-  type: "object",
-  required: ["text", "language"],
-  additionalProperties: false,
-  properties: {
-    text: {
-      type: "string",
-      minLength: 1,
-    },
-    translation: {
-      type: ["string", "null"],
-    },
-    language: {
-      type: "string",
-      minLength: 1,
-    },
-    source: {
-      type: ["string", "null"],
-    },
-    sourceId: {
-      type: ["string", "null"],
-      format: "uuid",
-    },
-    page: {
-      type: ["string", "null"],
-    },
-    notes: {
-      type: ["string", "null"],
-    },
-    tags: {
-      type: ["string", "null"],
-    },
-    terms: {
-      ...termsSchema,
-    },
-    captureId: {
-      type: ["string", "null"],
-      format: "uuid",
-    },
-    vocabIds: {
-      type: "array",
-      items: {
-        type: "string",
-        format: "uuid",
-      },
-    },
-    shadowingCandidate: {
-      type: "boolean",
-    },
-  },
-} as const;
-
-const readingSchema = {
-  type: ["array", "null"],
-  items: {
-    type: "object",
-    additionalProperties: false,
-    required: ["t", "r"],
-    properties: {
-      t: {
-        type: "string",
-      },
-      r: {
-        type: ["string", "null"],
-      },
-    },
-  },
-} as const;
+const createSentenceBody = createSentenceJsonSchema;
 
 const updateSentenceBody = {
   type: "object",
@@ -92,7 +28,7 @@ const updateSentenceBody = {
   properties: {
     ...createSentenceBody.properties,
     // A manual furigana override (clears/edits the generated reading).
-    reading: readingSchema,
+    reading: sentenceReadingJsonSchema,
   },
 } as const;
 
