@@ -15,6 +15,7 @@ import {
   isEntryTouched,
   matchesResource,
   questionLeafSlots,
+  questionSheetDisplayTitle,
   questionSheetSlots,
   resourceFilterOptions,
   visibleSlots,
@@ -190,12 +191,74 @@ describe("answerSheetPartScores", () => {
   });
 });
 
+describe("questionSheetDisplayTitle", () => {
+  it("returns the stored title when there is no resource + section", () => {
+    expect(questionSheetDisplayTitle(listSheet())).toBe("Genki L3");
+    // Resource but no sections → still the stored title.
+    expect(questionSheetDisplayTitle(listSheet({
+      bookmarkTitle: "Genki I",
+    }))).toBe("Genki L3");
+  });
+
+  it("builds 'resource — section(s)' when both are attached, ignoring the stored title", () => {
+    expect(questionSheetDisplayTitle(listSheet({
+      title: "my messy title",
+      bookmarkTitle: "Genki I",
+      sections: [{
+        id: "s1",
+        label: "L3 vocab",
+        type: "page",
+        startValue: null,
+        endValue: null,
+      }],
+    }))).toBe("Genki I — L3 vocab");
+  });
+
+  it("joins multiple sections with commas", () => {
+    expect(questionSheetDisplayTitle(listSheet({
+      bookmarkTitle: "Genki I",
+      sections: [
+        {
+          id: "s1",
+          label: "L3",
+          type: "page",
+          startValue: null,
+          endValue: null,
+        },
+        {
+          id: "s2",
+          label: "L4",
+          type: "page",
+          startValue: null,
+          endValue: null,
+        },
+      ],
+    }))).toBe("Genki I — L3, L4");
+  });
+});
+
 describe("generateAnswerSheetTitle", () => {
   const when = new Date("2026-07-15T12:00:00.000Z");
 
   it("uses the sheet title + date when every part is included", () => {
     expect(generateAnswerSheetTitle(listSheet(), [], when))
       .toBe(`Genki L3 — ${when.toLocaleDateString()}`);
+  });
+
+  it("uses the resource + section as the base when the sheet has them", () => {
+    const sheet = listSheet({
+      title: "ignored",
+      bookmarkTitle: "Genki I",
+      sections: [{
+        id: "s1",
+        label: "L3 vocab",
+        type: "page",
+        startValue: null,
+        endValue: null,
+      }],
+    });
+    expect(generateAnswerSheetTitle(sheet, [], when))
+      .toBe(`Genki I — L3 vocab — ${when.toLocaleDateString()}`);
   });
 
   it("names the included parts when a strict subset is in play", () => {

@@ -8,7 +8,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { AnswerChoiceGroup } from "@/components/AnswerChoiceGroup";
 import { AnswerSheetPartsProgress } from "@/components/AnswerSheetPartsProgress";
-import { SectionBadges } from "@/components/SectionBadges";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -20,6 +19,7 @@ import { useQuestionSheets } from "@/hooks/useQuestionSheets";
 import {
   answerSheetParts,
   generateAnswerSheetTitle,
+  questionSheetDisplayTitle,
   questionSheetPartSlots,
   questionSheetParts,
   questionSheetSlots,
@@ -187,14 +187,9 @@ export function AnswerSheetForm({
 
       <div className="space-y-1.5">
         <Label>Question sheet</Label>
-        <p className="text-sm text-muted-foreground">{selected?.title ?? "Loading…"}</p>
-        {selected && selected.sections.length > 0
-          ? (
-            <div className="flex flex-wrap items-center gap-2">
-              <SectionBadges sections={selected.sections} />
-            </div>
-          )
-          : null}
+        <p className="text-sm text-muted-foreground">
+          {selected ? questionSheetDisplayTitle(selected) : "Loading…"}
+        </p>
       </div>
 
       <div

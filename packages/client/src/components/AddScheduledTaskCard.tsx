@@ -27,7 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { questionSheetParts } from "@/lib/answer-sheets";
+import { questionSheetDisplayTitle, questionSheetParts } from "@/lib/answer-sheets";
 import { tomorrowDateString } from "@/lib/daily-lineup";
 import { newId } from "@/lib/id";
 
@@ -62,7 +62,7 @@ export function AddScheduledTaskCard({
   const parts = selectedQuestionSheet ? questionSheetParts(selectedQuestionSheet) : [];
 
   function sheetLabel(sheet: QuestionSheet): string {
-    return sheet.title?.trim() || "Untitled question sheet";
+    return questionSheetDisplayTitle(sheet).trim() || "Untitled question sheet";
   }
 
   const canAdd = date.length > 0
