@@ -456,6 +456,25 @@ export function dueDateMet(qs: QuestionSheet, answerSheets: AnswerSheet[]): bool
   return answerSheets.some(as => answerSheetMeetsDueDate(qs, as));
 }
 
+/** How far along a question sheet is, judged from its answer sheets. */
+export type QuestionSheetProgress = "not-started" | "in-progress" | "finished";
+
+/**
+ * A question sheet's progress across all its attempts: `finished` when any attempt has every in-play
+ * slot filled ({@link isAnswerSheetComplete}); otherwise `in-progress` when some attempt has at least
+ * one answered slot ({@link isEntryAnswered}); otherwise `not-started` (no attempts, or only empty ones).
+ * `answerSheets` may be the full list — it's filtered to this sheet's attempts here.
+ */
+export function questionSheetProgress(
+  questionSheet: QuestionSheet,
+  answerSheets: AnswerSheet[],
+): QuestionSheetProgress {
+  const attempts = answerSheets.filter(as => as.questionSheetId === questionSheet.id);
+  if (attempts.some(as => isAnswerSheetComplete(questionSheet, as))) return "finished";
+  if (attempts.some(as => as.entries.some(isEntryAnswered))) return "in-progress";
+  return "not-started";
+}
+
 /** The sentinel filter value meaning "no filter applied" for the resource/learning-area dropdowns. */
 export const ALL_FILTER = "all";
 
