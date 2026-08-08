@@ -361,6 +361,24 @@ export function questionSheetDisplayTitle(
 }
 
 /**
+ * An answer sheet's title with a leading resource-title prefix stripped — for display inside a book
+ * group, where the resource title is already the group heading (e.g. "Genki I — L3 vocab — 8/1/2026"
+ * shows as "L3 vocab — 8/1/2026"). Removes a case-insensitive leading `resourceTitle` plus a following
+ * dash/whitespace separator. Returns the full title when it doesn't start with the prefix, when there's
+ * no resource title, or when stripping would leave nothing (the title was just the resource name).
+ */
+export function answerSheetTitleWithoutResource(
+  title: string | null,
+  resourceTitle: string | null,
+): string {
+  const full = title ?? "Answer sheet";
+  const prefix = resourceTitle?.trim();
+  if (!prefix || !full.toLowerCase().startsWith(prefix.toLowerCase())) return full;
+  const rest = full.slice(prefix.length).replace(/^\s*[—–-]\s*/, "").trim();
+  return rest.length > 0 ? rest : full;
+}
+
+/**
  * Build a default answer-sheet title from its question sheet, considering which parts are in play. When
  * a strict, non-empty subset of the sheet's parts is included (some are in `hiddenPartIds`), the
  * included parts are named — "Genki 3 — Parts 1, 3 — 8/1/2026"; otherwise it's just the sheet title and
