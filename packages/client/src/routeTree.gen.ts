@@ -38,6 +38,7 @@ import { Route as MySentencesIndexRouteImport } from './routes/my-sentences.inde
 import { Route as MigakuImportIndexRouteImport } from './routes/migaku-import.index'
 import { Route as ListeningSessionsIndexRouteImport } from './routes/listening-sessions.index'
 import { Route as LessonsIndexRouteImport } from './routes/lessons.index'
+import { Route as KanjiIndexRouteImport } from './routes/kanji.index'
 import { Route as GrammarNotesIndexRouteImport } from './routes/grammar-notes.index'
 import { Route as FindResourceIndexRouteImport } from './routes/find-resource.index'
 import { Route as DrillSessionsIndexRouteImport } from './routes/drill-sessions.index'
@@ -74,6 +75,7 @@ import { Route as ListeningSessionsNewRouteImport } from './routes/listening-ses
 import { Route as ListeningSessionsIdRouteImport } from './routes/listening-sessions.$id'
 import { Route as LessonsNewRouteImport } from './routes/lessons.new'
 import { Route as LessonsIdRouteImport } from './routes/lessons.$id'
+import { Route as KanjiCharRouteImport } from './routes/kanji.$char'
 import { Route as GrammarNotesNewRouteImport } from './routes/grammar-notes.new'
 import { Route as GrammarNotesIdRouteImport } from './routes/grammar-notes.$id'
 import { Route as DrillSessionsStatsRouteImport } from './routes/drill-sessions.stats'
@@ -264,6 +266,11 @@ const LessonsIndexRoute = LessonsIndexRouteImport.update({
   path: '/lessons/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const KanjiIndexRoute = KanjiIndexRouteImport.update({
+  id: '/kanji/',
+  path: '/kanji/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GrammarNotesIndexRoute = GrammarNotesIndexRouteImport.update({
   id: '/grammar-notes/',
   path: '/grammar-notes/',
@@ -442,6 +449,11 @@ const LessonsNewRoute = LessonsNewRouteImport.update({
 const LessonsIdRoute = LessonsIdRouteImport.update({
   id: '/lessons/$id',
   path: '/lessons/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const KanjiCharRoute = KanjiCharRouteImport.update({
+  id: '/kanji/$char',
+  path: '/kanji/$char',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GrammarNotesNewRoute = GrammarNotesNewRouteImport.update({
@@ -696,6 +708,7 @@ export interface FileRoutesByFullPath {
   '/drill-sessions/stats': typeof DrillSessionsStatsRoute
   '/grammar-notes/$id': typeof GrammarNotesIdRouteWithChildren
   '/grammar-notes/new': typeof GrammarNotesNewRoute
+  '/kanji/$char': typeof KanjiCharRoute
   '/lessons/$id': typeof LessonsIdRouteWithChildren
   '/lessons/new': typeof LessonsNewRoute
   '/listening-sessions/$id': typeof ListeningSessionsIdRouteWithChildren
@@ -732,6 +745,7 @@ export interface FileRoutesByFullPath {
   '/drill-sessions/': typeof DrillSessionsIndexRoute
   '/find-resource/': typeof FindResourceIndexRoute
   '/grammar-notes/': typeof GrammarNotesIndexRoute
+  '/kanji/': typeof KanjiIndexRoute
   '/lessons/': typeof LessonsIndexRoute
   '/listening-sessions/': typeof ListeningSessionsIndexRoute
   '/migaku-import/': typeof MigakuImportIndexRoute
@@ -803,6 +817,7 @@ export interface FileRoutesByTo {
   '/drill-sessions/reasons': typeof DrillSessionsReasonsRoute
   '/drill-sessions/stats': typeof DrillSessionsStatsRoute
   '/grammar-notes/new': typeof GrammarNotesNewRoute
+  '/kanji/$char': typeof KanjiCharRoute
   '/lessons/new': typeof LessonsNewRoute
   '/listening-sessions/new': typeof ListeningSessionsNewRoute
   '/migaku-import/$id': typeof MigakuImportIdRoute
@@ -829,6 +844,7 @@ export interface FileRoutesByTo {
   '/drill-sessions': typeof DrillSessionsIndexRoute
   '/find-resource': typeof FindResourceIndexRoute
   '/grammar-notes': typeof GrammarNotesIndexRoute
+  '/kanji': typeof KanjiIndexRoute
   '/lessons': typeof LessonsIndexRoute
   '/listening-sessions': typeof ListeningSessionsIndexRoute
   '/migaku-import': typeof MigakuImportIndexRoute
@@ -905,6 +921,7 @@ export interface FileRoutesById {
   '/drill-sessions/stats': typeof DrillSessionsStatsRoute
   '/grammar-notes/$id': typeof GrammarNotesIdRouteWithChildren
   '/grammar-notes/new': typeof GrammarNotesNewRoute
+  '/kanji/$char': typeof KanjiCharRoute
   '/lessons/$id': typeof LessonsIdRouteWithChildren
   '/lessons/new': typeof LessonsNewRoute
   '/listening-sessions/$id': typeof ListeningSessionsIdRouteWithChildren
@@ -941,6 +958,7 @@ export interface FileRoutesById {
   '/drill-sessions/': typeof DrillSessionsIndexRoute
   '/find-resource/': typeof FindResourceIndexRoute
   '/grammar-notes/': typeof GrammarNotesIndexRoute
+  '/kanji/': typeof KanjiIndexRoute
   '/lessons/': typeof LessonsIndexRoute
   '/listening-sessions/': typeof ListeningSessionsIndexRoute
   '/migaku-import/': typeof MigakuImportIndexRoute
@@ -1018,6 +1036,7 @@ export interface FileRouteTypes {
     | '/drill-sessions/stats'
     | '/grammar-notes/$id'
     | '/grammar-notes/new'
+    | '/kanji/$char'
     | '/lessons/$id'
     | '/lessons/new'
     | '/listening-sessions/$id'
@@ -1054,6 +1073,7 @@ export interface FileRouteTypes {
     | '/drill-sessions/'
     | '/find-resource/'
     | '/grammar-notes/'
+    | '/kanji/'
     | '/lessons/'
     | '/listening-sessions/'
     | '/migaku-import/'
@@ -1125,6 +1145,7 @@ export interface FileRouteTypes {
     | '/drill-sessions/reasons'
     | '/drill-sessions/stats'
     | '/grammar-notes/new'
+    | '/kanji/$char'
     | '/lessons/new'
     | '/listening-sessions/new'
     | '/migaku-import/$id'
@@ -1151,6 +1172,7 @@ export interface FileRouteTypes {
     | '/drill-sessions'
     | '/find-resource'
     | '/grammar-notes'
+    | '/kanji'
     | '/lessons'
     | '/listening-sessions'
     | '/migaku-import'
@@ -1226,6 +1248,7 @@ export interface FileRouteTypes {
     | '/drill-sessions/stats'
     | '/grammar-notes/$id'
     | '/grammar-notes/new'
+    | '/kanji/$char'
     | '/lessons/$id'
     | '/lessons/new'
     | '/listening-sessions/$id'
@@ -1262,6 +1285,7 @@ export interface FileRouteTypes {
     | '/drill-sessions/'
     | '/find-resource/'
     | '/grammar-notes/'
+    | '/kanji/'
     | '/lessons/'
     | '/listening-sessions/'
     | '/migaku-import/'
@@ -1338,6 +1362,7 @@ export interface RootRouteChildren {
   DrillSessionsStatsRoute: typeof DrillSessionsStatsRoute
   GrammarNotesIdRoute: typeof GrammarNotesIdRouteWithChildren
   GrammarNotesNewRoute: typeof GrammarNotesNewRoute
+  KanjiCharRoute: typeof KanjiCharRoute
   LessonsIdRoute: typeof LessonsIdRouteWithChildren
   LessonsNewRoute: typeof LessonsNewRoute
   ListeningSessionsIdRoute: typeof ListeningSessionsIdRouteWithChildren
@@ -1374,6 +1399,7 @@ export interface RootRouteChildren {
   DrillSessionsIndexRoute: typeof DrillSessionsIndexRoute
   FindResourceIndexRoute: typeof FindResourceIndexRoute
   GrammarNotesIndexRoute: typeof GrammarNotesIndexRoute
+  KanjiIndexRoute: typeof KanjiIndexRoute
   LessonsIndexRoute: typeof LessonsIndexRoute
   ListeningSessionsIndexRoute: typeof ListeningSessionsIndexRoute
   MigakuImportIndexRoute: typeof MigakuImportIndexRoute
@@ -1595,6 +1621,13 @@ declare module '@tanstack/react-router' {
       path: '/lessons'
       fullPath: '/lessons/'
       preLoaderRoute: typeof LessonsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/kanji/': {
+      id: '/kanji/'
+      path: '/kanji'
+      fullPath: '/kanji/'
+      preLoaderRoute: typeof KanjiIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/grammar-notes/': {
@@ -1847,6 +1880,13 @@ declare module '@tanstack/react-router' {
       path: '/lessons/$id'
       fullPath: '/lessons/$id'
       preLoaderRoute: typeof LessonsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/kanji/$char': {
+      id: '/kanji/$char'
+      path: '/kanji/$char'
+      fullPath: '/kanji/$char'
+      preLoaderRoute: typeof KanjiCharRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/grammar-notes/new': {
@@ -2381,6 +2421,7 @@ const rootRouteChildren: RootRouteChildren = {
   DrillSessionsStatsRoute: DrillSessionsStatsRoute,
   GrammarNotesIdRoute: GrammarNotesIdRouteWithChildren,
   GrammarNotesNewRoute: GrammarNotesNewRoute,
+  KanjiCharRoute: KanjiCharRoute,
   LessonsIdRoute: LessonsIdRouteWithChildren,
   LessonsNewRoute: LessonsNewRoute,
   ListeningSessionsIdRoute: ListeningSessionsIdRouteWithChildren,
@@ -2417,6 +2458,7 @@ const rootRouteChildren: RootRouteChildren = {
   DrillSessionsIndexRoute: DrillSessionsIndexRoute,
   FindResourceIndexRoute: FindResourceIndexRoute,
   GrammarNotesIndexRoute: GrammarNotesIndexRoute,
+  KanjiIndexRoute: KanjiIndexRoute,
   LessonsIndexRoute: LessonsIndexRoute,
   ListeningSessionsIndexRoute: ListeningSessionsIndexRoute,
   MigakuImportIndexRoute: MigakuImportIndexRoute,

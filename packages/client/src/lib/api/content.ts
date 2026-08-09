@@ -6,6 +6,9 @@ import type {
   CreateSourceInput,
   CreateVocabInput,
   CreateMySentenceInput,
+  KanjiDetail,
+  KanjiListQuery,
+  KanjiSummary,
   MySentence,
   PracticeSentence,
   PracticeSentenceImportInput,
@@ -16,6 +19,7 @@ import type {
   UpdatePracticeSentenceInput,
   UpdateSentenceInput,
   UpdateShadowingListInput,
+  UpdateKanjiStatusInput,
   UpdateSourceInput,
   UpdateVocabInput,
   Vocab,
@@ -192,3 +196,25 @@ export const sourcesApi = {
 };
 
 export const shadowingListsApi = crudApi<ShadowingList, CreateShadowingListInput, UpdateShadowingListInput>("/shadowing-lists");
+
+/**
+ * The Kanji tracker. Not `crudApi()`: there is nothing to create or delete — the grid is derived
+ * from the corpus — the key is a character rather than a uuid, and the list takes filters.
+ */
+export const kanjiApi = {
+  list: (query: KanjiListQuery = {}) => {
+    const params = new URLSearchParams();
+    if (query.status) params.set("status", query.status);
+    if (query.kind) params.set("kind", query.kind);
+    if (query.minOccurrences != null) params.set("minOccurrences", String(query.minOccurrences));
+    if (query.sort) params.set("sort", query.sort);
+    const qs = params.toString();
+    return request<KanjiSummary[]>(`/kanji${qs ? `?${qs}` : ""}`);
+  },
+  get: (char: string) => request<KanjiDetail>(`/kanji/${encodeURIComponent(char)}`),
+  setStatus: (char: string, input: UpdateKanjiStatusInput) =>
+    request<KanjiDetail>(`/kanji/${encodeURIComponent(char)}/status`, {
+      method: "PUT",
+      body: JSON.stringify(input),
+    }),
+};

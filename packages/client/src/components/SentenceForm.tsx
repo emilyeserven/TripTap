@@ -2,6 +2,7 @@ import type { Sentence, SentenceTermRef } from "@sentence-bank/types";
 
 import { useId, useMemo, useState } from "react";
 
+import { HAS_KANJI_RE } from "@sentence-bank/types";
 import { useForm } from "@tanstack/react-form";
 import { PenLine } from "lucide-react";
 import { z } from "zod";
@@ -33,8 +34,6 @@ const sentenceSchema = z.object({
   tags: z.string(),
   notes: z.string(),
 });
-
-const KANJI = /[㐀-䶿一-鿿々]/;
 
 /** Split the free-text comma-separated `tags` string into trimmed, non-empty tag names. */
 function splitTags(value: string): string[] {
@@ -99,7 +98,7 @@ export function SentenceForm({
   const [resourceTerms, setResourceTerms] = useState<SentenceTermRef[]>(termGroups?.resource ?? []);
   const [editFuri, setEditFuri] = useState(false);
 
-  const hasKanji = sentence ? KANJI.test(sentence.text) : false;
+  const hasKanji = sentence ? HAS_KANJI_RE.test(sentence.text) : false;
 
   const form = useForm({
     defaultValues: {

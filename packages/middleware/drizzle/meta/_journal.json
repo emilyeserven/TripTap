@@ -554,6 +554,13 @@
       "when": 1786025476737,
       "tag": "0078_fixed_saracen",
       "breakpoints": true
+    },
+    {
+      "idx": 79,
+      "version": "7",
+      "when": 1786243316267,
+      "tag": "0079_typical_mimic",
+      "breakpoints": true
     }
   ]
 }

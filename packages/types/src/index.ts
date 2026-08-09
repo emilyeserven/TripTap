@@ -17,6 +17,8 @@ export * from "./drill-session.js";
 export * from "./furigana.js";
 export * from "./grammar-note.js";
 export * from "./handwriting.js";
+export * from "./kanji.js";
+export * from "./kanji-chars.js";
 export * from "./lesson.js";
 export * from "./listening-session.js";
 export * from "./migaku-import.js";

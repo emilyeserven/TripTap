@@ -18,6 +18,7 @@ import type {
   GrammarExample,
   GrammarRelation,
   GrammarResourceRef,
+  KanjiStatus,
   LessonListeningNote,
   LessonWordNote,
   LearningArea,
@@ -1202,3 +1203,29 @@ export const chunkCards = pgTable("chunk_cards", {
 
 export type ChunkCardRow = typeof chunkCards.$inferSelect;
 export type NewChunkCardRow = typeof chunkCards.$inferInsert;
+
+/**
+ * `kanji_status` — the learner's self-assigned progress on one character.
+ *
+ * The *only* persisted part of the Kanji feature. Occurrence counts, first/last-seen and the list of
+ * items a character appears in are all derived by scanning the text-bearing tables on read (see
+ * `services/kanji/`), the same way XP is derived rather than stored — so the numbers can never drift
+ * from the corpus they describe.
+ *
+ * Keyed by the character itself rather than a surrogate uuid: a kanji *is* its own stable identity,
+ * and there is nothing to reference it by id from.
+ */
+export const kanjiStatus = pgTable("kanji_status", {
+  // A single Han code point.
+  char: text("char").primaryKey(),
+  // "new" | "learning" | "known". Free-text on purpose; the allowed set is validated at the route
+  // layer, matching how `practice_sentences.comprehension` and `drill_sessions` handle their enums.
+  status: text("status").$type<KanjiStatus>().notNull().default("new"),
+  note: text("note"),
+  updatedAt: timestamp("updated_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+});
+
+export type KanjiStatusRow = typeof kanjiStatus.$inferSelect;
+export type NewKanjiStatusRow = typeof kanjiStatus.$inferInsert;

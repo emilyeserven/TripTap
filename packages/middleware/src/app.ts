@@ -19,6 +19,7 @@ import { drillSessionRoutes } from "@/routes/drill-sessions";
 import { grammarNoteRoutes } from "@/routes/grammar-notes";
 import { handwritingRoutes } from "@/routes/handwriting";
 import { healthRoutes } from "@/routes/health";
+import { kanjiRoutes } from "@/routes/kanji";
 import { lessonRoutes } from "@/routes/lessons";
 import { listeningSessionsRoutes } from "@/routes/listening-sessions";
 import { migakuImportRoutes } from "@/routes/migaku-import";
@@ -100,6 +101,10 @@ export async function buildApp(): Promise<FastifyInstance> {
         {
           name: "dialogues",
           description: "Multi-speaker scripts rendered as chat transcripts",
+        },
+        {
+          name: "kanji",
+          description: "Per-character view of the learner's corpus, derived on read",
         },
         {
           name: "migaku-import",
@@ -252,6 +257,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(writingPromptRoutes);
   await app.register(tutorRoutes);
   await app.register(grammarNoteRoutes);
+  await app.register(kanjiRoutes);
   await app.register(lessonRoutes);
   await app.register(drillReasonCategoryRoutes);
   await app.register(drillSessionRoutes);
