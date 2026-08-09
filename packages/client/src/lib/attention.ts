@@ -88,12 +88,12 @@ export interface AttentionInputs {
 /** Cap on rows shown per group; the group's `count` still reports the uncapped total. */
 export const ATTENTION_GROUP_DISPLAY_LIMIT = 5;
 /** Days after which a corrected writing is ready to rewrite blind (shared with the rewrite page). */
-export const REWRITE_READY_DAYS = 7;
+const REWRITE_READY_DAYS = 7;
 /** How far ahead (in days) a due question sheet counts as "due soon". */
-export const DUE_SOON_DAYS = 7;
+const DUE_SOON_DAYS = 7;
 
 /** Days since an ISO/date string (fractional). */
-export function daysSince(value: string, now: Date): number {
+function daysSince(value: string, now: Date): number {
   return (now.getTime() - new Date(value).getTime()) / 86_400_000;
 }
 
