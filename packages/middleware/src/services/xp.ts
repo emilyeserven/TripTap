@@ -40,6 +40,7 @@ import {
   writings,
 } from "@/db/schema";
 import { getLearnerProfile, getXpRates } from "@/services/settings";
+import { computeStreak } from "@/services/streak";
 
 /**
  * XP is *derived*: every function here recounts the learner's persisted content instead of reading a
@@ -758,6 +759,19 @@ export function localDateString(at: Date, offsetMinutes: number): string {
 }
 
 /**
+ * Total XP per learning-day key across all history, for streak counting. Date-only grants (drills,
+ * lessons) carry their learner-entered date and bypass the offset, exactly as in `summarizeGrants`.
+ */
+export function dayXpTotals(grants: XpGrant[], dayOffset: number): Map<string, number> {
+  const totals = new Map<string, number>();
+  for (const grant of grants) {
+    const key = grant.dateOnly ?? localDateString(grant.at, dayOffset);
+    totals.set(key, (totals.get(key) ?? 0) + grant.xp);
+  }
+  return totals;
+}
+
+/**
  * Fold a flat grant list into the wire summary: zero-filled areas, a recent-window rollup, and a
  * today total computed against the caller's local calendar day (`tzOffsetMinutes`, as reported by
  * the browser's `getTimezoneOffset()`).
@@ -930,6 +944,7 @@ export function summarizeGrants(
       areas: yesterdayByArea,
     },
     dailyAreas,
+    streak: null,
   };
 }
 
@@ -1099,5 +1114,15 @@ export async function loadXpGrants(): Promise<XpGrant[]> {
  */
 export async function getXpSummary(days: number, tzOffsetMinutes = 0): Promise<XpSummary> {
   const [grants, profile] = await Promise.all([loadXpGrants(), getLearnerProfile()]);
-  return summarizeGrants(grants, days, new Date(), tzOffsetMinutes, profile.dayStartHour);
+  const now = new Date();
+  const summary = summarizeGrants(grants, days, now, tzOffsetMinutes, profile.dayStartHour);
+  if (profile.dailyXpGoal && profile.dailyXpGoal > 0) {
+    const dayOffset = tzOffsetMinutes + profile.dayStartHour * 60;
+    summary.streak = computeStreak(
+      dayXpTotals(grants, dayOffset),
+      profile.dailyXpGoal,
+      localDateString(now, dayOffset),
+    );
+  }
+  return summary;
 }
