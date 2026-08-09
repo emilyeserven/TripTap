@@ -119,18 +119,20 @@ export const createLessonSchema = z.object({
 export const createLessonJsonSchema = objectJsonSchema(createLessonSchema);
 
 /**
- * `listeningNotes` is overridden rather than inferred: the route requires only `id` and `text` on an
- * entry, while {@link LessonListeningNote} also declares `context`. Inferring would loosen the stored
- * type for every reader; narrowing the schema would reject entries the API accepts today.
+ * `listeningNotes` and `wordNotes` are overridden rather than inferred: the route requires only the
+ * core fields on an entry, while {@link LessonListeningNote} / {@link LessonWordNote} declare the
+ * rest present-but-nullable. Inferring would loosen the stored type for every reader; narrowing the
+ * schema would reject entries the API accepts today.
  *
  * `SessionXpInput` is still extended for the two XP fields so the shared session contract stays the
  * one declaration of what "how this counts" means.
  */
 export type CreateLessonInput = Omit<
   z.infer<typeof createLessonSchema>,
-  "listeningNotes" | "learningArea" | "countsTowardXp"
+  "listeningNotes" | "wordNotes" | "learningArea" | "countsTowardXp"
 > & SessionXpInput & {
   listeningNotes?: LessonListeningNote[] | null;
+  wordNotes?: LessonWordNote[] | null;
 };
 
 /** Payload for partially updating a lesson. */

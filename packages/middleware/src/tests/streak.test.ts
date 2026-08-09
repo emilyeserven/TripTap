@@ -80,7 +80,7 @@ test("dayXpTotals honors dateOnly and applies the day offset to timestamped gran
     // Date-only source: the learner-entered date wins regardless of the offset.
     {
       area: "Grammar",
-      feature: "drill",
+      feature: "drills",
       xp: 5,
       at: new Date("2026-08-05T00:00:00Z"),
       dateOnly: "2026-08-05",

@@ -97,6 +97,7 @@ test("readingXp counts a verified translated line at 2xp and only banked word no
           meaning: "hot",
           status: "shaky",
           flashcard: false,
+          flashcardMadeAt: null,
           // Banked — the learner wrote a sentence from it, so it earns XP.
           mySentenceId: "ms1",
         },
@@ -107,6 +108,7 @@ test("readingXp counts a verified translated line at 2xp and only banked word no
           meaning: "cool",
           status: "unknown",
           flashcard: false,
+          flashcardMadeAt: null,
           // No sentence yet — earns nothing.
           mySentenceId: null,
         },
@@ -679,6 +681,7 @@ test("isFilledWordNote requires word, reading, and meaning", () => {
     notes: null,
     status: "shaky" as const,
     flashcard: false,
+    flashcardMadeAt: null,
   };
   assert.ok(isFilledWordNote({
     ...base,
@@ -775,6 +778,7 @@ test("grant functions honor overridden rates", () => {
       meaning: "hot",
       status: "shaky",
       flashcard: false,
+      flashcardMadeAt: null,
       mySentenceId: "ms1",
     }],
     createdAt: RECENT,
