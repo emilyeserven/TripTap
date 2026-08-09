@@ -8,19 +8,25 @@ import { Checkbox } from "@/components/ui/checkbox";
 /**
  * The shared control row for one word note: the Shaky / Didn't-know status toggle, the
  * add-to-flashcards checkbox, and the delete button. Used by the lesson and reading-session
- * word-note editors.
+ * word-note editors. When the note is flagged for a flashcard and the caller wires
+ * `onFlashcardMadeChange`, a second "Made" checkbox records that the card actually got created
+ * (checking stamps `flashcardMadeAt`; unchecking clears it).
  */
 export function WordNoteControls({
   status,
   flashcard,
+  flashcardMadeAt,
   onStatusChange,
   onFlashcardChange,
+  onFlashcardMadeChange,
   onDelete,
 }: {
   status: WordNoteStatus;
   flashcard: boolean;
+  flashcardMadeAt?: string | null;
   onStatusChange: (status: WordNoteStatus) => void;
   onFlashcardChange: (flashcard: boolean) => void;
+  onFlashcardMadeChange?: (made: boolean) => void;
   onDelete: () => void;
 }) {
   return (
@@ -45,6 +51,15 @@ export function WordNoteControls({
         />
         Add to flashcards later
       </label>
+      {flashcard && onFlashcardMadeChange && (
+        <label className="flex items-center gap-2 text-sm">
+          <Checkbox
+            checked={Boolean(flashcardMadeAt)}
+            onCheckedChange={v => onFlashcardMadeChange(v === true)}
+          />
+          Made
+        </label>
+      )}
       <Button
         type="button"
         variant="ghost"

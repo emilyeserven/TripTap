@@ -7,6 +7,8 @@ import { AddSentenceFromWordNoteDialog } from "@/components/AddSentenceFromWordN
 import { GrammarTermBadges } from "@/components/GrammarTermBadges";
 import { TranslationVerdictEditor } from "@/components/TranslationVerdictEditor";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { WordNotesRenshuuExport } from "@/components/WordNotesRenshuuExport";
 import { useUpdateReadingSession } from "@/hooks/useReadingSessions";
 import { useSources } from "@/hooks/useSources";
 import { READING_DIFFICULTIES } from "@/lib/reading-difficulty";
@@ -84,6 +86,22 @@ export function ReadingSessionView({
           : w)),
       },
     }).then(() => undefined);
+
+  // A successful Renshuu copy stamps the exported notes as made, so the attention inbox clears them.
+  const markFlashcardsMade = (noteIds: string[]) => {
+    const madeAt = new Date().toISOString();
+    update.mutate({
+      id: session.id,
+      input: {
+        wordNotes: wordNotes.map(w => (noteIds.includes(w.id)
+          ? {
+            ...w,
+            flashcardMadeAt: madeAt,
+          }
+          : w)),
+      },
+    });
+  };
 
   return (
     <div className="space-y-6">
@@ -234,7 +252,13 @@ export function ReadingSessionView({
               )}
 
           <div className="space-y-3">
-            <p className="text-sm font-semibold">Word notes</p>
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-sm font-semibold">Word notes</p>
+              <WordNotesRenshuuExport
+                wordNotes={wordNotes}
+                onExported={markFlashcardsMade}
+              />
+            </div>
             {wordNotes.length === 0
               ? <p className="text-sm text-muted-foreground">No words noted.</p>
               : (
@@ -256,7 +280,24 @@ export function ReadingSessionView({
                       >
                         {w.status === "unknown" ? "Didn't know" : "Shaky"}
                       </Badge>
-                      {w.flashcard ? <Badge variant="outline">Flashcard</Badge> : null}
+                      {w.flashcard
+                        ? (
+                          <label
+                            className="
+                              flex items-center gap-1.5 text-xs
+                              text-muted-foreground
+                            "
+                          >
+                            <Checkbox
+                              checked={Boolean(w.flashcardMadeAt)}
+                              onCheckedChange={v => void saveWordNote(w.id, {
+                                flashcardMadeAt: v === true ? new Date().toISOString() : null,
+                              })}
+                            />
+                            Card made
+                          </label>
+                        )
+                        : null}
                       <AddSentenceFromWordNoteDialog
                         note={w}
                         language={session.language}

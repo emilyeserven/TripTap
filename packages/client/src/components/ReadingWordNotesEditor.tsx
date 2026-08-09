@@ -133,11 +133,15 @@ export function ReadingWordNotesEditor({
                 <WordNoteControls
                   status={w.status}
                   flashcard={w.flashcard}
+                  flashcardMadeAt={w.flashcardMadeAt}
                   onStatusChange={status => patchWord(w.id, {
                     status,
                   })}
                   onFlashcardChange={flashcard => patchWord(w.id, {
                     flashcard,
+                  })}
+                  onFlashcardMadeChange={made => patchWord(w.id, {
+                    flashcardMadeAt: made ? new Date().toISOString() : null,
                   })}
                   onDelete={() => removeWord(w.id)}
                 />

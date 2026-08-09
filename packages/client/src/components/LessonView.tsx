@@ -6,10 +6,11 @@ import { Link } from "@tanstack/react-router";
 import { Furi } from "@/components/ai-lesson/Furi";
 import { LessonMySentences } from "@/components/LessonMySentences";
 import { LessonSections } from "@/components/LessonSections";
-import { LessonWordNotesRenshuuExport } from "@/components/LessonWordNotesRenshuuExport";
 import { NotesEditor } from "@/components/NotesEditor";
 import { Badge } from "@/components/ui/badge";
+import { WordNotesRenshuuExport } from "@/components/WordNotesRenshuuExport";
 import { useAnswerSheets } from "@/hooks/useAnswerSheets";
+import { useUpdateLesson } from "@/hooks/useLessons";
 import { useTutors } from "@/hooks/useTutors";
 import { WORD_COLUMN_CLASS } from "@/lib/lessonLayout";
 import { useDisplayStore } from "@/stores/displayStore";
@@ -26,6 +27,7 @@ export function LessonView({
 }) {
   const tutors = useTutors();
   const answerSheets = useAnswerSheets();
+  const updateLesson = useUpdateLesson();
   const wordColumns = useDisplayStore(s => s.lessonWordColumns);
 
   const tutor = (tutors.data ?? []).find(t => t.id === lesson.tutorId);
@@ -51,11 +53,32 @@ export function LessonView({
     });
   }
 
+  // A successful Renshuu copy stamps the exported notes as made, so the attention inbox clears them.
+  const markFlashcardsMade = (noteIds: string[]) => {
+    const madeAt = new Date().toISOString();
+    updateLesson.mutate({
+      id: lesson.id,
+      input: {
+        wordNotes: wordNotes.map(w => (noteIds.includes(w.id)
+          ? {
+            ...w,
+            flashcardMadeAt: madeAt,
+          }
+          : w)),
+      },
+    });
+  };
+
   sections.push({
     id: "words",
     title: "Word notes",
     action: wordNotes.some(w => w.flashcard && (w.word ?? "").trim() !== "")
-      ? <LessonWordNotesRenshuuExport wordNotes={wordNotes} />
+      ? (
+        <WordNotesRenshuuExport
+          wordNotes={wordNotes}
+          onExported={markFlashcardsMade}
+        />
+      )
       : undefined,
     node: wordNotes.length === 0
       ? <p className="text-sm text-muted-foreground">No word notes.</p>
@@ -82,7 +105,13 @@ export function LessonView({
                 <Badge variant="outline">
                   {w.status === "shaky" ? "Shaky" : "Didn't know"}
                 </Badge>
-                {w.flashcard ? <Badge variant="secondary">Flashcard</Badge> : null}
+                {w.flashcard
+                  ? (
+                    <Badge variant="secondary">
+                      {w.flashcardMadeAt ? "Flashcard ✓" : "Flashcard"}
+                    </Badge>
+                  )
+                  : null}
               </div>
               {w.meaning ? <p className="text-sm">{w.meaning}</p> : null}
               {w.notes

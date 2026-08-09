@@ -44,12 +44,12 @@ export function useCopyToClipboard({
   const copy = useCallback(async (
     text: string,
     fallbackEl?: HTMLTextAreaElement | HTMLInputElement | null,
-  ) => {
+  ): Promise<boolean> => {
     try {
       if (globalThis.navigator?.clipboard?.writeText) {
         await globalThis.navigator.clipboard.writeText(text);
         markCopied(true);
-        return;
+        return true;
       }
     }
     catch {
@@ -61,13 +61,14 @@ export function useCopyToClipboard({
       try {
         globalThis.document.execCommand("copy");
         markCopied(true);
-        return;
+        return true;
       }
       catch {
         // ignore — reported via the reset below
       }
     }
     markCopied(false);
+    return false;
   }, [markCopied]);
 
   return {
