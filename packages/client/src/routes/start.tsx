@@ -34,6 +34,7 @@ import { GoalAchievementStrip } from "@/components/GoalAchievementStrip";
 import { LearningAreaBadges } from "@/components/LearningAreaBadges";
 import { LineupExclusionsEditor } from "@/components/LineupExclusionsEditor";
 import { ScheduledTasksCard } from "@/components/ScheduledTasksCard";
+import { StreakBadge } from "@/components/StreakBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -423,10 +424,13 @@ function StartPage() {
       </p>
 
       {summary.data && (
-        <DailyGoalProgress
-          todayXp={summary.data.today.totalXp}
-          dailyXpGoal={profile.data?.dailyXpGoal ?? null}
-        />
+        <div className="space-y-2">
+          <DailyGoalProgress
+            todayXp={summary.data.today.totalXp}
+            dailyXpGoal={profile.data?.dailyXpGoal ?? null}
+          />
+          <StreakBadge streak={summary.data.streak} />
+        </div>
       )}
 
       <DailyTasksCard
