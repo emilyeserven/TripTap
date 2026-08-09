@@ -127,6 +127,7 @@ export function NotesEditor({
                 notes: null,
                 status: "shaky",
                 flashcard: false,
+                flashcardMadeAt: null,
               },
             ],
           },

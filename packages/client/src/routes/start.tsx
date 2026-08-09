@@ -26,10 +26,10 @@ import {
 
 import { AddDailyTaskCard } from "@/components/AddDailyTaskCard";
 import { AddScheduledTaskCard } from "@/components/AddScheduledTaskCard";
+import { AttentionCard } from "@/components/AttentionCard";
 import { DailyGoalProgress } from "@/components/DailyGoalProgress";
 import { DailyLineupCard } from "@/components/DailyLineupCard";
 import { DailyTasksCard } from "@/components/DailyTasksCard";
-import { DueSoonCard } from "@/components/DueSoonCard";
 import { GoalAchievementStrip } from "@/components/GoalAchievementStrip";
 import { LearningAreaBadges } from "@/components/LearningAreaBadges";
 import { LineupExclusionsEditor } from "@/components/LineupExclusionsEditor";
@@ -705,7 +705,7 @@ function StartPage() {
         </CardContent>
       </Card>
 
-      <DueSoonCard />
+      <AttentionCard />
     </section>
   );
 }

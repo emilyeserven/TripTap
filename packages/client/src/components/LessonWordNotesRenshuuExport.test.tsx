@@ -14,6 +14,7 @@ function note(overrides: Partial<LessonWordNote>): LessonWordNote {
     notes: null,
     status: "shaky",
     flashcard: false,
+    flashcardMadeAt: null,
     ...overrides,
   };
 }

@@ -44,6 +44,7 @@ export function ReadingWordNotesEditor({
       meaning: null,
       status: "shaky",
       flashcard: false,
+      flashcardMadeAt: null,
       mySentenceId: null,
     }]);
   const patchWord = (id: string, patch: Partial<WordNote>) =>
