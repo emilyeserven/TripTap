@@ -88,6 +88,25 @@ export function useUpdateAiLessonGrammarTerms() {
   });
 }
 
+export function useUpdateAiLessonCultureTopics() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id, topicIds,
+    }: { id: string;
+      topicIds: string[] | null; }) =>
+      aiLessonsApi.updateCultureTopics(id, topicIds),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["ai-lesson-content"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: AI_LESSONS_KEY,
+      });
+    },
+  });
+}
+
 export function useUpdateSourceSentenceTerms() {
   const queryClient = useQueryClient();
   return useMutation({

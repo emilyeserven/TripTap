@@ -1,5 +1,6 @@
 import type { AiLessonRef } from "./AiLessonBadge";
 import type { CultureItem } from "@sentence-bank/types";
+import type { ReactNode } from "react";
 
 import { AiLessonBadge } from "./AiLessonBadge";
 import { DualJP } from "./DualJP";
@@ -8,11 +9,12 @@ import { VocabPill } from "./VocabPill";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-/** A single culture-context card. */
+/** A single culture-context card. `footer` slots extra chrome (e.g. the topic tagger) at the end. */
 export function CultureCard({
-  culture: c, aiLesson,
+  culture: c, aiLesson, footer,
 }: { culture: CultureItem;
-  aiLesson?: AiLessonRef; }) {
+  aiLesson?: AiLessonRef;
+  footer?: ReactNode; }) {
   return (
     <Card>
       <CardHeader>
@@ -59,6 +61,7 @@ export function CultureCard({
             ))}
           </div>
         )}
+        {footer}
       </CardContent>
     </Card>
   );

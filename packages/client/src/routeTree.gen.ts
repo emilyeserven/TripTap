@@ -18,7 +18,6 @@ import { Route as RenshuuRouteImport } from './routes/renshuu'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as GrammarRouteImport } from './routes/grammar'
 import { Route as ExercisesRouteImport } from './routes/exercises'
-import { Route as CultureRouteImport } from './routes/culture'
 import { Route as CaptureRouteImport } from './routes/capture'
 import { Route as AnkiRouteImport } from './routes/anki'
 import { Route as IndexRouteImport } from './routes/index'
@@ -43,6 +42,7 @@ import { Route as GrammarNotesIndexRouteImport } from './routes/grammar-notes.in
 import { Route as FindResourceIndexRouteImport } from './routes/find-resource.index'
 import { Route as DrillSessionsIndexRouteImport } from './routes/drill-sessions.index'
 import { Route as DialoguesIndexRouteImport } from './routes/dialogues.index'
+import { Route as CultureIndexRouteImport } from './routes/culture.index'
 import { Route as CorrectionsIndexRouteImport } from './routes/corrections.index'
 import { Route as CollectionsIndexRouteImport } from './routes/collections.index'
 import { Route as CapturesIndexRouteImport } from './routes/captures.index'
@@ -84,6 +84,9 @@ import { Route as DrillSessionsNewRouteImport } from './routes/drill-sessions.ne
 import { Route as DrillSessionsIdRouteImport } from './routes/drill-sessions.$id'
 import { Route as DialoguesNewRouteImport } from './routes/dialogues.new'
 import { Route as DialoguesIdRouteImport } from './routes/dialogues.$id'
+import { Route as CultureTopicsRouteImport } from './routes/culture.topics'
+import { Route as CultureNewRouteImport } from './routes/culture.new'
+import { Route as CultureIdRouteImport } from './routes/culture.$id'
 import { Route as CorrectionsTriageRouteImport } from './routes/corrections.triage'
 import { Route as CorrectionsLogRouteImport } from './routes/corrections.log'
 import { Route as CorrectionsGroupsRouteImport } from './routes/corrections.groups'
@@ -105,6 +108,7 @@ import { Route as LessonsIdIndexRouteImport } from './routes/lessons.$id.index'
 import { Route as GrammarNotesIdIndexRouteImport } from './routes/grammar-notes.$id.index'
 import { Route as DrillSessionsIdIndexRouteImport } from './routes/drill-sessions.$id.index'
 import { Route as DialoguesIdIndexRouteImport } from './routes/dialogues.$id.index'
+import { Route as CultureIdIndexRouteImport } from './routes/culture.$id.index'
 import { Route as AnswerSheetsIdIndexRouteImport } from './routes/answer-sheets.$id.index'
 import { Route as TutorsIdEditRouteImport } from './routes/tutors.$id.edit'
 import { Route as TheorySessionsIdEditRouteImport } from './routes/theory-sessions.$id.edit'
@@ -119,6 +123,7 @@ import { Route as LessonsIdEditRouteImport } from './routes/lessons.$id.edit'
 import { Route as GrammarNotesIdEditRouteImport } from './routes/grammar-notes.$id.edit'
 import { Route as DrillSessionsIdEditRouteImport } from './routes/drill-sessions.$id.edit'
 import { Route as DialoguesIdEditRouteImport } from './routes/dialogues.$id.edit'
+import { Route as CultureIdEditRouteImport } from './routes/culture.$id.edit'
 import { Route as AnswerSheetsIdEditRouteImport } from './routes/answer-sheets.$id.edit'
 
 const VocabularyRoute = VocabularyRouteImport.update({
@@ -164,11 +169,6 @@ const GrammarRoute = GrammarRouteImport.update({
 const ExercisesRoute = ExercisesRouteImport.update({
   id: '/exercises',
   path: '/exercises',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CultureRoute = CultureRouteImport.update({
-  id: '/culture',
-  path: '/culture',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CaptureRoute = CaptureRouteImport.update({
@@ -289,6 +289,11 @@ const DrillSessionsIndexRoute = DrillSessionsIndexRouteImport.update({
 const DialoguesIndexRoute = DialoguesIndexRouteImport.update({
   id: '/dialogues/',
   path: '/dialogues/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CultureIndexRoute = CultureIndexRouteImport.update({
+  id: '/culture/',
+  path: '/culture/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CorrectionsIndexRoute = CorrectionsIndexRouteImport.update({
@@ -496,6 +501,21 @@ const DialoguesIdRoute = DialoguesIdRouteImport.update({
   path: '/dialogues/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CultureTopicsRoute = CultureTopicsRouteImport.update({
+  id: '/culture/topics',
+  path: '/culture/topics',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CultureNewRoute = CultureNewRouteImport.update({
+  id: '/culture/new',
+  path: '/culture/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CultureIdRoute = CultureIdRouteImport.update({
+  id: '/culture/$id',
+  path: '/culture/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CorrectionsTriageRoute = CorrectionsTriageRouteImport.update({
   id: '/corrections/triage',
   path: '/corrections/triage',
@@ -602,6 +622,11 @@ const DialoguesIdIndexRoute = DialoguesIdIndexRouteImport.update({
   path: '/',
   getParentRoute: () => DialoguesIdRoute,
 } as any)
+const CultureIdIndexRoute = CultureIdIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => CultureIdRoute,
+} as any)
 const AnswerSheetsIdIndexRoute = AnswerSheetsIdIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -672,6 +697,11 @@ const DialoguesIdEditRoute = DialoguesIdEditRouteImport.update({
   path: '/edit',
   getParentRoute: () => DialoguesIdRoute,
 } as any)
+const CultureIdEditRoute = CultureIdEditRouteImport.update({
+  id: '/edit',
+  path: '/edit',
+  getParentRoute: () => CultureIdRoute,
+} as any)
 const AnswerSheetsIdEditRoute = AnswerSheetsIdEditRouteImport.update({
   id: '/edit',
   path: '/edit',
@@ -682,7 +712,6 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/anki': typeof AnkiRoute
   '/capture': typeof CaptureRoute
-  '/culture': typeof CultureRoute
   '/exercises': typeof ExercisesRoute
   '/grammar': typeof GrammarRoute
   '/profile': typeof ProfileRoute
@@ -700,6 +729,9 @@ export interface FileRoutesByFullPath {
   '/corrections/groups': typeof CorrectionsGroupsRoute
   '/corrections/log': typeof CorrectionsLogRoute
   '/corrections/triage': typeof CorrectionsTriageRoute
+  '/culture/$id': typeof CultureIdRouteWithChildren
+  '/culture/new': typeof CultureNewRoute
+  '/culture/topics': typeof CultureTopicsRoute
   '/dialogues/$id': typeof DialoguesIdRouteWithChildren
   '/dialogues/new': typeof DialoguesNewRoute
   '/drill-sessions/$id': typeof DrillSessionsIdRouteWithChildren
@@ -741,6 +773,7 @@ export interface FileRoutesByFullPath {
   '/captures/': typeof CapturesIndexRoute
   '/collections/': typeof CollectionsIndexRoute
   '/corrections/': typeof CorrectionsIndexRoute
+  '/culture/': typeof CultureIndexRoute
   '/dialogues/': typeof DialoguesIndexRoute
   '/drill-sessions/': typeof DrillSessionsIndexRoute
   '/find-resource/': typeof FindResourceIndexRoute
@@ -763,6 +796,7 @@ export interface FileRoutesByFullPath {
   '/tutors/': typeof TutorsIndexRoute
   '/writing-prompts/': typeof WritingPromptsIndexRoute
   '/answer-sheets/$id/edit': typeof AnswerSheetsIdEditRoute
+  '/culture/$id/edit': typeof CultureIdEditRoute
   '/dialogues/$id/edit': typeof DialoguesIdEditRoute
   '/drill-sessions/$id/edit': typeof DrillSessionsIdEditRoute
   '/grammar-notes/$id/edit': typeof GrammarNotesIdEditRoute
@@ -777,6 +811,7 @@ export interface FileRoutesByFullPath {
   '/theory-sessions/$id/edit': typeof TheorySessionsIdEditRoute
   '/tutors/$id/edit': typeof TutorsIdEditRoute
   '/answer-sheets/$id/': typeof AnswerSheetsIdIndexRoute
+  '/culture/$id/': typeof CultureIdIndexRoute
   '/dialogues/$id/': typeof DialoguesIdIndexRoute
   '/drill-sessions/$id/': typeof DrillSessionsIdIndexRoute
   '/grammar-notes/$id/': typeof GrammarNotesIdIndexRoute
@@ -795,7 +830,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/anki': typeof AnkiRoute
   '/capture': typeof CaptureRoute
-  '/culture': typeof CultureRoute
   '/exercises': typeof ExercisesRoute
   '/grammar': typeof GrammarRoute
   '/profile': typeof ProfileRoute
@@ -812,6 +846,8 @@ export interface FileRoutesByTo {
   '/corrections/groups': typeof CorrectionsGroupsRoute
   '/corrections/log': typeof CorrectionsLogRoute
   '/corrections/triage': typeof CorrectionsTriageRoute
+  '/culture/new': typeof CultureNewRoute
+  '/culture/topics': typeof CultureTopicsRoute
   '/dialogues/new': typeof DialoguesNewRoute
   '/drill-sessions/new': typeof DrillSessionsNewRoute
   '/drill-sessions/reasons': typeof DrillSessionsReasonsRoute
@@ -840,6 +876,7 @@ export interface FileRoutesByTo {
   '/captures': typeof CapturesIndexRoute
   '/collections': typeof CollectionsIndexRoute
   '/corrections': typeof CorrectionsIndexRoute
+  '/culture': typeof CultureIndexRoute
   '/dialogues': typeof DialoguesIndexRoute
   '/drill-sessions': typeof DrillSessionsIndexRoute
   '/find-resource': typeof FindResourceIndexRoute
@@ -862,6 +899,7 @@ export interface FileRoutesByTo {
   '/tutors': typeof TutorsIndexRoute
   '/writing-prompts': typeof WritingPromptsIndexRoute
   '/answer-sheets/$id/edit': typeof AnswerSheetsIdEditRoute
+  '/culture/$id/edit': typeof CultureIdEditRoute
   '/dialogues/$id/edit': typeof DialoguesIdEditRoute
   '/drill-sessions/$id/edit': typeof DrillSessionsIdEditRoute
   '/grammar-notes/$id/edit': typeof GrammarNotesIdEditRoute
@@ -876,6 +914,7 @@ export interface FileRoutesByTo {
   '/theory-sessions/$id/edit': typeof TheorySessionsIdEditRoute
   '/tutors/$id/edit': typeof TutorsIdEditRoute
   '/answer-sheets/$id': typeof AnswerSheetsIdIndexRoute
+  '/culture/$id': typeof CultureIdIndexRoute
   '/dialogues/$id': typeof DialoguesIdIndexRoute
   '/drill-sessions/$id': typeof DrillSessionsIdIndexRoute
   '/grammar-notes/$id': typeof GrammarNotesIdIndexRoute
@@ -895,7 +934,6 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/anki': typeof AnkiRoute
   '/capture': typeof CaptureRoute
-  '/culture': typeof CultureRoute
   '/exercises': typeof ExercisesRoute
   '/grammar': typeof GrammarRoute
   '/profile': typeof ProfileRoute
@@ -913,6 +951,9 @@ export interface FileRoutesById {
   '/corrections/groups': typeof CorrectionsGroupsRoute
   '/corrections/log': typeof CorrectionsLogRoute
   '/corrections/triage': typeof CorrectionsTriageRoute
+  '/culture/$id': typeof CultureIdRouteWithChildren
+  '/culture/new': typeof CultureNewRoute
+  '/culture/topics': typeof CultureTopicsRoute
   '/dialogues/$id': typeof DialoguesIdRouteWithChildren
   '/dialogues/new': typeof DialoguesNewRoute
   '/drill-sessions/$id': typeof DrillSessionsIdRouteWithChildren
@@ -954,6 +995,7 @@ export interface FileRoutesById {
   '/captures/': typeof CapturesIndexRoute
   '/collections/': typeof CollectionsIndexRoute
   '/corrections/': typeof CorrectionsIndexRoute
+  '/culture/': typeof CultureIndexRoute
   '/dialogues/': typeof DialoguesIndexRoute
   '/drill-sessions/': typeof DrillSessionsIndexRoute
   '/find-resource/': typeof FindResourceIndexRoute
@@ -976,6 +1018,7 @@ export interface FileRoutesById {
   '/tutors/': typeof TutorsIndexRoute
   '/writing-prompts/': typeof WritingPromptsIndexRoute
   '/answer-sheets/$id/edit': typeof AnswerSheetsIdEditRoute
+  '/culture/$id/edit': typeof CultureIdEditRoute
   '/dialogues/$id/edit': typeof DialoguesIdEditRoute
   '/drill-sessions/$id/edit': typeof DrillSessionsIdEditRoute
   '/grammar-notes/$id/edit': typeof GrammarNotesIdEditRoute
@@ -990,6 +1033,7 @@ export interface FileRoutesById {
   '/theory-sessions/$id/edit': typeof TheorySessionsIdEditRoute
   '/tutors/$id/edit': typeof TutorsIdEditRoute
   '/answer-sheets/$id/': typeof AnswerSheetsIdIndexRoute
+  '/culture/$id/': typeof CultureIdIndexRoute
   '/dialogues/$id/': typeof DialoguesIdIndexRoute
   '/drill-sessions/$id/': typeof DrillSessionsIdIndexRoute
   '/grammar-notes/$id/': typeof GrammarNotesIdIndexRoute
@@ -1010,7 +1054,6 @@ export interface FileRouteTypes {
     | '/'
     | '/anki'
     | '/capture'
-    | '/culture'
     | '/exercises'
     | '/grammar'
     | '/profile'
@@ -1028,6 +1071,9 @@ export interface FileRouteTypes {
     | '/corrections/groups'
     | '/corrections/log'
     | '/corrections/triage'
+    | '/culture/$id'
+    | '/culture/new'
+    | '/culture/topics'
     | '/dialogues/$id'
     | '/dialogues/new'
     | '/drill-sessions/$id'
@@ -1069,6 +1115,7 @@ export interface FileRouteTypes {
     | '/captures/'
     | '/collections/'
     | '/corrections/'
+    | '/culture/'
     | '/dialogues/'
     | '/drill-sessions/'
     | '/find-resource/'
@@ -1091,6 +1138,7 @@ export interface FileRouteTypes {
     | '/tutors/'
     | '/writing-prompts/'
     | '/answer-sheets/$id/edit'
+    | '/culture/$id/edit'
     | '/dialogues/$id/edit'
     | '/drill-sessions/$id/edit'
     | '/grammar-notes/$id/edit'
@@ -1105,6 +1153,7 @@ export interface FileRouteTypes {
     | '/theory-sessions/$id/edit'
     | '/tutors/$id/edit'
     | '/answer-sheets/$id/'
+    | '/culture/$id/'
     | '/dialogues/$id/'
     | '/drill-sessions/$id/'
     | '/grammar-notes/$id/'
@@ -1123,7 +1172,6 @@ export interface FileRouteTypes {
     | '/'
     | '/anki'
     | '/capture'
-    | '/culture'
     | '/exercises'
     | '/grammar'
     | '/profile'
@@ -1140,6 +1188,8 @@ export interface FileRouteTypes {
     | '/corrections/groups'
     | '/corrections/log'
     | '/corrections/triage'
+    | '/culture/new'
+    | '/culture/topics'
     | '/dialogues/new'
     | '/drill-sessions/new'
     | '/drill-sessions/reasons'
@@ -1168,6 +1218,7 @@ export interface FileRouteTypes {
     | '/captures'
     | '/collections'
     | '/corrections'
+    | '/culture'
     | '/dialogues'
     | '/drill-sessions'
     | '/find-resource'
@@ -1190,6 +1241,7 @@ export interface FileRouteTypes {
     | '/tutors'
     | '/writing-prompts'
     | '/answer-sheets/$id/edit'
+    | '/culture/$id/edit'
     | '/dialogues/$id/edit'
     | '/drill-sessions/$id/edit'
     | '/grammar-notes/$id/edit'
@@ -1204,6 +1256,7 @@ export interface FileRouteTypes {
     | '/theory-sessions/$id/edit'
     | '/tutors/$id/edit'
     | '/answer-sheets/$id'
+    | '/culture/$id'
     | '/dialogues/$id'
     | '/drill-sessions/$id'
     | '/grammar-notes/$id'
@@ -1222,7 +1275,6 @@ export interface FileRouteTypes {
     | '/'
     | '/anki'
     | '/capture'
-    | '/culture'
     | '/exercises'
     | '/grammar'
     | '/profile'
@@ -1240,6 +1292,9 @@ export interface FileRouteTypes {
     | '/corrections/groups'
     | '/corrections/log'
     | '/corrections/triage'
+    | '/culture/$id'
+    | '/culture/new'
+    | '/culture/topics'
     | '/dialogues/$id'
     | '/dialogues/new'
     | '/drill-sessions/$id'
@@ -1281,6 +1336,7 @@ export interface FileRouteTypes {
     | '/captures/'
     | '/collections/'
     | '/corrections/'
+    | '/culture/'
     | '/dialogues/'
     | '/drill-sessions/'
     | '/find-resource/'
@@ -1303,6 +1359,7 @@ export interface FileRouteTypes {
     | '/tutors/'
     | '/writing-prompts/'
     | '/answer-sheets/$id/edit'
+    | '/culture/$id/edit'
     | '/dialogues/$id/edit'
     | '/drill-sessions/$id/edit'
     | '/grammar-notes/$id/edit'
@@ -1317,6 +1374,7 @@ export interface FileRouteTypes {
     | '/theory-sessions/$id/edit'
     | '/tutors/$id/edit'
     | '/answer-sheets/$id/'
+    | '/culture/$id/'
     | '/dialogues/$id/'
     | '/drill-sessions/$id/'
     | '/grammar-notes/$id/'
@@ -1336,7 +1394,6 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AnkiRoute: typeof AnkiRoute
   CaptureRoute: typeof CaptureRoute
-  CultureRoute: typeof CultureRoute
   ExercisesRoute: typeof ExercisesRoute
   GrammarRoute: typeof GrammarRoute
   ProfileRoute: typeof ProfileRoute
@@ -1354,6 +1411,9 @@ export interface RootRouteChildren {
   CorrectionsGroupsRoute: typeof CorrectionsGroupsRoute
   CorrectionsLogRoute: typeof CorrectionsLogRoute
   CorrectionsTriageRoute: typeof CorrectionsTriageRoute
+  CultureIdRoute: typeof CultureIdRouteWithChildren
+  CultureNewRoute: typeof CultureNewRoute
+  CultureTopicsRoute: typeof CultureTopicsRoute
   DialoguesIdRoute: typeof DialoguesIdRouteWithChildren
   DialoguesNewRoute: typeof DialoguesNewRoute
   DrillSessionsIdRoute: typeof DrillSessionsIdRouteWithChildren
@@ -1395,6 +1455,7 @@ export interface RootRouteChildren {
   CapturesIndexRoute: typeof CapturesIndexRoute
   CollectionsIndexRoute: typeof CollectionsIndexRoute
   CorrectionsIndexRoute: typeof CorrectionsIndexRoute
+  CultureIndexRoute: typeof CultureIndexRoute
   DialoguesIndexRoute: typeof DialoguesIndexRoute
   DrillSessionsIndexRoute: typeof DrillSessionsIndexRoute
   FindResourceIndexRoute: typeof FindResourceIndexRoute
@@ -1481,13 +1542,6 @@ declare module '@tanstack/react-router' {
       path: '/exercises'
       fullPath: '/exercises'
       preLoaderRoute: typeof ExercisesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/culture': {
-      id: '/culture'
-      path: '/culture'
-      fullPath: '/culture'
-      preLoaderRoute: typeof CultureRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/capture': {
@@ -1656,6 +1710,13 @@ declare module '@tanstack/react-router' {
       path: '/dialogues'
       fullPath: '/dialogues/'
       preLoaderRoute: typeof DialoguesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/culture/': {
+      id: '/culture/'
+      path: '/culture'
+      fullPath: '/culture/'
+      preLoaderRoute: typeof CultureIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/corrections/': {
@@ -1945,6 +2006,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DialoguesIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/culture/topics': {
+      id: '/culture/topics'
+      path: '/culture/topics'
+      fullPath: '/culture/topics'
+      preLoaderRoute: typeof CultureTopicsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/culture/new': {
+      id: '/culture/new'
+      path: '/culture/new'
+      fullPath: '/culture/new'
+      preLoaderRoute: typeof CultureNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/culture/$id': {
+      id: '/culture/$id'
+      path: '/culture/$id'
+      fullPath: '/culture/$id'
+      preLoaderRoute: typeof CultureIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/corrections/triage': {
       id: '/corrections/triage'
       path: '/corrections/triage'
@@ -2092,6 +2174,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DialoguesIdIndexRouteImport
       parentRoute: typeof DialoguesIdRoute
     }
+    '/culture/$id/': {
+      id: '/culture/$id/'
+      path: '/'
+      fullPath: '/culture/$id/'
+      preLoaderRoute: typeof CultureIdIndexRouteImport
+      parentRoute: typeof CultureIdRoute
+    }
     '/answer-sheets/$id/': {
       id: '/answer-sheets/$id/'
       path: '/'
@@ -2190,6 +2279,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DialoguesIdEditRouteImport
       parentRoute: typeof DialoguesIdRoute
     }
+    '/culture/$id/edit': {
+      id: '/culture/$id/edit'
+      path: '/edit'
+      fullPath: '/culture/$id/edit'
+      preLoaderRoute: typeof CultureIdEditRouteImport
+      parentRoute: typeof CultureIdRoute
+    }
     '/answer-sheets/$id/edit': {
       id: '/answer-sheets/$id/edit'
       path: '/edit'
@@ -2212,6 +2308,20 @@ const AnswerSheetsIdRouteChildren: AnswerSheetsIdRouteChildren = {
 
 const AnswerSheetsIdRouteWithChildren = AnswerSheetsIdRoute._addFileChildren(
   AnswerSheetsIdRouteChildren,
+)
+
+interface CultureIdRouteChildren {
+  CultureIdEditRoute: typeof CultureIdEditRoute
+  CultureIdIndexRoute: typeof CultureIdIndexRoute
+}
+
+const CultureIdRouteChildren: CultureIdRouteChildren = {
+  CultureIdEditRoute: CultureIdEditRoute,
+  CultureIdIndexRoute: CultureIdIndexRoute,
+}
+
+const CultureIdRouteWithChildren = CultureIdRoute._addFileChildren(
+  CultureIdRouteChildren,
 )
 
 interface DialoguesIdRouteChildren {
@@ -2395,7 +2505,6 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AnkiRoute: AnkiRoute,
   CaptureRoute: CaptureRoute,
-  CultureRoute: CultureRoute,
   ExercisesRoute: ExercisesRoute,
   GrammarRoute: GrammarRoute,
   ProfileRoute: ProfileRoute,
@@ -2413,6 +2522,9 @@ const rootRouteChildren: RootRouteChildren = {
   CorrectionsGroupsRoute: CorrectionsGroupsRoute,
   CorrectionsLogRoute: CorrectionsLogRoute,
   CorrectionsTriageRoute: CorrectionsTriageRoute,
+  CultureIdRoute: CultureIdRouteWithChildren,
+  CultureNewRoute: CultureNewRoute,
+  CultureTopicsRoute: CultureTopicsRoute,
   DialoguesIdRoute: DialoguesIdRouteWithChildren,
   DialoguesNewRoute: DialoguesNewRoute,
   DrillSessionsIdRoute: DrillSessionsIdRouteWithChildren,
@@ -2454,6 +2566,7 @@ const rootRouteChildren: RootRouteChildren = {
   CapturesIndexRoute: CapturesIndexRoute,
   CollectionsIndexRoute: CollectionsIndexRoute,
   CorrectionsIndexRoute: CorrectionsIndexRoute,
+  CultureIndexRoute: CultureIndexRoute,
   DialoguesIndexRoute: DialoguesIndexRoute,
   DrillSessionsIndexRoute: DrillSessionsIndexRoute,
   FindResourceIndexRoute: FindResourceIndexRoute,

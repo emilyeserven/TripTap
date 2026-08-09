@@ -5,6 +5,7 @@ import type {
   AiLessonDetail,
   AiLessonImportInput,
   AiLessonSummary,
+  CultureItem,
   SentenceTermRef,
   SourceSentenceItem,
   VocabItem,
@@ -58,6 +59,13 @@ export const aiLessonsApi = {
       method: "PATCH",
       body: JSON.stringify({
         grammarTerms,
+      }),
+    }),
+  updateCultureTopics: (id: string, topicIds: string[] | null) =>
+    request<CultureItem>(`/ai-lesson-culture/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify({
+        topicIds,
       }),
     }),
 };
