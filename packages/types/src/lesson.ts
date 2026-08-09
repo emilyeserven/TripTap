@@ -48,6 +48,11 @@ export interface LessonWordNote {
   status: WordNoteStatus;
   /** Marker to add this to a flashcard list later; no vocab is auto-created. */
   flashcard: boolean;
+  /**
+   * ISO-8601 timestamp of when a flashcard was actually made from this note (marked by hand or
+   * stamped by an export); null until then. Older rows without the field read as null.
+   */
+  flashcardMadeAt: string | null;
 }
 
 /** A tutoring lesson. */
@@ -91,6 +96,7 @@ const wordNoteSchema = z.object({
   notes: z.string().nullable(),
   status: z.enum(["shaky", "unknown"]),
   flashcard: z.boolean(),
+  flashcardMadeAt: z.string().nullable().optional(),
 });
 
 /** Payload for creating a lesson. Only `date` is required. */
