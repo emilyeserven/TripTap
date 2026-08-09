@@ -11,16 +11,27 @@ import { useMySentences } from "@/hooks/useMySentences";
 import { usePageTitle } from "@/hooks/usePageTitle";
 
 export const Route = createFileRoute("/my-sentences/")({
+  // Lets the attention inbox deep-link to the pre-filtered needs-correction view.
+  validateSearch: (search: Record<string, unknown>): { needsCorrection?: boolean } => (
+    search.needsCorrection === true || search.needsCorrection === "true"
+      ? {
+        needsCorrection: true,
+      }
+      : {}
+  ),
   component: MySentencesPage,
 });
 
 function MySentencesPage() {
   usePageTitle("My Sentences");
   const {
+    needsCorrection: needsCorrectionParam,
+  } = Route.useSearch();
+  const {
     data: mySentences, isLoading, error,
   } = useMySentences();
   const [search, setSearch] = useState("");
-  const [onlyNeedsCorrection, setOnlyNeedsCorrection] = useState(false);
+  const [onlyNeedsCorrection, setOnlyNeedsCorrection] = useState(needsCorrectionParam ?? false);
   const [onlyShadowing, setOnlyShadowing] = useState(false);
 
   const shown = useMemo(() => {

@@ -122,6 +122,19 @@ export interface XpDayAreas {
     xp: number; }[];
 }
 
+/**
+ * Consecutive learning-days meeting the daily XP goal. Derived — recomputed from all grants on every
+ * summary fetch, so changing `dailyXpGoal` (or XP rates) retroactively rewrites streak history.
+ */
+export interface XpStreak {
+  /** Days in the streak ending at today (once met) or yesterday; 0 when yesterday was missed. */
+  current: number;
+  /** Longest run of consecutive goal-met days in all history. */
+  best: number;
+  /** Whether today's goal is already met. An in-progress today never breaks a streak. */
+  todayMet: boolean;
+}
+
 /** The response of `GET /api/xp/summary`. `areas` always holds all six areas, zero-filled. */
 export interface XpSummary {
   totalXp: number;
@@ -134,4 +147,6 @@ export interface XpSummary {
   yesterday: XpTodaySummary;
   /** Per-area XP for each of the last 14 learning-days, newest first — powers the radar's day picker. */
   dailyAreas: XpDayAreas[];
+  /** The learner's goal-met streak; null when no daily XP goal is set. */
+  streak: XpStreak | null;
 }

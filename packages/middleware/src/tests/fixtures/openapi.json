@@ -6635,6 +6635,12 @@
                         "flashcard": {
                           "type": "boolean"
                         },
+                        "flashcardMadeAt": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
                         "mySentenceId": {
                           "type": [
                             "string",
@@ -7016,6 +7022,12 @@
                         },
                         "flashcard": {
                           "type": "boolean"
+                        },
+                        "flashcardMadeAt": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
                         },
                         "mySentenceId": {
                           "type": [
@@ -8858,6 +8870,12 @@
                         },
                         "flashcard": {
                           "type": "boolean"
+                        },
+                        "flashcardMadeAt": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
                         }
                       },
                       "required": [
@@ -9054,6 +9072,12 @@
                         },
                         "flashcard": {
                           "type": "boolean"
+                        },
+                        "flashcardMadeAt": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
                         }
                       },
                       "required": [

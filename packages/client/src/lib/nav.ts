@@ -15,6 +15,7 @@ import {
   GraduationCapIcon,
   HeadphonesIcon,
   ImagesIcon,
+  InboxIcon,
   LandmarkIcon,
   LanguagesIcon,
   LayersIcon,
@@ -88,7 +89,15 @@ export const startSomething: NavDestination = {
 const startSomethingSection: NavSection = {
   label: "Start Something",
   description: "Get a quick, contained task picked from your XP and goals.",
-  items: [startSomething],
+  items: [
+    startSomething,
+    {
+      title: "Attention",
+      to: "/attention",
+      icon: InboxIcon,
+      description: "Everything you flagged for later — corrections, grading, words, flashcards.",
+    },
+  ],
 };
 
 /** Quick starts for the handful of things you do most often. */

@@ -26,14 +26,15 @@ import {
 
 import { AddDailyTaskCard } from "@/components/AddDailyTaskCard";
 import { AddScheduledTaskCard } from "@/components/AddScheduledTaskCard";
+import { AttentionCard } from "@/components/AttentionCard";
 import { DailyGoalProgress } from "@/components/DailyGoalProgress";
 import { DailyLineupCard } from "@/components/DailyLineupCard";
 import { DailyTasksCard } from "@/components/DailyTasksCard";
-import { DueSoonCard } from "@/components/DueSoonCard";
 import { GoalAchievementStrip } from "@/components/GoalAchievementStrip";
 import { LearningAreaBadges } from "@/components/LearningAreaBadges";
 import { LineupExclusionsEditor } from "@/components/LineupExclusionsEditor";
 import { ScheduledTasksCard } from "@/components/ScheduledTasksCard";
+import { StreakBadge } from "@/components/StreakBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -423,10 +424,13 @@ function StartPage() {
       </p>
 
       {summary.data && (
-        <DailyGoalProgress
-          todayXp={summary.data.today.totalXp}
-          dailyXpGoal={profile.data?.dailyXpGoal ?? null}
-        />
+        <div className="space-y-2">
+          <DailyGoalProgress
+            todayXp={summary.data.today.totalXp}
+            dailyXpGoal={profile.data?.dailyXpGoal ?? null}
+          />
+          <StreakBadge streak={summary.data.streak} />
+        </div>
       )}
 
       <DailyTasksCard
@@ -701,7 +705,7 @@ function StartPage() {
         </CardContent>
       </Card>
 
-      <DueSoonCard />
+      <AttentionCard />
     </section>
   );
 }

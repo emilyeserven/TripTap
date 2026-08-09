@@ -8,15 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useWritings } from "@/hooks/useWritings";
+import { rewriteReadyWritings } from "@/lib/attention";
 
 export const Route = createFileRoute("/my-writing/rewrite")({
   component: RewriteBlindPage,
 });
-
-/** Days since an ISO/date string. */
-function daysSince(value: string): number {
-  return (Date.now() - new Date(value).getTime()) / 86_400_000;
-}
 
 function RewriteBlindPage() {
   usePageTitle("Rewrite blind");
@@ -26,9 +22,9 @@ function RewriteBlindPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   // Eligible: had corrections and is at least a week old — enough time to have forgotten the fixes.
+  // Shared with the attention inbox so the two surfaces can't drift.
   const eligible = useMemo(
-    () => (writings ?? []).filter(w =>
-      (w.corrections?.length ?? 0) > 0 && daysSince(w.createdAt) >= 7),
+    () => rewriteReadyWritings(writings ?? [], new Date()),
     [writings],
   );
 

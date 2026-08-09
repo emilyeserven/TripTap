@@ -3,7 +3,7 @@ import type { LessonWordNote } from "@sentence-bank/types";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { LessonWordNotesRenshuuExport } from "./LessonWordNotesRenshuuExport";
+import { WordNotesRenshuuExport } from "./WordNotesRenshuuExport";
 
 function note(overrides: Partial<LessonWordNote>): LessonWordNote {
   return {
@@ -14,6 +14,7 @@ function note(overrides: Partial<LessonWordNote>): LessonWordNote {
     notes: null,
     status: "shaky",
     flashcard: false,
+    flashcardMadeAt: null,
     ...overrides,
   };
 }
@@ -22,7 +23,7 @@ const TRIGGER = {
   name: "Copy for Renshuu",
 };
 
-describe("LessonWordNotesRenshuuExport", () => {
+describe("WordNotesRenshuuExport", () => {
   afterEach(() => {
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
@@ -30,7 +31,7 @@ describe("LessonWordNotesRenshuuExport", () => {
 
   it("renders nothing when no note is flashcard-marked", () => {
     render(
-      <LessonWordNotesRenshuuExport
+      <WordNotesRenshuuExport
         wordNotes={[note({
           word: "行く",
           reading: "いく",
@@ -43,7 +44,7 @@ describe("LessonWordNotesRenshuuExport", () => {
 
   it("renders nothing when the only flashcard note has no word", () => {
     render(
-      <LessonWordNotesRenshuuExport
+      <WordNotesRenshuuExport
         wordNotes={[note({
           word: "  ",
           reading: "いく",
@@ -56,7 +57,7 @@ describe("LessonWordNotesRenshuuExport", () => {
 
   it("shows the trigger when a flashcard note has a word", () => {
     render(
-      <LessonWordNotesRenshuuExport
+      <WordNotesRenshuuExport
         wordNotes={[note({
           word: "行く",
           reading: "いく",
@@ -69,7 +70,7 @@ describe("LessonWordNotesRenshuuExport", () => {
 
   it("exports only flashcard-checked terms, as term/reading, excluding unchecked notes", () => {
     render(
-      <LessonWordNotesRenshuuExport
+      <WordNotesRenshuuExport
         wordNotes={[
           note({
             word: "行く",
@@ -104,7 +105,7 @@ describe("LessonWordNotesRenshuuExport", () => {
       },
     });
     render(
-      <LessonWordNotesRenshuuExport
+      <WordNotesRenshuuExport
         wordNotes={[note({
           word: "行く",
           reading: "いく",
@@ -120,5 +121,37 @@ describe("LessonWordNotesRenshuuExport", () => {
     expect(await screen.findByRole("button", {
       name: "Copied!",
     })).toBeInTheDocument();
+  });
+
+  it("reports the exported note ids after a successful copy", async () => {
+    vi.stubGlobal("navigator", {
+      clipboard: {
+        writeText: vi.fn().mockResolvedValue(undefined),
+      },
+    });
+    const onExported = vi.fn();
+    render(
+      <WordNotesRenshuuExport
+        wordNotes={[
+          note({
+            id: "a",
+            word: "行く",
+            reading: "いく",
+            flashcard: true,
+          }),
+          note({
+            id: "skipped",
+            word: "猫",
+            flashcard: false,
+          }),
+        ]}
+        onExported={onExported}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", TRIGGER));
+    fireEvent.click(screen.getByRole("button", {
+      name: "Copy",
+    }));
+    await waitFor(() => expect(onExported).toHaveBeenCalledWith(["a"]));
   });
 });

@@ -33,6 +33,7 @@ const note: WordNote = {
   meaning: null,
   status: "shaky",
   flashcard: false,
+  flashcardMadeAt: null,
   mySentenceId: null,
 };
 

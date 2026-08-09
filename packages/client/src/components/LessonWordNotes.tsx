@@ -50,6 +50,7 @@ export function LessonWordNotes({
       notes: null,
       status: "shaky",
       flashcard: false,
+      flashcardMadeAt: null,
     }]);
   const patchWord = (id: string, patch: Partial<LessonWordNote>) =>
     onChange(wordNotes.map(w => (w.id === id
@@ -137,11 +138,15 @@ export function LessonWordNotes({
                 <WordNoteControls
                   status={w.status}
                   flashcard={w.flashcard}
+                  flashcardMadeAt={w.flashcardMadeAt}
                   onStatusChange={status => patchWord(w.id, {
                     status,
                   })}
                   onFlashcardChange={flashcard => patchWord(w.id, {
                     flashcard,
+                  })}
+                  onFlashcardMadeChange={made => patchWord(w.id, {
+                    flashcardMadeAt: made ? new Date().toISOString() : null,
                   })}
                   onDelete={() => removeWord(w.id)}
                 />

@@ -19,6 +19,7 @@ import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as GrammarRouteImport } from './routes/grammar'
 import { Route as ExercisesRouteImport } from './routes/exercises'
 import { Route as CaptureRouteImport } from './routes/capture'
+import { Route as AttentionRouteImport } from './routes/attention'
 import { Route as AnkiRouteImport } from './routes/anki'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as WritingPromptsIndexRouteImport } from './routes/writing-prompts.index'
@@ -174,6 +175,11 @@ const ExercisesRoute = ExercisesRouteImport.update({
 const CaptureRoute = CaptureRouteImport.update({
   id: '/capture',
   path: '/capture',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AttentionRoute = AttentionRouteImport.update({
+  id: '/attention',
+  path: '/attention',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AnkiRoute = AnkiRouteImport.update({
@@ -711,6 +717,7 @@ const AnswerSheetsIdEditRoute = AnswerSheetsIdEditRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/anki': typeof AnkiRoute
+  '/attention': typeof AttentionRoute
   '/capture': typeof CaptureRoute
   '/exercises': typeof ExercisesRoute
   '/grammar': typeof GrammarRoute
@@ -829,6 +836,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/anki': typeof AnkiRoute
+  '/attention': typeof AttentionRoute
   '/capture': typeof CaptureRoute
   '/exercises': typeof ExercisesRoute
   '/grammar': typeof GrammarRoute
@@ -933,6 +941,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/anki': typeof AnkiRoute
+  '/attention': typeof AttentionRoute
   '/capture': typeof CaptureRoute
   '/exercises': typeof ExercisesRoute
   '/grammar': typeof GrammarRoute
@@ -1053,6 +1062,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/anki'
+    | '/attention'
     | '/capture'
     | '/exercises'
     | '/grammar'
@@ -1171,6 +1181,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/anki'
+    | '/attention'
     | '/capture'
     | '/exercises'
     | '/grammar'
@@ -1274,6 +1285,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/anki'
+    | '/attention'
     | '/capture'
     | '/exercises'
     | '/grammar'
@@ -1393,6 +1405,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AnkiRoute: typeof AnkiRoute
+  AttentionRoute: typeof AttentionRoute
   CaptureRoute: typeof CaptureRoute
   ExercisesRoute: typeof ExercisesRoute
   GrammarRoute: typeof GrammarRoute
@@ -1549,6 +1562,13 @@ declare module '@tanstack/react-router' {
       path: '/capture'
       fullPath: '/capture'
       preLoaderRoute: typeof CaptureRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/attention': {
+      id: '/attention'
+      path: '/attention'
+      fullPath: '/attention'
+      preLoaderRoute: typeof AttentionRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/anki': {
@@ -2504,6 +2524,7 @@ const TutorsIdRouteWithChildren = TutorsIdRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AnkiRoute: AnkiRoute,
+  AttentionRoute: AttentionRoute,
   CaptureRoute: CaptureRoute,
   ExercisesRoute: ExercisesRoute,
   GrammarRoute: GrammarRoute,

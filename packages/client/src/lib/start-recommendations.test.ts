@@ -96,6 +96,7 @@ function summary(xpByArea: Partial<Record<string, number>>): XpSummary {
       areas: [],
     },
     dailyAreas: [],
+    streak: null,
   };
 }
 

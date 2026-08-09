@@ -2,7 +2,7 @@ import type { NavDestination } from "@/lib/nav";
 
 import { Link, createFileRoute } from "@tanstack/react-router";
 
-import { DueSoonCard } from "@/components/DueSoonCard";
+import { AttentionCard } from "@/components/AttentionCard";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { allNavSections, sectionTiles } from "@/lib/nav";
 
@@ -53,7 +53,7 @@ function HomePage() {
         sentences. Jump into any section below to get started.
       </p>
 
-      <DueSoonCard />
+      <AttentionCard />
 
       {allNavSections.map(section => (
         <section
