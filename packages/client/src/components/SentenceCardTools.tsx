@@ -2,6 +2,7 @@ import type { Sentence } from "@sentence-bank/types";
 
 import { useState } from "react";
 
+import { HAS_KANJI_RE } from "@sentence-bank/types";
 import { ChevronDown, Layers, PenLine, TriangleAlert } from "lucide-react";
 
 import { FuriganaEditor } from "./FuriganaEditor";
@@ -29,7 +30,7 @@ export function SentenceCardTools({
     data: linkedVocab,
   } = useSentenceVocab(sentence.id, showBreak);
 
-  const hasKanji = /[㐀-䶿一-鿿々]/.test(sentence.text);
+  const hasKanji = HAS_KANJI_RE.test(sentence.text);
 
   return (
     <div>

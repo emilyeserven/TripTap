@@ -8210,6 +8210,149 @@
         }
       }
     },
+    "/api/kanji": {
+      "get": {
+        "tags": [
+          "kanji"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "new",
+                "learning",
+                "known"
+              ]
+            },
+            "in": "query",
+            "name": "status",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "sentence",
+                "my-sentence",
+                "practice",
+                "vocab",
+                "dialogue",
+                "writing"
+              ]
+            },
+            "in": "query",
+            "name": "kind",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "in": "query",
+            "name": "minOccurrences",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "occurrences",
+                "recent",
+                "char"
+              ]
+            },
+            "in": "query",
+            "name": "sort",
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/kanji/{char}": {
+      "get": {
+        "tags": [
+          "kanji"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2
+            },
+            "in": "path",
+            "name": "char",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/api/kanji/{char}/status": {
+      "put": {
+        "tags": [
+          "kanji"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "new",
+                      "learning",
+                      "known"
+                    ]
+                  },
+                  "note": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "status"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2
+            },
+            "in": "path",
+            "name": "char",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
     "/api/lessons": {
       "get": {
         "tags": [
@@ -14334,6 +14477,10 @@
     {
       "name": "dialogues",
       "description": "Multi-speaker scripts rendered as chat transcripts"
+    },
+    {
+      "name": "kanji",
+      "description": "Per-character view of the learner's corpus, derived on read"
     },
     {
       "name": "migaku-import",

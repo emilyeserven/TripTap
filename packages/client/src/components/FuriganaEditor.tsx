@@ -2,11 +2,11 @@ import type { FuriToken, Sentence } from "@sentence-bank/types";
 
 import { useState } from "react";
 
+import { HAS_KANJI_RE } from "@sentence-bank/types";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useRegenerateFurigana, useUpdateSentence } from "@/hooks/useSentences";
-
-const KANJI = /[㐀-䶿一-鿿々]/;
 
 /**
  * Edit a sentence's furigana by hand: change or clear (blank = no ruby) the reading on each kanji run.
@@ -24,7 +24,7 @@ export function FuriganaEditor({
   const regen = useRegenerateFurigana();
   const [tokens, setTokens] = useState<FuriToken[]>(sentence.reading ?? []);
 
-  const editable = tokens.map((_, i) => i).filter(i => KANJI.test(tokens[i].t));
+  const editable = tokens.map((_, i) => i).filter(i => HAS_KANJI_RE.test(tokens[i].t));
 
   function setReading(index: number, value: string) {
     setTokens(prev => prev.map((t, i) => (i === index

@@ -16,6 +16,7 @@ import {
   HeadphonesIcon,
   ImagesIcon,
   LandmarkIcon,
+  LanguagesIcon,
   LayersIcon,
   LightbulbIcon,
   ListChecksIcon,
@@ -343,6 +344,12 @@ const librarySection: NavSection = {
       to: "/sentences",
       icon: ScrollTextIcon,
       description: "Your bank of example sentences.",
+    },
+    {
+      title: "Kanji",
+      to: "/kanji",
+      icon: LanguagesIcon,
+      description: "Every character you've met, how often, and where.",
     },
     {
       title: "Writing Prompts",
