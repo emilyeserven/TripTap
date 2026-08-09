@@ -124,6 +124,7 @@ function toCulture(row: AiLessonCultureRow): CultureItem {
     summaryEasy: row.summaryEasy ?? null,
     summaryFull: row.summaryFull ?? null,
     terms: row.terms,
+    topicIds: row.topicIds ?? null,
   };
 }
 
@@ -378,6 +379,21 @@ export async function updateSourceSentenceTerms(
     .where(eq(aiLessonSourceSentences.id, id))
     .returning();
   return row ? toSourceSentence(row) : null;
+}
+
+/** Set the culture-topic tags on an AI Lesson culture card. Returns the updated item, or null if no such id. */
+export async function updateCultureTopics(
+  id: string,
+  topicIds: string[] | null,
+): Promise<CultureItem | null> {
+  const [row] = await db
+    .update(aiLessonCulture)
+    .set({
+      topicIds: topicIds ?? null,
+    })
+    .where(eq(aiLessonCulture.id, id))
+    .returning();
+  return row ? toCulture(row) : null;
 }
 
 /** Delete an AI Lesson (children cascade). Returns false if no such id. */

@@ -10,6 +10,7 @@ export * from "./answer-sheet.js";
 export * from "./ai-lesson.js";
 export * from "./chunk-card.js";
 export * from "./correction.js";
+export * from "./culture-note.js";
 export * from "./dialogue.js";
 export * from "./dictionary.js";
 export * from "./rule-group.js";
