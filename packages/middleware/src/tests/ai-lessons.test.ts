@@ -96,6 +96,59 @@ test("POST /api/ai-lessons/import rejects a malformed nested item (generated nes
   await app.close();
 });
 
+test("PATCH /api/ai-lesson-culture/:id rejects a non-uuid id", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "PATCH",
+    url: "/api/ai-lesson-culture/not-a-uuid",
+    payload: {
+      topicIds: [],
+    },
+  });
+  assert.equal(res.statusCode, 400);
+  await app.close();
+});
+
+test("PATCH /api/ai-lesson-culture/:id rejects a payload missing topicIds", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "PATCH",
+    url: "/api/ai-lesson-culture/00000000-0000-0000-0000-000000000000",
+    payload: {},
+  });
+  assert.equal(res.statusCode, 400);
+  await app.close();
+});
+
+test("PATCH /api/ai-lesson-culture/:id rejects a non-array topicIds", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "PATCH",
+    url: "/api/ai-lesson-culture/00000000-0000-0000-0000-000000000000",
+    payload: {
+      topicIds: "x",
+    },
+  });
+  assert.equal(res.statusCode, 400);
+  await app.close();
+});
+
+test("PATCH /api/ai-lesson-culture/:id accepts an empty list and null", async () => {
+  const app = await buildApp();
+  for (const topicIds of [[], null]) {
+    const res = await app.inject({
+      method: "PATCH",
+      url: "/api/ai-lesson-culture/00000000-0000-0000-0000-000000000000",
+      payload: {
+        topicIds,
+      },
+    });
+    // Valid payload — 404 with a DB, or a 5xx without one, but never a 400.
+    assert.notEqual(res.statusCode, 400);
+  }
+  await app.close();
+});
+
 test("PATCH /api/ai-lesson-grammar/:id rejects a malformed grammar term", async () => {
   const app = await buildApp();
   const res = await app.inject({

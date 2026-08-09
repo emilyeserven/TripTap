@@ -561,6 +561,13 @@
       "when": 1786243316267,
       "tag": "0079_typical_mimic",
       "breakpoints": true
+    },
+    {
+      "idx": 80,
+      "version": "7",
+      "when": 1786291444787,
+      "tag": "0080_open_giant_girl",
+      "breakpoints": true
     }
   ]
 }

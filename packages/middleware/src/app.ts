@@ -14,6 +14,8 @@ import { correctionsRoutes } from "@/routes/corrections";
 import { dictionaryRoutes } from "@/routes/dictionary";
 import { tatoebaRoutes } from "@/routes/tatoeba";
 import { dialoguesRoutes } from "@/routes/dialogues";
+import { cultureNoteRoutes } from "@/routes/culture-notes";
+import { cultureTopicRoutes } from "@/routes/culture-topics";
 import { drillReasonCategoryRoutes } from "@/routes/drill-reason-categories";
 import { drillSessionRoutes } from "@/routes/drill-sessions";
 import { grammarNoteRoutes } from "@/routes/grammar-notes";
@@ -133,6 +135,14 @@ export async function buildApp(): Promise<FastifyInstance> {
         {
           name: "tutors",
           description: "Tutors who run lessons",
+        },
+        {
+          name: "culture-notes",
+          description: "User-authored culture notes (bilingual, topic-tagged)",
+        },
+        {
+          name: "culture-topics",
+          description: "The flat app-internal topic taxonomy culture content is filed under",
         },
         {
           name: "shadowing-lists",
@@ -256,6 +266,8 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(readingSessionsRoutes);
   await app.register(writingPromptRoutes);
   await app.register(tutorRoutes);
+  await app.register(cultureNoteRoutes);
+  await app.register(cultureTopicRoutes);
   await app.register(grammarNoteRoutes);
   await app.register(kanjiRoutes);
   await app.register(lessonRoutes);

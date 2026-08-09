@@ -1057,6 +1057,8 @@ export const aiLessonCulture = pgTable("ai_lesson_culture", {
   summaryFull: text("summary_full"),
   terms: jsonb("terms").$type<string[]>().notNull(),
   sortOrder: integer("sort_order").notNull(),
+  // App-set annotation (not part of the import contract): culture-topic ids.
+  topicIds: jsonb("topic_ids").$type<string[]>(),
 });
 
 export type AiLessonRow = typeof aiLessons.$inferSelect;
@@ -1066,6 +1068,52 @@ export type AiLessonVocabRow = typeof aiLessonVocab.$inferSelect;
 export type AiLessonGrammarRow = typeof aiLessonGrammar.$inferSelect;
 export type AiLessonSourceSentenceRow = typeof aiLessonSourceSentences.$inferSelect;
 export type AiLessonCultureRow = typeof aiLessonCulture.$inferSelect;
+
+/**
+ * `culture_topics` — the flat, app-internal topic taxonomy (Food, Etiquette, …) that culture notes
+ * and AI-lesson culture cards are filed under. Referenced by id from jsonb arrays (`topic_ids`)
+ * with no FK — the drill-reasons precedent — so deleting a topic degrades gracefully at render
+ * time instead of cascading.
+ */
+export const cultureTopics = pgTable("culture_topics", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull(),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+});
+
+export type CultureTopicRow = typeof cultureTopics.$inferSelect;
+export type NewCultureTopicRow = typeof cultureTopics.$inferInsert;
+
+/**
+ * `culture_notes` — user-authored short cultural notes, possibly a single sentence. Bilingual:
+ * optional EN/JA bodies (at least one, enforced in the service — nullable columns can't express
+ * it), optional jp/en headings, optional icon, vocab `terms` hover chips like
+ * {@link aiLessonCulture}, and `topic_ids` into {@link cultureTopics}.
+ */
+export const cultureNotes = pgTable("culture_notes", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  titleJp: text("title_jp"),
+  titleEn: text("title_en"),
+  bodyEn: text("body_en"),
+  bodyJa: text("body_ja"),
+  icon: text("icon"),
+  terms: jsonb("terms").$type<string[]>().notNull(),
+  topicIds: jsonb("topic_ids").$type<string[]>().notNull(),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", {
+    withTimezone: true,
+  }).notNull().defaultNow(),
+});
+
+export type CultureNoteRow = typeof cultureNotes.$inferSelect;
+export type NewCultureNoteRow = typeof cultureNotes.$inferInsert;
 
 /**
  * `migaku_imports` — a staged Migaku/Anki `.apkg` import awaiting review. The raw package is kept in

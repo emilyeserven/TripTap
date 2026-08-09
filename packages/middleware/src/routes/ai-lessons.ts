@@ -2,7 +2,7 @@ import type { FastifyInstance } from "fastify";
 import { idOf, notFound } from "@/routes/handlers";
 import { idParams } from "@/routes/schemas/params";
 import { aiLessonImportJsonSchema, type AiLessonImportInput } from "@sentence-bank/types";
-import type { GrammarTermsUpdate, VocabRenshuuUpdate } from "@sentence-bank/types";
+import type { CultureTopicsUpdate, GrammarTermsUpdate, VocabRenshuuUpdate } from "@sentence-bank/types";
 import {
   AiLessonSlugConflictError,
   createAiLessonFromImport,
@@ -11,6 +11,7 @@ import {
   getAiLessonContent,
   listAiLessons,
   updateAiLessonGrammarTerms,
+  updateCultureTopics,
   updateSourceSentenceTerms,
   updateVocabRenshuu,
 } from "@/services/ai-lessons";
@@ -50,6 +51,21 @@ const grammarTermsBody = {
   properties: {
     grammarTerms: {
       ...termsSchema,
+    },
+  },
+} as const;
+
+const cultureTopicsBody = {
+  type: "object",
+  additionalProperties: false,
+  required: ["topicIds"],
+  properties: {
+    topicIds: {
+      type: ["array", "null"],
+      items: {
+        type: "string",
+        format: "uuid",
+      },
     },
   },
 } as const;
@@ -145,6 +161,22 @@ export async function aiLessonRoutes(app: FastifyInstance): Promise<void> {
     } = req.body as GrammarTermsUpdate;
     const updated = await updateSourceSentenceTerms(idOf(req), grammarTerms);
     if (!updated) return notFound(reply, "Source sentence");
+    return updated;
+  });
+
+  // Set the culture-topic tags on a culture card.
+  app.patch("/api/ai-lesson-culture/:id", {
+    schema: {
+      tags: ["ai-lessons"],
+      params: idParams,
+      body: cultureTopicsBody,
+    },
+  }, async (req, reply) => {
+    const {
+      topicIds,
+    } = req.body as CultureTopicsUpdate;
+    const updated = await updateCultureTopics(idOf(req), topicIds);
+    if (!updated) return notFound(reply, "Culture card");
     return updated;
   });
 

@@ -283,7 +283,13 @@ export type GrammarItem = Persisted<GrammarInput> & {
 export type SourceSentenceItem = Persisted<SourceSentenceInput> & {
   grammarTerms: SentenceTermRef[] | null;
 };
-export type CultureItem = Persisted<CultureInput>;
+/**
+ * A persisted culture card. `topicIds` are culture-topic ids associated via the app (NOT part of
+ * the import contract), null when never tagged.
+ */
+export type CultureItem = Persisted<CultureInput> & {
+  topicIds: string[] | null;
+};
 
 /** Payload for updating a vocab item's Renshuu annotation. */
 export interface VocabRenshuuUpdate {
@@ -295,6 +301,11 @@ export interface VocabRenshuuUpdate {
 /** Payload for updating the Grammar source tags on an AI Lesson grammar item or source sentence. */
 export interface GrammarTermsUpdate {
   grammarTerms: SentenceTermRef[] | null;
+}
+
+/** Payload for updating the culture-topic tags on an AI Lesson culture card. */
+export interface CultureTopicsUpdate {
+  topicIds: string[] | null;
 }
 
 /** A full AI Lesson with all children, assembled for the viewer. */

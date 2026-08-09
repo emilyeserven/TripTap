@@ -32,6 +32,7 @@ import {
   SettingsIcon,
   SparklesIcon,
   SpellCheckIcon,
+  TagsIcon,
   TargetIcon,
   TelescopeIcon,
   UserRoundIcon,
@@ -331,7 +332,15 @@ const librarySection: NavSection = {
       title: "Culture",
       to: "/culture",
       icon: LandmarkIcon,
-      description: "Cultural notes worth remembering.",
+      description: "Cultural notes worth remembering — your own and from AI Lessons.",
+      children: [
+        {
+          title: "Culture Topics",
+          to: "/culture/topics",
+          icon: TagsIcon,
+          description: "Manage the topics your culture notes are filed under.",
+        },
+      ],
     },
     {
       title: "Vocabulary",

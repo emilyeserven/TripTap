@@ -109,6 +109,7 @@ export const aiLessonDetailFixture: AiLessonDetail = {
     ...c,
     id: `cul-${i}`,
     sortOrder: i,
+    topicIds: null,
   })),
   sections: aiLessonImportFixture.sections,
 };
