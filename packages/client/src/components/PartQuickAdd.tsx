@@ -42,7 +42,8 @@ export function PartQuickAdd({
   noun?: string;
 }) {
   const [count, setCount] = useState("");
-  const [style, setStyle] = useState<PartLabelStyle>("letter");
+  // Default to numbers (1, 2, 3) to match the sheet-level question quick-fill default.
+  const [style, setStyle] = useState<PartLabelStyle>("number");
   const [paste, setPaste] = useState("");
 
   /** Generate `count` parts in the chosen style, numbered continuing after the existing parts. */

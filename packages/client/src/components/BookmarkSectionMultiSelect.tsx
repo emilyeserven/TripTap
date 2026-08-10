@@ -3,7 +3,7 @@ import type { BookmarkSectionNode, BookmarkSectionRef } from "@sentence-bank/typ
 import { useMemo } from "react";
 
 import { MultiSelect } from "@/components/ui/multi-select";
-import { flattenSectionTree } from "@/lib/sections";
+import { flattenSectionTree, orderSectionsByTree } from "@/lib/sections";
 
 /** Display label for a section node: its name, else a type-appropriate fallback from its position. */
 function sectionNodeLabel(n: BookmarkSectionNode): string {
@@ -85,14 +85,15 @@ export function BookmarkSectionMultiSelect({
     <MultiSelect
       value={value.map(s => s.id)}
       onChange={(ids) => {
-        // Preserve selection order; for an id outside the current tree keep its existing ref so an
-        // attached-but-missing section survives toggling something else, rather than silently dropping.
+        // For an id outside the current tree keep its existing ref so an attached-but-missing section
+        // survives toggling something else, rather than silently dropping.
         const existing = new Map(value.map(s => [s.id, s]));
-        onChange(
-          ids
-            .map(id => buildRef(id) ?? existing.get(id) ?? null)
-            .filter((r): r is BookmarkSectionRef => r !== null),
-        );
+        const refs = ids
+          .map(id => buildRef(id) ?? existing.get(id) ?? null)
+          .filter((r): r is BookmarkSectionRef => r !== null);
+        // Store in table-of-contents order so chips read top-to-bottom and a title range ("first – last")
+        // has document-order endpoints regardless of the order sections were checked.
+        onChange(orderSectionsByTree(nodes, refs));
       }}
       options={options}
       placeholder="Select sections…"

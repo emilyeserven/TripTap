@@ -5,7 +5,9 @@ import { describe, expect, it } from "vitest";
 import {
   buildTaggedSectionTree,
   flattenSectionTree,
+  orderSectionsByTree,
   resolveSectionPage,
+  sectionRangeLabel,
   sectionRefStartMs,
   sectionRefToSegment,
   summarizeSectionRange,
@@ -203,6 +205,30 @@ describe("summarizeSectionRange", () => {
   it("shows first – last in tree order regardless of selection order", () => {
     const picked = [chapter("c3", "Chapter 3"), chapter("c1", "Chapter 1")];
     expect(summarizeSectionRange(TREE, picked)).toBe("Chapter 1 – Chapter 3");
+  });
+
+  it("orders sections by their position in the tree, unknown sections last", () => {
+    const picked = [chapter("c3", "Chapter 3"), chapter("x", "Extra"), chapter("c1", "Chapter 1")];
+    expect(orderSectionsByTree(TREE, picked).map(s => s.id)).toEqual(["c1", "c3", "x"]);
+  });
+});
+
+describe("sectionRangeLabel", () => {
+  const chapter = (label: string) => ref({
+    label,
+    type: "name",
+  });
+
+  it("returns null for no sections", () => {
+    expect(sectionRangeLabel([])).toBeNull();
+  });
+
+  it("returns the lone label for one section", () => {
+    expect(sectionRangeLabel([chapter("Chapter 2")])).toBe("Chapter 2");
+  });
+
+  it("joins first and last (preserving given order) for several", () => {
+    expect(sectionRangeLabel([chapter("A"), chapter("B"), chapter("C")])).toBe("A – C");
   });
 });
 
