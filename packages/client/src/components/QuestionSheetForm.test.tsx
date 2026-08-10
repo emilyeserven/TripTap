@@ -69,7 +69,7 @@ describe("QuestionSheetForm quick-add parts", () => {
     }));
   }
 
-  it("generates lettered parts by count (default style)", () => {
+  it("generates numbered parts by count (default style)", () => {
     render(<QuestionSheetForm />);
     addQuestion();
 
@@ -82,10 +82,10 @@ describe("QuestionSheetForm quick-add parts", () => {
       name: /^Add parts$/,
     }));
 
-    expect(partLabels()).toEqual(["(a)", "(b)", "(c)"]);
+    expect(partLabels()).toEqual(["(1)", "(2)", "(3)"]);
   });
 
-  it("appends and continues the letter sequence past existing parts", () => {
+  it("appends and continues the number sequence past existing parts", () => {
     render(<QuestionSheetForm />);
     addQuestion();
 
@@ -112,7 +112,7 @@ describe("QuestionSheetForm quick-add parts", () => {
       name: /^Add parts$/,
     }));
 
-    expect(partLabels()).toEqual(["(a)", "(b)", "(c)", "(d)"]);
+    expect(partLabels()).toEqual(["(1)", "(2)", "(3)", "(4)"]);
   });
 
   it("collapses the parts adder once a part exists and offers a nested sub-part adder", () => {

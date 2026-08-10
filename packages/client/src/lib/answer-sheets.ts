@@ -10,6 +10,7 @@ import { questionAnswerChoices } from "@sentence-bank/types";
 
 import { formatDueDate } from "@/lib/due-date";
 import { compareSheetPosition } from "@/lib/question-sheets";
+import { sectionRangeLabel } from "@/lib/sections";
 
 /** One answerable cell of a question sheet: a stable `id` and a human label for the input. */
 export interface QuestionSheetSlot {
@@ -348,15 +349,17 @@ export function answerSheetScore(qs: QuestionSheet, as: AnswerSheet): AnswerShee
 
 /**
  * A question sheet's display title. When the sheet is tied to a specific resource **and** section(s),
- * those identify it best, so we show "<resource> — <section>, <section>" in preference to whatever was
- * typed as the title (which is often a rougher hand-entered name). Falls back to the stored title
+ * those identify it best, so we show "<resource> — <first> – <last>" (a range across the attached
+ * sections, in their stored order) in preference to whatever was typed as the title (which is often a
+ * rougher hand-entered name). A single section shows its own label. Falls back to the stored title
  * otherwise. Display-only — the stored `title` is left untouched and still used for search.
  */
 export function questionSheetDisplayTitle(
   qs: Pick<QuestionSheet, "title" | "bookmarkTitle" | "sections">,
 ): string {
-  if (qs.bookmarkTitle && qs.sections.length > 0) {
-    return `${qs.bookmarkTitle} — ${qs.sections.map(s => s.label).join(", ")}`;
+  const range = sectionRangeLabel(qs.sections);
+  if (qs.bookmarkTitle && range) {
+    return `${qs.bookmarkTitle} — ${range}`;
   }
   return qs.title;
 }

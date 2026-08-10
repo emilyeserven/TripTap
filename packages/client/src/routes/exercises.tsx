@@ -96,10 +96,15 @@ function ExercisesPage() {
   const shownQuestionSheets = useMemo(() => {
     const q = search.trim().toLowerCase();
     return (questionSheets ?? []).filter((s) => {
-      const title = questionSheetDisplayTitle(s).toLowerCase();
-      if (q && !title.includes(q) && !(s.notes ?? "").toLowerCase().includes(q)) {
-        return false;
-      }
+      // Match the display title, the stored title, every section label (the display title only shows the
+      // first/last as a range), and notes — so searching a middle section still finds the sheet.
+      const haystack = [
+        questionSheetDisplayTitle(s),
+        s.title,
+        ...s.sections.map(sec => sec.label),
+        s.notes ?? "",
+      ].join(" ").toLowerCase();
+      if (q && !haystack.includes(q)) return false;
       return matchesResource(s, resource) && matchesLearningArea(s, area);
     });
   }, [questionSheets, search, resource, area]);
@@ -123,9 +128,12 @@ function ExercisesPage() {
     return (answerSheets ?? []).filter((s) => {
       const parent = parentById.get(s.questionSheetId);
       if (q) {
-        const own = (s.title ?? "").toLowerCase();
-        const from = parent ? questionSheetDisplayTitle(parent).toLowerCase() : "";
-        if (!own.includes(q) && !from.includes(q)) return false;
+        const haystack = [
+          s.title ?? "",
+          parent ? questionSheetDisplayTitle(parent) : "",
+          ...(parent?.sections ?? []).map(sec => sec.label),
+        ].join(" ").toLowerCase();
+        if (!haystack.includes(q)) return false;
       }
       return matchesResource(parent, resource) && matchesLearningArea(parent, area);
     });

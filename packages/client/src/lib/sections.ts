@@ -107,20 +107,49 @@ export function flattenSectionTree(nodes: BookmarkSectionNode[]): BookmarkSectio
 }
 
 /**
- * A compact summary of picked sections for a title: the lone label when one is picked, else
- * "first – last" in table-of-contents order (not selection order) so a span of chapters reads as a
- * range. Null when nothing is picked. Sections outside the given tree sort last but still count.
+ * Sort section references into the bookmark's table-of-contents order (their position in the flattened
+ * Sections tree). Sections not found in the tree sort last, keeping their relative order. Used to store
+ * a sheet's sections canonically so "first"/"last" mean document order, not click order.
+ */
+export function orderSectionsByTree(
+  nodes: BookmarkSectionNode[],
+  sections: BookmarkSectionRef[],
+): BookmarkSectionRef[] {
+  const order = new Map(flattenSectionTree(nodes).map((n, i) => [n.id, i]));
+  const rank = (ref: BookmarkSectionRef) => order.get(ref.id) ?? Number.MAX_SAFE_INTEGER;
+  // Stable sort (index tiebreak) so equal-rank sections keep their incoming order.
+  return sections
+    .map((ref, i) => ({
+      ref,
+      i,
+    }))
+    .sort((a, b) => rank(a.ref) - rank(b.ref) || a.i - b.i)
+    .map(({
+      ref,
+    }) => ref);
+}
+
+/**
+ * A compact summary of already-ordered section references for a title: the lone label when there's one,
+ * else "first – last" so a span reads as a range instead of a long comma list. Null when empty. Callers
+ * pass sections in the order they want summarized (store them via {@link orderSectionsByTree} first).
+ */
+export function sectionRangeLabel(sections: BookmarkSectionRef[]): string | null {
+  if (sections.length === 0) return null;
+  if (sections.length === 1) return sections[0].label;
+  return `${sections[0].label} – ${sections[sections.length - 1].label}`;
+}
+
+/**
+ * A compact summary of picked sections for a title: "first – last" in table-of-contents order (not
+ * selection order) so a span of chapters reads as a range. Null when nothing is picked. Sections
+ * outside the given tree sort last but still count.
  */
 export function summarizeSectionRange(
   nodes: BookmarkSectionNode[],
   sections: BookmarkSectionRef[],
 ): string | null {
-  if (sections.length === 0) return null;
-  if (sections.length === 1) return sections[0].label;
-  const order = new Map(flattenSectionTree(nodes).map((n, i) => [n.id, i]));
-  const rank = (ref: BookmarkSectionRef) => order.get(ref.id) ?? Number.MAX_SAFE_INTEGER;
-  const sorted = [...sections].sort((a, b) => rank(a) - rank(b));
-  return `${sorted[0].label} – ${sorted[sorted.length - 1].label}`;
+  return sectionRangeLabel(orderSectionsByTree(nodes, sections));
 }
 
 /**

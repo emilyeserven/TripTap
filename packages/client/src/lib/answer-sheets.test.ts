@@ -310,7 +310,7 @@ describe("questionSheetDisplayTitle", () => {
     }))).toBe("Genki I — L3 vocab");
   });
 
-  it("joins multiple sections with commas", () => {
+  it("summarizes multiple sections as a 'first – last' range (stored order)", () => {
     expect(questionSheetDisplayTitle(listSheet({
       bookmarkTitle: "Genki I",
       sections: [
@@ -328,8 +328,15 @@ describe("questionSheetDisplayTitle", () => {
           startValue: null,
           endValue: null,
         },
+        {
+          id: "s3",
+          label: "L5",
+          type: "page",
+          startValue: null,
+          endValue: null,
+        },
       ],
-    }))).toBe("Genki I — L3, L4");
+    }))).toBe("Genki I — L3 – L5");
   });
 });
 
