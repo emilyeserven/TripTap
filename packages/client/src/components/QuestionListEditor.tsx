@@ -67,7 +67,9 @@ export function QuestionListEditor({
   firstNumber?: number;
 }) {
   const [quickCount, setQuickCount] = useState("");
-  const [quickStyle, setQuickStyle] = useState<QuickFillStyle>("blank");
+  // Default to running numbers (1, 2, 3) — the most common worksheet numbering, so quick-fill labels
+  // each question out of the box; the user can switch to a letter/roman style or "Blank".
+  const [quickStyle, setQuickStyle] = useState<QuickFillStyle>("decimal");
 
   function addQuestion() {
     onChange([...questions, {

@@ -4,9 +4,11 @@ import { describe, expect, it } from "vitest";
 
 import {
   buildTaggedSectionTree,
+  flattenSectionTree,
   resolveSectionPage,
   sectionRefStartMs,
   sectionRefToSegment,
+  summarizeSectionRange,
 } from "./sections";
 
 function ref(over: Partial<BookmarkSectionRef>): BookmarkSectionRef {
@@ -123,6 +125,84 @@ describe("resolveSectionPage", () => {
     expect(resolveSectionPage(NODES, "clip")).toBeNull();
     expect(resolveSectionPage(NODES, null)).toBeNull();
     expect(resolveSectionPage(NODES, "missing")).toBeNull();
+  });
+});
+
+describe("flattenSectionTree", () => {
+  // Ch 1 → (1.1, 1.2); Ch 2 → (2.1) — pre-order should interleave each parent with its children.
+  const TREE: BookmarkSectionNode[] = [
+    node({
+      id: "c1",
+    }),
+    node({
+      id: "c1a",
+      parentId: "c1",
+    }),
+    node({
+      id: "c1b",
+      parentId: "c1",
+    }),
+    node({
+      id: "c2",
+    }),
+    node({
+      id: "c2a",
+      parentId: "c2",
+    }),
+  ];
+
+  it("walks depth-first pre-order, preserving upstream order", () => {
+    expect(flattenSectionTree(TREE).map(n => n.id)).toEqual(["c1", "c1a", "c1b", "c2", "c2a"]);
+  });
+
+  it("does not loop on a cyclic parent link", () => {
+    const cyclic: BookmarkSectionNode[] = [
+      node({
+        id: "a",
+        parentId: "b",
+      }),
+      node({
+        id: "b",
+        parentId: "a",
+      }),
+    ];
+    // A pure cycle has no root, so nothing is reachable — it just terminates.
+    expect(flattenSectionTree(cyclic)).toEqual([]);
+  });
+});
+
+describe("summarizeSectionRange", () => {
+  const TREE: BookmarkSectionNode[] = [
+    node({
+      id: "c1",
+      name: "Chapter 1",
+    }),
+    node({
+      id: "c2",
+      name: "Chapter 2",
+    }),
+    node({
+      id: "c3",
+      name: "Chapter 3",
+    }),
+  ];
+  const chapter = (id: string, label: string) => ref({
+    id,
+    label,
+    type: "name",
+  });
+
+  it("returns null for no sections", () => {
+    expect(summarizeSectionRange(TREE, [])).toBeNull();
+  });
+
+  it("returns the lone label for a single section", () => {
+    expect(summarizeSectionRange(TREE, [chapter("c2", "Chapter 2")])).toBe("Chapter 2");
+  });
+
+  it("shows first – last in tree order regardless of selection order", () => {
+    const picked = [chapter("c3", "Chapter 3"), chapter("c1", "Chapter 1")];
+    expect(summarizeSectionRange(TREE, picked)).toBe("Chapter 1 – Chapter 3");
   });
 });
 

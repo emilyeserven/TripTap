@@ -47,7 +47,7 @@ function Harness({
 }
 
 describe("QuestionListEditor quick-fill", () => {
-  it("generates N blank questions by default (Blank style)", () => {
+  it("generates N numbered questions by default (1, 2, 3 style)", () => {
     const onQuestions = vi.fn();
     render(<Harness onQuestions={onQuestions} />);
 
@@ -62,12 +62,12 @@ describe("QuestionListEditor quick-fill", () => {
 
     const last = onQuestions.mock.calls.at(-1)?.[0] as QuestionSheetQuestion[];
     expect(last).toHaveLength(3);
-    expect(last.map(q => q.prompt)).toEqual(["", "", ""]);
+    expect(last.map(q => q.prompt)).toEqual(["1", "2", "3"]);
   });
 
-  it("defaults the label-style picker to Blank", () => {
+  it("defaults the label-style picker to 1, 2, 3", () => {
     render(<Harness onQuestions={vi.fn()} />);
-    expect(screen.getByLabelText("Question label style").textContent).toContain("Blank");
+    expect(screen.getByLabelText("Question label style").textContent).toContain("1, 2, 3");
   });
 
   it("ignores a non-positive count", () => {
