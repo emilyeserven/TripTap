@@ -23,6 +23,7 @@ import type {
   XpSummary,
 } from "@sentence-bank/types";
 import { DEFAULT_XP_RATES, LEARNING_AREAS } from "@sentence-bank/types";
+import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import {
   answerSheets,
@@ -31,10 +32,9 @@ import {
   drillSessions,
   lessons,
   listeningSessions,
-  mySentences,
-  practiceSentences,
   questionSheets,
   readingSessions,
+  sentences,
   shadowingSessions,
   theorySessions,
   writings,
@@ -1000,11 +1000,11 @@ export async function loadXpGrants(): Promise<XpGrant[]> {
       createdAt: writings.createdAt,
     }).from(writings),
     db.select({
-      id: mySentences.id,
-      writingId: mySentences.writingId,
-      correction: mySentences.correction,
-      createdAt: mySentences.createdAt,
-    }).from(mySentences),
+      id: sentences.id,
+      writingId: sentences.writingId,
+      correction: sentences.correction,
+      createdAt: sentences.createdAt,
+    }).from(sentences).where(eq(sentences.kind, "mine")),
     db.select({
       id: questionSheets.id,
       title: questionSheets.title,
@@ -1080,11 +1080,11 @@ export async function loadXpGrants(): Promise<XpGrant[]> {
       learningArea: theorySessions.learningArea,
     }).from(theorySessions),
     db.select({
-      id: practiceSentences.id,
-      text: practiceSentences.text,
-      passes: practiceSentences.passes,
-      createdAt: practiceSentences.createdAt,
-    }).from(practiceSentences),
+      id: sentences.id,
+      text: sentences.text,
+      passes: sentences.passes,
+      createdAt: sentences.createdAt,
+    }).from(sentences).where(eq(sentences.kind, "practice")),
     db.select({
       id: corrections.id,
       original: corrections.original,

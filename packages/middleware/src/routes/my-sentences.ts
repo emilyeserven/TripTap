@@ -1,16 +1,87 @@
 import type { FastifyInstance } from "fastify";
 import { idOf, notFound } from "@/routes/handlers";
 import { idParams, updateBodyOf } from "@/routes/schemas/params";
-import type { CreateMySentenceInput, UpdateMySentenceInput } from "@sentence-bank/types";
+import type {
+  CreateMySentenceInput,
+  CreateSentenceInput,
+  MySentence,
+  Sentence,
+  UpdateMySentenceInput,
+} from "@sentence-bank/types";
 import {
-  createMySentence,
-  createMySentencesMany,
-  deleteMySentence,
-  getMySentence,
-  listMySentences,
-  updateMySentence,
-} from "@/services/my-sentences";
+  createSentence,
+  createSentencesMany,
+  deleteSentence,
+  getSentence,
+  listSentences,
+  updateSentence,
+} from "@/services/sentences";
 import { createMySentenceJsonSchema } from "@sentence-bank/types";
+
+/**
+ * Legacy wrapper over the unified sentences service (kind `mine`), keeping the pre-merge
+ * `/api/my-sentences` wire contract alive until the client has moved to `/api/sentences?kind=mine`.
+ * The only translation is the lineage column: the old `practiceSentenceId` is the unified
+ * `derivedFromId`. Delete this file (and the legacy types) once the client is migrated.
+ */
+
+/** Unified sentence → legacy `MySentence` wire shape. */
+function toLegacy(s: Sentence): MySentence {
+  return {
+    id: s.id,
+    text: s.text,
+    translation: s.translation,
+    reading: s.reading,
+    readingError: s.readingError,
+    language: s.language,
+    practiceSentenceId: s.derivedFromId,
+    writingId: s.writingId,
+    lessonId: s.lessonId,
+    needsCorrection: s.needsCorrection,
+    correction: s.correction,
+    actualMeaning: s.actualMeaning,
+    explanation: s.explanation,
+    terms: s.terms,
+    incorrectGrammarTerms: s.incorrectGrammarTerms,
+    reasons: s.reasons,
+    marks: s.marks,
+    shadowingCandidate: s.shadowingCandidate,
+    createdAt: s.createdAt,
+  };
+}
+
+/** Legacy create payload → unified create input. */
+function fromLegacyCreate(input: CreateMySentenceInput): CreateSentenceInput {
+  const {
+    practiceSentenceId, ...rest
+  } = input;
+  return {
+    ...rest,
+    kind: "mine",
+    derivedFromId: practiceSentenceId ?? null,
+  };
+}
+
+/** Legacy update payload → unified update input (only remaps keys that are present). */
+function fromLegacyUpdate(input: UpdateMySentenceInput) {
+  const {
+    practiceSentenceId, ...rest
+  } = input;
+  return {
+    ...rest,
+    ...(practiceSentenceId !== undefined
+      ? {
+        derivedFromId: practiceSentenceId,
+      }
+      : {}),
+  };
+}
+
+/** Fetch one sentence, treating non-mine kinds as absent (the legacy routes' 404 semantics). */
+async function getMine(id: string): Promise<Sentence | null> {
+  const s = await getSentence(id);
+  return s && s.kind === "mine" ? s : null;
+}
 
 const listQuery = {
   type: "object",
@@ -43,7 +114,7 @@ const bulkMySentencesBody = {
   },
 } as const;
 
-/** CRUD routes for my-sentences (learner-produced output), mounted under `/api/my-sentences`. */
+/** Legacy CRUD routes for my-sentences, mounted under `/api/my-sentences`. */
 export async function mySentenceRoutes(app: FastifyInstance): Promise<void> {
   app.get("/api/my-sentences", {
     schema: {
@@ -55,10 +126,12 @@ export async function mySentenceRoutes(app: FastifyInstance): Promise<void> {
       practiceSentenceId, lessonId,
     } = req.query as { practiceSentenceId?: string;
       lessonId?: string; };
-    return listMySentences({
-      practiceSentenceId,
+    const rows = await listSentences({
+      kinds: ["mine"],
+      derivedFromId: practiceSentenceId,
       lessonId,
     });
+    return rows.map(toLegacy);
   });
 
   app.get("/api/my-sentences/:id", {
@@ -67,9 +140,9 @@ export async function mySentenceRoutes(app: FastifyInstance): Promise<void> {
       params: idParams,
     },
   }, async (req, reply) => {
-    const mySentence = await getMySentence(idOf(req));
+    const mySentence = await getMine(idOf(req));
     if (!mySentence) return notFound(reply, "My sentence");
-    return mySentence;
+    return toLegacy(mySentence);
   });
 
   app.post("/api/my-sentences", {
@@ -79,8 +152,8 @@ export async function mySentenceRoutes(app: FastifyInstance): Promise<void> {
     },
   }, async (req, reply) => {
     const input = req.body as CreateMySentenceInput;
-    const created = await createMySentence(input);
-    return reply.code(201).send(created);
+    const created = await createSentence(fromLegacyCreate(input));
+    return reply.code(201).send(toLegacy(created));
   });
 
   app.post("/api/my-sentences/bulk", {
@@ -92,8 +165,8 @@ export async function mySentenceRoutes(app: FastifyInstance): Promise<void> {
     const {
       mySentences: inputs,
     } = req.body as { mySentences: CreateMySentenceInput[] };
-    const created = await createMySentencesMany(inputs);
-    return reply.code(201).send(created);
+    const created = await createSentencesMany(inputs.map(fromLegacyCreate));
+    return reply.code(201).send(created.map(toLegacy));
   });
 
   app.patch(
@@ -106,9 +179,13 @@ export async function mySentenceRoutes(app: FastifyInstance): Promise<void> {
       },
     },
     async (req, reply) => {
-      const updated = await updateMySentence(idOf(req), req.body as UpdateMySentenceInput);
+      if (!(await getMine(idOf(req)))) return notFound(reply, "My sentence");
+      const updated = await updateSentence(
+        idOf(req),
+        fromLegacyUpdate(req.body as UpdateMySentenceInput),
+      );
       if (!updated) return notFound(reply, "My sentence");
-      return updated;
+      return toLegacy(updated);
     },
   );
 
@@ -118,7 +195,8 @@ export async function mySentenceRoutes(app: FastifyInstance): Promise<void> {
       params: idParams,
     },
   }, async (req, reply) => {
-    const deleted = await deleteMySentence(idOf(req));
+    if (!(await getMine(idOf(req)))) return notFound(reply, "My sentence");
+    const deleted = await deleteSentence(idOf(req));
     if (!deleted) return notFound(reply, "My sentence");
     return reply.code(204).send();
   });

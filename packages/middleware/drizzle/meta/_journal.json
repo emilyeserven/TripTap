@@ -568,6 +568,13 @@
       "when": 1786291444787,
       "tag": "0080_open_giant_girl",
       "breakpoints": true
+    },
+    {
+      "idx": 81,
+      "version": "7",
+      "when": 1786404199529,
+      "tag": "0081_cloudy_pride",
+      "breakpoints": true
     }
   ]
 }
