@@ -230,6 +230,24 @@ describe("sectionRangeLabel", () => {
   it("joins first and last (preserving given order) for several", () => {
     expect(sectionRangeLabel([chapter("A"), chapter("B"), chapter("C")])).toBe("A – C");
   });
+
+  it("strips breadcrumb levels the last endpoint shares with the first", () => {
+    const range = sectionRangeLabel([
+      chapter("PART1 › Unit1 わたしはタスです。"),
+      chapter("PART1 › Unit3"),
+      chapter("PART1 › ◎ 実戦練習"),
+    ]);
+    expect(range).toBe("PART1 › Unit1 わたしはタスです。 – ◎ 実戦練習");
+  });
+
+  it("leaves the last endpoint intact when nothing is shared", () => {
+    expect(sectionRangeLabel([chapter("PART1 › Unit1"), chapter("PART2 › Unit9")]))
+      .toBe("PART1 › Unit1 – PART2 › Unit9");
+  });
+
+  it("keeps at least the final level when the last is otherwise a shared prefix", () => {
+    expect(sectionRangeLabel([chapter("A › B › C"), chapter("A › B")])).toBe("A › B › C – B");
+  });
 });
 
 describe("buildTaggedSectionTree", () => {

@@ -129,15 +129,35 @@ export function orderSectionsByTree(
     }) => ref);
 }
 
+/** The separator {@link BookmarkSectionRef.label} breadcrumbs use between levels (e.g. "Part 1 › Unit 2"). */
+const SECTION_BREADCRUMB_SEP = " › ";
+
+/**
+ * Drop the breadcrumb levels `last` shares with `first`, so a range's right endpoint isn't repeated in
+ * full. "PART1 › Unit1" / "PART1 › ◎ 実戦練習" → "◎ 実戦練習". Always keeps at least the final level, so a
+ * last that is otherwise a pure prefix of first still shows something.
+ */
+function stripCommonBreadcrumb(first: string, last: string): string {
+  const a = first.split(SECTION_BREADCRUMB_SEP);
+  const b = last.split(SECTION_BREADCRUMB_SEP);
+  let i = 0;
+  while (i < a.length && i < b.length - 1 && a[i] === b[i]) i += 1;
+  return b.slice(i).join(SECTION_BREADCRUMB_SEP);
+}
+
 /**
  * A compact summary of already-ordered section references for a title: the lone label when there's one,
- * else "first – last" so a span reads as a range instead of a long comma list. Null when empty. Callers
- * pass sections in the order they want summarized (store them via {@link orderSectionsByTree} first).
+ * else "first – last" so a span reads as a range instead of a long comma list. The last endpoint has any
+ * breadcrumb levels it shares with the first stripped ("Part 1 › Unit 1 – Unit 5"), so the shared
+ * context isn't repeated. Null when empty. Callers pass sections in the order they want summarized (store
+ * them via {@link orderSectionsByTree} first).
  */
 export function sectionRangeLabel(sections: BookmarkSectionRef[]): string | null {
   if (sections.length === 0) return null;
   if (sections.length === 1) return sections[0].label;
-  return `${sections[0].label} – ${sections[sections.length - 1].label}`;
+  const first = sections[0].label;
+  const last = sections[sections.length - 1].label;
+  return `${first} – ${stripCommonBreadcrumb(first, last)}`;
 }
 
 /**

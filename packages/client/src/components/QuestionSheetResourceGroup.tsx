@@ -6,6 +6,7 @@ import { CircleCheck, CircleSlash, Plus } from "lucide-react";
 
 import { ResourceGroupCard } from "@/components/ResourceGroupCard";
 import { Button } from "@/components/ui/button";
+import { sectionRangeLabel } from "@/lib/sections";
 
 /**
  * The leading status marker for a sheet: a check-in-circle when finished, a slashed circle when in
@@ -41,15 +42,15 @@ function StatusMarker({
   );
 }
 
-/** One section-link row: a progress marker, the sheet's section labels (title fallback), and a page hint. */
+/** One section-link row: a progress marker, the sheet's section range (title fallback), and a page hint. */
 function SheetLink({
   sheet,
   status,
 }: { sheet: QuestionSheet;
   status: QuestionSheetProgress; }) {
-  const label = sheet.sections.length > 0
-    ? sheet.sections.map(s => s.label).join(", ")
-    : sheet.title;
+  // The book is already the group heading, so show just the sections as a "first – last" range (with the
+  // shared breadcrumb collapsed); fall back to the stored title when the sheet has no sections.
+  const label = sectionRangeLabel(sheet.sections) ?? sheet.title;
   return (
     <li className="flex items-center gap-1.5 text-sm">
       <StatusMarker status={status} />
