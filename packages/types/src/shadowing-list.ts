@@ -18,9 +18,12 @@ export interface ShadowingList {
   name: string;
   /** Free-text notes about the list. */
   notes: string | null;
-  /** Ids of bank `Sentence`s in this list, in insertion order. */
+  /** Ids of `Sentence`s (any kind) in this list, in insertion order. */
   sentenceIds: string[];
-  /** Ids of learner-produced `MySentence`s in this list, in insertion order. */
+  /**
+   * @deprecated Pre-merge split. Reads always return `[]` (membership is one array now); ids sent
+   * here on create/update are unioned into {@link sentenceIds}. Removed once the client is unified.
+   */
   mySentenceIds: string[];
   /** ISO-8601 timestamp of when the list was created. */
   createdAt: string;

@@ -1,57 +1,31 @@
 /**
- * Shared "Practice Sentence" domain types.
+ * Legacy "Practice Sentence" wire contract.
  *
- * A practice sentence is a study-aid record derived from the sentence-mining worksheet: one card per
- * sentence, richly broken down (target, guess, word/grammar notes, "my own sentence", study passes).
- * Unlike a bank {@link Sentence}, a practice sentence is typically imported from a capture or an
- * existing sentence, and is *not* professionally written — it carries a `needsCorrection` flag and an
- * (initially hidden) `correction` field. Consumed by both the Fastify API and the React client.
+ * Practice sentences are now `kind: "practice"` rows of the unified {@link Sentence} (see
+ * `sentence.ts`, which also owns the shared helper types — `PracticeWord`, `PracticePasses`, …).
+ * This module keeps the pre-merge wire shape alive for the legacy `/api/practice-sentences/*`
+ * wrapper routes and the not-yet-migrated client, and is deleted once both are gone.
  */
 
 // Type-only import (erased at build) — `SentenceTermRef` lives in the barrel; no runtime cycle.
 import type { FuriToken, SentenceTermRef } from "./index.js";
+import type {
+  PracticeComprehension,
+  PracticeGrammar,
+  PracticePasses,
+  PracticeTargetKind,
+  PracticeWord,
+} from "./sentence.js";
 
 import { z } from "zod";
 
 import { objectJsonSchema } from "./json-schema.js";
+import {
+  practiceGrammarSchema,
+  practicePassesSchema,
+  practiceWordSchema,
+} from "./sentence.js";
 import { termsListSchema } from "./terms.js";
-
-/** One unknown word logged on a practice sentence: the word, its reading, and its meaning. */
-export interface PracticeWord {
-  /** The word/term, e.g. "頭". */
-  w: string;
-  /** Reading/pronunciation, e.g. "あたま". */
-  r: string;
-  /** Meaning in the user's language. */
-  m: string;
-}
-
-/** One grammar point logged on a practice sentence: the pattern and what it does to the meaning. */
-export interface PracticeGrammar {
-  /** The pattern, e.g. "〜も〜ないし". */
-  p: string;
-  /** What it does, e.g. "stacks another complaint; し leaves the list open". */
-  n: string;
-}
-
-/** The study passes tracked per practice sentence (the worksheet's checklist). */
-export type PracticePassKey = "read" | "guess" | "lookup" | "produce" | "card";
-
-/**
- * Which study passes the learner has completed for a sentence. Absent key = not done. A string value
- * is the ISO timestamp of completion (dates the pass's XP grant); legacy `true` means completed at an
- * unknown time, which XP dates by the sentence's `createdAt`.
- */
-export type PracticePasses = Partial<Record<PracticePassKey, boolean | string>>;
-
-/** What kind of thing the sentence's single "target" is. Validated at the route layer. */
-export type PracticeTargetKind = "word" | "grammar" | "idiom" | "collocation" | "reading";
-
-/**
- * How well the learner understands the sentence, à la Tofugu's curation gate: `ready` (~80%+ — good to
- * card into an SRS), `studying` (under 80% — study the component parts first), `skip` (under 50% — defer).
- */
-export type PracticeComprehension = "ready" | "studying" | "skip";
 
 /** A single practice sentence: a richly-annotated study card. */
 export interface PracticeSentence {
@@ -109,28 +83,6 @@ export interface PracticeSentence {
 }
 
 /** Payload for creating a practice sentence. Only `text` + `language` are required. */
-const practiceWordSchema = z.object({
-  w: z.string(),
-  r: z.string(),
-  m: z.string(),
-});
-
-const practiceGrammarSchema = z.object({
-  p: z.string(),
-  n: z.string(),
-});
-
-// A pass value is either a legacy boolean or the ISO timestamp of completion (see PracticePasses).
-const passValueSchema = z.union([z.boolean(), z.string()]).optional();
-
-const passesSchema = z.object({
-  read: passValueSchema,
-  guess: passValueSchema,
-  lookup: passValueSchema,
-  produce: passValueSchema,
-  card: passValueSchema,
-}).nullable();
-
 export const createPracticeSentenceSchema = z.object({
   text: z.string().min(1),
   language: z.string().min(1),
@@ -146,7 +98,7 @@ export const createPracticeSentenceSchema = z.object({
   words: z.array(practiceWordSchema).nullable().optional(),
   grammar: z.array(practiceGrammarSchema).nullable().optional(),
   terms: termsListSchema.optional(),
-  passes: passesSchema.optional(),
+  passes: practicePassesSchema.optional(),
   sourceId: z.guid().nullable().optional(),
   page: z.string().nullable().optional(),
   captureId: z.guid().nullable().optional(),
@@ -166,49 +118,11 @@ export type UpdatePracticeSentenceInput = Partial<CreatePracticeSentenceInput>;
 
 /* ── Breakdown import (paste an AI's sentence breakdown as JSON) ──────────────────────────────────── */
 
-/**
- * The JSON an external AI emits when it breaks down one sentence, pasted into the app to create a
- * practice card. A Zod schema (strict, so stray keys are rejected) is the single source of truth: the
- * client validates the paste with `safeParse`, and the route body uses the derived JSON Schema, so the
- * two can never drift — mirroring the AI-lesson import contract.
- */
-export const practiceSentenceImportSchema = z.strictObject({
-  /** The sentence in the target language, copied exactly. */
-  text: z.string().min(1),
-  /** Target language; defaults to "Japanese" on import when omitted. */
-  language: z.string().optional(),
-  /** The learner's own note on how to read the tricky parts (not generated furigana). */
-  readingNote: z.string().optional().nullable(),
-  /** Natural translation. */
-  translation: z.string().optional().nullable(),
-  /** The single thing this sentence teaches. */
-  target: z.string().optional().nullable(),
-  targetKind: z.enum(["word", "grammar", "idiom", "collocation", "reading"]).optional().nullable(),
-  /** Pre-lookup guess at the meaning. */
-  guess: z.string().optional().nullable(),
-  /** Literal/structural gloss. */
-  literal: z.string().optional().nullable(),
-  /** Politeness/register label. */
-  register: z.string().optional().nullable(),
-  /** Who says this, to whom. */
-  nuance: z.string().optional().nullable(),
-  /** Unknown words: word / reading / meaning. */
-  words: z.array(z.strictObject({
-    w: z.string().min(1),
-    r: z.string(),
-    m: z.string(),
-  })).optional().nullable(),
-  /** Grammar points: pattern / what it does. */
-  grammar: z.array(z.strictObject({
-    p: z.string().min(1),
-    n: z.string(),
-  })).optional().nullable(),
-});
-
-/** JSON Schema (draft-07) derived from the Zod contract, used verbatim as the import route's body. */
-export const practiceSentenceImportJsonSchema = z.toJSONSchema(practiceSentenceImportSchema, {
-  target: "draft-7",
-});
+// The import contract now lives in `sentence.ts`; these aliases keep the legacy names alive.
+export {
+  sentenceImportJsonSchema as practiceSentenceImportJsonSchema,
+  sentenceImportSchema as practiceSentenceImportSchema,
+} from "./sentence.js";
 
 /** The pasted breakdown payload. */
-export type PracticeSentenceImportInput = z.infer<typeof practiceSentenceImportSchema>;
+export type { SentenceImportInput as PracticeSentenceImportInput } from "./sentence.js";

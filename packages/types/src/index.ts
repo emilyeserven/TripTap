@@ -29,6 +29,7 @@ export * from "./practice-sentence.js";
 export * from "./question-sheet.js";
 export * from "./reading-session.js";
 export * from "./rule-tag.js";
+export * from "./sentence.js";
 export * from "./sentence-destination.js";
 export * from "./sentence-mark.js";
 export * from "./session.js";
@@ -52,9 +53,7 @@ import type { LearningArea } from "./question-sheet.js";
 
 import { z } from "zod";
 
-import { furiTokenSchema } from "./furigana.js";
-import { fieldJsonSchema, objectJsonSchema } from "./json-schema.js";
-import { termsListSchema } from "./terms.js";
+import { objectJsonSchema } from "./json-schema.js";
 
 /**
  * A reusable origin for sentences (a book, show, article, …) — the "source taxonomy".
@@ -111,78 +110,6 @@ export interface FuriToken {
   t: string;
   r: string | null;
 }
-
-/** A single example sentence stored in the bank. */
-export interface Sentence {
-  id: string;
-  /** The sentence in the target language, e.g. "毎朝コーヒーを飲みます。". */
-  text: string;
-  /**
-   * Furigana segmentation of {@link text}, auto-generated server-side; null until generated (or for
-   * non-Japanese text). Rendered as ruby when the furigana toggle is on.
-   */
-  reading: FuriToken[] | null;
-  /** Message from the last failed furigana generation, or null when it succeeded. */
-  readingError: string | null;
-  /** The meaning in the user's own language; null when mined text-only and not yet translated. */
-  translation: string | null;
-  /** Target language, e.g. "Japanese". */
-  language: string;
-  /** Legacy free-text origin, kept for rows predating the source taxonomy. */
-  source: string | null;
-  /** The taxonomy source this sentence belongs to, or null. */
-  sourceId: string | null;
-  /** Per-sentence location within the source, e.g. "42", "p. 12–13". */
-  page: string | null;
-  /** Optional free-form notes. */
-  notes: string | null;
-  /** Optional comma-separated tags. */
-  tags: string | null;
-  /**
-   * Structured tags borrowed from the external bookmarks taxonomy (distinct from free-text {@link
-   * tags}). Denormalized (id + name + provenance) so display never needs a live bookmarks call. Null
-   * when none are attached.
-   */
-  terms: SentenceTermRef[] | null;
-  /** The capture this sentence was mined from, or null. */
-  captureId: string | null;
-  /** True when an audio clip is stored for this sentence (fetch from `/api/sentences/:id/audio`). */
-  hasAudio: boolean;
-  /** True when an image is stored for this sentence (fetch from `/api/sentences/:id/image`). */
-  hasImage: boolean;
-  /** How many vocab items are linked to this sentence (drives the "Break it down" affordance). */
-  vocabCount: number;
-  /** Marked by the learner as a good sentence to shadow (practise aloud). */
-  shadowingCandidate: boolean;
-  /** ISO-8601 timestamp of when the sentence was added. */
-  createdAt: string;
-}
-
-/** Payload for creating a sentence. */
-export const createSentenceSchema = z.object({
-  text: z.string().min(1),
-  translation: z.string().nullable().optional(),
-  language: z.string().min(1),
-  source: z.string().nullable().optional(),
-  sourceId: z.guid().nullable().optional(),
-  page: z.string().nullable().optional(),
-  notes: z.string().nullable().optional(),
-  tags: z.string().nullable().optional(),
-  /** Structured taxonomy terms borrowed from the bookmarks app; see {@link SentenceTermRef}. */
-  terms: termsListSchema.optional(),
-  captureId: z.guid().nullable().optional(),
-  /** Vocab items to link to this sentence (many-to-many). */
-  vocabIds: z.array(z.guid()).optional(),
-  shadowingCandidate: z.boolean().optional(),
-});
-
-/** JSON Schema (draft-07) for the create payload, used verbatim as the route body. */
-export const createSentenceJsonSchema = objectJsonSchema(createSentenceSchema);
-
-/** JSON Schema (draft-07) for a manual furigana override — the sentence PATCH body's `reading`. */
-export const sentenceReadingJsonSchema = fieldJsonSchema(z.array(furiTokenSchema).nullable());
-
-export type CreateSentenceInput = z.infer<typeof createSentenceSchema>;
 
 /** A standalone vocabulary entry (peer of {@link Sentence}). */
 export interface Vocab {
@@ -261,11 +188,6 @@ export const createParseTemplateSchema = z.object({
 export const createParseTemplateJsonSchema = objectJsonSchema(createParseTemplateSchema);
 
 export type CreateParseTemplateInput = z.infer<typeof createParseTemplateSchema>;
-
-/** Payload for partially updating a sentence. `reading` is a manual furigana override (null clears it). */
-export type UpdateSentenceInput = Partial<CreateSentenceInput> & {
-  reading?: FuriToken[] | null;
-};
 
 /** Standard error shape returned by the API. */
 export interface ApiError {
