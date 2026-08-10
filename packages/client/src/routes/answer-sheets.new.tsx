@@ -11,6 +11,7 @@ import { useCreateAnswerSheet } from "@/hooks/useAnswerSheets";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useQuestionSheets } from "@/hooks/useQuestionSheets";
 import { generateAnswerSheetTitle } from "@/lib/answer-sheets";
+import { todayCalendarDayIso } from "@/lib/due-date";
 
 interface NewAnswerSheetSearch {
   questionSheetId?: string;
@@ -50,8 +51,10 @@ function NewAnswerSheetPage() {
       || (selected ? generateAnswerSheetTitle(selected) : "Answer sheet");
     const saved = await create.mutateAsync({
       questionSheetId,
+      // The learner's local calendar day (as UTC midnight) — not `new Date().toISOString()`, whose UTC
+      // day is already tomorrow for an evening session west of UTC, mis-dating the attempt to "today".
       title: derivedTitle,
-      date: new Date().toISOString(),
+      date: todayCalendarDayIso(),
       entries: [],
     });
     navigate({
