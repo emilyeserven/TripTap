@@ -10,15 +10,12 @@ import type {
 
 import { useEffect, useMemo, useState } from "react";
 
-import { Plus, X } from "lucide-react";
-
 import { BookmarkPicker } from "@/components/BookmarkPicker";
-import { BookmarkSectionSelect } from "@/components/BookmarkSectionSelect";
+import { BookmarkSectionMultiSelect } from "@/components/BookmarkSectionMultiSelect";
 import { LearningAreaMultiSelect } from "@/components/LearningAreaMultiSelect";
 import { QuestionGridEditor } from "@/components/QuestionGridEditor";
 import { QuestionListEditor } from "@/components/QuestionListEditor";
 import { TermPicker } from "@/components/TermPicker";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -30,7 +27,7 @@ import {
   useQuestionSheets,
   useUpdateQuestionSheet,
 } from "@/hooks/useQuestionSheets";
-import { resolveSectionPage } from "@/lib/sections";
+import { resolveSectionPage, summarizeSectionRange } from "@/lib/sections";
 
 /**
  * Create/edit form for a Question Sheet — the reusable template of textbook/worksheet questions.
@@ -64,8 +61,6 @@ export function QuestionSheetForm({
     questionSheet?.bookmarkUrl ?? initialResource?.bookmarkUrl ?? null,
   );
   const [sections, setSections] = useState<BookmarkSectionRef[]>(questionSheet?.sections ?? []);
-  // The candidate section in the cascading picker; committed to `sections` via "Add section".
-  const [pendingSection, setPendingSection] = useState<BookmarkSectionRef | null>(null);
   const [page, setPage] = useState(questionSheet?.page ?? "");
   // Like the title: in edit mode the saved page is left alone; in create mode a picked page-section
   // fills it until the user types their own page.
@@ -92,36 +87,42 @@ export function QuestionSheetForm({
   const [columns, setColumns] = useState<string[]>(questionSheet?.grid?.columns ?? [""]);
   const [rows, setRows] = useState<QuestionSheetGridRow[]>(questionSheet?.grid?.rows ?? []);
 
-  useEffect(() => {
-    if (titleTouched) return;
-    const derived = [bookmarkTitle, page.trim() || null].filter(Boolean).join(" — ");
-    if (derived) setTitle(derived);
-  }, [bookmarkTitle, page, titleTouched]);
-
   // The picked bookmark's full Sections tree (shared cache with the picker); used to resolve a section's
   // page, walking up to a paged parent when the section itself has none.
   const sectionTree = useBookmarkRecord(bookmarkId).data?.sectionTree ?? [];
 
+  useEffect(() => {
+    if (titleTouched) return;
+    // Prefer a section span in the auto-title ("Book — Ch 1 – Ch 3"); fall back to the page when no
+    // section is picked. A single section shows its own label.
+    const sectionSummary = summarizeSectionRange(sectionTree, sections);
+    const derived = [bookmarkTitle, sectionSummary ?? (page.trim() || null)]
+      .filter(Boolean)
+      .join(" — ");
+    if (derived) setTitle(derived);
+  }, [bookmarkTitle, page, sections, sectionTree, titleTouched]);
+
   // Sections of the picked resource that already have a question sheet (excluding this one when editing)
   // plus the ones already attached here — so the section picker dims them and gaps are easy to spot.
   const allSheets = useQuestionSheets().data;
+  // Sections already attached here render as checked in the picker, so only *other* sheets' sections
+  // are dimmed — dimming the current selection would fight the checkmark.
   const usedSectionIds = useMemo(() => {
     if (!bookmarkId) return undefined;
-    const fromOthers = (allSheets ?? [])
-      .filter(s => s.bookmarkId === bookmarkId && s.id !== questionSheet?.id)
-      .flatMap(s => s.sections.map(sec => sec.id));
-    return new Set([...fromOthers, ...sections.map(s => s.id)]);
-  }, [allSheets, bookmarkId, questionSheet?.id, sections]);
+    return new Set(
+      (allSheets ?? [])
+        .filter(s => s.bookmarkId === bookmarkId && s.id !== questionSheet?.id)
+        .flatMap(s => s.sections.map(sec => sec.id)),
+    );
+  }, [allSheets, bookmarkId, questionSheet?.id]);
 
-  // Commit the candidate section: add it (deduped) and pre-fill the page from it unless the user typed one.
-  const addPendingSection = () => {
-    if (!pendingSection || sections.some(s => s.id === pendingSection.id)) return;
-    setSections([...sections, pendingSection]);
-    const derivedPage = resolveSectionPage(sectionTree, pendingSection.id);
-    if (derivedPage && !pageTouched) setPage(derivedPage);
-    setPendingSection(null);
+  // Attach the picked sections and, unless the user typed a page, pre-fill it from the first one.
+  const changeSections = (next: BookmarkSectionRef[]) => {
+    setSections(next);
+    if (pageTouched || next.length === 0) return;
+    const derivedPage = resolveSectionPage(sectionTree, next[0].id);
+    if (derivedPage) setPage(derivedPage);
   };
-  const removeSection = (id: string) => setSections(sections.filter(s => s.id !== id));
 
   // The effective first-question number (≥ 1), shared by the submit payload and the editor labels.
   const firstNumber = Math.max(1, Math.floor(Number(firstQuestionNumber)) || 1);
@@ -132,11 +133,6 @@ export function QuestionSheetForm({
   const submit = async () => {
     if (!canSubmit) return;
     const cleanColumns = columns.map(c => c.trim()).filter(c => c.length > 0);
-    // A section chosen in the picker but not yet committed with "Add section" is easy to leave
-    // pending on save — fold it in so a picked-but-not-added section still attaches.
-    const finalSections = pendingSection && !sections.some(s => s.id === pendingSection.id)
-      ? [...sections, pendingSection]
-      : sections;
     const input = {
       title: title.trim(),
       layout,
@@ -145,7 +141,7 @@ export function QuestionSheetForm({
       bookmarkId,
       bookmarkTitle,
       bookmarkUrl,
-      sections: finalSections,
+      sections,
       firstQuestionNumber: firstNumber,
       dueDate: dueDate ? new Date(dueDate).toISOString() : null,
       learningAreas,
@@ -221,51 +217,16 @@ export function QuestionSheetForm({
         ? (
           <div className="space-y-2">
             <Label>Sections</Label>
-            <div className="flex flex-wrap items-end gap-2">
-              <BookmarkSectionSelect
-                nodes={sectionTree}
-                value={pendingSection?.id ?? ""}
-                onChange={setPendingSection}
-                usedSectionIds={usedSectionIds}
-                className="w-full max-w-sm"
-              />
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={addPendingSection}
-                disabled={!pendingSection}
-              >
-                <Plus className="size-4" />
-                Add section
-              </Button>
-            </div>
-            {sections.length > 0
-              ? (
-                <ul className="flex flex-wrap gap-2">
-                  {sections.map(s => (
-                    <li key={s.id}>
-                      <Badge
-                        variant="secondary"
-                        className="gap-1"
-                      >
-                        {s.label}
-                        <button
-                          type="button"
-                          aria-label={`Remove ${s.label}`}
-                          onClick={() => removeSection(s.id)}
-                          className="hover:text-destructive"
-                        >
-                          <X className="size-3" />
-                        </button>
-                      </Badge>
-                    </li>
-                  ))}
-                </ul>
-              )
-              : null}
+            <BookmarkSectionMultiSelect
+              nodes={sectionTree}
+              value={sections}
+              onChange={changeSections}
+              usedSectionIds={usedSectionIds}
+              className="w-full max-w-sm"
+            />
             <p className="text-xs text-muted-foreground">
-              Attach one or more sections of this resource (optional). Sections that already have a
-              sheet are dimmed.
+              Attach one or more sections of this resource (optional). Search and check as many as you
+              like. Sections that already have a sheet are dimmed.
             </p>
           </div>
         )

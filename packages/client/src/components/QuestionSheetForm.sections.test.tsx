@@ -9,10 +9,12 @@ const {
   updateMutate, createMutate,
 } = vi.hoisted(() => ({
   updateMutate: vi.fn(async (_arg: { id: string;
-    input: { sections: { id: string }[] }; }) => ({
+    input: { sections: { id: string;
+      label: string; }[]; }; }) => ({
     id: "qs1",
   })),
-  createMutate: vi.fn(async (_input: { sections: { id: string }[] }) => ({
+  createMutate: vi.fn(async (_input: { sections: { id: string;
+    label: string; }[]; }) => ({
     id: "qs1",
   })),
 }));
@@ -37,22 +39,40 @@ vi.mock("@/components/TermPicker", () => ({
   TermPicker: () => null,
 }));
 
-// A one-node section tree so the Sections picker renders (gated on the tree being non-empty).
-const SECTION_NODE: BookmarkSectionNode = {
-  id: "sec-1",
-  name: "Chapter 1",
+// A small section tree so the Sections picker renders (gated on the tree being non-empty): one chapter
+// with two sub-sections, to exercise breadcrumb labels and adding several at once.
+const node = (over: Partial<BookmarkSectionNode> & Pick<BookmarkSectionNode, "id">): BookmarkSectionNode => ({
+  name: "",
   parentId: null,
   type: "page",
-  startValue: "12",
+  startValue: null,
   endValue: null,
   url: null,
   tagIds: [],
   completed: false,
-};
+  ...over,
+});
+const SECTION_TREE: BookmarkSectionNode[] = [
+  node({
+    id: "sec-1",
+    name: "Chapter 1",
+    startValue: "12",
+  }),
+  node({
+    id: "sec-1a",
+    name: "Vocabulary",
+    parentId: "sec-1",
+  }),
+  node({
+    id: "sec-1b",
+    name: "Grammar",
+    parentId: "sec-1",
+  }),
+];
 vi.mock("@/hooks/useBookmarks", () => ({
   useBookmarkRecord: () => ({
     data: {
-      sectionTree: [SECTION_NODE],
+      sectionTree: SECTION_TREE,
     },
   }),
 }));
@@ -83,41 +103,14 @@ describe("QuestionSheetForm — section committed on save", () => {
     createMutate.mockClear();
   });
 
-  it("saves a section picked but never added with 'Add section'", async () => {
-    render(<QuestionSheetForm questionSheet={SHEET} />);
-
-    // Pick a section in the cascading picker but deliberately skip the "Add section" button.
-    fireEvent.click(screen.getByRole("combobox", {
-      name: "Section",
-    }));
-    fireEvent.click(screen.getByText("Chapter 1"));
-    // No chip yet — it is only a pending selection.
-    expect(screen.queryByRole("button", {
-      name: /^Remove /,
-    })).toBeNull();
-
-    fireEvent.click(screen.getByRole("button", {
-      name: /Save changes/,
-    }));
-
-    await waitFor(() => expect(updateMutate).toHaveBeenCalledTimes(1));
-    const {
-      input,
-    } = updateMutate.mock.calls[0][0];
-    expect(input.sections.map(s => s.id)).toEqual(["sec-1"]);
-  });
-
-  it("does not double-add a section already committed with 'Add section'", async () => {
+  it("attaches a checked section immediately (no separate 'add' step) and saves it", async () => {
     render(<QuestionSheetForm questionSheet={SHEET} />);
 
     fireEvent.click(screen.getByRole("combobox", {
-      name: "Section",
+      name: "Sections",
     }));
     fireEvent.click(screen.getByText("Chapter 1"));
-    fireEvent.click(screen.getByRole("button", {
-      name: /Add section/,
-    }));
-    // Now committed as a chip.
+    // Checking attaches it right away — a removable chip appears.
     expect(screen.getByRole("button", {
       name: /^Remove /,
     })).toBeTruthy();
@@ -131,5 +124,57 @@ describe("QuestionSheetForm — section committed on save", () => {
       input,
     } = updateMutate.mock.calls[0][0];
     expect(input.sections.map(s => s.id)).toEqual(["sec-1"]);
+  });
+
+  it("adds several sub-sections at once, with breadcrumb labels, and saves them together", async () => {
+    render(<QuestionSheetForm questionSheet={SHEET} />);
+
+    fireEvent.click(screen.getByRole("combobox", {
+      name: "Sections",
+    }));
+    // The popover stays open on toggle, so both sub-sections can be checked in one pass. Sub-sections
+    // carry a "Parent › Child" breadcrumb label.
+    fireEvent.click(screen.getByText("Chapter 1 › Vocabulary"));
+    fireEvent.click(screen.getByText("Chapter 1 › Grammar"));
+
+    fireEvent.click(screen.getByRole("button", {
+      name: /Save changes/,
+    }));
+
+    await waitFor(() => expect(updateMutate).toHaveBeenCalledTimes(1));
+    const {
+      input,
+    } = updateMutate.mock.calls[0][0];
+    expect(input.sections.map(s => s.id)).toEqual(["sec-1a", "sec-1b"]);
+    expect(input.sections.map(s => s.label)).toEqual([
+      "Chapter 1 › Vocabulary",
+      "Chapter 1 › Grammar",
+    ]);
+  });
+
+  it("removing a section's chip drops it before save", async () => {
+    render(<QuestionSheetForm questionSheet={SHEET} />);
+
+    fireEvent.click(screen.getByRole("combobox", {
+      name: "Sections",
+    }));
+    fireEvent.click(screen.getByText("Chapter 1"));
+    // Remove it again via its chip's remove button.
+    fireEvent.click(screen.getByRole("button", {
+      name: "Remove Chapter 1",
+    }));
+    expect(screen.queryByRole("button", {
+      name: /^Remove /,
+    })).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", {
+      name: /Save changes/,
+    }));
+
+    await waitFor(() => expect(updateMutate).toHaveBeenCalledTimes(1));
+    const {
+      input,
+    } = updateMutate.mock.calls[0][0];
+    expect(input.sections).toEqual([]);
   });
 });

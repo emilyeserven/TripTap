@@ -79,6 +79,51 @@ export function buildTaggedSectionTree(sections: BookmarkSectionRef[]): TaggedSe
 }
 
 /**
+ * The bookmark's Sections tree flattened depth-first pre-order — each section immediately followed by
+ * its descendants, preserving the upstream table-of-contents order. Cycle-guarded so a malformed
+ * parent link can't loop forever. Shared by the multi-select picker (option order) and the range
+ * summary (which section comes first/last).
+ */
+export function flattenSectionTree(nodes: BookmarkSectionNode[]): BookmarkSectionNode[] {
+  const childrenOf = new Map<string | null, BookmarkSectionNode[]>();
+  for (const n of nodes) {
+    const key = n.parentId ?? null;
+    const list = childrenOf.get(key);
+    if (list) list.push(n);
+    else childrenOf.set(key, [n]);
+  }
+  const out: BookmarkSectionNode[] = [];
+  const seen = new Set<string>();
+  const walk = (parentId: string | null) => {
+    for (const n of childrenOf.get(parentId) ?? []) {
+      if (seen.has(n.id)) continue;
+      seen.add(n.id);
+      out.push(n);
+      walk(n.id);
+    }
+  };
+  walk(null);
+  return out;
+}
+
+/**
+ * A compact summary of picked sections for a title: the lone label when one is picked, else
+ * "first – last" in table-of-contents order (not selection order) so a span of chapters reads as a
+ * range. Null when nothing is picked. Sections outside the given tree sort last but still count.
+ */
+export function summarizeSectionRange(
+  nodes: BookmarkSectionNode[],
+  sections: BookmarkSectionRef[],
+): string | null {
+  if (sections.length === 0) return null;
+  if (sections.length === 1) return sections[0].label;
+  const order = new Map(flattenSectionTree(nodes).map((n, i) => [n.id, i]));
+  const rank = (ref: BookmarkSectionRef) => order.get(ref.id) ?? Number.MAX_SAFE_INTEGER;
+  const sorted = [...sections].sort((a, b) => rank(a) - rank(b));
+  return `${sorted[0].label} – ${sorted[sorted.length - 1].label}`;
+}
+
+/**
  * The page (or "start–end" range) a section points at, for prefilling a free-text page field. Walks up
  * the Sections tree: if the picked section has no page of its own, its nearest paged ancestor's page is
  * used (a sub-item under a paged unit inherits that unit's page). Null when neither it nor any ancestor
