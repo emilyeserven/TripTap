@@ -231,22 +231,26 @@ describe("sectionRangeLabel", () => {
     expect(sectionRangeLabel([chapter("A"), chapter("B"), chapter("C")])).toBe("A – C");
   });
 
-  it("strips breadcrumb levels the last endpoint shares with the first", () => {
+  it("hoists a shared main section out front as '<section>: <first> – <last>'", () => {
     const range = sectionRangeLabel([
-      chapter("PART1 › Unit1 わたしはタスです。"),
-      chapter("PART1 › Unit3"),
-      chapter("PART1 › ◎ 実戦練習"),
+      chapter("PART1 基本文型の整理 › Unit1 わたしはタスです。"),
+      chapter("PART1 基本文型の整理 › Unit3"),
+      chapter("PART1 基本文型の整理 › ◎ Unit1〜Unit5 実戦練習"),
     ]);
-    expect(range).toBe("PART1 › Unit1 わたしはタスです。 – ◎ 実戦練習");
+    expect(range).toBe("PART1 基本文型の整理: Unit1 わたしはタスです。 – ◎ Unit1〜Unit5 実戦練習");
   });
 
-  it("leaves the last endpoint intact when nothing is shared", () => {
+  it("hoists every shared leading level, keeping what differs on each end", () => {
+    expect(sectionRangeLabel([chapter("A › B › C"), chapter("A › B › D")])).toBe("A › B: C – D");
+  });
+
+  it("leaves both endpoints intact when no main section is shared", () => {
     expect(sectionRangeLabel([chapter("PART1 › Unit1"), chapter("PART2 › Unit9")]))
       .toBe("PART1 › Unit1 – PART2 › Unit9");
   });
 
-  it("keeps at least the final level when the last is otherwise a shared prefix", () => {
-    expect(sectionRangeLabel([chapter("A › B › C"), chapter("A › B")])).toBe("A › B › C – B");
+  it("keeps at least the deepest level of each endpoint when one is a shared prefix", () => {
+    expect(sectionRangeLabel([chapter("A › B › C"), chapter("A › B")])).toBe("A: B › C – B");
   });
 });
 

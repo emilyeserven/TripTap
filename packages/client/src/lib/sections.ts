@@ -133,31 +133,29 @@ export function orderSectionsByTree(
 const SECTION_BREADCRUMB_SEP = " › ";
 
 /**
- * Drop the breadcrumb levels `last` shares with `first`, so a range's right endpoint isn't repeated in
- * full. "PART1 › Unit1" / "PART1 › ◎ 実戦練習" → "◎ 実戦練習". Always keeps at least the final level, so a
- * last that is otherwise a pure prefix of first still shows something.
- */
-function stripCommonBreadcrumb(first: string, last: string): string {
-  const a = first.split(SECTION_BREADCRUMB_SEP);
-  const b = last.split(SECTION_BREADCRUMB_SEP);
-  let i = 0;
-  while (i < a.length && i < b.length - 1 && a[i] === b[i]) i += 1;
-  return b.slice(i).join(SECTION_BREADCRUMB_SEP);
-}
-
-/**
  * A compact summary of already-ordered section references for a title: the lone label when there's one,
- * else "first – last" so a span reads as a range instead of a long comma list. The last endpoint has any
- * breadcrumb levels it shares with the first stripped ("Part 1 › Unit 1 – Unit 5"), so the shared
- * context isn't repeated. Null when empty. Callers pass sections in the order they want summarized (store
- * them via {@link orderSectionsByTree} first).
+ * else a "first – last" range. When both endpoints share the same leading breadcrumb levels (their main
+ * section), that shared context is hoisted out front once and shown as "<shared>: <first> – <last>" with
+ * the shared prefix removed from each end — e.g. "PART1 基本文型の整理: Unit1 わたしはタスです。 – ◎ Unit1〜Unit5
+ * 実戦練習". With nothing shared it's the plain "first – last". At least the deepest level of each endpoint
+ * is always kept. Null when empty. Callers pass sections in the order they want summarized (store them
+ * via {@link orderSectionsByTree} first).
  */
 export function sectionRangeLabel(sections: BookmarkSectionRef[]): string | null {
   if (sections.length === 0) return null;
   if (sections.length === 1) return sections[0].label;
   const first = sections[0].label;
   const last = sections[sections.length - 1].label;
-  return `${first} – ${stripCommonBreadcrumb(first, last)}`;
+  const a = first.split(SECTION_BREADCRUMB_SEP);
+  const b = last.split(SECTION_BREADCRUMB_SEP);
+  // Count the shared leading levels, but never consume the deepest level of either endpoint.
+  let shared = 0;
+  while (shared < a.length - 1 && shared < b.length - 1 && a[shared] === b[shared]) shared += 1;
+  if (shared === 0) return `${first} – ${last}`;
+  const prefix = a.slice(0, shared).join(SECTION_BREADCRUMB_SEP);
+  const firstRest = a.slice(shared).join(SECTION_BREADCRUMB_SEP);
+  const lastRest = b.slice(shared).join(SECTION_BREADCRUMB_SEP);
+  return `${prefix}: ${firstRest} – ${lastRest}`;
 }
 
 /**
