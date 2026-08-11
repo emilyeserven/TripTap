@@ -3,7 +3,7 @@ import type { VocabItem, VocabRenshuuUpdate } from "@sentence-bank/types";
 
 import { useState } from "react";
 
-import { Star, Volume2 } from "lucide-react";
+import { Volume2 } from "lucide-react";
 
 import { AddToBasketButton } from "../AddToBasketButton";
 import { AiLessonBadge } from "./AiLessonBadge";
@@ -25,6 +25,7 @@ export function VocabCard({
   vocab: v,
   topLabel,
   aiLesson,
+  basketKind = "lesson-vocab",
   onRenshuuChange,
 }: {
   vocab: VocabItem;
@@ -32,6 +33,12 @@ export function VocabCard({
   topLabel?: string;
   /** When set, shows a badge linking to the source AI Lesson (for cross-AI-Lesson views). */
   aiLesson?: AiLessonRef;
+  /**
+   * Which table `vocab.id` belongs to. This card also renders standalone bank vocab (adapted by
+   * `vocabToCardItem`), and the basket writes through to the row's own `starred` column — so a bank
+   * row must say so, or the toggle would patch a non-existent AI-lesson vocab.
+   */
+  basketKind?: "vocab" | "lesson-vocab";
   /** When provided, the Renshuu annotation becomes editable; otherwise it's read-only. */
   onRenshuuChange?: (patch: VocabRenshuuUpdate) => void;
 }) {
@@ -44,7 +51,7 @@ export function VocabCard({
       <AddToBasketButton
         className="absolute top-1 right-1 z-10"
         item={{
-          kind: "vocab",
+          kind: basketKind,
           id: v.id,
           term: v.jp,
           reading: v.yomi,
@@ -126,22 +133,12 @@ function RenshuuFooter({
   const [open, setOpen] = useState(false);
   const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
 
-  // Read-only: only surface a badge when it's actually tracked or starred.
+  // Read-only: only surface a badge when it's actually tracked.
   if (!onRenshuuChange) {
-    if (!v.renshuuAdded && !v.starred) return null;
+    if (!v.renshuuAdded) return null;
     return (
       <div className="flex items-center gap-2 border-t px-4 py-2">
-        {v.starred
-          ? (
-            <Star
-              className="size-4 fill-amber-400 text-amber-400"
-              aria-label="Starred"
-            />
-          )
-          : null}
-        {v.renshuuAdded
-          ? <Badge variant="secondary">{v.renshuuList ? `Renshuu · ${v.renshuuList}` : "Renshuu"}</Badge>
-          : null}
+        <Badge variant="secondary">{v.renshuuList ? `Renshuu · ${v.renshuuList}` : "Renshuu"}</Badge>
       </div>
     );
   }
@@ -152,24 +149,6 @@ function RenshuuFooter({
       onClick={stop}
       onKeyDown={stop}
     >
-      <Button
-        type="button"
-        size="icon"
-        variant="ghost"
-        className="size-6"
-        aria-pressed={v.starred}
-        aria-label={v.starred ? "Unstar this vocab" : "Star this vocab"}
-        title="Starred vocab shows in your practice reminder"
-        onClick={() => onRenshuuChange({
-          starred: !v.starred,
-        })}
-      >
-        <Star
-          className={v.starred
-            ? "size-4 fill-amber-400 text-amber-400"
-            : "size-4 text-muted-foreground"}
-        />
-      </Button>
       <Label className="flex items-center gap-2 text-xs font-normal">
         <Checkbox
           checked={v.renshuuAdded}

@@ -70,6 +70,7 @@ export function SourceCard({
                 text: s.jp,
                 translation: s.en,
                 reading: null,
+                source: "ai-lesson",
               }}
             />
           </div>

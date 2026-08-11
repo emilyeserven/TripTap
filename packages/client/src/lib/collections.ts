@@ -361,19 +361,18 @@ export function sortByRuntime(resources: BookmarkResource[], dir: "asc" | "desc"
   });
 }
 
-/** How the Collections list is sorted (favorited items always come first, then this key). */
+/** How the Collections list is sorted. */
 export type ResourceSort = "runtime-desc" | "runtime-asc" | "progress-desc" | "progress-asc";
 
 /**
- * Sort resources: favorited first, then by the chosen key (runtime seconds, or progress percent).
- * Resources missing the sorted value sort last within their favorite/non-favorite group.
+ * Sort resources by the chosen key (runtime seconds, or progress percent). Resources missing the sorted
+ * value sort last.
  */
 export function sortResources(resources: BookmarkResource[], sort: ResourceSort): BookmarkResource[] {
   const [key, dir] = sort.split("-") as ["runtime" | "progress", "asc" | "desc"];
   const value = (r: BookmarkResource): number | null =>
     key === "runtime" ? r.runtimeSeconds : (r.progress ? r.progress.percent : null);
   return [...resources].sort((a, b) => {
-    if (a.favorite !== b.favorite) return a.favorite ? -1 : 1;
     const av = value(a);
     const bv = value(b);
     if (av == null && bv == null) return 0;

@@ -706,11 +706,11 @@ describe("sortResources", () => {
     runtimeSeconds: null,
   });
 
-  it("always lists favorites first, then applies the key", () => {
-    expect(sortResources([long, fav, short], "runtime-desc").map(r => r.id)).toEqual(["fav", "long", "short"]);
+  it("ignores the upstream favorite flag — collecting happens in the basket, not here", () => {
+    expect(sortResources([long, fav, short], "runtime-desc").map(r => r.id)).toEqual(["long", "short", "fav"]);
   });
 
-  it("sorts by runtime with nulls last within each favorite group", () => {
+  it("sorts by runtime with nulls last", () => {
     expect(sortResources([noRt, long, short], "runtime-asc").map(r => r.id)).toEqual(["short", "long", "noRt"]);
   });
 

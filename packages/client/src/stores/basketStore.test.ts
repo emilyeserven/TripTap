@@ -2,7 +2,7 @@ import type { BasketGrammar, BasketSentence, BasketVocab } from "./basketStore";
 
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { basketKey, useBasketStore } from "./basketStore";
+import { basketKey, isDurableKind, useBasketStore } from "./basketStore";
 
 const sentence: BasketSentence = {
   kind: "sentence",
@@ -85,5 +85,51 @@ describe("basketStore", () => {
     add(grammar);
     clear();
     expect(useBasketStore.getState().items).toHaveLength(0);
+  });
+
+  it("keys the two vocab kinds separately", () => {
+    // A bank row and an AI-lesson row can share an id; they live in different tables.
+    expect(basketKey("vocab", "v1")).not.toBe(basketKey("lesson-vocab", "v1"));
+  });
+});
+
+describe("isDurableKind", () => {
+  it("marks the kinds whose membership is stored server-side", () => {
+    expect(isDurableKind("vocab")).toBe(true);
+    expect(isDurableKind("lesson-vocab")).toBe(true);
+    expect(isDurableKind("grammar-note")).toBe(true);
+    expect(isDurableKind("resource")).toBe(true);
+  });
+
+  it("leaves the snapshot-only kinds local", () => {
+    expect(isDurableKind("sentence")).toBe(false);
+    expect(isDurableKind("grammar")).toBe(false);
+  });
+});
+
+describe("persisted v1 → v2 migration", () => {
+  /** The store's own `migrate`, reached through the persist options rather than re-implemented here. */
+  const migrate = useBasketStore.persist.getOptions().migrate;
+
+  it("drops vocab snapshots, which are now server-derived", () => {
+    const vocab: BasketVocab = {
+      kind: "vocab",
+      id: "v1",
+      term: "毎朝",
+      reading: null,
+      meaning: null,
+    };
+    const migrated = migrate?.({
+      items: [sentence, vocab, grammar],
+    }, 1) as { items: BasketSentence[] };
+    // Keeping them would render a second, un-removable row beside the real (starred) one.
+    expect(migrated.items.map(i => i.kind)).toEqual(["sentence", "grammar"]);
+  });
+
+  it("leaves an already-migrated basket alone", () => {
+    const migrated = migrate?.({
+      items: [sentence, grammar],
+    }, 2) as { items: BasketSentence[] };
+    expect(migrated.items).toHaveLength(2);
   });
 });

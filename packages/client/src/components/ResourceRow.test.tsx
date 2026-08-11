@@ -1,9 +1,11 @@
 import type { BookmarkResource } from "@sentence-bank/types";
 
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import { ResourceRow } from "./ResourceRow";
+
+import { renderWithQuery } from "@/test-utils/renderWithQuery";
 
 function resource(over: Partial<BookmarkResource> & { id: string;
   title: string; }): BookmarkResource {
@@ -22,7 +24,7 @@ describe("ResourceRow", () => {
   it("shows placeholder cards while loading with no resources yet", () => {
     const {
       container,
-    } = render(
+    } = renderWithQuery(
       <ResourceRow
         resources={[]}
         areaTags={{}}
@@ -38,7 +40,7 @@ describe("ResourceRow", () => {
   it("shows the empty note when not loading and there are no resources", () => {
     const {
       container,
-    } = render(
+    } = renderWithQuery(
       <ResourceRow
         resources={[]}
         areaTags={{}}
@@ -52,7 +54,7 @@ describe("ResourceRow", () => {
   it("renders resources once loaded, not skeletons", () => {
     const {
       container,
-    } = render(
+    } = renderWithQuery(
       <ResourceRow
         resources={[resource({
           id: "b1",

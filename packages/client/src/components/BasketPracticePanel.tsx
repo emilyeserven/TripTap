@@ -1,74 +1,47 @@
+import type { BasketGrammarNote, BasketVocab } from "@/stores/basketStore";
+
 import { useMemo } from "react";
 
-import { Star } from "lucide-react";
+import { ShoppingBasket } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useAiLessonContent } from "@/hooks/useAiLessons";
-import { useGrammarNotes } from "@/hooks/useGrammarNotes";
-import { useVocab } from "@/hooks/useVocab";
-
-/** A starred vocab item, normalized across the bank and AI-lesson sources. */
-interface StarredVocab {
-  id: string;
-  term: string;
-  reading: string | null;
-  meaning: string | null;
-}
+import { useBasketItems } from "@/hooks/useBasket";
+import { basketKey } from "@/stores/basketStore";
 
 /**
- * A passive reminder of the grammar and vocab you've starred — the things you actually want to
+ * A passive reminder of the grammar and vocab in your basket — the things you actually want to
  * practice — shown beside the My Writing editor so you can consciously work them into what you write.
- * Read-only: it doesn't gate anything. Renders nothing when nothing is starred anywhere.
+ * Read-only: it doesn't gate anything. Renders nothing when the basket holds neither.
+ *
+ * Reads the same basket the overlay does, so a vocab item collected on the Vocabulary page shows up
+ * here without a second concept to maintain.
  */
-export function StarredPracticePanel() {
-  const {
-    data: grammarNotes,
-  } = useGrammarNotes();
-  const {
-    data: bankVocab,
-  } = useVocab();
-  const {
-    data: aiContent,
-  } = useAiLessonContent();
+export function BasketPracticePanel() {
+  const items = useBasketItems();
 
   const grammar = useMemo(
-    () => (grammarNotes ?? []).filter(n => n.starred),
-    [grammarNotes],
+    () => items.filter((i): i is BasketGrammarNote => i.kind === "grammar-note"),
+    [items],
   );
 
-  const vocab = useMemo<StarredVocab[]>(() => {
-    const bank = (bankVocab ?? [])
-      .filter(v => v.starred)
-      .map(v => ({
-        id: v.id,
-        term: v.term,
-        reading: v.reading,
-        meaning: v.meaning,
-      }));
-    const ai = (aiContent?.vocab ?? [])
-      .filter(v => v.starred)
-      .map(v => ({
-        id: v.id,
-        term: v.jp,
-        reading: v.yomi || null,
-        meaning: v.en || null,
-      }));
-    return [...bank, ...ai];
-  }, [bankVocab, aiContent]);
+  const vocab = useMemo(
+    () => items.filter((i): i is BasketVocab => i.kind === "vocab" || i.kind === "lesson-vocab"),
+    [items],
+  );
 
   if (grammar.length === 0 && vocab.length === 0) return null;
 
   return (
-    <Card className="border-amber-400/40">
+    <Card className="border-primary/40">
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-1.5 text-sm">
-          <Star className="size-4 fill-amber-400 text-amber-400" />
+          <ShoppingBasket className="size-4 text-primary" />
           Practice these
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         <p className="text-xs text-muted-foreground">
-          Items you’ve starred — try to work some into what you’re writing.
+          Items in your basket — try to work some into what you’re writing.
         </p>
         {grammar.length > 0
           ? (
@@ -81,9 +54,7 @@ export function StarredPracticePanel() {
                     className="text-sm"
                   >
                     {n.title}
-                    {n.tagName && n.tagName !== n.title
-                      ? <span className="text-muted-foreground"> · {n.tagName}</span>
-                      : null}
+                    {n.nuance ? <span className="text-muted-foreground"> · {n.nuance}</span> : null}
                   </li>
                 ))}
               </ul>
@@ -97,7 +68,7 @@ export function StarredPracticePanel() {
               <ul className="space-y-0.5">
                 {vocab.map(v => (
                   <li
-                    key={v.id}
+                    key={basketKey(v.kind, v.id)}
                     className="text-sm"
                   >
                     {v.term}
