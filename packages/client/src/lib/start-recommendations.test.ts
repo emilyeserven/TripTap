@@ -254,7 +254,7 @@ describe("buildStartSuggestions", () => {
     expect(area?.search).toBeUndefined();
   });
 
-  it("surfaces a starred grammar point (as the Grammar pick or its own slot)", () => {
+  it("surfaces a basketed grammar point (as the Grammar pick or its own slot)", () => {
     const suggestions = buildStartSuggestions({
       summary: summary({
         Grammar: 50,
@@ -265,12 +265,16 @@ describe("buildStartSuggestions", () => {
       })],
       now: NOW,
     });
-    // Every area now gets a pick, so a starred note surfaces via the Grammar area pick when it isn't
-    // claimed by a dedicated starred slot — either way it appears in Up Next.
-    expect(suggestions.some(s => s.params?.id === "n-starred")).toBe(true);
+    // Every area now gets a pick, so a basketed note surfaces via the Grammar area pick when it isn't
+    // claimed by a dedicated slot — either way it appears in Up Next.
+    const surfaced = suggestions.find(s => s.params?.id === "n-starred");
+    expect(surfaced).toBeDefined();
+    // The star affordance is gone, so the reason has to name the basket rather than starring.
+    expect(surfaced?.description).toMatch(/basket/i);
+    expect(surfaced?.description).not.toMatch(/starred/i);
   });
 
-  it("prefers a starred note for the Grammar area pick and doesn't repeat it", () => {
+  it("prefers a basketed note for the Grammar area pick and doesn't repeat it", () => {
     const suggestions = buildStartSuggestions({
       summary: summary({
         Speaking: 9,
@@ -296,7 +300,8 @@ describe("buildStartSuggestions", () => {
     });
     const area = suggestions.find(s => s.kind === "area");
     expect(area?.params?.id).toBe("n-starred");
-    // The starred slot must not repeat the same note the area pick already used.
+    expect(area?.description).toContain("It's in your basket.");
+    // The dedicated slot must not repeat the same note the area pick already used.
     const starredSlot = suggestions.find(s => s.kind === "starred-grammar");
     expect(starredSlot).toBeUndefined();
   });
