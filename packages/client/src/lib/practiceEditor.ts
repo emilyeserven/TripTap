@@ -1,10 +1,10 @@
 import type {
-  CreatePracticeSentenceInput,
+  CreateSentenceInput,
   PracticeComprehension,
   PracticeGrammar,
-  PracticeSentence,
   PracticeTargetKind,
   PracticeWord,
+  Sentence,
   SentenceTermRef,
 } from "@sentence-bank/types";
 
@@ -103,7 +103,7 @@ export interface PracticeDraft {
 /** Setter for one draft field; children call this instead of owning state. */
 export type SetPracticeDraft = <K extends keyof PracticeDraft>(key: K, value: PracticeDraft[K]) => void;
 
-export function toDraft(ps: PracticeSentence): PracticeDraft {
+export function toDraft(ps: Sentence): PracticeDraft {
   return {
     text: ps.text,
     language: ps.language,
@@ -126,10 +126,11 @@ export function toDraft(ps: PracticeSentence): PracticeDraft {
 }
 
 /** Build the API input from the draft, dropping empty rows. */
-export function toInput(draft: PracticeDraft): CreatePracticeSentenceInput {
+export function toInput(draft: PracticeDraft): CreateSentenceInput {
   const cleanWords = draft.words.filter(w => w.w.trim() || w.r.trim() || w.m.trim());
   const cleanGrammar = draft.grammar.filter(g => g.p.trim() || g.n.trim());
   return {
+    kind: "practice",
     text: draft.text,
     language: draft.language,
     readingNote: draft.readingNote || null,

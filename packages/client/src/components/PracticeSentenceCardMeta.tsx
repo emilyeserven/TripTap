@@ -1,4 +1,4 @@
-import type { PracticeSentence } from "@sentence-bank/types";
+import type { Sentence } from "@sentence-bank/types";
 
 import { Link } from "@tanstack/react-router";
 import { Camera, Database, ScrollText, TriangleAlert } from "lucide-react";
@@ -21,7 +21,7 @@ export function PracticeSentenceCardMeta({
   practiceSentence: ps,
   sourceName,
 }: {
-  practiceSentence: PracticeSentence;
+  practiceSentence: Sentence;
   sourceName?: string | null;
 }) {
   const pageLabel = ps.page ? `p. ${ps.page}` : null;
@@ -103,10 +103,13 @@ export function PracticeSentenceCardMeta({
           </Link>
         )
         : null}
-      {ps.sentenceId
+      {ps.derivedFromId
         ? (
           <Link
-            to="/sentences"
+            to="/sentences/$id"
+            params={{
+              id: ps.derivedFromId,
+            }}
             className="
               inline-flex items-center gap-1
               hover:text-foreground

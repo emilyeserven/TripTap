@@ -1,8 +1,8 @@
-import type { CreateMySentenceInput } from "@sentence-bank/types";
+import type { CreateSentenceInput } from "@sentence-bank/types";
 
 import { useState } from "react";
 
-import { useCreateMySentencesMany } from "../hooks/useMySentences";
+import { useCreateSentencesMany } from "../hooks/useSentences";
 
 import { BulkPasteDialog } from "@/components/BulkPasteDialog";
 import { Input } from "@/components/ui/input";
@@ -33,7 +33,7 @@ const FIELD_LABELS: Record<string, string> = {
  */
 export function MySentenceBulkDialog() {
   const [language, setLanguage] = useState("Japanese");
-  const importMany = useCreateMySentencesMany();
+  const importMany = useCreateSentencesMany();
 
   return (
     <BulkPasteDialog
@@ -75,10 +75,11 @@ export function MySentenceBulkDialog() {
         </>
       )}
       onSubmit={async (validItems) => {
-        const inputs: CreateMySentenceInput[] = validItems.map((item) => {
+        const inputs: CreateSentenceInput[] = validItems.map((item) => {
           const f = item.fields;
           const correction = (f.correction ?? "").trim();
           return {
+            kind: "mine" as const,
             text: f.text.trim(),
             language: language.trim() || "Japanese",
             translation: f.translation?.trim() || null,

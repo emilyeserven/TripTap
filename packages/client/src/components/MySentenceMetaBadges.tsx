@@ -1,4 +1,4 @@
-import type { MySentence, SentenceTermCategory } from "@sentence-bank/types";
+import type { Sentence, SentenceTermCategory } from "@sentence-bank/types";
 
 import { Link } from "@tanstack/react-router";
 import { NotebookPen, PenLine, TriangleAlert } from "lucide-react";
@@ -14,7 +14,7 @@ export function MySentenceMetaBadges({
   mySentence: ms,
   omitCategories,
 }: {
-  mySentence: MySentence;
+  mySentence: Sentence;
   /** Term channels to leave out, for callers rendering those themselves (see `TermCategoryBadges`). */
   omitCategories?: SentenceTermCategory[];
 }) {
@@ -37,12 +37,12 @@ export function MySentenceMetaBadges({
           </Badge>
         )
         : <Badge variant="outline">Corrected</Badge>}
-      {ms.practiceSentenceId
+      {ms.derivedFromId
         ? (
           <Link
-            to="/practice/$id"
+            to="/sentences/$id"
             params={{
-              id: ms.practiceSentenceId,
+              id: ms.derivedFromId,
             }}
             className="
               inline-flex items-center gap-1

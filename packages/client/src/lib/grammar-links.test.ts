@@ -1,6 +1,5 @@
 // @vitest-environment node
 import type {
-  MySentence,
   Sentence,
   SentenceTermRef,
   SourceSentenceItem,
@@ -151,12 +150,12 @@ function mySentence(over: {
   text: string;
   translation?: string | null;
   incorrectGrammarTerms?: SentenceTermRef[] | null;
-}): MySentence {
+}): Sentence {
   return {
     translation: null,
     incorrectGrammarTerms: null,
     ...over,
-  } as unknown as MySentence;
+  } as unknown as Sentence;
 }
 
 describe("misusedSentencesByGrammarTagId", () => {

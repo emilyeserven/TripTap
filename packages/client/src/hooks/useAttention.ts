@@ -6,10 +6,10 @@ import { useAnswerSheets } from "@/hooks/useAnswerSheets";
 import { useCorrectionLog } from "@/hooks/useCorrections";
 import { useDrillSessions } from "@/hooks/useDrillSessions";
 import { useLessons } from "@/hooks/useLessons";
-import { useMySentences } from "@/hooks/useMySentences";
 import { useQuestionSheets } from "@/hooks/useQuestionSheets";
 import { useReadingSessions } from "@/hooks/useReadingSessions";
 import { useRuleGroups } from "@/hooks/useRuleGroups";
+import { useSentences } from "@/hooks/useSentences";
 import { useWritings } from "@/hooks/useWritings";
 import { buildAttention } from "@/lib/attention";
 
@@ -20,7 +20,9 @@ import { buildAttention } from "@/lib/attention";
  */
 export function useAttention(): { groups: AttentionGroup[];
   isLoading: boolean; } {
-  const mySentences = useMySentences();
+  const mySentences = useSentences({
+    kind: "mine",
+  });
   const questionSheets = useQuestionSheets();
   const answerSheets = useAnswerSheets();
   const readingSessions = useReadingSessions();

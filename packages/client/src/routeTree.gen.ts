@@ -13,7 +13,6 @@ import { Route as VocabularyRouteImport } from './routes/vocabulary'
 import { Route as VocabRouteImport } from './routes/vocab'
 import { Route as StartRouteImport } from './routes/start'
 import { Route as SettingsRouteImport } from './routes/settings'
-import { Route as SentencesRouteImport } from './routes/sentences'
 import { Route as RenshuuRouteImport } from './routes/renshuu'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as GrammarRouteImport } from './routes/grammar'
@@ -29,6 +28,7 @@ import { Route as SpeakingListeningIndexRouteImport } from './routes/speaking-li
 import { Route as SourcesIndexRouteImport } from './routes/sources.index'
 import { Route as ShadowingIndexRouteImport } from './routes/shadowing.index'
 import { Route as ShadowingListsIndexRouteImport } from './routes/shadowing-lists.index'
+import { Route as SentencesIndexRouteImport } from './routes/sentences.index'
 import { Route as ReadingWritingIndexRouteImport } from './routes/reading-writing.index'
 import { Route as ReadingSessionsIndexRouteImport } from './routes/reading-sessions.index'
 import { Route as QuestionSheetsIndexRouteImport } from './routes/question-sheets.index'
@@ -60,6 +60,9 @@ import { Route as ShadowingNewRouteImport } from './routes/shadowing.new'
 import { Route as ShadowingIdRouteImport } from './routes/shadowing.$id'
 import { Route as ShadowingListsNewRouteImport } from './routes/shadowing-lists.new'
 import { Route as ShadowingListsIdRouteImport } from './routes/shadowing-lists.$id'
+import { Route as SentencesNewRouteImport } from './routes/sentences.new'
+import { Route as SentencesImportRouteImport } from './routes/sentences.import'
+import { Route as SentencesIdRouteImport } from './routes/sentences.$id'
 import { Route as ReadingSessionsNewRouteImport } from './routes/reading-sessions.new'
 import { Route as ReadingSessionsIdRouteImport } from './routes/reading-sessions.$id'
 import { Route as QuestionSheetsNewRouteImport } from './routes/question-sheets.new'
@@ -100,6 +103,7 @@ import { Route as TutorsIdIndexRouteImport } from './routes/tutors.$id.index'
 import { Route as TheorySessionsIdIndexRouteImport } from './routes/theory-sessions.$id.index'
 import { Route as ShadowingIdIndexRouteImport } from './routes/shadowing.$id.index'
 import { Route as ShadowingListsIdIndexRouteImport } from './routes/shadowing-lists.$id.index'
+import { Route as SentencesIdIndexRouteImport } from './routes/sentences.$id.index'
 import { Route as ReadingSessionsIdIndexRouteImport } from './routes/reading-sessions.$id.index'
 import { Route as QuestionSheetsIdIndexRouteImport } from './routes/question-sheets.$id.index'
 import { Route as PracticeIdIndexRouteImport } from './routes/practice.$id.index'
@@ -115,6 +119,7 @@ import { Route as TutorsIdEditRouteImport } from './routes/tutors.$id.edit'
 import { Route as TheorySessionsIdEditRouteImport } from './routes/theory-sessions.$id.edit'
 import { Route as ShadowingIdEditRouteImport } from './routes/shadowing.$id.edit'
 import { Route as ShadowingListsIdEditRouteImport } from './routes/shadowing-lists.$id.edit'
+import { Route as SentencesIdEditRouteImport } from './routes/sentences.$id.edit'
 import { Route as ReadingSessionsIdEditRouteImport } from './routes/reading-sessions.$id.edit'
 import { Route as QuestionSheetsIdEditRouteImport } from './routes/question-sheets.$id.edit'
 import { Route as PracticeIdEditRouteImport } from './routes/practice.$id.edit'
@@ -145,11 +150,6 @@ const StartRoute = StartRouteImport.update({
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SentencesRoute = SentencesRouteImport.update({
-  id: '/sentences',
-  path: '/sentences',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RenshuuRoute = RenshuuRouteImport.update({
@@ -225,6 +225,11 @@ const ShadowingIndexRoute = ShadowingIndexRouteImport.update({
 const ShadowingListsIndexRoute = ShadowingListsIndexRouteImport.update({
   id: '/shadowing-lists/',
   path: '/shadowing-lists/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SentencesIndexRoute = SentencesIndexRouteImport.update({
+  id: '/sentences/',
+  path: '/sentences/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ReadingWritingIndexRoute = ReadingWritingIndexRouteImport.update({
@@ -380,6 +385,21 @@ const ShadowingListsNewRoute = ShadowingListsNewRouteImport.update({
 const ShadowingListsIdRoute = ShadowingListsIdRouteImport.update({
   id: '/shadowing-lists/$id',
   path: '/shadowing-lists/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SentencesNewRoute = SentencesNewRouteImport.update({
+  id: '/sentences/new',
+  path: '/sentences/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SentencesImportRoute = SentencesImportRouteImport.update({
+  id: '/sentences/import',
+  path: '/sentences/import',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SentencesIdRoute = SentencesIdRouteImport.update({
+  id: '/sentences/$id',
+  path: '/sentences/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ReadingSessionsNewRoute = ReadingSessionsNewRouteImport.update({
@@ -582,6 +602,11 @@ const ShadowingListsIdIndexRoute = ShadowingListsIdIndexRouteImport.update({
   path: '/',
   getParentRoute: () => ShadowingListsIdRoute,
 } as any)
+const SentencesIdIndexRoute = SentencesIdIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => SentencesIdRoute,
+} as any)
 const ReadingSessionsIdIndexRoute = ReadingSessionsIdIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -658,6 +683,11 @@ const ShadowingListsIdEditRoute = ShadowingListsIdEditRouteImport.update({
   path: '/edit',
   getParentRoute: () => ShadowingListsIdRoute,
 } as any)
+const SentencesIdEditRoute = SentencesIdEditRouteImport.update({
+  id: '/edit',
+  path: '/edit',
+  getParentRoute: () => SentencesIdRoute,
+} as any)
 const ReadingSessionsIdEditRoute = ReadingSessionsIdEditRouteImport.update({
   id: '/edit',
   path: '/edit',
@@ -723,7 +753,6 @@ export interface FileRoutesByFullPath {
   '/grammar': typeof GrammarRoute
   '/profile': typeof ProfileRoute
   '/renshuu': typeof RenshuuRoute
-  '/sentences': typeof SentencesRoute
   '/settings': typeof SettingsRoute
   '/start': typeof StartRoute
   '/vocab': typeof VocabRoute
@@ -764,6 +793,9 @@ export interface FileRoutesByFullPath {
   '/question-sheets/new': typeof QuestionSheetsNewRoute
   '/reading-sessions/$id': typeof ReadingSessionsIdRouteWithChildren
   '/reading-sessions/new': typeof ReadingSessionsNewRoute
+  '/sentences/$id': typeof SentencesIdRouteWithChildren
+  '/sentences/import': typeof SentencesImportRoute
+  '/sentences/new': typeof SentencesNewRoute
   '/shadowing-lists/$id': typeof ShadowingListsIdRouteWithChildren
   '/shadowing-lists/new': typeof ShadowingListsNewRoute
   '/shadowing/$id': typeof ShadowingIdRouteWithChildren
@@ -795,6 +827,7 @@ export interface FileRoutesByFullPath {
   '/question-sheets/': typeof QuestionSheetsIndexRoute
   '/reading-sessions/': typeof ReadingSessionsIndexRoute
   '/reading-writing/': typeof ReadingWritingIndexRoute
+  '/sentences/': typeof SentencesIndexRoute
   '/shadowing-lists/': typeof ShadowingListsIndexRoute
   '/shadowing/': typeof ShadowingIndexRoute
   '/sources/': typeof SourcesIndexRoute
@@ -813,6 +846,7 @@ export interface FileRoutesByFullPath {
   '/practice/$id/edit': typeof PracticeIdEditRoute
   '/question-sheets/$id/edit': typeof QuestionSheetsIdEditRoute
   '/reading-sessions/$id/edit': typeof ReadingSessionsIdEditRoute
+  '/sentences/$id/edit': typeof SentencesIdEditRoute
   '/shadowing-lists/$id/edit': typeof ShadowingListsIdEditRoute
   '/shadowing/$id/edit': typeof ShadowingIdEditRoute
   '/theory-sessions/$id/edit': typeof TheorySessionsIdEditRoute
@@ -828,6 +862,7 @@ export interface FileRoutesByFullPath {
   '/practice/$id/': typeof PracticeIdIndexRoute
   '/question-sheets/$id/': typeof QuestionSheetsIdIndexRoute
   '/reading-sessions/$id/': typeof ReadingSessionsIdIndexRoute
+  '/sentences/$id/': typeof SentencesIdIndexRoute
   '/shadowing-lists/$id/': typeof ShadowingListsIdIndexRoute
   '/shadowing/$id/': typeof ShadowingIdIndexRoute
   '/theory-sessions/$id/': typeof TheorySessionsIdIndexRoute
@@ -842,7 +877,6 @@ export interface FileRoutesByTo {
   '/grammar': typeof GrammarRoute
   '/profile': typeof ProfileRoute
   '/renshuu': typeof RenshuuRoute
-  '/sentences': typeof SentencesRoute
   '/settings': typeof SettingsRoute
   '/start': typeof StartRoute
   '/vocab': typeof VocabRoute
@@ -872,6 +906,8 @@ export interface FileRoutesByTo {
   '/practice/new': typeof PracticeNewRoute
   '/question-sheets/new': typeof QuestionSheetsNewRoute
   '/reading-sessions/new': typeof ReadingSessionsNewRoute
+  '/sentences/import': typeof SentencesImportRoute
+  '/sentences/new': typeof SentencesNewRoute
   '/shadowing-lists/new': typeof ShadowingListsNewRoute
   '/shadowing/new': typeof ShadowingNewRoute
   '/sources/$id': typeof SourcesIdRoute
@@ -899,6 +935,7 @@ export interface FileRoutesByTo {
   '/question-sheets': typeof QuestionSheetsIndexRoute
   '/reading-sessions': typeof ReadingSessionsIndexRoute
   '/reading-writing': typeof ReadingWritingIndexRoute
+  '/sentences': typeof SentencesIndexRoute
   '/shadowing-lists': typeof ShadowingListsIndexRoute
   '/shadowing': typeof ShadowingIndexRoute
   '/sources': typeof SourcesIndexRoute
@@ -917,6 +954,7 @@ export interface FileRoutesByTo {
   '/practice/$id/edit': typeof PracticeIdEditRoute
   '/question-sheets/$id/edit': typeof QuestionSheetsIdEditRoute
   '/reading-sessions/$id/edit': typeof ReadingSessionsIdEditRoute
+  '/sentences/$id/edit': typeof SentencesIdEditRoute
   '/shadowing-lists/$id/edit': typeof ShadowingListsIdEditRoute
   '/shadowing/$id/edit': typeof ShadowingIdEditRoute
   '/theory-sessions/$id/edit': typeof TheorySessionsIdEditRoute
@@ -932,6 +970,7 @@ export interface FileRoutesByTo {
   '/practice/$id': typeof PracticeIdIndexRoute
   '/question-sheets/$id': typeof QuestionSheetsIdIndexRoute
   '/reading-sessions/$id': typeof ReadingSessionsIdIndexRoute
+  '/sentences/$id': typeof SentencesIdIndexRoute
   '/shadowing-lists/$id': typeof ShadowingListsIdIndexRoute
   '/shadowing/$id': typeof ShadowingIdIndexRoute
   '/theory-sessions/$id': typeof TheorySessionsIdIndexRoute
@@ -947,7 +986,6 @@ export interface FileRoutesById {
   '/grammar': typeof GrammarRoute
   '/profile': typeof ProfileRoute
   '/renshuu': typeof RenshuuRoute
-  '/sentences': typeof SentencesRoute
   '/settings': typeof SettingsRoute
   '/start': typeof StartRoute
   '/vocab': typeof VocabRoute
@@ -988,6 +1026,9 @@ export interface FileRoutesById {
   '/question-sheets/new': typeof QuestionSheetsNewRoute
   '/reading-sessions/$id': typeof ReadingSessionsIdRouteWithChildren
   '/reading-sessions/new': typeof ReadingSessionsNewRoute
+  '/sentences/$id': typeof SentencesIdRouteWithChildren
+  '/sentences/import': typeof SentencesImportRoute
+  '/sentences/new': typeof SentencesNewRoute
   '/shadowing-lists/$id': typeof ShadowingListsIdRouteWithChildren
   '/shadowing-lists/new': typeof ShadowingListsNewRoute
   '/shadowing/$id': typeof ShadowingIdRouteWithChildren
@@ -1019,6 +1060,7 @@ export interface FileRoutesById {
   '/question-sheets/': typeof QuestionSheetsIndexRoute
   '/reading-sessions/': typeof ReadingSessionsIndexRoute
   '/reading-writing/': typeof ReadingWritingIndexRoute
+  '/sentences/': typeof SentencesIndexRoute
   '/shadowing-lists/': typeof ShadowingListsIndexRoute
   '/shadowing/': typeof ShadowingIndexRoute
   '/sources/': typeof SourcesIndexRoute
@@ -1037,6 +1079,7 @@ export interface FileRoutesById {
   '/practice/$id/edit': typeof PracticeIdEditRoute
   '/question-sheets/$id/edit': typeof QuestionSheetsIdEditRoute
   '/reading-sessions/$id/edit': typeof ReadingSessionsIdEditRoute
+  '/sentences/$id/edit': typeof SentencesIdEditRoute
   '/shadowing-lists/$id/edit': typeof ShadowingListsIdEditRoute
   '/shadowing/$id/edit': typeof ShadowingIdEditRoute
   '/theory-sessions/$id/edit': typeof TheorySessionsIdEditRoute
@@ -1052,6 +1095,7 @@ export interface FileRoutesById {
   '/practice/$id/': typeof PracticeIdIndexRoute
   '/question-sheets/$id/': typeof QuestionSheetsIdIndexRoute
   '/reading-sessions/$id/': typeof ReadingSessionsIdIndexRoute
+  '/sentences/$id/': typeof SentencesIdIndexRoute
   '/shadowing-lists/$id/': typeof ShadowingListsIdIndexRoute
   '/shadowing/$id/': typeof ShadowingIdIndexRoute
   '/theory-sessions/$id/': typeof TheorySessionsIdIndexRoute
@@ -1068,7 +1112,6 @@ export interface FileRouteTypes {
     | '/grammar'
     | '/profile'
     | '/renshuu'
-    | '/sentences'
     | '/settings'
     | '/start'
     | '/vocab'
@@ -1109,6 +1152,9 @@ export interface FileRouteTypes {
     | '/question-sheets/new'
     | '/reading-sessions/$id'
     | '/reading-sessions/new'
+    | '/sentences/$id'
+    | '/sentences/import'
+    | '/sentences/new'
     | '/shadowing-lists/$id'
     | '/shadowing-lists/new'
     | '/shadowing/$id'
@@ -1140,6 +1186,7 @@ export interface FileRouteTypes {
     | '/question-sheets/'
     | '/reading-sessions/'
     | '/reading-writing/'
+    | '/sentences/'
     | '/shadowing-lists/'
     | '/shadowing/'
     | '/sources/'
@@ -1158,6 +1205,7 @@ export interface FileRouteTypes {
     | '/practice/$id/edit'
     | '/question-sheets/$id/edit'
     | '/reading-sessions/$id/edit'
+    | '/sentences/$id/edit'
     | '/shadowing-lists/$id/edit'
     | '/shadowing/$id/edit'
     | '/theory-sessions/$id/edit'
@@ -1173,6 +1221,7 @@ export interface FileRouteTypes {
     | '/practice/$id/'
     | '/question-sheets/$id/'
     | '/reading-sessions/$id/'
+    | '/sentences/$id/'
     | '/shadowing-lists/$id/'
     | '/shadowing/$id/'
     | '/theory-sessions/$id/'
@@ -1187,7 +1236,6 @@ export interface FileRouteTypes {
     | '/grammar'
     | '/profile'
     | '/renshuu'
-    | '/sentences'
     | '/settings'
     | '/start'
     | '/vocab'
@@ -1217,6 +1265,8 @@ export interface FileRouteTypes {
     | '/practice/new'
     | '/question-sheets/new'
     | '/reading-sessions/new'
+    | '/sentences/import'
+    | '/sentences/new'
     | '/shadowing-lists/new'
     | '/shadowing/new'
     | '/sources/$id'
@@ -1244,6 +1294,7 @@ export interface FileRouteTypes {
     | '/question-sheets'
     | '/reading-sessions'
     | '/reading-writing'
+    | '/sentences'
     | '/shadowing-lists'
     | '/shadowing'
     | '/sources'
@@ -1262,6 +1313,7 @@ export interface FileRouteTypes {
     | '/practice/$id/edit'
     | '/question-sheets/$id/edit'
     | '/reading-sessions/$id/edit'
+    | '/sentences/$id/edit'
     | '/shadowing-lists/$id/edit'
     | '/shadowing/$id/edit'
     | '/theory-sessions/$id/edit'
@@ -1277,6 +1329,7 @@ export interface FileRouteTypes {
     | '/practice/$id'
     | '/question-sheets/$id'
     | '/reading-sessions/$id'
+    | '/sentences/$id'
     | '/shadowing-lists/$id'
     | '/shadowing/$id'
     | '/theory-sessions/$id'
@@ -1291,7 +1344,6 @@ export interface FileRouteTypes {
     | '/grammar'
     | '/profile'
     | '/renshuu'
-    | '/sentences'
     | '/settings'
     | '/start'
     | '/vocab'
@@ -1332,6 +1384,9 @@ export interface FileRouteTypes {
     | '/question-sheets/new'
     | '/reading-sessions/$id'
     | '/reading-sessions/new'
+    | '/sentences/$id'
+    | '/sentences/import'
+    | '/sentences/new'
     | '/shadowing-lists/$id'
     | '/shadowing-lists/new'
     | '/shadowing/$id'
@@ -1363,6 +1418,7 @@ export interface FileRouteTypes {
     | '/question-sheets/'
     | '/reading-sessions/'
     | '/reading-writing/'
+    | '/sentences/'
     | '/shadowing-lists/'
     | '/shadowing/'
     | '/sources/'
@@ -1381,6 +1437,7 @@ export interface FileRouteTypes {
     | '/practice/$id/edit'
     | '/question-sheets/$id/edit'
     | '/reading-sessions/$id/edit'
+    | '/sentences/$id/edit'
     | '/shadowing-lists/$id/edit'
     | '/shadowing/$id/edit'
     | '/theory-sessions/$id/edit'
@@ -1396,6 +1453,7 @@ export interface FileRouteTypes {
     | '/practice/$id/'
     | '/question-sheets/$id/'
     | '/reading-sessions/$id/'
+    | '/sentences/$id/'
     | '/shadowing-lists/$id/'
     | '/shadowing/$id/'
     | '/theory-sessions/$id/'
@@ -1411,7 +1469,6 @@ export interface RootRouteChildren {
   GrammarRoute: typeof GrammarRoute
   ProfileRoute: typeof ProfileRoute
   RenshuuRoute: typeof RenshuuRoute
-  SentencesRoute: typeof SentencesRoute
   SettingsRoute: typeof SettingsRoute
   StartRoute: typeof StartRoute
   VocabRoute: typeof VocabRoute
@@ -1452,6 +1509,9 @@ export interface RootRouteChildren {
   QuestionSheetsNewRoute: typeof QuestionSheetsNewRoute
   ReadingSessionsIdRoute: typeof ReadingSessionsIdRouteWithChildren
   ReadingSessionsNewRoute: typeof ReadingSessionsNewRoute
+  SentencesIdRoute: typeof SentencesIdRouteWithChildren
+  SentencesImportRoute: typeof SentencesImportRoute
+  SentencesNewRoute: typeof SentencesNewRoute
   ShadowingListsIdRoute: typeof ShadowingListsIdRouteWithChildren
   ShadowingListsNewRoute: typeof ShadowingListsNewRoute
   ShadowingIdRoute: typeof ShadowingIdRouteWithChildren
@@ -1483,6 +1543,7 @@ export interface RootRouteChildren {
   QuestionSheetsIndexRoute: typeof QuestionSheetsIndexRoute
   ReadingSessionsIndexRoute: typeof ReadingSessionsIndexRoute
   ReadingWritingIndexRoute: typeof ReadingWritingIndexRoute
+  SentencesIndexRoute: typeof SentencesIndexRoute
   ShadowingListsIndexRoute: typeof ShadowingListsIndexRoute
   ShadowingIndexRoute: typeof ShadowingIndexRoute
   SourcesIndexRoute: typeof SourcesIndexRoute
@@ -1520,13 +1581,6 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof SettingsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/sentences': {
-      id: '/sentences'
-      path: '/sentences'
-      fullPath: '/sentences'
-      preLoaderRoute: typeof SentencesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/renshuu': {
@@ -1632,6 +1686,13 @@ declare module '@tanstack/react-router' {
       path: '/shadowing-lists'
       fullPath: '/shadowing-lists/'
       preLoaderRoute: typeof ShadowingListsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sentences/': {
+      id: '/sentences/'
+      path: '/sentences'
+      fullPath: '/sentences/'
+      preLoaderRoute: typeof SentencesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reading-writing/': {
@@ -1849,6 +1910,27 @@ declare module '@tanstack/react-router' {
       path: '/shadowing-lists/$id'
       fullPath: '/shadowing-lists/$id'
       preLoaderRoute: typeof ShadowingListsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sentences/new': {
+      id: '/sentences/new'
+      path: '/sentences/new'
+      fullPath: '/sentences/new'
+      preLoaderRoute: typeof SentencesNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sentences/import': {
+      id: '/sentences/import'
+      path: '/sentences/import'
+      fullPath: '/sentences/import'
+      preLoaderRoute: typeof SentencesImportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sentences/$id': {
+      id: '/sentences/$id'
+      path: '/sentences/$id'
+      fullPath: '/sentences/$id'
+      preLoaderRoute: typeof SentencesIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reading-sessions/new': {
@@ -2131,6 +2213,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShadowingListsIdIndexRouteImport
       parentRoute: typeof ShadowingListsIdRoute
     }
+    '/sentences/$id/': {
+      id: '/sentences/$id/'
+      path: '/'
+      fullPath: '/sentences/$id/'
+      preLoaderRoute: typeof SentencesIdIndexRouteImport
+      parentRoute: typeof SentencesIdRoute
+    }
     '/reading-sessions/$id/': {
       id: '/reading-sessions/$id/'
       path: '/'
@@ -2235,6 +2324,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/shadowing-lists/$id/edit'
       preLoaderRoute: typeof ShadowingListsIdEditRouteImport
       parentRoute: typeof ShadowingListsIdRoute
+    }
+    '/sentences/$id/edit': {
+      id: '/sentences/$id/edit'
+      path: '/edit'
+      fullPath: '/sentences/$id/edit'
+      preLoaderRoute: typeof SentencesIdEditRouteImport
+      parentRoute: typeof SentencesIdRoute
     }
     '/reading-sessions/$id/edit': {
       id: '/reading-sessions/$id/edit'
@@ -2467,6 +2563,20 @@ const ReadingSessionsIdRouteChildren: ReadingSessionsIdRouteChildren = {
 const ReadingSessionsIdRouteWithChildren =
   ReadingSessionsIdRoute._addFileChildren(ReadingSessionsIdRouteChildren)
 
+interface SentencesIdRouteChildren {
+  SentencesIdEditRoute: typeof SentencesIdEditRoute
+  SentencesIdIndexRoute: typeof SentencesIdIndexRoute
+}
+
+const SentencesIdRouteChildren: SentencesIdRouteChildren = {
+  SentencesIdEditRoute: SentencesIdEditRoute,
+  SentencesIdIndexRoute: SentencesIdIndexRoute,
+}
+
+const SentencesIdRouteWithChildren = SentencesIdRoute._addFileChildren(
+  SentencesIdRouteChildren,
+)
+
 interface ShadowingListsIdRouteChildren {
   ShadowingListsIdEditRoute: typeof ShadowingListsIdEditRoute
   ShadowingListsIdIndexRoute: typeof ShadowingListsIdIndexRoute
@@ -2530,7 +2640,6 @@ const rootRouteChildren: RootRouteChildren = {
   GrammarRoute: GrammarRoute,
   ProfileRoute: ProfileRoute,
   RenshuuRoute: RenshuuRoute,
-  SentencesRoute: SentencesRoute,
   SettingsRoute: SettingsRoute,
   StartRoute: StartRoute,
   VocabRoute: VocabRoute,
@@ -2571,6 +2680,9 @@ const rootRouteChildren: RootRouteChildren = {
   QuestionSheetsNewRoute: QuestionSheetsNewRoute,
   ReadingSessionsIdRoute: ReadingSessionsIdRouteWithChildren,
   ReadingSessionsNewRoute: ReadingSessionsNewRoute,
+  SentencesIdRoute: SentencesIdRouteWithChildren,
+  SentencesImportRoute: SentencesImportRoute,
+  SentencesNewRoute: SentencesNewRoute,
   ShadowingListsIdRoute: ShadowingListsIdRouteWithChildren,
   ShadowingListsNewRoute: ShadowingListsNewRoute,
   ShadowingIdRoute: ShadowingIdRouteWithChildren,
@@ -2602,6 +2714,7 @@ const rootRouteChildren: RootRouteChildren = {
   QuestionSheetsIndexRoute: QuestionSheetsIndexRoute,
   ReadingSessionsIndexRoute: ReadingSessionsIndexRoute,
   ReadingWritingIndexRoute: ReadingWritingIndexRoute,
+  SentencesIndexRoute: SentencesIndexRoute,
   ShadowingListsIndexRoute: ShadowingListsIndexRoute,
   ShadowingIndexRoute: ShadowingIndexRoute,
   SourcesIndexRoute: SourcesIndexRoute,

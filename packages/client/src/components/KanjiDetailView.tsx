@@ -47,9 +47,9 @@ function shortDate(iso: string): string {
 /**
  * The item's own page, when it has one.
  *
- * Sentences and vocab live on single filterable pages rather than per-row routes, so those two
- * render as plain text — there is nowhere to send the learner that would be more specific than the
- * text already shown.
+ * Every sentence kind shares the unified `/sentences/$id` page since the table merge (bank rows
+ * included — they gained a detail page). Vocab still lives on one filterable page rather than
+ * per-row routes, so it renders as plain text.
  */
 function OccurrenceLink({
   item, children,
@@ -58,23 +58,10 @@ function OccurrenceLink({
   children: React.ReactNode;
 }) {
   const className = "hover:underline";
-  if (item.kind === "my-sentence") {
+  if (item.kind === "sentence" || item.kind === "my-sentence" || item.kind === "practice") {
     return (
       <Link
-        to="/my-sentences/$id"
-        params={{
-          id: item.id,
-        }}
-        className={className}
-      >
-        {children}
-      </Link>
-    );
-  }
-  if (item.kind === "practice") {
-    return (
-      <Link
-        to="/practice/$id"
+        to="/sentences/$id"
         params={{
           id: item.id,
         }}

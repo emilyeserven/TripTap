@@ -51,7 +51,10 @@ function NavItem({
         isActive={isItemActive(pathname, item.to)}
         tooltip={item.title}
       >
-        <Link to={item.to}>
+        <Link
+          to={item.to}
+          search={item.search}
+        >
           <item.icon />
           <span>{item.title}</span>
         </Link>
@@ -121,12 +124,15 @@ function NavNestedItem({
         <CollapsibleContent>
           <SidebarMenuSub>
             {item.children.map(child => (
-              <SidebarMenuSubItem key={child.to}>
+              <SidebarMenuSubItem key={child.title}>
                 <SidebarMenuSubButton
                   asChild
                   isActive={isItemActive(pathname, child.to)}
                 >
-                  <Link to={child.to}>
+                  <Link
+                    to={child.to}
+                    search={child.search}
+                  >
                     <child.icon />
                     <span>{child.title}</span>
                   </Link>

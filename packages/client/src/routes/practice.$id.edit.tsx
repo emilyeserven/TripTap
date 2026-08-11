@@ -1,51 +1,13 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
-import { PracticeScreenshotEditor } from "@/components/PracticeScreenshotEditor";
-import { PracticeSentenceEditor } from "@/components/PracticeSentenceEditor";
-import { Button } from "@/components/ui/button";
-import { useDeletePracticeSentence, usePracticeSentence } from "@/hooks/usePracticeSentences";
-
+/** Legacy route — editing a practice sentence now lives on the unified sentence edit page. */
 export const Route = createFileRoute("/practice/$id/edit")({
-  component: EditPracticePage,
-});
-
-function EditPracticePage() {
-  const {
-    id,
-  } = Route.useParams();
-  const navigate = useNavigate();
-  const deletePracticeSentence = useDeletePracticeSentence();
-  const {
-    data, isLoading, error,
-  } = usePracticeSentence(id);
-
-  if (isLoading) return <p className="text-muted-foreground">Loading…</p>;
-  if (error) return <p className="text-destructive">{error.message}</p>;
-  if (!data) return <p className="text-muted-foreground">Practice sentence not found.</p>;
-
-  const remove = () => {
-    deletePracticeSentence.mutate(id, {
-      onSuccess: () => navigate({
-        to: "/practice",
-      }),
+  beforeLoad: ({
+    params,
+  }) => {
+    throw redirect({
+      to: "/sentences/$id/edit",
+      params,
     });
-  };
-
-  return (
-    <section className="space-y-6">
-      <div className="flex items-center justify-end">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-destructive"
-          disabled={deletePracticeSentence.isPending}
-          onClick={remove}
-        >
-          Delete
-        </Button>
-      </div>
-      <PracticeSentenceEditor practiceSentence={data} />
-      <PracticeScreenshotEditor practiceSentence={data} />
-    </section>
-  );
-}
+  },
+});

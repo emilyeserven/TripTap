@@ -1,5 +1,5 @@
 import type { PracticeDraft, SetPracticeDraft } from "@/lib/practiceEditor";
-import type { PracticeSentence } from "@sentence-bank/types";
+import type { Sentence } from "@sentence-bank/types";
 import type { ReactNode } from "react";
 
 import { Volume2 } from "lucide-react";
@@ -23,7 +23,7 @@ export function PracticeReadTab({
 }: {
   draft: PracticeDraft;
   set: SetPracticeDraft;
-  practiceSentence: PracticeSentence;
+  practiceSentence: Sentence;
   footer: ReactNode;
 }) {
   return (

@@ -1,36 +1,13 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
-import { PracticeSentenceView } from "@/components/PracticeSentenceView";
-import { usePracticeSentence } from "@/hooks/usePracticeSentences";
-import { useSources } from "@/hooks/useSources";
-
+/** Legacy route — a practice sentence's page is now the unified sentence page (same id). */
 export const Route = createFileRoute("/practice/$id/")({
-  component: ViewPracticePage,
+  beforeLoad: ({
+    params,
+  }) => {
+    throw redirect({
+      to: "/sentences/$id",
+      params,
+    });
+  },
 });
-
-function ViewPracticePage() {
-  const {
-    id,
-  } = Route.useParams();
-  const {
-    data, isLoading, error,
-  } = usePracticeSentence(id);
-  const {
-    data: sources,
-  } = useSources();
-
-  if (isLoading) return <p className="text-muted-foreground">Loading…</p>;
-  if (error) return <p className="text-destructive">{error.message}</p>;
-  if (!data) return <p className="text-muted-foreground">Practice sentence not found.</p>;
-
-  const sourceName = data.sourceId
-    ? sources?.find(s => s.id === data.sourceId)?.name ?? null
-    : null;
-
-  return (
-    <PracticeSentenceView
-      practiceSentence={data}
-      sourceName={sourceName}
-    />
-  );
-}

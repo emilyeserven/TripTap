@@ -1,4 +1,4 @@
-import type { MySentence } from "@sentence-bank/types";
+import type { Sentence } from "@sentence-bank/types";
 
 import { useState } from "react";
 
@@ -12,7 +12,7 @@ import { ShowOriginalToggle } from "@/components/ShowOriginalToggle";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { useDrillReasonCategories } from "@/hooks/useDrillReasonCategories";
-import { useUpdateMySentence } from "@/hooks/useMySentences";
+import { useUpdateSentence } from "@/hooks/useSentences";
 import { resolveReasonRef } from "@/lib/drill-reasons";
 
 /** Read-only detail of one My Sentence. When corrected, the corrected version leads and the learner's
@@ -20,12 +20,12 @@ import { resolveReasonRef } from "@/lib/drill-reasons";
 export function MySentenceView({
   mySentence: ms,
 }: {
-  mySentence: MySentence;
+  mySentence: Sentence;
 }) {
   const categoriesQuery = useDrillReasonCategories();
   const categories = categoriesQuery.data ?? [];
   const corrected = ms.correction?.trim() ? ms.correction : null;
-  const update = useUpdateMySentence();
+  const update = useUpdateSentence();
   // Un-reviewed = still flagged and not yet corrected → offer the inline corrector.
   const unreviewed = !corrected && ms.needsCorrection;
   const [showOriginal, setShowOriginal] = useState(false);

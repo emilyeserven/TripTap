@@ -311,7 +311,10 @@ export function writingXp(
       at: row.createdAt,
       sourceId: row.id,
       title: null,
-      to: "/my-sentences",
+      to: "/sentences/$id",
+      params: {
+        id: row.id,
+      },
     }));
   return [...fromWritings, ...fromSentences];
 }
@@ -709,7 +712,7 @@ export function practicePassXp(rows: PracticePassXpRow[], rates: XpRates = DEFAU
         at: Number.isNaN(stamped.getTime()) ? row.createdAt : stamped,
         sourceId: row.id,
         title: row.text,
-        to: "/practice/$id",
+        to: "/sentences/$id",
         params: {
           id: row.id,
         },

@@ -77,7 +77,7 @@ export function WritingCorrectedSegment({
           {correction.mySentenceId
             ? (
               <Link
-                to="/my-sentences/$id"
+                to="/sentences/$id"
                 params={{
                   id: correction.mySentenceId,
                 }}

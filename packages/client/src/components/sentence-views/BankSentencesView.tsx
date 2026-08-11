@@ -3,7 +3,6 @@ import type { Sentence } from "@sentence-bank/types";
 import { useMemo, useState } from "react";
 
 import { deckNamesFromTags, hasDeckTag } from "@sentence-bank/types";
-import { createFileRoute } from "@tanstack/react-router";
 import { ChevronDown, Download, Plus } from "lucide-react";
 
 import { uniqueAiLessons } from "@/components/ai-lesson/ai-lesson-filter-utils";
@@ -31,24 +30,23 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useAiLessonContent } from "@/hooks/useAiLessons";
-import { usePageTitle } from "@/hooks/usePageTitle";
 import { useBackfillFurigana, useSentences } from "@/hooks/useSentences";
 import { useSources } from "@/hooks/useSources";
 import { dedupeGrammarTags, grammarTermsOf } from "@/lib/grammar-links";
 import { matchesSourceFilter, sourceFilterOptions } from "@/lib/source-options";
 
-export const Route = createFileRoute("/sentences")({
-  component: SentencesPage,
-  validateSearch: (search: Record<string, unknown>): { source?: string } => ({
-    source: typeof search.source === "string" ? search.source : undefined,
-  }),
-});
-
-function SentencesPage() {
-  usePageTitle("Sentences");
+/** The bank view of the unified Sentences page: reference examples + AI-Lesson-mined sentences. */
+export function BankSentencesView({
+  sourceParam,
+}: {
+  /** Pre-selected source filter (deep-linked from a source page). */
+  sourceParam?: string;
+}) {
   const {
     data: sentences, isLoading, error,
-  } = useSentences();
+  } = useSentences({
+    kind: "bank",
+  });
   const backfillFurigana = useBackfillFurigana();
   const {
     data: sources,
@@ -61,10 +59,6 @@ function SentencesPage() {
   } = useAiLessonContent();
   const aiLessonSentences = useMemo(() => content?.sentences ?? [], [content]);
   const aiLessons = useMemo(() => uniqueAiLessons(aiLessonSentences), [aiLessonSentences]);
-
-  const {
-    source: sourceParam,
-  } = Route.useSearch();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [tatoebaOpen, setTatoebaOpen] = useState(false);

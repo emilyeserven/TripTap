@@ -1,4 +1,4 @@
-import type { PracticeSentence } from "@sentence-bank/types";
+import type { Sentence } from "@sentence-bank/types";
 
 import { useEffect, useRef, useState } from "react";
 
@@ -6,10 +6,10 @@ import { Link } from "@tanstack/react-router";
 import { Check } from "lucide-react";
 
 import {
-  useCreateMySentence,
-  useMySentencesForPractice,
-  useUpdateMySentence,
-} from "../hooks/useMySentences";
+  useCreateSentence,
+  useSentencesForPractice,
+  useUpdateSentence,
+} from "../hooks/useSentences";
 
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -22,13 +22,13 @@ import { Textarea } from "@/components/ui/textarea";
 export function PracticeOutput({
   practiceSentence: ps,
 }: {
-  practiceSentence: PracticeSentence;
+  practiceSentence: Sentence;
 }) {
   const {
     data: existing,
-  } = useMySentencesForPractice(ps.id);
-  const createMy = useCreateMySentence();
-  const updateMy = useUpdateMySentence();
+  } = useSentencesForPractice(ps.id);
+  const createMy = useCreateSentence();
+  const updateMy = useUpdateSentence();
 
   const record = existing?.[0];
   const recordId = useRef<string | null>(null);
@@ -67,9 +67,10 @@ export function PracticeOutput({
         }
         else if (value.trim()) {
           const created = await createMy.mutateAsync({
+            kind: "mine",
             text: value,
             language: ps.language,
-            practiceSentenceId: ps.id,
+            derivedFromId: ps.id,
             needsCorrection: true,
           });
           recordId.current = created.id;
@@ -122,7 +123,10 @@ export function PracticeOutput({
             Saved to
             {" "}
             <Link
-              to="/my-sentences"
+              to="/sentences"
+              search={{
+                view: "mine",
+              }}
               className="
                 underline
                 hover:text-foreground

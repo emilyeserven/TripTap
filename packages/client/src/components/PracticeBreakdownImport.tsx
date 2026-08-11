@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 
-import { practiceSentenceImportSchema } from "@sentence-bank/types";
+import { sentenceImportSchema } from "@sentence-bank/types";
 import { useNavigate } from "@tanstack/react-router";
 import { ImagePlus, X } from "lucide-react";
 
@@ -14,9 +14,9 @@ import {
 } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  useImportPracticeSentence,
-  useUploadPracticeSentenceImage,
-} from "@/hooks/usePracticeSentences";
+  useImportSentence,
+  useUploadSentenceImage,
+} from "@/hooks/useSentences";
 
 const PLACEHOLDER = `{
   "text": "電気を消してくれる？",
@@ -35,8 +35,8 @@ export function PracticeBreakdownImport() {
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const importSentence = useImportPracticeSentence();
-  const uploadImage = useUploadPracticeSentenceImage();
+  const importSentence = useImportSentence();
+  const uploadImage = useUploadSentenceImage();
   const navigate = useNavigate();
 
   function selectFile(next: File | null) {
@@ -57,7 +57,7 @@ export function PracticeBreakdownImport() {
       return;
     }
 
-    const result = practiceSentenceImportSchema.safeParse(parsed);
+    const result = sentenceImportSchema.safeParse(parsed);
     if (!result.success) {
       setErrors(
         result.error.issues

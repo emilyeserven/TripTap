@@ -1,4 +1,4 @@
-import type { DrillMistakeReasonRef, MySentence, SentenceTermRef } from "@sentence-bank/types";
+import type { DrillMistakeReasonRef, Sentence, SentenceTermRef } from "@sentence-bank/types";
 
 import { useState } from "react";
 
@@ -12,7 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useCreateMySentence, useUpdateMySentence } from "@/hooks/useMySentences";
+import { useCreateSentence, useUpdateSentence } from "@/hooks/useSentences";
 
 /**
  * Create/edit form for a My Sentence — independent of the practice worksheet. Collects the written
@@ -28,7 +28,7 @@ export function MySentenceForm({
   prefill,
   embedded = false,
 }: {
-  mySentence?: MySentence;
+  mySentence?: Sentence;
   onSuccess?: (id: string) => void;
   /** When creating from a lesson, links the new sentence to it. */
   lessonId?: string;
@@ -53,8 +53,8 @@ export function MySentenceForm({
    */
   embedded?: boolean;
 }) {
-  const create = useCreateMySentence();
-  const update = useUpdateMySentence();
+  const create = useCreateSentence();
+  const update = useUpdateSentence();
   const editing = mySentence !== undefined;
 
   const [text, setText] = useState(mySentence?.text ?? prefill?.text ?? "");
@@ -97,6 +97,7 @@ export function MySentenceForm({
     if (!canSubmit) return;
     const terms = [...vocabTerms, ...grammarTerms, ...generalTerms, ...resourceTerms];
     const input = {
+      kind: "mine" as const,
       text: text.trim(),
       language: language.trim(),
       translation: translation.trim() || null,

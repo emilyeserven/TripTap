@@ -1,4 +1,4 @@
-import type { PracticePassKey, PracticeSentence, SentenceTermCategory } from "@sentence-bank/types";
+import type { PracticePassKey, Sentence, SentenceTermCategory } from "@sentence-bank/types";
 import type { ReactNode } from "react";
 
 import { Link } from "@tanstack/react-router";
@@ -10,8 +10,11 @@ import { SentenceText } from "@/components/SentenceText";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { useMySentencesForPractice } from "@/hooks/useMySentences";
-import { usePracticeSentenceVocab, useUpdatePracticeSentence } from "@/hooks/usePracticeSentences";
+import {
+  useSentencesForPractice,
+  useSentenceVocab,
+  useUpdateSentence,
+} from "@/hooks/useSentences";
 
 const COMPREHENSION_LABEL = {
   ready: "Ready to card",
@@ -72,17 +75,17 @@ export function PracticeSentenceView({
   practiceSentence: ps,
   sourceName,
 }: {
-  practiceSentence: PracticeSentence;
+  practiceSentence: Sentence;
   sourceName?: string | null;
 }) {
   const {
     data: linkedVocab,
-  } = usePracticeSentenceVocab(ps.id);
+  } = useSentenceVocab(ps.id);
   const {
     data: mySentences,
-  } = useMySentencesForPractice(ps.id);
+  } = useSentencesForPractice(ps.id);
 
-  const updateSentence = useUpdatePracticeSentence();
+  const updateSentence = useUpdateSentence();
 
   const grammar = ps.grammar ?? [];
   const terms = ps.terms ?? [];
@@ -114,7 +117,12 @@ export function PracticeSentenceView({
           variant="ghost"
           size="sm"
         >
-          <Link to="/practice">
+          <Link
+            to="/sentences"
+            search={{
+              view: "practice",
+            }}
+          >
             <ArrowLeft className="size-4" />
             All practice sentences
           </Link>
@@ -124,7 +132,7 @@ export function PracticeSentenceView({
           size="sm"
         >
           <Link
-            to="/practice/$id/edit"
+            to="/sentences/$id/edit"
             params={{
               id: ps.id,
             }}
@@ -139,7 +147,7 @@ export function PracticeSentenceView({
         {ps.hasImage
           ? (
             <img
-              src={`/api/practice-sentences/${ps.id}/image`}
+              src={`/api/sentences/${ps.id}/image`}
               alt="Context screenshot"
               className="max-h-80 rounded-md border"
             />

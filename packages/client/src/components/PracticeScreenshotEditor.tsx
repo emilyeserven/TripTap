@@ -1,4 +1,4 @@
-import type { PracticeSentence } from "@sentence-bank/types";
+import type { Sentence } from "@sentence-bank/types";
 
 import { useRef, useState } from "react";
 
@@ -7,18 +7,18 @@ import { ImagePlus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
-  useRemovePracticeSentenceImage,
-  useUploadPracticeSentenceImage,
-} from "@/hooks/usePracticeSentences";
+  useRemoveSentenceImage,
+  useUploadSentenceImage,
+} from "@/hooks/useSentences";
 
 /** Attach / replace / remove a practice sentence's context screenshot on its edit page. */
 export function PracticeScreenshotEditor({
   practiceSentence: ps,
 }: {
-  practiceSentence: PracticeSentence;
+  practiceSentence: Sentence;
 }) {
-  const upload = useUploadPracticeSentenceImage();
-  const remove = useRemovePracticeSentenceImage();
+  const upload = useUploadSentenceImage();
+  const remove = useRemoveSentenceImage();
   const inputRef = useRef<HTMLInputElement>(null);
   // Bump on every upload so the <img> (same URL) refetches instead of showing the cached image.
   const [version, setVersion] = useState(0);
@@ -50,7 +50,7 @@ export function PracticeScreenshotEditor({
         ? (
           <div className="flex items-start gap-3">
             <img
-              src={`/api/practice-sentences/${ps.id}/image?v=${version}`}
+              src={`/api/sentences/${ps.id}/image?v=${version}`}
               alt="Context screenshot"
               className="max-h-40 rounded-md border"
             />

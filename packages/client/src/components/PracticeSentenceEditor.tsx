@@ -1,5 +1,5 @@
 import type { PracticeDraft } from "@/lib/practiceEditor";
-import type { PracticeSentence } from "@sentence-bank/types";
+import type { Sentence } from "@sentence-bank/types";
 
 import { useEffect, useRef, useState } from "react";
 
@@ -12,8 +12,7 @@ import { PracticeField } from "./PracticeField";
 import { PracticeOutput } from "./PracticeOutput";
 import { PracticeReadTab } from "./PracticeReadTab";
 import { PracticeTargetTab } from "./PracticeTargetTab";
-import { useUpdatePracticeSentence } from "../hooks/usePracticeSentences";
-import { useSentences } from "../hooks/useSentences";
+import { useSentences, useUpdateSentence } from "../hooks/useSentences";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -60,9 +59,9 @@ const TAB_VALUES = TABS.map(t => t.value) as TabValue[];
 export function PracticeSentenceEditor({
   practiceSentence,
 }: {
-  practiceSentence: PracticeSentence;
+  practiceSentence: Sentence;
 }) {
-  const update = useUpdatePracticeSentence();
+  const update = useUpdateSentence();
   const [draft, setDraft] = useState<PracticeDraft>(() => toDraft(practiceSentence));
   const [status, setStatus] = useState("");
   const dirty = useRef(false);
@@ -70,9 +69,11 @@ export function PracticeSentenceEditor({
   // The origin bank sentence (if this was created from the bank), for "fill from bank" translation.
   const {
     data: bankSentences,
-  } = useSentences();
-  const origin = practiceSentence.sentenceId
-    ? bankSentences?.find(s => s.id === practiceSentence.sentenceId)
+  } = useSentences({
+    kind: "bank",
+  });
+  const origin = practiceSentence.derivedFromId
+    ? bankSentences?.find(s => s.id === practiceSentence.derivedFromId)
     : undefined;
 
   useEffect(() => {
@@ -130,7 +131,7 @@ export function PracticeSentenceEditor({
             variant="outline"
           >
             <Link
-              to="/practice/$id"
+              to="/sentences/$id"
               params={{
                 id: practiceSentence.id,
               }}
@@ -159,7 +160,12 @@ export function PracticeSentenceEditor({
           variant="ghost"
           size="sm"
         >
-          <Link to="/practice">
+          <Link
+            to="/sentences"
+            search={{
+              view: "practice",
+            }}
+          >
             <ArrowLeft className="size-4" />
             All practice sentences
           </Link>

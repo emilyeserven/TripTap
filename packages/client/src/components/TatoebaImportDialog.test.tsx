@@ -53,24 +53,10 @@ vi.mock("@/hooks/useTatoeba", () => ({
   }),
 }));
 
-// The dialog resolves its destination through all three create-many hooks; stub each one.
+// The dialog writes every kind through the one create-many hook; the chosen kind rides the input.
 vi.mock("@/hooks/useSentences", () => ({
   useCreateSentencesMany: () => ({
     mutateAsync,
-    isPending: false,
-  }),
-}));
-
-vi.mock("@/hooks/useMySentences", () => ({
-  useCreateMySentencesMany: () => ({
-    mutateAsync: vi.fn(),
-    isPending: false,
-  }),
-}));
-
-vi.mock("@/hooks/usePracticeSentences", () => ({
-  useCreatePracticeSentencesMany: () => ({
-    mutateAsync: vi.fn(),
     isPending: false,
   }),
 }));
@@ -80,7 +66,7 @@ describe("TatoebaImportDialog", () => {
     mutateAsync.mockReset();
   });
 
-  it("offers no destination choice, because the licence credit is a bank-only column", () => {
+  it("offers no kind choice — Tatoeba imports are always bank sentences", () => {
     render(<TatoebaImportDialog />);
 
     fireEvent.click(screen.getByRole("button", {
@@ -109,15 +95,12 @@ describe("TatoebaImportDialog", () => {
     expect(mutateAsync).toHaveBeenCalledTimes(1);
     expect(mutateAsync).toHaveBeenCalledWith([
       {
+        kind: "bank",
         text: "犬が好きです。",
         translation: "I like dogs.",
         language: "Japanese",
-        terms: null,
         tags: "tatoeba",
         notes: "From Tatoeba #42 (by hanako) · CC BY 2.0 FR",
-        sourceId: null,
-        page: null,
-        captureId: null,
       },
     ]);
   });
@@ -138,15 +121,12 @@ describe("TatoebaImportDialog", () => {
 
     expect(mutateAsync).toHaveBeenCalledWith([
       {
+        kind: "bank",
         text: "猫も好きです。",
         translation: null,
         language: "Japanese",
-        terms: null,
         tags: "tatoeba",
         notes: "From Tatoeba #43 (unknown author) · CC BY 2.0 FR",
-        sourceId: null,
-        page: null,
-        captureId: null,
       },
     ]);
   });

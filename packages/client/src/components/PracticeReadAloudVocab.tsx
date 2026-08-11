@@ -1,4 +1,4 @@
-import type { PracticeSentence } from "@sentence-bank/types";
+import type { Sentence } from "@sentence-bank/types";
 
 import { useState } from "react";
 
@@ -6,9 +6,9 @@ import { Plus } from "lucide-react";
 
 import { VocabLinkPicker } from "./VocabLinkPicker";
 import {
-  usePracticeSentenceVocab,
-  useSetPracticeSentenceVocab,
-} from "../hooks/usePracticeSentences";
+  useSentenceVocab,
+  useSetSentenceVocab,
+} from "../hooks/useSentences";
 import { useCreateVocab } from "../hooks/useVocab";
 
 import { Button } from "@/components/ui/button";
@@ -23,12 +23,12 @@ import { Label } from "@/components/ui/label";
 export function PracticeReadAloudVocab({
   practiceSentence: ps,
 }: {
-  practiceSentence: PracticeSentence;
+  practiceSentence: Sentence;
 }) {
   const {
     data: linked,
-  } = usePracticeSentenceVocab(ps.id);
-  const setVocab = useSetPracticeSentenceVocab();
+  } = useSentenceVocab(ps.id);
+  const setVocab = useSetSentenceVocab();
   const createVocab = useCreateVocab();
 
   const linkedIds = (linked ?? []).map(v => v.id);

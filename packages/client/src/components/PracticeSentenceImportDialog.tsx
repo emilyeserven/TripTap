@@ -1,6 +1,6 @@
 import type {
   Capture,
-  CreatePracticeSentenceInput,
+  CreateSentenceInput,
   Sentence,
 } from "@sentence-bank/types";
 
@@ -9,8 +9,7 @@ import { useMemo, useState } from "react";
 import { Download } from "lucide-react";
 
 import { useCapture, useCaptures } from "../hooks/useCaptures";
-import { useCreatePracticeSentencesMany } from "../hooks/usePracticeSentences";
-import { useSentences } from "../hooks/useSentences";
+import { useCreateSentencesMany, useSentences } from "../hooks/useSentences";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -46,7 +45,7 @@ function toggle<T>(set: Set<T>, value: T): Set<T> {
  */
 export function PracticeSentenceImportDialog() {
   const [open, setOpen] = useState(false);
-  const importMany = useCreatePracticeSentencesMany();
+  const importMany = useCreateSentencesMany();
 
   const close = () => {
     setOpen(false);
@@ -107,7 +106,7 @@ function CaptureImport({
   onImport,
 }: {
   pending: boolean;
-  onImport: (inputs: CreatePracticeSentenceInput[]) => Promise<void>;
+  onImport: (inputs: CreateSentenceInput[]) => Promise<void>;
 }) {
   const {
     data: captures,
@@ -122,9 +121,10 @@ function CaptureImport({
 
   const submit = async () => {
     if (!capture) return;
-    const inputs: CreatePracticeSentenceInput[] = [...selected]
+    const inputs: CreateSentenceInput[] = [...selected]
       .sort((a, b) => a - b)
       .map(i => ({
+        kind: "practice" as const,
         text: lines[i],
         language: "Japanese",
         captureId: capture.id,
@@ -216,11 +216,13 @@ function SentenceImport({
   onImport,
 }: {
   pending: boolean;
-  onImport: (inputs: CreatePracticeSentenceInput[]) => Promise<void>;
+  onImport: (inputs: CreateSentenceInput[]) => Promise<void>;
 }) {
   const {
     data: sentences,
-  } = useSentences();
+  } = useSentences({
+    kind: "bank",
+  });
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
@@ -234,14 +236,15 @@ function SentenceImport({
 
   const submit = async () => {
     const byId = new Map((sentences ?? []).map(s => [s.id, s]));
-    const inputs: CreatePracticeSentenceInput[] = [...selected]
+    const inputs: CreateSentenceInput[] = [...selected]
       .map(id => byId.get(id))
       .filter((s): s is Sentence => s !== undefined)
       .map(s => ({
+        kind: "practice" as const,
         text: s.text,
         language: s.language,
         translation: s.translation,
-        sentenceId: s.id,
+        derivedFromId: s.id,
         sourceId: s.sourceId,
         page: s.page,
       }));

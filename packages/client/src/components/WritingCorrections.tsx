@@ -8,7 +8,7 @@ import { CheckIcon, PlusIcon } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { WritingCorrectedSegment } from "@/components/WritingCorrectedSegment";
 import { WritingUncorrectedSegment } from "@/components/WritingUncorrectedSegment";
-import { useCreateMySentence, useUpdateMySentence } from "@/hooks/useMySentences";
+import { useCreateSentence, useUpdateSentence } from "@/hooks/useSentences";
 import { useUpdateWriting } from "@/hooks/useWritings";
 import { newId } from "@/lib/id";
 import { splitLines } from "@/lib/writing-corrections";
@@ -32,8 +32,8 @@ export function WritingCorrections({
   writing: Writing;
   text: string;
 }) {
-  const createMySentence = useCreateMySentence();
-  const updateMySentence = useUpdateMySentence();
+  const createMySentence = useCreateSentence();
+  const updateMySentence = useUpdateSentence();
   const updateWriting = useUpdateWriting();
   // Which uncorrected segment (by index) is open for a first-time correction.
   const [addingIndex, setAddingIndex] = useState<number | null>(null);
@@ -51,6 +51,7 @@ export function WritingCorrections({
     const unchanged = r.correction.trim() === original.trim();
     try {
       const created = await createMySentence.mutateAsync({
+        kind: "mine",
         text: original,
         correction: unchanged ? null : (r.correction.trim() || null),
         marks: unchanged ? null : r.marks,
