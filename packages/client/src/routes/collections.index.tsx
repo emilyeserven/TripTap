@@ -4,8 +4,9 @@ import type { DrillTag, LearningArea, MaterialType, TheoryTag } from "@sentence-
 import { useMemo } from "react";
 
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { BookOpen, ExternalLink, Headphones, ImageOff, PenLine, RefreshCw, Repeat2, Star } from "lucide-react";
+import { BookOpen, ExternalLink, Headphones, ImageOff, PenLine, RefreshCw, Repeat2 } from "lucide-react";
 
+import { AddToBasketButton } from "@/components/AddToBasketButton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -22,7 +23,7 @@ import {
 } from "@/components/ui/select";
 import { useBookmarkResources, useRefreshBookmarks } from "@/hooks/useBookmarks";
 import { usePageTitle } from "@/hooks/usePageTitle";
-import { useBookmarksSettings, useStartSettings, useUpdateStartSettings } from "@/hooks/useSettings";
+import { useBookmarksSettings } from "@/hooks/useSettings";
 import { useCreateWriting } from "@/hooks/useWritings";
 import { bookmarkAppUrl } from "@/lib/bookmarks";
 import {
@@ -70,19 +71,6 @@ function CollectionsPage() {
   const refreshBookmarks = useRefreshBookmarks();
   const navigate = useNavigate();
   const createWriting = useCreateWriting();
-
-  // Local favorites (TripTap-side; the bookmarks host's own Favorite flag is read-only to us).
-  // Starred resources are prioritized by the Start Something suggestions.
-  const startSettings = useStartSettings();
-  const updateStartSettings = useUpdateStartSettings();
-  const localFavorites = startSettings.data?.favoriteResourceIds ?? [];
-  const toggleLocalFavorite = (id: string) => {
-    updateStartSettings.mutate({
-      favoriteResourceIds: localFavorites.includes(id)
-        ? localFavorites.filter(f => f !== id)
-        : [...localFavorites, id],
-    });
-  };
 
   // Filters live in the URL so a filtered view is shareable/bookmarkable and survives reloads.
   const sp = Route.useSearch();
@@ -466,39 +454,14 @@ function CollectionsPage() {
                 )}
               <CardContent className="flex-1 space-y-2 p-4">
                 <div className="flex items-center gap-1">
-                  {r.favorite
-                    ? (
-                      <Star
-                        className="
-                          size-3.5 shrink-0 fill-yellow-400 text-yellow-400
-                        "
-                        aria-label="Favorited"
-                      />
-                    )
-                    : null}
-                  <button
-                    type="button"
-                    aria-pressed={localFavorites.includes(r.id)}
-                    aria-label={localFavorites.includes(r.id)
-                      ? `Unstar ${r.title}`
-                      : `Star ${r.title} to prioritize it in Start Something`}
-                    title="Starred resources are suggested first on the Start page"
-                    className="shrink-0"
-                    disabled={updateStartSettings.isPending}
-                    onClick={() => toggleLocalFavorite(r.id)}
-                  >
-                    <Star
-                      className={`
-                        size-3.5
-                        ${localFavorites.includes(r.id)
-              ? "fill-amber-500 text-amber-500"
-              : `
-                text-muted-foreground/50
-                hover:text-amber-500
-              `}
-                      `}
-                    />
-                  </button>
+                  <AddToBasketButton
+                    item={{
+                      kind: "resource",
+                      id: r.id,
+                      title: r.title,
+                      imageUrl: r.imageUrl,
+                    }}
+                  />
                   <a
                     href={bookmarkAppUrl(settings.data?.endpointUrl, r.id)}
                     target="_blank"

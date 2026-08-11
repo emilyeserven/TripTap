@@ -3,9 +3,10 @@ import type { BookmarkSectionMatch, BookmarkSectionRef, GrammarNote } from "@sen
 import { useMemo } from "react";
 
 import { Link } from "@tanstack/react-router";
-import { ExternalLink, ImageOff, Plus, Star } from "lucide-react";
+import { ExternalLink, ImageOff, Plus } from "lucide-react";
 import { toast } from "sonner";
 
+import { AddToBasketButton } from "@/components/AddToBasketButton";
 import { AiLessonBadge } from "@/components/ai-lesson/AiLessonBadge";
 import { ConstructionBlocks } from "@/components/ConstructionBlocks";
 import { GrammarFailureBadge } from "@/components/GrammarFailureBadge";
@@ -177,30 +178,14 @@ export function GrammarNoteView({
       <div>
         <div className="flex items-center gap-2">
           <h2 className="text-2xl font-semibold">{note.title}</h2>
-          <Button
-            type="button"
-            size="sm"
-            variant="ghost"
-            aria-pressed={note.starred}
-            aria-label={note.starred ? "Unstar this grammar point" : "Star this grammar point"}
-            title="Starred grammar points surface more often in Start Something"
-            disabled={update.isPending}
-            onClick={() => update.mutate({
+          <AddToBasketButton
+            item={{
+              kind: "grammar-note",
               id: note.id,
-              input: {
-                starred: !note.starred,
-              },
-            })}
-          >
-            <Star
-              className={`
-                size-5
-                ${note.starred
-      ? "fill-amber-400 text-amber-400"
-      : "text-muted-foreground"}
-              `}
-            />
-          </Button>
+              title: note.title,
+              nuance: note.nuance,
+            }}
+          />
           <GrammarFailureBadge tagId={note.tagId} />
         </div>
         {note.nuance

@@ -1,12 +1,13 @@
 import type { BasketGrammar, BasketSentence } from "@/stores/basketStore";
 
-import { fireEvent, render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { fireEvent, screen } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { Basket } from "./Basket";
 
 import { useBasketStore } from "@/stores/basketStore";
 import { useDisplayStore } from "@/stores/displayStore";
+import { renderWithQuery } from "@/test-utils/renderWithQuery";
 
 // The send-to actions reach the API through these hooks; the basket behavior under test is store-local.
 const createPracticeMutate = vi.fn(
@@ -20,12 +21,6 @@ vi.mock("@/hooks/usePracticeSentences", () => ({
   }),
 }));
 
-vi.mock("@/hooks/useSentences", () => ({
-  useSentences: () => ({
-    data: [],
-  }),
-}));
-
 vi.mock("@/hooks/useShadowingLists", () => ({
   useShadowingLists: () => ({
     data: [],
@@ -36,12 +31,69 @@ vi.mock("@/hooks/useShadowingLists", () => ({
   }),
 }));
 
+// The server-backed half of the basket. Each case sets what these return; by default nothing is stored,
+// so only the local items show and the basket behaves exactly as it did before write-through.
+const starredVocab = vi.fn<() => { id: string;
+  term: string;
+  reading: string | null;
+  meaning: string | null;
+  starred: boolean; }[]>(() => []);
+const updateVocabMutate = vi.fn();
+const updateStartMutate = vi.fn();
+
+vi.mock("@/hooks/useVocab", () => ({
+  useVocab: () => ({
+    data: starredVocab(),
+  }),
+  useUpdateVocab: () => ({
+    mutate: updateVocabMutate,
+    isPending: false,
+  }),
+}));
+
+vi.mock("@/hooks/useAiLessons", () => ({
+  useAiLessonContent: () => ({
+    data: undefined,
+  }),
+  useUpdateVocabRenshuu: () => ({
+    mutate: vi.fn(),
+    isPending: false,
+  }),
+}));
+
+vi.mock("@/hooks/useGrammarNotes", () => ({
+  useGrammarNotes: () => ({
+    data: [],
+  }),
+  useUpdateGrammarNote: () => ({
+    mutate: vi.fn(),
+    isPending: false,
+  }),
+}));
+
+vi.mock("@/hooks/useSettings", () => ({
+  useStartSettings: () => ({
+    data: undefined,
+  }),
+  useUpdateStartSettings: () => ({
+    mutate: updateStartMutate,
+    isPending: false,
+  }),
+}));
+
+vi.mock("@/hooks/useBookmarks", () => ({
+  useBookmarkResources: () => ({
+    data: undefined,
+  }),
+}));
+
 const sentence: BasketSentence = {
   kind: "sentence",
   id: "s1",
   text: "毎朝コーヒーを飲みます。",
   translation: "I drink coffee every morning.",
   reading: null,
+  source: "bank",
 };
 
 const grammar: BasketGrammar = {
@@ -66,12 +118,19 @@ describe("Basket", () => {
       slideMode: false,
       superFocus: false,
     });
+    starredVocab.mockReturnValue([]);
+    updateVocabMutate.mockClear();
+    updateStartMutate.mockClear();
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
   it("renders nothing when empty", () => {
     const {
       container,
-    } = render(<Basket />);
+    } = renderWithQuery(<Basket />);
     expect(container).toBeEmptyDOMElement();
   });
 
@@ -80,7 +139,7 @@ describe("Basket", () => {
       items: [sentence],
       expanded: false,
     });
-    render(<Basket />);
+    renderWithQuery(<Basket />);
     expect(screen.getByRole("button", {
       name: "Open basket (1)",
     })).toBeInTheDocument();
@@ -91,7 +150,7 @@ describe("Basket", () => {
       items: [sentence, grammar],
       expanded: true,
     });
-    render(<Basket />);
+    renderWithQuery(<Basket />);
     expect(screen.getByText("Sentences (1)")).toBeInTheDocument();
     expect(screen.getByText("Grammar (1)")).toBeInTheDocument();
     // The construction pattern is surfaced as the cue.
@@ -108,20 +167,89 @@ describe("Basket", () => {
     });
     const {
       container,
-    } = render(<Basket />);
+    } = renderWithQuery(<Basket />);
     expect(container).toBeEmptyDOMElement();
   });
 
-  it("clears the basket from the header", () => {
+  it("clears the basket from the header without confirming when nothing is server-backed", () => {
+    const confirm = vi.fn((_message?: string) => true);
+    vi.stubGlobal("confirm", confirm);
     useBasketStore.setState({
       items: [sentence],
       expanded: true,
     });
-    render(<Basket />);
+    renderWithQuery(<Basket />);
     fireEvent.click(screen.getByRole("button", {
       name: "Clear",
     }));
+    expect(confirm).not.toHaveBeenCalled();
     expect(useBasketStore.getState().items).toHaveLength(0);
+  });
+
+  it("lists server-backed vocab alongside the local items", () => {
+    starredVocab.mockReturnValue([{
+      id: "v1",
+      term: "毎朝",
+      reading: "まいあさ",
+      meaning: "every morning",
+      starred: true,
+    }]);
+    useBasketStore.setState({
+      items: [sentence],
+      expanded: true,
+    });
+    renderWithQuery(<Basket />);
+    expect(screen.getByText("Vocabulary (1)")).toBeInTheDocument();
+    expect(screen.getByText("毎朝")).toBeInTheDocument();
+  });
+
+  it("confirms before clearing when the basket holds server-backed items, and un-stars them", () => {
+    const confirm = vi.fn((_message?: string) => true);
+    vi.stubGlobal("confirm", confirm);
+    starredVocab.mockReturnValue([{
+      id: "v1",
+      term: "毎朝",
+      reading: null,
+      meaning: null,
+      starred: true,
+    }]);
+    useBasketStore.setState({
+      items: [sentence],
+      expanded: true,
+    });
+    renderWithQuery(<Basket />);
+    fireEvent.click(screen.getByRole("button", {
+      name: "Clear",
+    }));
+    expect(confirm).toHaveBeenCalledTimes(1);
+    expect(confirm.mock.calls[0]?.[0]).toContain("1 item is");
+    expect(updateVocabMutate).toHaveBeenCalledWith({
+      id: "v1",
+      input: {
+        starred: false,
+      },
+    });
+  });
+
+  it("keeps everything when the clear confirmation is declined", () => {
+    vi.stubGlobal("confirm", vi.fn(() => false));
+    starredVocab.mockReturnValue([{
+      id: "v1",
+      term: "毎朝",
+      reading: null,
+      meaning: null,
+      starred: true,
+    }]);
+    useBasketStore.setState({
+      items: [sentence],
+      expanded: true,
+    });
+    renderWithQuery(<Basket />);
+    fireEvent.click(screen.getByRole("button", {
+      name: "Clear",
+    }));
+    expect(updateVocabMutate).not.toHaveBeenCalled();
+    expect(useBasketStore.getState().items).toHaveLength(1);
   });
 
   it("sends sentences to practice and removes them from the basket", () => {
@@ -130,7 +258,7 @@ describe("Basket", () => {
       items: [sentence, grammar],
       expanded: true,
     });
-    render(<Basket />);
+    renderWithQuery(<Basket />);
     fireEvent.click(screen.getByRole("button", {
       name: "To practice",
     }));

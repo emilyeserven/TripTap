@@ -1,7 +1,8 @@
 import type { BookmarkResource, LearningAreaTagMap } from "@sentence-bank/types";
 
-import { ExternalLink, ImageOff, Star } from "lucide-react";
+import { ExternalLink, ImageOff } from "lucide-react";
 
+import { AddToBasketButton } from "@/components/AddToBasketButton";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -30,7 +31,7 @@ function ResourceCardSkeleton() {
 /**
  * A horizontally-scrolling "mixed row" of compact resource cards for the section hub pages. Each card
  * shows the bookmark's thumbnail, title (linking to the bookmark in the bookmarks app, not its external
- * URL), favorite star, learning-area badges, and progress bar — a curated shortcut into the full
+ * URL), a basket toggle, learning-area badges, and progress bar — a curated shortcut into the full
  * Resources page. While `loading`, a row of placeholder cards shows (the bookmarks app is a remote
  * service, so the fetch is visibly slow); an empty result renders a muted note.
  */
@@ -95,16 +96,14 @@ export function ResourceRow({
               )}
             <div className="flex flex-1 flex-col gap-2 p-3">
               <div className="flex items-center gap-1">
-                {r.favorite
-                  ? (
-                    <Star
-                      className="
-                        size-3.5 shrink-0 fill-yellow-400 text-yellow-400
-                      "
-                      aria-label="Favorited"
-                    />
-                  )
-                  : null}
+                <AddToBasketButton
+                  item={{
+                    kind: "resource",
+                    id: r.id,
+                    title: r.title,
+                    imageUrl: r.imageUrl,
+                  }}
+                />
                 <a
                   href={bookmarkAppUrl(endpointUrl, r.id)}
                   target="_blank"

@@ -803,7 +803,11 @@ export interface BookmarkResource {
   complexity: BookmarkComplexity | null;
   /** The bookmark's progress (from the "Progress" itemInItems property); null when unset. */
   progress: BookmarkProgress | null;
-  /** Whether the bookmark is favorited (from the "Favorite" boolean property) — sorts to the top. */
+  /**
+   * Whether the bookmark is favorited in the bookmarks host (from its "Favorite" boolean property).
+   * Read-only to TripTap and not surfaced in the UI — the learner's own collecting happens in the
+   * basket. Kept as a weak ranking hint for the Start Something content picks.
+   */
   favorite: boolean;
   /**
    * The bookmark's "Content Status" choice value (e.g. "reading", "shortlist", "finished"); null when

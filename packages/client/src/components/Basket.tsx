@@ -1,6 +1,8 @@
 import type {
   BasketGrammar,
+  BasketGrammarNote,
   BasketItem,
+  BasketResource,
   BasketSentence,
   BasketVocab,
 } from "@/stores/basketStore";
@@ -8,7 +10,7 @@ import type { ShadowingList } from "@sentence-bank/types";
 
 import { useState } from "react";
 
-import { ListMusic, NotebookPen, ShoppingBasket, X } from "lucide-react";
+import { ImageOff, ListMusic, NotebookPen, ShoppingBasket, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { SentenceText } from "./SentenceText";
@@ -16,19 +18,24 @@ import { SentenceText } from "./SentenceText";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
+import { useBasketItems, useBasketToggle, useClearBasket } from "@/hooks/useBasket";
 import { useCreatePracticeSentencesMany } from "@/hooks/usePracticeSentences";
-import { useSentences } from "@/hooks/useSentences";
 import { useShadowingLists, useUpdateShadowingList } from "@/hooks/useShadowingLists";
 import { basketKey, useBasketStore } from "@/stores/basketStore";
 import { useDisplayStore } from "@/stores/displayStore";
 
-/** A per-row remove button (small ×), shared by every basket row. */
+/**
+ * A per-row remove button (small ×), shared by every basket row. Routes through the toggle so removing
+ * a server-backed item clears its durable flag rather than only the local copy.
+ */
 function RemoveRow({
-  itemKey,
+  item,
 }: {
-  itemKey: string;
+  item: BasketItem;
 }) {
-  const remove = useBasketStore(s => s.remove);
+  const {
+    toggle, pending,
+  } = useBasketToggle(item);
   return (
     <Button
       type="button"
@@ -36,7 +43,8 @@ function RemoveRow({
       variant="ghost"
       className="size-6 shrink-0 text-muted-foreground"
       aria-label="Remove from basket"
-      onClick={() => remove(itemKey)}
+      disabled={pending}
+      onClick={toggle}
     >
       <X className="size-4" />
     </Button>
@@ -61,7 +69,7 @@ function SentenceRow({
           ? <p className="text-xs text-muted-foreground">{item.translation}</p>
           : null}
       </div>
-      <RemoveRow itemKey={basketKey("sentence", item.id)} />
+      <RemoveRow item={item} />
     </li>
   );
 }
@@ -82,7 +90,57 @@ function VocabRow({
         </p>
         {item.meaning ? <p className="text-xs text-muted-foreground">{item.meaning}</p> : null}
       </div>
-      <RemoveRow itemKey={basketKey("vocab", item.id)} />
+      <RemoveRow item={item} />
+    </li>
+  );
+}
+
+function GrammarNoteRow({
+  item,
+}: {
+  item: BasketGrammarNote;
+}) {
+  return (
+    <li className="flex items-start justify-between gap-2">
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-medium">{item.title}</p>
+        {item.nuance ? <p className="text-xs text-muted-foreground">{item.nuance}</p> : null}
+      </div>
+      <RemoveRow item={item} />
+    </li>
+  );
+}
+
+function ResourceRow({
+  item,
+}: {
+  item: BasketResource;
+}) {
+  return (
+    <li className="flex items-center justify-between gap-2">
+      <div className="flex min-w-0 flex-1 items-center gap-2">
+        {item.imageUrl
+          ? (
+            <img
+              src={item.imageUrl}
+              alt=""
+              loading="lazy"
+              className="h-8 w-12 shrink-0 rounded-sm object-cover"
+            />
+          )
+          : (
+            <span
+              className="
+                flex h-8 w-12 shrink-0 items-center justify-center rounded-sm
+                bg-muted
+              "
+            >
+              <ImageOff className="size-3.5 text-muted-foreground" />
+            </span>
+          )}
+        <p className="min-w-0 flex-1 truncate text-sm">{item.title}</p>
+      </div>
+      <RemoveRow item={item} />
     </li>
   );
 }
@@ -114,7 +172,7 @@ function GrammarRow({
           )
           : null}
       </div>
-      <RemoveRow itemKey={basketKey("grammar", item.id)} />
+      <RemoveRow item={item} />
     </li>
   );
 }
@@ -135,9 +193,6 @@ function SentenceSendActions({
     data: lists,
   } = useShadowingLists();
   const updateList = useUpdateShadowingList();
-  const {
-    data: bankSentences,
-  } = useSentences();
   const [listOpen, setListOpen] = useState(false);
 
   const pending = createPractice.isPending || updateList.isPending;
@@ -160,9 +215,9 @@ function SentenceSendActions({
 
   const addToList = (list: ShadowingList) => {
     // AI-lesson source sentences share the basket "sentence" kind but aren't bank rows; storing
-    // their ids on a list would leave entries that never resolve.
-    const bankIds = new Set((bankSentences ?? []).map(s => s.id));
-    const resolvable = sentences.filter(s => bankIds.has(s.id));
+    // their ids on a list would leave entries that never resolve. Items added before the basket
+    // carried a `source` have an unknown provenance, so they're skipped too.
+    const resolvable = sentences.filter(s => s.source === "bank");
     const skipped = sentences.length - resolvable.length;
     if (resolvable.length === 0) {
       toast.error("None of these are bank sentences, so they can't join a shadowing list.");
@@ -280,17 +335,22 @@ function Section<T extends BasketItem>({
 }
 
 /**
- * The Basket overlay: a collapsible scratchpad pinned to the bottom-right on every page, holding model
- * sentences, target vocab, and grammar constructions the learner collects while browsing. Collapsed, it
- * is a floating pill showing the count; expanded, it is a panel with grouped sections (grammar rows lead
- * with the construction pattern as a cue). Mounted once in `__root.tsx`. Hidden in slide / super-focus
- * modes (which are distraction-free), and returns null when empty.
+ * The Basket overlay: a collapsible collection pinned to the bottom-right on every page, holding the
+ * model sentences, vocab, grammar constructions, grammar notes and resources the learner gathers while
+ * browsing. Collapsed, it is a floating pill showing the count; expanded, it is a panel with grouped
+ * sections (grammar rows lead with the construction pattern as a cue). Mounted once in `__root.tsx`.
+ * Hidden in slide / super-focus modes (which are distraction-free), and returns null when empty.
+ *
+ * Some sections are server-backed (see `DURABLE_KINDS`) — those rows come from the API, so they are
+ * already here on a fresh browser, and clearing them writes to the server.
  */
 export function Basket() {
-  const items = useBasketStore(s => s.items);
+  const items = useBasketItems();
   const expanded = useBasketStore(s => s.expanded);
   const setExpanded = useBasketStore(s => s.setExpanded);
-  const clear = useBasketStore(s => s.clear);
+  const {
+    clear, durableCount,
+  } = useClearBasket();
   const slideMode = useDisplayStore(s => s.slideMode);
   const superFocus = useDisplayStore(s => s.superFocus);
 
@@ -325,8 +385,119 @@ export function Basket() {
   }
 
   const sentences = items.filter((i): i is BasketSentence => i.kind === "sentence");
-  const vocab = items.filter((i): i is BasketVocab => i.kind === "vocab");
+  const vocab = items.filter((i): i is BasketVocab =>
+    i.kind === "vocab" || i.kind === "lesson-vocab");
   const grammar = items.filter((i): i is BasketGrammar => i.kind === "grammar");
+  const grammarNotes = items.filter((i): i is BasketGrammarNote => i.kind === "grammar-note");
+  const resources = items.filter((i): i is BasketResource => i.kind === "resource");
+
+  // Clearing un-stars server-backed items, which is not something to do by accident — say how many.
+  const confirmClear = () => {
+    if (durableCount > 0) {
+      const noun = durableCount === 1 ? "item is" : "items are";
+      const saved = `${durableCount} ${noun}`;
+      if (!globalThis.confirm(
+        `Clear the basket? ${saved} saved to your account and will be removed there too.`,
+      )) {
+        return;
+      }
+    }
+    clear();
+  };
+
+  // Each group renders its own block; separators only appear between two non-empty neighbours, so the
+  // panel never opens on a stray rule.
+  const blocks: { key: string;
+    node: React.ReactNode; }[] = [
+    sentences.length > 0
+      ? {
+        key: "sentences",
+        node: (
+          <>
+            <Section
+              title="Sentences"
+              items={sentences}
+              render={item => (
+                <SentenceRow
+                  key={basketKey("sentence", item.id)}
+                  item={item}
+                />
+              )}
+            />
+            <SentenceSendActions sentences={sentences} />
+          </>
+        ),
+      }
+      : null,
+    vocab.length > 0
+      ? {
+        key: "vocab",
+        node: (
+          <Section
+            title="Vocabulary"
+            items={vocab}
+            render={item => (
+              <VocabRow
+                key={basketKey(item.kind, item.id)}
+                item={item}
+              />
+            )}
+          />
+        ),
+      }
+      : null,
+    grammar.length > 0
+      ? {
+        key: "grammar",
+        node: (
+          <Section
+            title="Grammar"
+            items={grammar}
+            render={item => (
+              <GrammarRow
+                key={basketKey("grammar", item.id)}
+                item={item}
+              />
+            )}
+          />
+        ),
+      }
+      : null,
+    grammarNotes.length > 0
+      ? {
+        key: "grammar-notes",
+        node: (
+          <Section
+            title="Grammar notes"
+            items={grammarNotes}
+            render={item => (
+              <GrammarNoteRow
+                key={basketKey("grammar-note", item.id)}
+                item={item}
+              />
+            )}
+          />
+        ),
+      }
+      : null,
+    resources.length > 0
+      ? {
+        key: "resources",
+        node: (
+          <Section
+            title="Resources"
+            items={resources}
+            render={item => (
+              <ResourceRow
+                key={basketKey("resource", item.id)}
+                item={item}
+              />
+            )}
+          />
+        ),
+      }
+      : null,
+  ].filter(b => b !== null);
 
   return (
     <div
@@ -346,7 +517,7 @@ export function Basket() {
             variant="ghost"
             size="sm"
             className="h-7 px-2 text-xs text-muted-foreground"
-            onClick={clear}
+            onClick={confirmClear}
           >
             Clear
           </Button>
@@ -364,41 +535,15 @@ export function Basket() {
       </div>
 
       <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-3">
-        <Section
-          title="Sentences"
-          items={sentences}
-          render={item => (
-            <SentenceRow
-              key={basketKey("sentence", item.id)}
-              item={item}
-            />
-          )}
-        />
-        {sentences.length > 0 ? <SentenceSendActions sentences={sentences} /> : null}
-        {sentences.length > 0 && (vocab.length > 0 || grammar.length > 0)
-          ? <Separator />
-          : null}
-        <Section
-          title="Vocabulary"
-          items={vocab}
-          render={item => (
-            <VocabRow
-              key={basketKey("vocab", item.id)}
-              item={item}
-            />
-          )}
-        />
-        {vocab.length > 0 && grammar.length > 0 ? <Separator /> : null}
-        <Section
-          title="Grammar"
-          items={grammar}
-          render={item => (
-            <GrammarRow
-              key={basketKey("grammar", item.id)}
-              item={item}
-            />
-          )}
-        />
+        {blocks.map((block, i) => (
+          <div
+            key={block.key}
+            className="space-y-4"
+          >
+            {i > 0 ? <Separator /> : null}
+            {block.node}
+          </div>
+        ))}
       </div>
     </div>
   );

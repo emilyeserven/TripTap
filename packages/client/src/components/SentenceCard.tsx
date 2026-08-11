@@ -100,6 +100,7 @@ export function SentenceCard({
                     text: sentence.text,
                     translation: sentence.translation,
                     reading: sentence.reading,
+                    source: "bank",
                   }}
                 />
                 {onEdit

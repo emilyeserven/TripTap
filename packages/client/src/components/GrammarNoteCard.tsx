@@ -1,8 +1,8 @@
 import type { GrammarNote } from "@sentence-bank/types";
 
 import { Link } from "@tanstack/react-router";
-import { Star } from "lucide-react";
 
+import { AddToBasketButton } from "@/components/AddToBasketButton";
 import { Card, CardContent } from "@/components/ui/card";
 
 /** Compact list-item for one grammar note: title + nuance, counts, and a snippet of the summary. */
@@ -40,12 +40,14 @@ export function GrammarNoteCard({
             >
               {note.title}
             </Link>
-            {note.starred && (
-              <Star
-                aria-label="Starred"
-                className="size-4 fill-amber-400 text-amber-400"
-              />
-            )}
+            <AddToBasketButton
+              item={{
+                kind: "grammar-note",
+                id: note.id,
+                title: note.title,
+                nuance: note.nuance,
+              }}
+            />
           </span>
           {note.nuance
             ? <span className="text-sm text-muted-foreground">{note.nuance}</span>

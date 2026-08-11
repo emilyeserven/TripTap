@@ -148,6 +148,7 @@ export function CaptureCreatedItems({
                       <VocabCard
                         key={v.id}
                         vocab={vocabToCardItem(v)}
+                        basketKind="vocab"
                       />
                     ))}
                   </div>

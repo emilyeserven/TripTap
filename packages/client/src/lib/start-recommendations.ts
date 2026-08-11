@@ -105,7 +105,7 @@ export interface StartRecommendationInput {
   complexityScale?: ComplexityScale | null;
   /** Today's lineup exclusions — excluded properties never produce suggestions. */
   exclusions?: LineupExclusions;
-  /** Bookmark ids the learner starred locally; boosted to the front of the pick pools. */
+  /** Bookmark ids in the learner's basket; boosted to the front of the pick pools. */
   favoriteResourceIds?: string[];
   now: Date;
 }
@@ -368,7 +368,7 @@ function writingSuggestion(base: AreaBase, input: StartRecommendationInput, why:
   };
 }
 
-/** Grammar pick: a starred note first, then a goal-aligned note, else the grammar-notes list. */
+/** Grammar pick: a basketed note first, then a goal-aligned note, else the grammar-notes list. */
 function grammarSuggestion(base: AreaBase, input: StartRecommendationInput, why: string): StartSuggestion {
   const starred = (input.grammarNotes ?? []).find(note => note.starred);
   const goalTerm = (input.profile?.goals ?? []).flatMap(goal => goal.grammarTerms)[0];
@@ -380,7 +380,7 @@ function grammarSuggestion(base: AreaBase, input: StartRecommendationInput, why:
     return {
       ...base,
       title: `Review the grammar point "${note.title}"`,
-      description: starred ? `${why} You starred this one.` : why,
+      description: starred ? `${why} It's in your basket.` : why,
       to: "/grammar-notes/$id",
       params: {
         id: note.id,
@@ -435,7 +435,7 @@ function areaSuggestion(
   }
 }
 
-/** A starred grammar point always surfaces (even when Grammar isn't the lowest area). */
+/** A basketed grammar point always surfaces (even when Grammar isn't the lowest area). */
 function starredGrammarSuggestion(
   input: StartRecommendationInput,
   alreadySuggested: Set<string>,
@@ -448,7 +448,7 @@ function starredGrammarSuggestion(
     kind: "starred-grammar",
     area: "Grammar",
     title: `Revisit "${note.title}"`,
-    description: "You starred this grammar point.",
+    description: "This grammar point is in your basket.",
     to: "/grammar-notes/$id",
     params: {
       id: note.id,
@@ -622,8 +622,10 @@ function isStarted(
 }
 
 /**
- * A sortable rank for a content pick: neglected area first, then favorite, then already-started, then
- * content status. `sections` are the resource's own sections (for the started check).
+ * A sortable rank for a content pick: neglected area first, then basketed, then already-started, then
+ * content status. The bookmarks host's own Favorite flag is a weaker middle tier — TripTap can't write
+ * it, so it's a hint rather than a choice. `sections` are the resource's own sections (for the started
+ * check).
  */
 function contentRank(
   resource: BookmarkResource | undefined,

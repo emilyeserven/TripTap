@@ -4,9 +4,9 @@ import { useEffect, useRef, useState } from "react";
 
 import { Check, LightbulbIcon, SparklesIcon } from "lucide-react";
 
+import { BasketPracticePanel } from "./BasketPracticePanel";
 import { CorrectedVersionView } from "./CorrectedVersionView";
 import { ShowOriginalToggle } from "./ShowOriginalToggle";
-import { StarredPracticePanel } from "./StarredPracticePanel";
 import { TermPicker } from "./TermPicker";
 import { WritingCorrections } from "./WritingCorrections";
 import { useUpdateWriting } from "../hooks/useWritings";
@@ -177,7 +177,7 @@ export function WritingEditor({
         )
         : (
           <div className="space-y-3">
-            <StarredPracticePanel />
+            <BasketPracticePanel />
             {writing.promptText
               ? (
                 <div

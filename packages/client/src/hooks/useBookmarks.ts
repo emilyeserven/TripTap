@@ -157,12 +157,19 @@ export function useResolvedBookmarkTitle(
   return records.data?.find(r => r.id === bookmarkId)?.title ?? fallback;
 }
 
-/** The whole bookmarks collection (+ complexity-scale metadata) for the Collections browser. */
-export function useBookmarkResources() {
+/**
+ * The whole bookmarks collection (+ complexity-scale metadata) for the Collections browser.
+ *
+ * Pass `enabled: false` to observe the cache without owning a fetch. This is a remote Tailnet call that
+ * refetches on window focus, so a component mounted on every page (the basket overlay) must only turn
+ * it on when it actually has resources to name.
+ */
+export function useBookmarkResources(enabled = true) {
   return useQuery({
     queryKey: [...BOOKMARKS_KEY, "resources"],
     queryFn: () => bookmarksApi.resources(),
     ...BOOKMARKS_QUERY_OPTIONS,
+    enabled,
   });
 }
 
