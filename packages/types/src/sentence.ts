@@ -6,6 +6,12 @@
  * ("reference example" / "I wrote this" / "I'm studying this"), and each kind lights up a facet of
  * optional fields — but every column is available to every kind, so nothing is ever dropped when a
  * sentence moves between roles. Consumed by both the Fastify API and the React client.
+ *
+ * History: an earlier roadmap explicitly *rejected* this merge and instead unified only the entry
+ * points (a shared draft + a destination picker that warned about fields the chosen table couldn't
+ * hold). That warning machinery is exactly what this merge deletes: with one table there is nothing
+ * to drop, the picker only chooses a kind, and every consumer that used to fan out across three
+ * tables reads one. The reversal was deliberate — see the sentence-types unification change.
  */
 
 // Type-only import (erased at build) — `SentenceTermRef` lives in the barrel; no runtime cycle.
