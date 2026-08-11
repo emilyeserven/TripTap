@@ -26,8 +26,6 @@ import { db } from "@/db";
 import {
   dialogues,
   kanjiStatus,
-  mySentences,
-  practiceSentences,
   sentences,
   vocab,
   writings,
@@ -64,44 +62,37 @@ function dialogueText(lines: DialogueLine[] | null, script: string): string {
   return lines.map(l => l.text).join("\n");
 }
 
+/** The wire kind each sentence row indexes as — the pre-merge three-way split, kept on purpose so
+ * the grid can still filter "met in my own sentences" apart from "met in the bank". */
+const SENTENCE_KIND_TO_SOURCE = {
+  bank: "sentence",
+  mine: "my-sentence",
+  practice: "practice",
+} as const;
+
 /**
  * Load every text-bearing row as a normalized {@link KanjiSourceItem}.
  *
  * Only the columns the index needs are selected — the corpus includes free writing and dialogue
- * scripts, so pulling whole rows would move far more text than necessary. The six queries run
+ * scripts, so pulling whole rows would move far more text than necessary. The four queries run
  * concurrently; they're independent.
  */
 async function loadSourceItems(): Promise<KanjiSourceItem[]> {
   const [
     sentenceRows,
-    mySentenceRows,
-    practiceRows,
     vocabRows,
     dialogueRows,
     writingRows,
   ] = await Promise.all([
     db.select({
       id: sentences.id,
+      kind: sentences.kind,
       text: sentences.text,
+      correction: sentences.correction,
       reading: sentences.reading,
       gloss: sentences.translation,
       createdAt: sentences.createdAt,
     }).from(sentences),
-    db.select({
-      id: mySentences.id,
-      text: mySentences.text,
-      correction: mySentences.correction,
-      reading: mySentences.reading,
-      gloss: mySentences.translation,
-      createdAt: mySentences.createdAt,
-    }).from(mySentences),
-    db.select({
-      id: practiceSentences.id,
-      text: practiceSentences.text,
-      reading: practiceSentences.reading,
-      gloss: practiceSentences.translation,
-      createdAt: practiceSentences.createdAt,
-    }).from(practiceSentences),
     db.select({
       id: vocab.id,
       text: vocab.term,
@@ -125,34 +116,22 @@ async function loadSourceItems(): Promise<KanjiSourceItem[]> {
   ]);
 
   return [
-    ...sentenceRows.map(r => ({
-      kind: "sentence" as const,
-      id: r.id,
-      text: r.text,
-      reading: r.reading ?? null,
-      gloss: r.gloss,
-      createdAt: toIso(r.createdAt),
-    })),
-    // Index the corrected form when there is one, never both: the learner's original may contain a
-    // wrong kanji they should not be credited with having "met", and the correction is the sentence
-    // they should re-read. (`services/term-usage.ts` resolves the same fork the same way.)
-    ...mySentenceRows.map(r => ({
-      kind: "my-sentence" as const,
-      id: r.id,
-      text: r.correction ?? r.text,
-      // The stored furigana describes `text`, so it only aligns when no correction replaced it.
-      reading: r.correction ? null : r.reading ?? null,
-      gloss: r.gloss,
-      createdAt: toIso(r.createdAt),
-    })),
-    ...practiceRows.map(r => ({
-      kind: "practice" as const,
-      id: r.id,
-      text: r.text,
-      reading: r.reading ?? null,
-      gloss: r.gloss,
-      createdAt: toIso(r.createdAt),
-    })),
+    // For mine-kind rows, index the corrected form when there is one, never both: the learner's
+    // original may contain a wrong kanji they should not be credited with having "met", and the
+    // correction is the sentence they should re-read. (`services/term-usage.ts` resolves the same
+    // fork the same way.) The stored furigana describes `text`, so it only aligns when no
+    // correction replaced it.
+    ...sentenceRows.map((r) => {
+      const corrected = r.kind === "mine" ? r.correction : null;
+      return {
+        kind: SENTENCE_KIND_TO_SOURCE[r.kind],
+        id: r.id,
+        text: corrected ?? r.text,
+        reading: corrected ? null : r.reading ?? null,
+        gloss: r.gloss,
+        createdAt: toIso(r.createdAt),
+      };
+    }),
     // `vocab.reading` is a plain string, not furigana tokens, so it folds into the gloss instead.
     ...vocabRows.map(r => ({
       kind: "vocab" as const,

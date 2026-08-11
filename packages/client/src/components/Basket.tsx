@@ -16,8 +16,7 @@ import { SentenceText } from "./SentenceText";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
-import { useCreatePracticeSentencesMany } from "@/hooks/usePracticeSentences";
-import { useSentences } from "@/hooks/useSentences";
+import { useCreateSentencesMany, useSentences } from "@/hooks/useSentences";
 import { useShadowingLists, useUpdateShadowingList } from "@/hooks/useShadowingLists";
 import { basketKey, useBasketStore } from "@/stores/basketStore";
 import { useDisplayStore } from "@/stores/displayStore";
@@ -130,7 +129,7 @@ function SentenceSendActions({
   sentences: BasketSentence[];
 }) {
   const remove = useBasketStore(s => s.remove);
-  const createPractice = useCreatePracticeSentencesMany();
+  const createPractice = useCreateSentencesMany();
   const {
     data: lists,
   } = useShadowingLists();
@@ -146,6 +145,7 @@ function SentenceSendActions({
     createPractice.mutate(
       // Basket snapshots don't carry a language; default to the app-wide form default.
       sentences.map(s => ({
+        kind: "practice" as const,
         text: s.text,
         translation: s.translation,
         language: "Japanese",

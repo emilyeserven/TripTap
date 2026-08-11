@@ -52,6 +52,8 @@ export interface NavDestination {
   /** Sidebar label and tile title. */
   title: string;
   to: string;
+  /** Search params the link carries (e.g. a view of the unified Sentences page). */
+  search?: Record<string, string>;
   icon: LucideIcon;
   /** One-line, second-person blurb shown on the homepage tile. */
   description: string;
@@ -145,7 +147,10 @@ const inputOutputSection: NavSection = {
       children: [
         {
           title: "Study Sentences",
-          to: "/practice",
+          to: "/sentences",
+          search: {
+            view: "practice",
+          },
           icon: NotebookPenIcon,
           description: "Drill your saved sentences in focused practice sessions.",
         },
@@ -157,7 +162,10 @@ const inputOutputSection: NavSection = {
         },
         {
           title: "My Sentences",
-          to: "/my-sentences",
+          to: "/sentences",
+          search: {
+            view: "mine",
+          },
           icon: PencilRulerIcon,
           description: "The sentences you've written yourself.",
         },

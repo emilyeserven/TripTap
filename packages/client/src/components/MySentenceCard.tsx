@@ -1,4 +1,4 @@
-import type { MySentence } from "@sentence-bank/types";
+import type { Sentence } from "@sentence-bank/types";
 
 import { useMemo, useState } from "react";
 
@@ -17,8 +17,7 @@ import { SentenceCorrector } from "@/components/SentenceCorrector";
 import { ShowOriginalToggle } from "@/components/ShowOriginalToggle";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { useUpdateMySentence } from "@/hooks/useMySentences";
-import { useCreateSentence, useSentences } from "@/hooks/useSentences";
+import { useCreateSentence, useSentences, useUpdateSentence } from "@/hooks/useSentences";
 import { explainSentence } from "@/lib/explanationRefs";
 
 /**
@@ -33,7 +32,7 @@ export function MySentenceCard({
   onEdit,
   readOnly = false,
 }: {
-  mySentence: MySentence;
+  mySentence: Sentence;
   /** When provided, "Edit" becomes an in-page button (this callback) instead of a link to the edit
    * route — used where the sentence is edited inline, e.g. within a lesson. */
   onEdit?: (id: string) => void;
@@ -43,7 +42,7 @@ export function MySentenceCard({
   const corrected = ms.correction?.trim() ? ms.correction : null;
   const [showOriginal, setShowOriginal] = useState(false);
   const [correcting, setCorrecting] = useState(false);
-  const update = useUpdateMySentence();
+  const update = useUpdateSentence();
 
   // Un-reviewed = still flagged and not yet corrected → offer the inline corrector (unless read-only).
   const unreviewed = !corrected && ms.needsCorrection;
@@ -56,7 +55,7 @@ export function MySentenceCard({
   } = explainSentence(explained, ms.explanation);
 
   function saveCorrection(r: { correction: string;
-    marks: MySentence["marks"];
+    marks: Sentence["marks"];
     reasoning: string | null; }) {
     update.mutate(
       {
@@ -93,7 +92,9 @@ export function MySentenceCard({
 
   const {
     data: bankSentences,
-  } = useSentences();
+  } = useSentences({
+    kind: "bank",
+  });
   const createSentence = useCreateSentence();
   const [promoted, setPromoted] = useState(false);
   // Already in the bank (by exact text) → the promote button disappears; the bank query is cached
@@ -106,12 +107,15 @@ export function MySentenceCard({
   function promoteToBank() {
     createSentence.mutate(
       {
+        kind: "bank",
         // Only the corrected form is bank-worthy; the button is gated on `corrected` below.
         text: corrected ?? ms.text,
         translation: ms.translation,
         language: ms.language,
         terms: ms.terms,
         notes: "Promoted from My Sentences",
+        // Lineage: the new bank row points back at the sentence it was promoted from.
+        derivedFromId: ms.id,
       },
       {
         onSuccess: () => {
@@ -146,7 +150,7 @@ export function MySentenceCard({
               )
               : (
                 <Link
-                  to="/my-sentences/$id"
+                  to="/sentences/$id"
                   params={{
                     id: ms.id,
                   }}
@@ -184,7 +188,6 @@ export function MySentenceCard({
             {ms.shadowingCandidate
               ? (
                 <AddToShadowingListButton
-                  kind="mySentence"
                   id={ms.id}
                 />
               )
@@ -234,7 +237,7 @@ export function MySentenceCard({
                   size="sm"
                 >
                   <Link
-                    to="/my-sentences/$id"
+                    to="/sentences/$id"
                     params={{
                       id: ms.id,
                     }}
@@ -274,7 +277,7 @@ export function MySentenceCard({
                   size="sm"
                 >
                   <Link
-                    to="/my-sentences/$id/edit"
+                    to="/sentences/$id/edit"
                     params={{
                       id: ms.id,
                     }}

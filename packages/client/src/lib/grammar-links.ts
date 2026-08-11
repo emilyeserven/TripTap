@@ -1,5 +1,4 @@
 import type {
-  MySentence,
   Sentence,
   SourceSentenceItem,
   WithAiLesson,
@@ -31,7 +30,7 @@ export { dedupeTerms as dedupeGrammarTags, grammarTermsOf } from "@sentence-bank
 export function sentencesByGrammarTagId(
   manual: Sentence[],
   aiLessonSentences: WithAiLesson<SourceSentenceItem>[],
-  mySentences: MySentence[] = [],
+  mySentences: Sentence[] = [],
 ): Map<string, LinkedSentence[]> {
   const map = new Map<string, LinkedSentence[]>();
   const push = (termId: string, s: LinkedSentence) => {
@@ -77,7 +76,7 @@ export function sentencesByGrammarTagId(
  * from "Sentences using this grammar". Shows the sentence as the learner wrote it (the misuse).
  */
 export function misusedSentencesByGrammarTagId(
-  mySentences: MySentence[],
+  mySentences: Sentence[],
 ): Map<string, LinkedSentence[]> {
   const map = new Map<string, LinkedSentence[]>();
   for (const s of mySentences) {

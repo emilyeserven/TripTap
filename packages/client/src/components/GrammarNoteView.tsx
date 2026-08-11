@@ -16,7 +16,6 @@ import { Button } from "@/components/ui/button";
 import { useAiLessonContent } from "@/hooks/useAiLessons";
 import { useBookmarksByTag, useBookmarkSectionsByTag } from "@/hooks/useBookmarks";
 import { useGrammarNotes, useUpdateGrammarNote } from "@/hooks/useGrammarNotes";
-import { useMySentences } from "@/hooks/useMySentences";
 import { useQuestionSheets } from "@/hooks/useQuestionSheets";
 import { useSentences } from "@/hooks/useSentences";
 import { useBookmarksSettings } from "@/hooks/useSettings";
@@ -54,8 +53,12 @@ export function GrammarNoteView({
 }: {
   note: GrammarNote;
 }) {
-  const sentences = useSentences();
-  const mySentences = useMySentences();
+  const sentences = useSentences({
+    kind: "bank",
+  });
+  const mySentences = useSentences({
+    kind: "mine",
+  });
   const aiContent = useAiLessonContent();
   const allNotes = useGrammarNotes();
   const questionSheets = useQuestionSheets();
@@ -270,7 +273,7 @@ export function GrammarNoteView({
                             {s.mine
                               ? (
                                 <Link
-                                  to="/my-sentences/$id"
+                                  to="/sentences/$id"
                                   params={{
                                     id: s.id,
                                   }}
@@ -310,7 +313,7 @@ export function GrammarNoteView({
                   {s.mine
                     ? (
                       <Link
-                        to="/my-sentences/$id"
+                        to="/sentences/$id"
                         params={{
                           id: s.id,
                         }}
@@ -348,7 +351,7 @@ export function GrammarNoteView({
                   "
                 >
                   <Link
-                    to="/my-sentences/$id"
+                    to="/sentences/$id"
                     params={{
                       id: s.id,
                     }}

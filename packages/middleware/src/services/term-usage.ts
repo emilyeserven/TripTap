@@ -1,4 +1,4 @@
-import { desc, sql } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import type { TermUsage, TermUsageKind, TermUsageSummary } from "@sentence-bank/types";
 
@@ -7,8 +7,6 @@ import {
   aiLessonGrammar,
   aiLessonSourceSentences,
   listeningSessions,
-  mySentences,
-  practiceSentences,
   questionSheets,
   sentences,
   shadowingSessions,
@@ -74,7 +72,9 @@ const SOURCES: UsageSource[] = [
       id: sentences.id,
       text: sentences.text,
       translation: sentences.translation,
-    }).from(sentences).where(hasTerm(sentences.terms, termId)).orderBy(desc(sentences.createdAt)),
+    }).from(sentences)
+      .where(and(hasTerm(sentences.terms, termId), eq(sentences.kind, "bank")))
+      .orderBy(desc(sentences.createdAt)),
     r => ({
       title: r.text,
       subtitle: r.translation,
@@ -83,11 +83,13 @@ const SOURCES: UsageSource[] = [
   source(
     "my_sentence",
     termId => db.select({
-      id: mySentences.id,
-      text: mySentences.text,
-      correction: mySentences.correction,
-      translation: mySentences.translation,
-    }).from(mySentences).where(hasTerm(mySentences.terms, termId)).orderBy(desc(mySentences.createdAt)),
+      id: sentences.id,
+      text: sentences.text,
+      correction: sentences.correction,
+      translation: sentences.translation,
+    }).from(sentences)
+      .where(and(hasTerm(sentences.terms, termId), eq(sentences.kind, "mine")))
+      .orderBy(desc(sentences.createdAt)),
     // Show the corrected form when there is one — that's the sentence the learner should re-read.
     r => ({
       title: r.correction?.trim() ? r.correction : r.text,
@@ -97,10 +99,12 @@ const SOURCES: UsageSource[] = [
   source(
     "my_sentence",
     termId => db.select({
-      id: mySentences.id,
-      text: mySentences.text,
-      translation: mySentences.translation,
-    }).from(mySentences).where(hasTerm(mySentences.incorrectGrammarTerms, termId)).orderBy(desc(mySentences.createdAt)),
+      id: sentences.id,
+      text: sentences.text,
+      translation: sentences.translation,
+    }).from(sentences)
+      .where(and(hasTerm(sentences.incorrectGrammarTerms, termId), eq(sentences.kind, "mine")))
+      .orderBy(desc(sentences.createdAt)),
     // The misuse is the point here, so show it as written, never the correction.
     r => ({
       title: r.text,
@@ -111,10 +115,12 @@ const SOURCES: UsageSource[] = [
   source(
     "practice_sentence",
     termId => db.select({
-      id: practiceSentences.id,
-      text: practiceSentences.text,
-      translation: practiceSentences.translation,
-    }).from(practiceSentences).where(hasTerm(practiceSentences.terms, termId)).orderBy(desc(practiceSentences.createdAt)),
+      id: sentences.id,
+      text: sentences.text,
+      translation: sentences.translation,
+    }).from(sentences)
+      .where(and(hasTerm(sentences.terms, termId), eq(sentences.kind, "practice")))
+      .orderBy(desc(sentences.createdAt)),
     r => ({
       title: r.text,
       subtitle: r.translation,

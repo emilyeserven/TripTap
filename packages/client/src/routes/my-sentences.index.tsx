@@ -1,17 +1,7 @@
-import { useMemo, useState } from "react";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { Plus } from "lucide-react";
-
-import { MySentenceBulkDialog } from "@/components/MySentenceBulkDialog";
-import { MySentenceCard } from "@/components/MySentenceCard";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useMySentences } from "@/hooks/useMySentences";
-import { usePageTitle } from "@/hooks/usePageTitle";
-
+/** Legacy route — My Sentences is now the `mine` view of the unified Sentences page. */
 export const Route = createFileRoute("/my-sentences/")({
-  // Lets the attention inbox deep-link to the pre-filtered needs-correction view.
   validateSearch: (search: Record<string, unknown>): { needsCorrection?: boolean } => (
     search.needsCorrection === true || search.needsCorrection === "true"
       ? {
@@ -19,100 +9,19 @@ export const Route = createFileRoute("/my-sentences/")({
       }
       : {}
   ),
-  component: MySentencesPage,
-});
-
-function MySentencesPage() {
-  usePageTitle("My Sentences");
-  const {
-    needsCorrection: needsCorrectionParam,
-  } = Route.useSearch();
-  const {
-    data: mySentences, isLoading, error,
-  } = useMySentences();
-  const [search, setSearch] = useState("");
-  const [onlyNeedsCorrection, setOnlyNeedsCorrection] = useState(needsCorrectionParam ?? false);
-  const [onlyShadowing, setOnlyShadowing] = useState(false);
-
-  const shown = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    return (mySentences ?? []).filter((ms) => {
-      if (onlyNeedsCorrection && !ms.needsCorrection) return false;
-      if (onlyShadowing && !ms.shadowingCandidate) return false;
-      if (!q) return true;
-      return ms.text.toLowerCase().includes(q)
-        || (ms.translation ?? "").toLowerCase().includes(q)
-        || (ms.correction ?? "").toLowerCase().includes(q);
+  beforeLoad: ({
+    search,
+  }) => {
+    throw redirect({
+      to: "/sentences",
+      search: {
+        view: "mine",
+        ...(search.needsCorrection
+          ? {
+            needsCorrection: true,
+          }
+          : {}),
+      },
     });
-  }, [mySentences, search, onlyNeedsCorrection, onlyShadowing]);
-
-  const nothing = !isLoading && shown.length === 0;
-
-  return (
-    <section className="space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <p className="text-sm text-muted-foreground">
-            Sentences you produced yourself — from the practice worksheet or logged here (e.g. ones you
-            got wrong in an AI Lesson). Diff them against a correction and attach an explanation.
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Button asChild>
-            <Link to="/my-sentences/new">
-              <Plus className="size-4" />
-              New sentence
-            </Link>
-          </Button>
-          <MySentenceBulkDialog />
-        </div>
-      </div>
-
-      <div className="flex flex-wrap items-center gap-4">
-        <Input
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          placeholder="Search your sentences…"
-          aria-label="Search my sentences"
-          className="max-w-sm"
-        />
-        <label className="flex items-center gap-2 text-sm text-muted-foreground">
-          <input
-            type="checkbox"
-            checked={onlyNeedsCorrection}
-            onChange={e => setOnlyNeedsCorrection(e.target.checked)}
-          />
-          Needs correction only
-        </label>
-        <label className="flex items-center gap-2 text-sm text-muted-foreground">
-          <input
-            type="checkbox"
-            checked={onlyShadowing}
-            onChange={e => setOnlyShadowing(e.target.checked)}
-          />
-          Shadowing candidates only
-        </label>
-      </div>
-
-      {error ? <p className="text-destructive">{error.message}</p> : null}
-      {isLoading ? <p className="text-muted-foreground">Loading…</p> : null}
-      {nothing
-        ? (
-          <p className="text-muted-foreground">
-            No sentences yet. Add one with “New sentence”, paste several with “Bulk add”, or write your
-            own on the Output tab of a practice sentence.
-          </p>
-        )
-        : null}
-
-      <div className="space-y-4">
-        {shown.map(ms => (
-          <MySentenceCard
-            key={ms.id}
-            mySentence={ms}
-          />
-        ))}
-      </div>
-    </section>
-  );
-}
+  },
+});

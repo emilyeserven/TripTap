@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { NotesActionDialog } from "@/components/NotesActionDialog";
 import { NotesHighlightMenu } from "@/components/NotesHighlightMenu";
 import { useUpdateLesson } from "@/hooks/useLessons";
-import { useCreateMySentence } from "@/hooks/useMySentences";
+import { useCreateSentence } from "@/hooks/useSentences";
 import { useCreateWritingPrompt } from "@/hooks/useWritingPrompts";
 import { newId } from "@/lib/id";
 import { htmlToMarkdown, markdownToHtml } from "@/lib/notesMarkdown";
@@ -61,7 +61,7 @@ export function NotesEditor({
 
   const updateLesson = useUpdateLesson();
   const createWritingPrompt = useCreateWritingPrompt();
-  const createMySentence = useCreateMySentence();
+  const createMySentence = useCreateSentence();
 
   const editor = useEditor({
     extensions: [StarterKit],
@@ -151,6 +151,7 @@ export function NotesEditor({
     else if (lesson) {
       createMySentence.mutate(
         {
+          kind: "mine",
           text,
           translation: draft.translation.trim() || null,
           language: lesson.language,

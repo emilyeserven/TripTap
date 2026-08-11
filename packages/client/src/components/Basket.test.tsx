@@ -13,14 +13,11 @@ const createPracticeMutate = vi.fn(
   (_inputs: unknown, options?: { onSuccess?: () => void }) => options?.onSuccess?.(),
 );
 
-vi.mock("@/hooks/usePracticeSentences", () => ({
-  useCreatePracticeSentencesMany: () => ({
+vi.mock("@/hooks/useSentences", () => ({
+  useCreateSentencesMany: () => ({
     mutate: createPracticeMutate,
     isPending: false,
   }),
-}));
-
-vi.mock("@/hooks/useSentences", () => ({
   useSentences: () => ({
     data: [],
   }),
@@ -136,6 +133,7 @@ describe("Basket", () => {
     }));
     expect(createPracticeMutate).toHaveBeenCalledTimes(1);
     expect(createPracticeMutate.mock.calls[0]?.[0]).toEqual([{
+      kind: "practice",
       text: sentence.text,
       translation: sentence.translation,
       language: "Japanese",

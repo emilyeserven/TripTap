@@ -1,4 +1,4 @@
-import type { PracticeSentence } from "@sentence-bank/types";
+import type { Sentence } from "@sentence-bank/types";
 
 import { Link } from "@tanstack/react-router";
 import { Pencil, Volume2 } from "lucide-react";
@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
 /** The study passes, in order, with short labels for the card summary. */
-const PASS_LABELS: { k: keyof NonNullable<PracticeSentence["passes"]>;
+const PASS_LABELS: { k: keyof NonNullable<Sentence["passes"]>;
   short: string; }[] = [
   {
     k: "read",
@@ -38,7 +38,7 @@ const PASS_LABELS: { k: keyof NonNullable<PracticeSentence["passes"]>;
 ];
 
 interface PracticeSentenceCardProps {
-  practiceSentence: PracticeSentence;
+  practiceSentence: Sentence;
   showTranslation?: boolean;
   /** Resolved taxonomy source name, when the sentence references one. */
   sourceName?: string | null;
@@ -66,7 +66,7 @@ export function PracticeSentenceCard({
               <Volume2 className="size-4" />
             </Button>
             <Link
-              to="/practice/$id"
+              to="/sentences/$id"
               params={{
                 id: ps.id,
               }}
@@ -87,7 +87,7 @@ export function PracticeSentenceCard({
               aria-label="Edit"
             >
               <Link
-                to="/practice/$id/edit"
+                to="/sentences/$id/edit"
                 params={{
                   id: ps.id,
                 }}

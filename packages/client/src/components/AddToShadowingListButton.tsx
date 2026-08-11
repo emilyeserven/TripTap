@@ -15,15 +15,12 @@ import {
 } from "@/hooks/useShadowingLists";
 
 /**
- * A drop-in control for adding one sentence to any number of named shadowing lists. `kind` selects
- * which membership array on the list it toggles (`sentence` → bank, `mySentence` → learner-produced).
+ * A drop-in control for adding one sentence (any kind) to any number of named shadowing lists.
  * Shows a checkbox per existing list plus an inline "create a list with this sentence in it" field.
  */
 export function AddToShadowingListButton({
-  kind,
   id,
 }: {
-  kind: "sentence" | "mySentence";
   id: string;
 }) {
   const {
@@ -34,22 +31,16 @@ export function AddToShadowingListButton({
   const [open, setOpen] = useState(false);
   const [newName, setNewName] = useState("");
 
-  const idsOf = (l: ShadowingList) => (kind === "sentence" ? l.sentenceIds : l.mySentenceIds);
-  const isIn = (l: ShadowingList) => idsOf(l).includes(id);
+  const isIn = (l: ShadowingList) => l.sentenceIds.includes(id);
   const memberOfCount = (lists ?? []).filter(isIn).length;
 
   const toggle = (l: ShadowingList) => {
-    const arr = idsOf(l);
-    const next = arr.includes(id) ? arr.filter(x => x !== id) : [...arr, id];
+    const next = isIn(l) ? l.sentenceIds.filter(x => x !== id) : [...l.sentenceIds, id];
     update.mutate({
       id: l.id,
-      input: kind === "sentence"
-        ? {
-          sentenceIds: next,
-        }
-        : {
-          mySentenceIds: next,
-        },
+      input: {
+        sentenceIds: next,
+      },
     });
   };
 
@@ -57,15 +48,10 @@ export function AddToShadowingListButton({
     const name = newName.trim();
     if (!name || create.isPending) return;
     create.mutate(
-      kind === "sentence"
-        ? {
-          name,
-          sentenceIds: [id],
-        }
-        : {
-          name,
-          mySentenceIds: [id],
-        },
+      {
+        name,
+        sentenceIds: [id],
+      },
       {
         onSuccess: () => setNewName(""),
       },

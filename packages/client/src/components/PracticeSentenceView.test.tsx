@@ -1,9 +1,11 @@
-import type { PracticeSentence } from "@sentence-bank/types";
+import type { Sentence } from "@sentence-bank/types";
 
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import { PracticeSentenceView } from "./PracticeSentenceView";
+
+import { makeSentence } from "@/test-utils/sentence";
 
 // The view only needs Link as a styled anchor; a real router isn't under test here.
 vi.mock("@tanstack/react-router", () => ({
@@ -21,51 +23,28 @@ vi.mock("@tanstack/react-router", () => ({
 
 const mutate = vi.fn();
 
-vi.mock("@/hooks/usePracticeSentences", () => ({
-  usePracticeSentenceVocab: () => ({
+vi.mock("@/hooks/useSentences", () => ({
+  useSentenceVocab: () => ({
     data: [],
   }),
-  useUpdatePracticeSentence: () => ({
+  useUpdateSentence: () => ({
     mutate,
     isPending: false,
   }),
-}));
-
-vi.mock("@/hooks/useMySentences", () => ({
-  useMySentencesForPractice: () => ({
+  useSentencesForPractice: () => ({
     data: [],
   }),
 }));
 
-function sentence(passes: PracticeSentence["passes"]): PracticeSentence {
-  return {
+function sentence(passes: Sentence["passes"]): Sentence {
+  return makeSentence({
     id: "ps-1",
+    kind: "practice",
     text: "猫が寝ている。",
-    readingNote: null,
-    reading: null,
-    readingError: null,
-    language: "Japanese",
     translation: "The cat is sleeping.",
-    guess: null,
-    literal: null,
-    register: null,
-    nuance: null,
-    target: null,
-    targetKind: null,
-    comprehension: null,
-    needsCorrection: false,
-    correction: null,
-    words: null,
-    grammar: null,
     passes,
-    terms: null,
-    sourceId: null,
-    page: null,
-    captureId: null,
-    sentenceId: null,
-    hasImage: false,
     createdAt: "2026-07-20T00:00:00.000Z",
-  };
+  });
 }
 
 describe("PracticeSentenceView study passes", () => {

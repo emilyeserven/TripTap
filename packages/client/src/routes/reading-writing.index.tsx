@@ -8,9 +8,9 @@ import { HubSection, VIEW_ALL_CLASS } from "@/components/HubSection";
 import { ResourceRow } from "@/components/ResourceRow";
 import { Button } from "@/components/ui/button";
 import { useBookmarkResources } from "@/hooks/useBookmarks";
-import { useMySentences } from "@/hooks/useMySentences";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useReadingSessions } from "@/hooks/useReadingSessions";
+import { useSentences } from "@/hooks/useSentences";
 import { useBookmarksSettings } from "@/hooks/useSettings";
 import { useWritings } from "@/hooks/useWritings";
 import { resourceLearningAreas } from "@/lib/collections";
@@ -44,7 +44,9 @@ function ReadingWritingPage() {
   const resources = useBookmarkResources();
   const settings = useBookmarksSettings();
   const writings = useWritings();
-  const sentences = useMySentences();
+  const sentences = useSentences({
+    kind: "mine",
+  });
   const readingSessions = useReadingSessions();
 
   const [areaFilter, setAreaFilter] = useState<AreaFilter>("all");
@@ -114,7 +116,10 @@ function ReadingWritingPage() {
   );
   const sentencesViewAll = (
     <Link
-      to="/my-sentences"
+      to="/sentences"
+      search={{
+        view: "mine",
+      }}
       className={VIEW_ALL_CLASS}
     >
       View all →
@@ -194,7 +199,7 @@ function ReadingWritingPage() {
               {(sentences.data ?? []).slice(0, PREVIEW_LIMIT).map(s => (
                 <li key={s.id}>
                   <Link
-                    to="/my-sentences/$id"
+                    to="/sentences/$id"
                     params={{
                       id: s.id,
                     }}

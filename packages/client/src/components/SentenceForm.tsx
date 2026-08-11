@@ -76,7 +76,9 @@ export function SentenceForm({
   // All existing bank tags, offered as combobox options (plus whatever is already selected).
   const {
     data: allSentences,
-  } = useSentences();
+  } = useSentences({
+    kind: "bank",
+  });
   const allTags = useMemo(() => {
     const set = new Set<string>();
     for (const s of allSentences ?? []) {

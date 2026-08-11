@@ -3,10 +3,10 @@ import type {
   CorrectionLog,
   DrillSession,
   Lesson,
-  MySentence,
   QuestionSheet,
   ReadingSession,
   RuleGroup,
+  Sentence,
   Writing,
 } from "@sentence-bank/types";
 
@@ -73,7 +73,7 @@ export interface AttentionGroup {
 
 /** Everything the inbox reads — the already-cached list queries, plus an injectable clock. */
 export interface AttentionInputs {
-  mySentences: MySentence[];
+  mySentences: Sentence[];
   questionSheets: QuestionSheet[];
   answerSheets: AnswerSheet[];
   readingSessions: ReadingSession[];
@@ -111,7 +111,7 @@ function truncate(text: string, max = 60): string {
 }
 
 /** My Sentences still flagged `needsCorrection`, newest first. */
-export function sentencesToCorrect(mySentences: MySentence[], now: Date): AttentionItem[] {
+export function sentencesToCorrect(mySentences: Sentence[], now: Date): AttentionItem[] {
   return mySentences
     .filter(ms => ms.needsCorrection)
     .map(ms => ({
@@ -119,7 +119,7 @@ export function sentencesToCorrect(mySentences: MySentence[], now: Date): Attent
       id: ms.id,
       title: truncate(ms.text) || "Untitled sentence",
       detail: ageLabel(ms.createdAt, now),
-      to: "/my-sentences/$id",
+      to: "/sentences/$id",
       params: {
         id: ms.id,
       },
@@ -336,8 +336,9 @@ export function buildAttention(inputs: AttentionInputs): AttentionGroup[] {
       "Sentences to correct",
       sentencesToCorrect(inputs.mySentences, inputs.now),
       {
-        to: "/my-sentences",
+        to: "/sentences",
         search: {
+          view: "mine",
           needsCorrection: true,
         },
       },

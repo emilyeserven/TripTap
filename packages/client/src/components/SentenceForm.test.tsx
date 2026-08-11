@@ -1,9 +1,9 @@
-import type { Sentence } from "@sentence-bank/types";
-
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { SentenceForm } from "./SentenceForm";
+
+import { makeSentence } from "@/test-utils/sentence";
 
 const updateMock = vi.fn();
 const createMock = vi.fn();
@@ -46,17 +46,7 @@ vi.mock("./VocabLinkPicker", () => ({
   VocabLinkPicker: () => null,
 }));
 
-const sentence: Sentence = {
-  id: "11111111-1111-1111-1111-111111111111",
-  text: "毎朝コーヒーを飲みます。",
-  translation: "I drink coffee every morning.",
-  reading: null,
-  readingError: null,
-  language: "Japanese",
-  source: null,
-  sourceId: null,
-  page: null,
-  notes: null,
+const sentence = makeSentence({
   tags: "verbs, routine",
   terms: [
     {
@@ -68,13 +58,7 @@ const sentence: Sentence = {
       category: "grammar",
     },
   ],
-  captureId: null,
-  hasAudio: false,
-  hasImage: false,
-  vocabCount: 0,
-  shadowingCandidate: false,
-  createdAt: "2026-06-01T00:00:00.000Z",
-};
+});
 
 describe("SentenceForm (edit mode)", () => {
   beforeEach(() => {

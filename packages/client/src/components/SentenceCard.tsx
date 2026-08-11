@@ -88,7 +88,6 @@ export function SentenceCard({
                 {sentence.shadowingCandidate
                   ? (
                     <AddToShadowingListButton
-                      kind="sentence"
                       id={sentence.id}
                     />
                   )
