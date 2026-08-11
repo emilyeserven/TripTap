@@ -40,7 +40,6 @@ test("POST /api/shadowing-lists accepts a valid payload (not rejected as invalid
       name: "Morning drill",
       notes: "warm-up sentences",
       sentenceIds: ["11111111-1111-1111-1111-111111111111"],
-      mySentenceIds: [],
     },
   });
   // Without a DB the insert may fail (500), but the JSON Schema must not reject a valid body as 400.

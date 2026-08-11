@@ -182,7 +182,7 @@ export function GrammarItemRow({
                     {s.mine
                       ? (
                         <Link
-                          to="/my-sentences/$id"
+                          to="/sentences/$id"
                           params={{
                             id: s.id,
                           }}

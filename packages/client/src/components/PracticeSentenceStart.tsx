@@ -1,12 +1,11 @@
-import type { CreatePracticeSentenceInput } from "@sentence-bank/types";
+import type { CreateSentenceInput } from "@sentence-bank/types";
 
 import { useMemo, useState } from "react";
 
 import { useNavigate } from "@tanstack/react-router";
 
 import { useAiLessonContent } from "../hooks/useAiLessons";
-import { useCreatePracticeSentence } from "../hooks/usePracticeSentences";
-import { useSentences } from "../hooks/useSentences";
+import { useCreateSentence, useSentences } from "../hooks/useSentences";
 import { useSources } from "../hooks/useSources";
 
 import { Badge } from "@/components/ui/badge";
@@ -25,12 +24,12 @@ import { Textarea } from "@/components/ui/textarea";
  */
 export function PracticeSentenceStart() {
   const navigate = useNavigate();
-  const create = useCreatePracticeSentence();
+  const create = useCreateSentence();
 
-  const go = async (input: CreatePracticeSentenceInput) => {
+  const go = async (input: CreateSentenceInput) => {
     const created = await create.mutateAsync(input);
     await navigate({
-      to: "/practice/$id/edit",
+      to: "/sentences/$id/edit",
       params: {
         id: created.id,
       },
@@ -64,7 +63,7 @@ function TypeTab({
   onStart,
 }: {
   pending: boolean;
-  onStart: (input: CreatePracticeSentenceInput) => Promise<void>;
+  onStart: (input: CreateSentenceInput) => Promise<void>;
 }) {
   const [text, setText] = useState("");
   const [language, setLanguage] = useState("Japanese");
@@ -72,6 +71,7 @@ function TypeTab({
   const submit = async () => {
     if (!text.trim()) return;
     await onStart({
+      kind: "practice",
       text: text.trim(),
       language: language.trim() || "Japanese",
     });
@@ -126,7 +126,7 @@ interface Candidate {
   aiLesson: string | null;
   /** Taxonomy source id for bank sentences; null when unsourced or AI-Lesson-mined. */
   sourceId: string | null;
-  input: CreatePracticeSentenceInput;
+  input: CreateSentenceInput;
 }
 
 function SearchTab({
@@ -134,11 +134,13 @@ function SearchTab({
   onStart,
 }: {
   pending: boolean;
-  onStart: (input: CreatePracticeSentenceInput) => Promise<void>;
+  onStart: (input: CreateSentenceInput) => Promise<void>;
 }) {
   const {
     data: sentences,
-  } = useSentences();
+  } = useSentences({
+    kind: "bank",
+  });
   const {
     data: aiLessonContent,
   } = useAiLessonContent();
@@ -156,16 +158,17 @@ function SearchTab({
       aiLesson: null,
       sourceId: s.sourceId,
       input: {
+        kind: "practice",
         text: s.text,
         language: s.language,
         translation: s.translation,
-        sentenceId: s.id,
+        derivedFromId: s.id,
         sourceId: s.sourceId,
         page: s.page,
       },
     }));
-    // AI-Lesson-mined sentences live in a separate table, so they can't populate `sentenceId` (that FK
-    // references the bank). Copy their text/translation and map `where` → page instead.
+    // AI-Lesson-mined sentences live in a separate table, so they can't populate `derivedFromId`
+    // (that FK references sentences). Copy their text/translation and map `where` → page instead.
     const aiLessons: Candidate[] = (aiLessonContent?.sentences ?? []).map(s => ({
       key: `ai-lesson:${s.aiLessonSlug}:${s.id}`,
       text: s.jp,
@@ -173,6 +176,7 @@ function SearchTab({
       aiLesson: s.aiLessonTitle,
       sourceId: null,
       input: {
+        kind: "practice",
         text: s.jp,
         language: "Japanese",
         translation: s.en,

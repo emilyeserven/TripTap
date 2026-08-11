@@ -1,35 +1,13 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft } from "lucide-react";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
-import { PracticeSentenceStart } from "@/components/PracticeSentenceStart";
-import { Button } from "@/components/ui/button";
-import { usePageTitle } from "@/hooks/usePageTitle";
-
+/** Legacy route — starting a practice sentence now lives on the unified new-sentence page. */
 export const Route = createFileRoute("/practice/new")({
-  component: NewPracticePage,
+  beforeLoad: () => {
+    throw redirect({
+      to: "/sentences/new",
+      search: {
+        kind: "practice",
+      },
+    });
+  },
 });
-
-function NewPracticePage() {
-  usePageTitle("New practice sentence");
-  return (
-    <section className="space-y-6">
-      <Button
-        asChild
-        variant="ghost"
-        size="sm"
-      >
-        <Link to="/practice">
-          <ArrowLeft className="size-4" />
-          All practice sentences
-        </Link>
-      </Button>
-      <div>
-        <p className="text-sm text-muted-foreground">
-          Type a sentence, or pull one from your bank. It saves as soon as you start — everything
-          after that autosaves.
-        </p>
-      </div>
-      <PracticeSentenceStart />
-    </section>
-  );
-}

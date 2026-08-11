@@ -14,19 +14,27 @@ const createPracticeMutate = vi.fn(
   (_inputs: unknown, options?: { onSuccess?: () => void }) => options?.onSuccess?.(),
 );
 
-vi.mock("@/hooks/usePracticeSentences", () => ({
-  useCreatePracticeSentencesMany: () => ({
+vi.mock("@/hooks/useSentences", () => ({
+  useCreateSentencesMany: () => ({
     mutate: createPracticeMutate,
     isPending: false,
   }),
 }));
 
+const updateListMutate = vi.fn(
+  (_input: unknown, options?: { onSuccess?: () => void }) => options?.onSuccess?.(),
+);
+
 vi.mock("@/hooks/useShadowingLists", () => ({
   useShadowingLists: () => ({
-    data: [],
+    data: [{
+      id: "l1",
+      name: "Morning drill",
+      sentenceIds: [],
+    }],
   }),
   useUpdateShadowingList: () => ({
-    mutate: vi.fn(),
+    mutate: updateListMutate,
     isPending: false,
   }),
 }));
@@ -264,11 +272,51 @@ describe("Basket", () => {
     }));
     expect(createPracticeMutate).toHaveBeenCalledTimes(1);
     expect(createPracticeMutate.mock.calls[0]?.[0]).toEqual([{
+      kind: "practice",
       text: sentence.text,
       translation: sentence.translation,
       language: "Japanese",
     }]);
     // Sent sentences leave the basket; unrelated kinds stay.
     expect(useBasketStore.getState().items).toEqual([grammar]);
+  });
+
+  it("sends every saved sentence kind to a shadowing list, but not AI-lesson source sentences", () => {
+    updateListMutate.mockClear();
+    const mine: BasketSentence = {
+      ...sentence,
+      id: "s2",
+      source: "mine",
+    };
+    const fromLesson: BasketSentence = {
+      ...sentence,
+      id: "s3",
+      source: "ai-lesson",
+    };
+    // No `source` at all — persisted before the field existed, so provenance is unknown.
+    const legacy: BasketSentence = {
+      ...sentence,
+      id: "s4",
+      source: undefined,
+    };
+    useBasketStore.setState({
+      items: [sentence, mine, fromLesson, legacy],
+      expanded: true,
+    });
+    renderWithQuery(<Basket />);
+    fireEvent.click(screen.getByRole("button", {
+      name: "To list",
+    }));
+    fireEvent.click(screen.getByRole("button", {
+      name: "Morning drill",
+    }));
+    // A list holds Sentence ids of any kind, so bank and mine both qualify; the AI-lesson row and the
+    // unknown-provenance row would never resolve.
+    expect(updateListMutate.mock.calls[0]?.[0]).toEqual({
+      id: "l1",
+      input: {
+        sentenceIds: ["s1", "s2"],
+      },
+    });
   });
 });

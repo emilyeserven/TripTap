@@ -181,7 +181,9 @@ function SourcesPage() {
   } = useSources();
   const {
     data: sentences,
-  } = useSentences();
+  } = useSentences({
+    kind: "bank",
+  });
   const {
     data: captures,
   } = useCaptures();

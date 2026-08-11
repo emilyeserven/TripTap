@@ -4,7 +4,7 @@ import type {
   CorrectionRuleGapGroup,
   DrillSession,
   Lesson,
-  MySentence,
+  Sentence,
   QuestionSheet,
   ReadingSession,
   RuleGroup,
@@ -27,6 +27,8 @@ import {
   wordNotesToBank,
 } from "./attention";
 
+import { makeSentence } from "@/test-utils/sentence";
+
 const NOW = new Date("2026-08-09T12:00:00Z");
 
 const emptyInputs = {
@@ -42,29 +44,16 @@ const emptyInputs = {
   now: NOW,
 };
 
-function mySentence(over: Partial<MySentence>): MySentence {
-  return {
+function mySentence(over: Partial<Sentence>): Sentence {
+  return makeSentence({
     id: "ms1",
+    kind: "mine",
     text: "日本語で書いた文",
     translation: null,
-    reading: null,
-    readingError: null,
-    correction: null,
-    actualMeaning: null,
-    explanation: null,
     needsCorrection: true,
-    shadowingCandidate: false,
-    terms: null,
-    incorrectGrammarTerms: null,
-    reasons: null,
-    marks: null,
-    practiceSentenceId: null,
-    writingId: null,
-    lessonId: null,
     createdAt: "2026-08-07T00:00:00Z",
-    updatedAt: "2026-08-07T00:00:00Z",
     ...over,
-  } as MySentence;
+  });
 }
 
 /** A one-question list sheet — a single answerable slot with the question's id. */
@@ -266,7 +255,7 @@ describe("sentencesToCorrect", () => {
       }),
     ], NOW);
     expect(items.map(i => i.id)).toEqual(["new", "old"]);
-    expect(items[0].to).toBe("/my-sentences/$id");
+    expect(items[0].to).toBe("/sentences/$id");
   });
 });
 

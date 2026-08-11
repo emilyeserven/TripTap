@@ -6,8 +6,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { RenshuuImportDialog } from "./RenshuuImportDialog";
 
 const mutateAsync = vi.fn();
-const mineMutateAsync = vi.fn();
-const practiceMutateAsync = vi.fn();
 
 const examples: RenshuuExampleSentence[] = [
   {
@@ -43,24 +41,10 @@ vi.mock("@/hooks/useRenshuu", () => ({
   }),
 }));
 
-// The dialog resolves its destination through all three create-many hooks; stub each one.
+// The dialog writes every kind through the one create-many hook; the chosen kind rides the input.
 vi.mock("@/hooks/useSentences", () => ({
   useCreateSentencesMany: () => ({
     mutateAsync,
-    isPending: false,
-  }),
-}));
-
-vi.mock("@/hooks/useMySentences", () => ({
-  useCreateMySentencesMany: () => ({
-    mutateAsync: mineMutateAsync,
-    isPending: false,
-  }),
-}));
-
-vi.mock("@/hooks/usePracticeSentences", () => ({
-  useCreatePracticeSentencesMany: () => ({
-    mutateAsync: practiceMutateAsync,
     isPending: false,
   }),
 }));
@@ -77,8 +61,6 @@ function openAndSelectFirst() {
 describe("RenshuuImportDialog", () => {
   beforeEach(() => {
     mutateAsync.mockReset();
-    mineMutateAsync.mockReset();
-    practiceMutateAsync.mockReset();
   });
 
   it("imports the selected sentence into the bank with a Renshuu source note", async () => {
@@ -91,21 +73,17 @@ describe("RenshuuImportDialog", () => {
     expect(mutateAsync).toHaveBeenCalledTimes(1);
     expect(mutateAsync).toHaveBeenCalledWith([
       {
+        kind: "bank",
         text: "犬が好きです。",
         translation: "I like dogs.",
         language: "Japanese",
-        terms: null,
         tags: "renshuu",
         notes: "From Renshuu #7",
-        sourceId: null,
-        page: null,
-        captureId: null,
       },
     ]);
-    expect(mineMutateAsync).not.toHaveBeenCalled();
   });
 
-  it("routes the import to My Sentences when that destination is picked", async () => {
+  it("imports as a mine-kind sentence when that kind is picked", async () => {
     openAndSelectFirst();
 
     fireEvent.click(screen.getByRole("combobox"));
@@ -115,16 +93,17 @@ describe("RenshuuImportDialog", () => {
       name: /^Import 1$/,
     }));
 
-    expect(mineMutateAsync).toHaveBeenCalledTimes(1);
-    expect(mineMutateAsync).toHaveBeenCalledWith([
+    expect(mutateAsync).toHaveBeenCalledTimes(1);
+    expect(mutateAsync).toHaveBeenCalledWith([
       {
+        kind: "mine",
         text: "犬が好きです。",
         translation: "I like dogs.",
         language: "Japanese",
-        terms: null,
+        tags: "renshuu",
+        notes: "From Renshuu #7",
       },
     ]);
-    expect(mutateAsync).not.toHaveBeenCalled();
   });
 
   it("renders furigana and keeps the English behind a reveal control", () => {

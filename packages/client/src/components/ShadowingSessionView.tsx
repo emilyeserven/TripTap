@@ -14,7 +14,6 @@ import { StopwatchPlayer } from "@/components/StopwatchPlayer";
 import { TimestampModeToggle } from "@/components/TimestampModeToggle";
 import { Button } from "@/components/ui/button";
 import { YouTubePlayer } from "@/components/YouTubePlayer";
-import { useMySentences } from "@/hooks/useMySentences";
 import { useSegmentLoop } from "@/hooks/useSegmentLoop";
 import { useSentences } from "@/hooks/useSentences";
 import { useShadowingLists } from "@/hooks/useShadowingLists";
@@ -292,36 +291,21 @@ function ShadowingScript({
   const {
     data: sentences,
   } = useSentences();
-  const {
-    data: mySentences,
-  } = useMySentences();
 
   if (!list) return null;
 
-  const bankById = new Map((sentences ?? []).map(s => [s.id, s] as const));
-  const mineById = new Map((mySentences ?? []).map(s => [s.id, s] as const));
-  const lines = [
-    ...list.sentenceIds.flatMap((id) => {
-      const s = bankById.get(id);
-      return s
-        ? [{
-          key: `sentence:${s.id}`,
-          text: s.text,
-          translation: s.translation,
-        }]
-        : [];
-    }),
-    ...list.mySentenceIds.flatMap((id) => {
-      const s = mineById.get(id);
-      return s
-        ? [{
-          key: `mySentence:${s.id}`,
-          text: s.correction?.trim() ? s.correction : s.text,
-          translation: s.translation,
-        }]
-        : [];
-    }),
-  ];
+  const byId = new Map((sentences ?? []).map(s => [s.id, s] as const));
+  // For a corrected mine-kind sentence, the fix is what gets shadowed.
+  const lines = list.sentenceIds.flatMap((id) => {
+    const s = byId.get(id);
+    return s
+      ? [{
+        key: s.id,
+        text: s.correction?.trim() ? s.correction : s.text,
+        translation: s.translation,
+      }]
+      : [];
+  });
 
   if (lines.length === 0) return null;
 

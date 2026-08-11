@@ -96,7 +96,7 @@ export function AddSentenceFromWordNoteDialog({
             className="text-muted-foreground"
           >
             <Link
-              to="/my-sentences/$id"
+              to="/sentences/$id"
               params={{
                 id: note.mySentenceId,
               }}

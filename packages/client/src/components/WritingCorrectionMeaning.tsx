@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useMySentence, useUpdateMySentence } from "@/hooks/useMySentences";
+import { useSentence, useUpdateSentence } from "@/hooks/useSentences";
 
 /**
  * Inline editor for a corrected sentence's per-sentence meaning, edited without leaving My Writing.
@@ -14,8 +14,8 @@ export function WritingCorrectionMeaning({
 }: { mySentenceId: string }) {
   const {
     data,
-  } = useMySentence(mySentenceId);
-  const update = useUpdateMySentence();
+  } = useSentence(mySentenceId);
+  const update = useUpdateSentence();
 
   const [translation, setTranslation] = useState("");
   const [actualMeaning, setActualMeaning] = useState("");

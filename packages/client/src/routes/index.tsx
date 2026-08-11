@@ -16,6 +16,7 @@ function TileCard({
   return (
     <Link
       to={tile.to}
+      search={tile.search}
       className="
         group flex flex-col gap-2 rounded-xl border bg-card p-4
         text-card-foreground shadow-sm transition-colors
@@ -73,7 +74,7 @@ function HomePage() {
           >
             {sectionTiles(section).map(tile => (
               <TileCard
-                key={tile.to}
+                key={tile.title}
                 tile={tile}
               />
             ))}

@@ -497,6 +497,69 @@
         "tags": [
           "sentences"
         ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^(bank|mine|practice)(,(bank|mine|practice))*$"
+            },
+            "in": "query",
+            "name": "kind",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "in": "query",
+            "name": "derivedFromId",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "in": "query",
+            "name": "lessonId",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "in": "query",
+            "name": "writingId",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "in": "query",
+            "name": "captureId",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "boolean"
+            },
+            "in": "query",
+            "name": "needsCorrection",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "boolean"
+            },
+            "in": "query",
+            "name": "shadowingCandidate",
+            "required": false
+          }
+        ],
         "responses": {
           "200": {
             "description": "Default Response"
@@ -518,15 +581,23 @@
                     "type": "string",
                     "minLength": 1
                   },
+                  "language": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "bank",
+                      "mine",
+                      "practice"
+                    ]
+                  },
                   "translation": {
                     "type": [
                       "string",
                       "null"
                     ]
-                  },
-                  "language": {
-                    "type": "string",
-                    "minLength": 1
                   },
                   "source": {
                     "type": [
@@ -547,6 +618,22 @@
                       "string",
                       "null"
                     ]
+                  },
+                  "captureId": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                  },
+                  "derivedFromId": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
                   },
                   "notes": {
                     "type": [
@@ -607,14 +694,6 @@
                       "additionalProperties": false
                     }
                   },
-                  "captureId": {
-                    "type": [
-                      "string",
-                      "null"
-                    ],
-                    "format": "uuid",
-                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
-                  },
                   "vocabIds": {
                     "type": "array",
                     "items": {
@@ -625,6 +704,295 @@
                   },
                   "shadowingCandidate": {
                     "type": "boolean"
+                  },
+                  "needsCorrection": {
+                    "type": "boolean"
+                  },
+                  "correction": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "writingId": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                  },
+                  "lessonId": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                  },
+                  "actualMeaning": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "explanation": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "incorrectGrammarTerms": {
+                    "type": [
+                      "array",
+                      "null"
+                    ],
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "tag",
+                            "taxonomy"
+                          ]
+                        },
+                        "sourceId": {
+                          "type": "string"
+                        },
+                        "sourceLabel": {
+                          "type": "string"
+                        },
+                        "category": {
+                          "type": "string",
+                          "enum": [
+                            "vocabulary",
+                            "grammar",
+                            "general",
+                            "resource"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "name",
+                        "kind",
+                        "sourceId",
+                        "sourceLabel"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "reasons": {
+                    "type": [
+                      "array",
+                      "null"
+                    ],
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "categoryId": {
+                          "type": "string"
+                        },
+                        "subcategoryId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "reasonId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "categoryId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "marks": {
+                    "type": [
+                      "array",
+                      "null"
+                    ],
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "start": {
+                          "type": "integer"
+                        },
+                        "end": {
+                          "type": "integer"
+                        },
+                        "correct": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "start",
+                        "end",
+                        "correct"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "readingNote": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "target": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "targetKind": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "enum": [
+                      "word",
+                      "grammar",
+                      "idiom",
+                      "collocation",
+                      "reading",
+                      null
+                    ]
+                  },
+                  "comprehension": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "enum": [
+                      "ready",
+                      "studying",
+                      "skip",
+                      null
+                    ]
+                  },
+                  "guess": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "literal": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "register": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "nuance": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "words": {
+                    "type": [
+                      "array",
+                      "null"
+                    ],
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "w": {
+                          "type": "string"
+                        },
+                        "r": {
+                          "type": "string"
+                        },
+                        "m": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "w",
+                        "r",
+                        "m"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "grammar": {
+                    "type": [
+                      "array",
+                      "null"
+                    ],
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "p": {
+                          "type": "string"
+                        },
+                        "n": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "p",
+                        "n"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "passes": {
+                    "type": [
+                      "object",
+                      "null"
+                    ],
+                    "properties": {
+                      "read": {
+                        "type": [
+                          "boolean",
+                          "string"
+                        ]
+                      },
+                      "guess": {
+                        "type": [
+                          "boolean",
+                          "string"
+                        ]
+                      },
+                      "lookup": {
+                        "type": [
+                          "boolean",
+                          "string"
+                        ]
+                      },
+                      "produce": {
+                        "type": [
+                          "boolean",
+                          "string"
+                        ]
+                      },
+                      "card": {
+                        "type": [
+                          "boolean",
+                          "string"
+                        ]
+                      }
+                    },
+                    "additionalProperties": false
                   }
                 },
                 "required": [
@@ -681,15 +1049,23 @@
                     "type": "string",
                     "minLength": 1
                   },
+                  "language": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "bank",
+                      "mine",
+                      "practice"
+                    ]
+                  },
                   "translation": {
                     "type": [
                       "string",
                       "null"
                     ]
-                  },
-                  "language": {
-                    "type": "string",
-                    "minLength": 1
                   },
                   "source": {
                     "type": [
@@ -710,6 +1086,22 @@
                       "string",
                       "null"
                     ]
+                  },
+                  "captureId": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                  },
+                  "derivedFromId": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
                   },
                   "notes": {
                     "type": [
@@ -770,14 +1162,6 @@
                       "additionalProperties": false
                     }
                   },
-                  "captureId": {
-                    "type": [
-                      "string",
-                      "null"
-                    ],
-                    "format": "uuid",
-                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
-                  },
                   "vocabIds": {
                     "type": "array",
                     "items": {
@@ -788,6 +1172,295 @@
                   },
                   "shadowingCandidate": {
                     "type": "boolean"
+                  },
+                  "needsCorrection": {
+                    "type": "boolean"
+                  },
+                  "correction": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "writingId": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                  },
+                  "lessonId": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                  },
+                  "actualMeaning": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "explanation": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "incorrectGrammarTerms": {
+                    "type": [
+                      "array",
+                      "null"
+                    ],
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "tag",
+                            "taxonomy"
+                          ]
+                        },
+                        "sourceId": {
+                          "type": "string"
+                        },
+                        "sourceLabel": {
+                          "type": "string"
+                        },
+                        "category": {
+                          "type": "string",
+                          "enum": [
+                            "vocabulary",
+                            "grammar",
+                            "general",
+                            "resource"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "name",
+                        "kind",
+                        "sourceId",
+                        "sourceLabel"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "reasons": {
+                    "type": [
+                      "array",
+                      "null"
+                    ],
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "categoryId": {
+                          "type": "string"
+                        },
+                        "subcategoryId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "reasonId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "categoryId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "marks": {
+                    "type": [
+                      "array",
+                      "null"
+                    ],
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "start": {
+                          "type": "integer"
+                        },
+                        "end": {
+                          "type": "integer"
+                        },
+                        "correct": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "start",
+                        "end",
+                        "correct"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "readingNote": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "target": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "targetKind": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "enum": [
+                      "word",
+                      "grammar",
+                      "idiom",
+                      "collocation",
+                      "reading",
+                      null
+                    ]
+                  },
+                  "comprehension": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "enum": [
+                      "ready",
+                      "studying",
+                      "skip",
+                      null
+                    ]
+                  },
+                  "guess": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "literal": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "register": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "nuance": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "words": {
+                    "type": [
+                      "array",
+                      "null"
+                    ],
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "w": {
+                          "type": "string"
+                        },
+                        "r": {
+                          "type": "string"
+                        },
+                        "m": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "w",
+                        "r",
+                        "m"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "grammar": {
+                    "type": [
+                      "array",
+                      "null"
+                    ],
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "p": {
+                          "type": "string"
+                        },
+                        "n": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "p",
+                        "n"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "passes": {
+                    "type": [
+                      "object",
+                      "null"
+                    ],
+                    "properties": {
+                      "read": {
+                        "type": [
+                          "boolean",
+                          "string"
+                        ]
+                      },
+                      "guess": {
+                        "type": [
+                          "boolean",
+                          "string"
+                        ]
+                      },
+                      "lookup": {
+                        "type": [
+                          "boolean",
+                          "string"
+                        ]
+                      },
+                      "produce": {
+                        "type": [
+                          "boolean",
+                          "string"
+                        ]
+                      },
+                      "card": {
+                        "type": [
+                          "boolean",
+                          "string"
+                        ]
+                      }
+                    },
+                    "additionalProperties": false
                   },
                   "reading": {
                     "type": [
@@ -902,6 +1575,48 @@
             "description": "Default Response"
           }
         }
+      },
+      "post": {
+        "tags": [
+          "sentences"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "sentences"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
       }
     },
     "/api/sentences/bulk": {
@@ -929,15 +1644,23 @@
                           "type": "string",
                           "minLength": 1
                         },
+                        "language": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "bank",
+                            "mine",
+                            "practice"
+                          ]
+                        },
                         "translation": {
                           "type": [
                             "string",
                             "null"
                           ]
-                        },
-                        "language": {
-                          "type": "string",
-                          "minLength": 1
                         },
                         "source": {
                           "type": [
@@ -958,6 +1681,22 @@
                             "string",
                             "null"
                           ]
+                        },
+                        "captureId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                        },
+                        "derivedFromId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
                         },
                         "notes": {
                           "type": [
@@ -1018,14 +1757,6 @@
                             "additionalProperties": false
                           }
                         },
-                        "captureId": {
-                          "type": [
-                            "string",
-                            "null"
-                          ],
-                          "format": "uuid",
-                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
-                        },
                         "vocabIds": {
                           "type": "array",
                           "items": {
@@ -1036,780 +1767,148 @@
                         },
                         "shadowingCandidate": {
                           "type": "boolean"
-                        }
-                      },
-                      "required": [
-                        "text",
-                        "language"
-                      ],
-                      "additionalProperties": false
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Default Response"
-          }
-        }
-      }
-    },
-    "/api/sentences/furigana/backfill": {
-      "post": {
-        "tags": [
-          "sentences"
-        ],
-        "responses": {
-          "200": {
-            "description": "Default Response"
-          }
-        }
-      }
-    },
-    "/api/sentences/{id}/furigana": {
-      "post": {
-        "tags": [
-          "sentences"
-        ],
-        "parameters": [
-          {
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            },
-            "in": "path",
-            "name": "id",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Default Response"
-          }
-        }
-      }
-    },
-    "/api/sentences/{id}/vocab": {
-      "get": {
-        "tags": [
-          "sentences"
-        ],
-        "parameters": [
-          {
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            },
-            "in": "path",
-            "name": "id",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Default Response"
-          }
-        }
-      },
-      "put": {
-        "tags": [
-          "sentences"
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": [
-                  "vocabIds"
-                ],
-                "additionalProperties": false,
-                "properties": {
-                  "vocabIds": {
-                    "type": "array",
-                    "items": {
-                      "type": "string",
-                      "format": "uuid"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "parameters": [
-          {
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            },
-            "in": "path",
-            "name": "id",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Default Response"
-          }
-        }
-      }
-    },
-    "/api/practice-sentences": {
-      "get": {
-        "tags": [
-          "practice-sentences"
-        ],
-        "responses": {
-          "200": {
-            "description": "Default Response"
-          }
-        }
-      },
-      "post": {
-        "tags": [
-          "practice-sentences"
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "text": {
-                    "type": "string",
-                    "minLength": 1
-                  },
-                  "language": {
-                    "type": "string",
-                    "minLength": 1
-                  },
-                  "readingNote": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
-                  },
-                  "translation": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
-                  },
-                  "target": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
-                  },
-                  "targetKind": {
-                    "type": [
-                      "string",
-                      "null"
-                    ],
-                    "enum": [
-                      "word",
-                      "grammar",
-                      "idiom",
-                      "collocation",
-                      "reading",
-                      null
-                    ]
-                  },
-                  "comprehension": {
-                    "type": [
-                      "string",
-                      "null"
-                    ],
-                    "enum": [
-                      "ready",
-                      "studying",
-                      "skip",
-                      null
-                    ]
-                  },
-                  "guess": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
-                  },
-                  "literal": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
-                  },
-                  "register": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
-                  },
-                  "nuance": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
-                  },
-                  "words": {
-                    "type": [
-                      "array",
-                      "null"
-                    ],
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "w": {
-                          "type": "string"
                         },
-                        "r": {
-                          "type": "string"
+                        "needsCorrection": {
+                          "type": "boolean"
                         },
-                        "m": {
-                          "type": "string"
-                        }
-                      },
-                      "required": [
-                        "w",
-                        "r",
-                        "m"
-                      ],
-                      "additionalProperties": false
-                    }
-                  },
-                  "grammar": {
-                    "type": [
-                      "array",
-                      "null"
-                    ],
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "p": {
-                          "type": "string"
-                        },
-                        "n": {
-                          "type": "string"
-                        }
-                      },
-                      "required": [
-                        "p",
-                        "n"
-                      ],
-                      "additionalProperties": false
-                    }
-                  },
-                  "terms": {
-                    "type": [
-                      "array",
-                      "null"
-                    ],
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "string"
-                        },
-                        "name": {
-                          "type": "string"
-                        },
-                        "kind": {
-                          "type": "string",
-                          "enum": [
-                            "tag",
-                            "taxonomy"
-                          ]
-                        },
-                        "sourceId": {
-                          "type": "string"
-                        },
-                        "sourceLabel": {
-                          "type": "string"
-                        },
-                        "category": {
-                          "type": "string",
-                          "enum": [
-                            "vocabulary",
-                            "grammar",
-                            "general",
-                            "resource"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "name",
-                        "kind",
-                        "sourceId",
-                        "sourceLabel"
-                      ],
-                      "additionalProperties": false
-                    }
-                  },
-                  "passes": {
-                    "type": [
-                      "object",
-                      "null"
-                    ],
-                    "properties": {
-                      "read": {
-                        "type": [
-                          "boolean",
-                          "string"
-                        ]
-                      },
-                      "guess": {
-                        "type": [
-                          "boolean",
-                          "string"
-                        ]
-                      },
-                      "lookup": {
-                        "type": [
-                          "boolean",
-                          "string"
-                        ]
-                      },
-                      "produce": {
-                        "type": [
-                          "boolean",
-                          "string"
-                        ]
-                      },
-                      "card": {
-                        "type": [
-                          "boolean",
-                          "string"
-                        ]
-                      }
-                    },
-                    "additionalProperties": false
-                  },
-                  "sourceId": {
-                    "type": [
-                      "string",
-                      "null"
-                    ],
-                    "format": "uuid",
-                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
-                  },
-                  "page": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
-                  },
-                  "captureId": {
-                    "type": [
-                      "string",
-                      "null"
-                    ],
-                    "format": "uuid",
-                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
-                  },
-                  "sentenceId": {
-                    "type": [
-                      "string",
-                      "null"
-                    ],
-                    "format": "uuid",
-                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
-                  },
-                  "needsCorrection": {
-                    "type": "boolean"
-                  },
-                  "correction": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
-                  }
-                },
-                "required": [
-                  "text",
-                  "language"
-                ],
-                "additionalProperties": false
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Default Response"
-          }
-        }
-      }
-    },
-    "/api/practice-sentences/{id}": {
-      "get": {
-        "tags": [
-          "practice-sentences"
-        ],
-        "parameters": [
-          {
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            },
-            "in": "path",
-            "name": "id",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Default Response"
-          }
-        }
-      },
-      "patch": {
-        "tags": [
-          "practice-sentences"
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "additionalProperties": false,
-                "properties": {
-                  "text": {
-                    "type": "string",
-                    "minLength": 1
-                  },
-                  "language": {
-                    "type": "string",
-                    "minLength": 1
-                  },
-                  "readingNote": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
-                  },
-                  "translation": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
-                  },
-                  "target": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
-                  },
-                  "targetKind": {
-                    "type": [
-                      "string",
-                      "null"
-                    ],
-                    "enum": [
-                      "word",
-                      "grammar",
-                      "idiom",
-                      "collocation",
-                      "reading",
-                      null
-                    ]
-                  },
-                  "comprehension": {
-                    "type": [
-                      "string",
-                      "null"
-                    ],
-                    "enum": [
-                      "ready",
-                      "studying",
-                      "skip",
-                      null
-                    ]
-                  },
-                  "guess": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
-                  },
-                  "literal": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
-                  },
-                  "register": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
-                  },
-                  "nuance": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
-                  },
-                  "words": {
-                    "type": [
-                      "array",
-                      "null"
-                    ],
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "w": {
-                          "type": "string"
-                        },
-                        "r": {
-                          "type": "string"
-                        },
-                        "m": {
-                          "type": "string"
-                        }
-                      },
-                      "required": [
-                        "w",
-                        "r",
-                        "m"
-                      ],
-                      "additionalProperties": false
-                    }
-                  },
-                  "grammar": {
-                    "type": [
-                      "array",
-                      "null"
-                    ],
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "p": {
-                          "type": "string"
-                        },
-                        "n": {
-                          "type": "string"
-                        }
-                      },
-                      "required": [
-                        "p",
-                        "n"
-                      ],
-                      "additionalProperties": false
-                    }
-                  },
-                  "terms": {
-                    "type": [
-                      "array",
-                      "null"
-                    ],
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "string"
-                        },
-                        "name": {
-                          "type": "string"
-                        },
-                        "kind": {
-                          "type": "string",
-                          "enum": [
-                            "tag",
-                            "taxonomy"
-                          ]
-                        },
-                        "sourceId": {
-                          "type": "string"
-                        },
-                        "sourceLabel": {
-                          "type": "string"
-                        },
-                        "category": {
-                          "type": "string",
-                          "enum": [
-                            "vocabulary",
-                            "grammar",
-                            "general",
-                            "resource"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "name",
-                        "kind",
-                        "sourceId",
-                        "sourceLabel"
-                      ],
-                      "additionalProperties": false
-                    }
-                  },
-                  "passes": {
-                    "type": [
-                      "object",
-                      "null"
-                    ],
-                    "properties": {
-                      "read": {
-                        "type": [
-                          "boolean",
-                          "string"
-                        ]
-                      },
-                      "guess": {
-                        "type": [
-                          "boolean",
-                          "string"
-                        ]
-                      },
-                      "lookup": {
-                        "type": [
-                          "boolean",
-                          "string"
-                        ]
-                      },
-                      "produce": {
-                        "type": [
-                          "boolean",
-                          "string"
-                        ]
-                      },
-                      "card": {
-                        "type": [
-                          "boolean",
-                          "string"
-                        ]
-                      }
-                    },
-                    "additionalProperties": false
-                  },
-                  "sourceId": {
-                    "type": [
-                      "string",
-                      "null"
-                    ],
-                    "format": "uuid",
-                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
-                  },
-                  "page": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
-                  },
-                  "captureId": {
-                    "type": [
-                      "string",
-                      "null"
-                    ],
-                    "format": "uuid",
-                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
-                  },
-                  "sentenceId": {
-                    "type": [
-                      "string",
-                      "null"
-                    ],
-                    "format": "uuid",
-                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
-                  },
-                  "needsCorrection": {
-                    "type": "boolean"
-                  },
-                  "correction": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
-                  }
-                }
-              }
-            }
-          }
-        },
-        "parameters": [
-          {
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            },
-            "in": "path",
-            "name": "id",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Default Response"
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "practice-sentences"
-        ],
-        "parameters": [
-          {
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            },
-            "in": "path",
-            "name": "id",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Default Response"
-          }
-        }
-      }
-    },
-    "/api/practice-sentences/bulk": {
-      "post": {
-        "tags": [
-          "practice-sentences"
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": [
-                  "practiceSentences"
-                ],
-                "additionalProperties": false,
-                "properties": {
-                  "practiceSentences": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "text": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "language": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "readingNote": {
+                        "correction": {
                           "type": [
                             "string",
                             "null"
                           ]
                         },
-                        "translation": {
+                        "writingId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                        },
+                        "lessonId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                        },
+                        "actualMeaning": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "explanation": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "incorrectGrammarTerms": {
+                          "type": [
+                            "array",
+                            "null"
+                          ],
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string"
+                              },
+                              "name": {
+                                "type": "string"
+                              },
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "tag",
+                                  "taxonomy"
+                                ]
+                              },
+                              "sourceId": {
+                                "type": "string"
+                              },
+                              "sourceLabel": {
+                                "type": "string"
+                              },
+                              "category": {
+                                "type": "string",
+                                "enum": [
+                                  "vocabulary",
+                                  "grammar",
+                                  "general",
+                                  "resource"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "name",
+                              "kind",
+                              "sourceId",
+                              "sourceLabel"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "reasons": {
+                          "type": [
+                            "array",
+                            "null"
+                          ],
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "categoryId": {
+                                "type": "string"
+                              },
+                              "subcategoryId": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "reasonId": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "categoryId"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "marks": {
+                          "type": [
+                            "array",
+                            "null"
+                          ],
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "start": {
+                                "type": "integer"
+                              },
+                              "end": {
+                                "type": "integer"
+                              },
+                              "correct": {
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "start",
+                              "end",
+                              "correct"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "readingNote": {
                           "type": [
                             "string",
                             "null"
@@ -1919,53 +2018,6 @@
                             "additionalProperties": false
                           }
                         },
-                        "terms": {
-                          "type": [
-                            "array",
-                            "null"
-                          ],
-                          "items": {
-                            "type": "object",
-                            "properties": {
-                              "id": {
-                                "type": "string"
-                              },
-                              "name": {
-                                "type": "string"
-                              },
-                              "kind": {
-                                "type": "string",
-                                "enum": [
-                                  "tag",
-                                  "taxonomy"
-                                ]
-                              },
-                              "sourceId": {
-                                "type": "string"
-                              },
-                              "sourceLabel": {
-                                "type": "string"
-                              },
-                              "category": {
-                                "type": "string",
-                                "enum": [
-                                  "vocabulary",
-                                  "grammar",
-                                  "general",
-                                  "resource"
-                                ]
-                              }
-                            },
-                            "required": [
-                              "id",
-                              "name",
-                              "kind",
-                              "sourceId",
-                              "sourceLabel"
-                            ],
-                            "additionalProperties": false
-                          }
-                        },
                         "passes": {
                           "type": [
                             "object",
@@ -2004,45 +2056,6 @@
                             }
                           },
                           "additionalProperties": false
-                        },
-                        "sourceId": {
-                          "type": [
-                            "string",
-                            "null"
-                          ],
-                          "format": "uuid",
-                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
-                        },
-                        "page": {
-                          "type": [
-                            "string",
-                            "null"
-                          ]
-                        },
-                        "captureId": {
-                          "type": [
-                            "string",
-                            "null"
-                          ],
-                          "format": "uuid",
-                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
-                        },
-                        "sentenceId": {
-                          "type": [
-                            "string",
-                            "null"
-                          ],
-                          "format": "uuid",
-                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
-                        },
-                        "needsCorrection": {
-                          "type": "boolean"
-                        },
-                        "correction": {
-                          "type": [
-                            "string",
-                            "null"
-                          ]
                         }
                       },
                       "required": [
@@ -2064,10 +2077,10 @@
         }
       }
     },
-    "/api/practice-sentences/import": {
+    "/api/sentences/import": {
       "post": {
         "tags": [
-          "practice-sentences"
+          "sentences"
         ],
         "requestBody": {
           "required": true,
@@ -2244,52 +2257,22 @@
         }
       }
     },
-    "/api/practice-sentences/{id}/image": {
+    "/api/sentences/furigana/backfill": {
       "post": {
         "tags": [
-          "practice-sentences"
-        ],
-        "parameters": [
-          {
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            },
-            "in": "path",
-            "name": "id",
-            "required": true
-          }
+          "sentences"
         ],
         "responses": {
           "200": {
             "description": "Default Response"
           }
         }
-      },
-      "get": {
+      }
+    },
+    "/api/sentences/{id}/furigana": {
+      "post": {
         "tags": [
-          "practice-sentences"
-        ],
-        "parameters": [
-          {
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            },
-            "in": "path",
-            "name": "id",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Default Response"
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "practice-sentences"
+          "sentences"
         ],
         "parameters": [
           {
@@ -2309,10 +2292,10 @@
         }
       }
     },
-    "/api/practice-sentences/{id}/vocab": {
+    "/api/sentences/{id}/vocab": {
       "get": {
         "tags": [
-          "practice-sentences"
+          "sentences"
         ],
         "parameters": [
           {
@@ -2333,7 +2316,7 @@
       },
       "put": {
         "tags": [
-          "practice-sentences"
+          "sentences"
         ],
         "requestBody": {
           "required": true,
@@ -2369,820 +2352,6 @@
             "required": true
           }
         ],
-        "responses": {
-          "200": {
-            "description": "Default Response"
-          }
-        }
-      }
-    },
-    "/api/my-sentences": {
-      "get": {
-        "tags": [
-          "my-sentences"
-        ],
-        "parameters": [
-          {
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            },
-            "in": "query",
-            "name": "practiceSentenceId",
-            "required": false
-          },
-          {
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            },
-            "in": "query",
-            "name": "lessonId",
-            "required": false
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Default Response"
-          }
-        }
-      },
-      "post": {
-        "tags": [
-          "my-sentences"
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "text": {
-                    "type": "string",
-                    "minLength": 1
-                  },
-                  "language": {
-                    "type": "string",
-                    "minLength": 1
-                  },
-                  "translation": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
-                  },
-                  "practiceSentenceId": {
-                    "type": [
-                      "string",
-                      "null"
-                    ],
-                    "format": "uuid",
-                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
-                  },
-                  "writingId": {
-                    "type": [
-                      "string",
-                      "null"
-                    ],
-                    "format": "uuid",
-                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
-                  },
-                  "lessonId": {
-                    "type": [
-                      "string",
-                      "null"
-                    ],
-                    "format": "uuid",
-                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
-                  },
-                  "needsCorrection": {
-                    "type": "boolean"
-                  },
-                  "correction": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
-                  },
-                  "actualMeaning": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
-                  },
-                  "explanation": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
-                  },
-                  "terms": {
-                    "type": [
-                      "array",
-                      "null"
-                    ],
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "string"
-                        },
-                        "name": {
-                          "type": "string"
-                        },
-                        "kind": {
-                          "type": "string",
-                          "enum": [
-                            "tag",
-                            "taxonomy"
-                          ]
-                        },
-                        "sourceId": {
-                          "type": "string"
-                        },
-                        "sourceLabel": {
-                          "type": "string"
-                        },
-                        "category": {
-                          "type": "string",
-                          "enum": [
-                            "vocabulary",
-                            "grammar",
-                            "general",
-                            "resource"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "name",
-                        "kind",
-                        "sourceId",
-                        "sourceLabel"
-                      ],
-                      "additionalProperties": false
-                    }
-                  },
-                  "incorrectGrammarTerms": {
-                    "type": [
-                      "array",
-                      "null"
-                    ],
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "string"
-                        },
-                        "name": {
-                          "type": "string"
-                        },
-                        "kind": {
-                          "type": "string",
-                          "enum": [
-                            "tag",
-                            "taxonomy"
-                          ]
-                        },
-                        "sourceId": {
-                          "type": "string"
-                        },
-                        "sourceLabel": {
-                          "type": "string"
-                        },
-                        "category": {
-                          "type": "string",
-                          "enum": [
-                            "vocabulary",
-                            "grammar",
-                            "general",
-                            "resource"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "name",
-                        "kind",
-                        "sourceId",
-                        "sourceLabel"
-                      ],
-                      "additionalProperties": false
-                    }
-                  },
-                  "reasons": {
-                    "type": [
-                      "array",
-                      "null"
-                    ],
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "categoryId": {
-                          "type": "string"
-                        },
-                        "subcategoryId": {
-                          "type": [
-                            "string",
-                            "null"
-                          ]
-                        },
-                        "reasonId": {
-                          "type": [
-                            "string",
-                            "null"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "categoryId"
-                      ],
-                      "additionalProperties": false
-                    }
-                  },
-                  "marks": {
-                    "type": [
-                      "array",
-                      "null"
-                    ],
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "start": {
-                          "type": "integer"
-                        },
-                        "end": {
-                          "type": "integer"
-                        },
-                        "correct": {
-                          "type": "boolean"
-                        }
-                      },
-                      "required": [
-                        "start",
-                        "end",
-                        "correct"
-                      ],
-                      "additionalProperties": false
-                    }
-                  },
-                  "shadowingCandidate": {
-                    "type": "boolean"
-                  }
-                },
-                "required": [
-                  "text",
-                  "language"
-                ],
-                "additionalProperties": false
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Default Response"
-          }
-        }
-      }
-    },
-    "/api/my-sentences/{id}": {
-      "get": {
-        "tags": [
-          "my-sentences"
-        ],
-        "parameters": [
-          {
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            },
-            "in": "path",
-            "name": "id",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Default Response"
-          }
-        }
-      },
-      "patch": {
-        "tags": [
-          "my-sentences"
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "additionalProperties": false,
-                "properties": {
-                  "text": {
-                    "type": "string",
-                    "minLength": 1
-                  },
-                  "language": {
-                    "type": "string",
-                    "minLength": 1
-                  },
-                  "translation": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
-                  },
-                  "practiceSentenceId": {
-                    "type": [
-                      "string",
-                      "null"
-                    ],
-                    "format": "uuid",
-                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
-                  },
-                  "writingId": {
-                    "type": [
-                      "string",
-                      "null"
-                    ],
-                    "format": "uuid",
-                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
-                  },
-                  "lessonId": {
-                    "type": [
-                      "string",
-                      "null"
-                    ],
-                    "format": "uuid",
-                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
-                  },
-                  "needsCorrection": {
-                    "type": "boolean"
-                  },
-                  "correction": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
-                  },
-                  "actualMeaning": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
-                  },
-                  "explanation": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
-                  },
-                  "terms": {
-                    "type": [
-                      "array",
-                      "null"
-                    ],
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "string"
-                        },
-                        "name": {
-                          "type": "string"
-                        },
-                        "kind": {
-                          "type": "string",
-                          "enum": [
-                            "tag",
-                            "taxonomy"
-                          ]
-                        },
-                        "sourceId": {
-                          "type": "string"
-                        },
-                        "sourceLabel": {
-                          "type": "string"
-                        },
-                        "category": {
-                          "type": "string",
-                          "enum": [
-                            "vocabulary",
-                            "grammar",
-                            "general",
-                            "resource"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "name",
-                        "kind",
-                        "sourceId",
-                        "sourceLabel"
-                      ],
-                      "additionalProperties": false
-                    }
-                  },
-                  "incorrectGrammarTerms": {
-                    "type": [
-                      "array",
-                      "null"
-                    ],
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "string"
-                        },
-                        "name": {
-                          "type": "string"
-                        },
-                        "kind": {
-                          "type": "string",
-                          "enum": [
-                            "tag",
-                            "taxonomy"
-                          ]
-                        },
-                        "sourceId": {
-                          "type": "string"
-                        },
-                        "sourceLabel": {
-                          "type": "string"
-                        },
-                        "category": {
-                          "type": "string",
-                          "enum": [
-                            "vocabulary",
-                            "grammar",
-                            "general",
-                            "resource"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "name",
-                        "kind",
-                        "sourceId",
-                        "sourceLabel"
-                      ],
-                      "additionalProperties": false
-                    }
-                  },
-                  "reasons": {
-                    "type": [
-                      "array",
-                      "null"
-                    ],
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "categoryId": {
-                          "type": "string"
-                        },
-                        "subcategoryId": {
-                          "type": [
-                            "string",
-                            "null"
-                          ]
-                        },
-                        "reasonId": {
-                          "type": [
-                            "string",
-                            "null"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "categoryId"
-                      ],
-                      "additionalProperties": false
-                    }
-                  },
-                  "marks": {
-                    "type": [
-                      "array",
-                      "null"
-                    ],
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "start": {
-                          "type": "integer"
-                        },
-                        "end": {
-                          "type": "integer"
-                        },
-                        "correct": {
-                          "type": "boolean"
-                        }
-                      },
-                      "required": [
-                        "start",
-                        "end",
-                        "correct"
-                      ],
-                      "additionalProperties": false
-                    }
-                  },
-                  "shadowingCandidate": {
-                    "type": "boolean"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "parameters": [
-          {
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            },
-            "in": "path",
-            "name": "id",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Default Response"
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "my-sentences"
-        ],
-        "parameters": [
-          {
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            },
-            "in": "path",
-            "name": "id",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Default Response"
-          }
-        }
-      }
-    },
-    "/api/my-sentences/bulk": {
-      "post": {
-        "tags": [
-          "my-sentences"
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": [
-                  "mySentences"
-                ],
-                "additionalProperties": false,
-                "properties": {
-                  "mySentences": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "text": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "language": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "translation": {
-                          "type": [
-                            "string",
-                            "null"
-                          ]
-                        },
-                        "practiceSentenceId": {
-                          "type": [
-                            "string",
-                            "null"
-                          ],
-                          "format": "uuid",
-                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
-                        },
-                        "writingId": {
-                          "type": [
-                            "string",
-                            "null"
-                          ],
-                          "format": "uuid",
-                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
-                        },
-                        "lessonId": {
-                          "type": [
-                            "string",
-                            "null"
-                          ],
-                          "format": "uuid",
-                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
-                        },
-                        "needsCorrection": {
-                          "type": "boolean"
-                        },
-                        "correction": {
-                          "type": [
-                            "string",
-                            "null"
-                          ]
-                        },
-                        "actualMeaning": {
-                          "type": [
-                            "string",
-                            "null"
-                          ]
-                        },
-                        "explanation": {
-                          "type": [
-                            "string",
-                            "null"
-                          ]
-                        },
-                        "terms": {
-                          "type": [
-                            "array",
-                            "null"
-                          ],
-                          "items": {
-                            "type": "object",
-                            "properties": {
-                              "id": {
-                                "type": "string"
-                              },
-                              "name": {
-                                "type": "string"
-                              },
-                              "kind": {
-                                "type": "string",
-                                "enum": [
-                                  "tag",
-                                  "taxonomy"
-                                ]
-                              },
-                              "sourceId": {
-                                "type": "string"
-                              },
-                              "sourceLabel": {
-                                "type": "string"
-                              },
-                              "category": {
-                                "type": "string",
-                                "enum": [
-                                  "vocabulary",
-                                  "grammar",
-                                  "general",
-                                  "resource"
-                                ]
-                              }
-                            },
-                            "required": [
-                              "id",
-                              "name",
-                              "kind",
-                              "sourceId",
-                              "sourceLabel"
-                            ],
-                            "additionalProperties": false
-                          }
-                        },
-                        "incorrectGrammarTerms": {
-                          "type": [
-                            "array",
-                            "null"
-                          ],
-                          "items": {
-                            "type": "object",
-                            "properties": {
-                              "id": {
-                                "type": "string"
-                              },
-                              "name": {
-                                "type": "string"
-                              },
-                              "kind": {
-                                "type": "string",
-                                "enum": [
-                                  "tag",
-                                  "taxonomy"
-                                ]
-                              },
-                              "sourceId": {
-                                "type": "string"
-                              },
-                              "sourceLabel": {
-                                "type": "string"
-                              },
-                              "category": {
-                                "type": "string",
-                                "enum": [
-                                  "vocabulary",
-                                  "grammar",
-                                  "general",
-                                  "resource"
-                                ]
-                              }
-                            },
-                            "required": [
-                              "id",
-                              "name",
-                              "kind",
-                              "sourceId",
-                              "sourceLabel"
-                            ],
-                            "additionalProperties": false
-                          }
-                        },
-                        "reasons": {
-                          "type": [
-                            "array",
-                            "null"
-                          ],
-                          "items": {
-                            "type": "object",
-                            "properties": {
-                              "categoryId": {
-                                "type": "string"
-                              },
-                              "subcategoryId": {
-                                "type": [
-                                  "string",
-                                  "null"
-                                ]
-                              },
-                              "reasonId": {
-                                "type": [
-                                  "string",
-                                  "null"
-                                ]
-                              }
-                            },
-                            "required": [
-                              "categoryId"
-                            ],
-                            "additionalProperties": false
-                          }
-                        },
-                        "marks": {
-                          "type": [
-                            "array",
-                            "null"
-                          ],
-                          "items": {
-                            "type": "object",
-                            "properties": {
-                              "start": {
-                                "type": "integer"
-                              },
-                              "end": {
-                                "type": "integer"
-                              },
-                              "correct": {
-                                "type": "boolean"
-                              }
-                            },
-                            "required": [
-                              "start",
-                              "end",
-                              "correct"
-                            ],
-                            "additionalProperties": false
-                          }
-                        },
-                        "shadowingCandidate": {
-                          "type": "boolean"
-                        }
-                      },
-                      "required": [
-                        "text",
-                        "language"
-                      ],
-                      "additionalProperties": false
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
             "description": "Default Response"
@@ -6247,14 +5416,6 @@
                       "format": "uuid",
                       "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
                     }
-                  },
-                  "mySentenceIds": {
-                    "type": "array",
-                    "items": {
-                      "type": "string",
-                      "format": "uuid",
-                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
-                    }
                   }
                 },
                 "required": [
@@ -6317,14 +5478,6 @@
                     ]
                   },
                   "sentenceIds": {
-                    "type": "array",
-                    "items": {
-                      "type": "string",
-                      "format": "uuid",
-                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
-                    }
-                  },
-                  "mySentenceIds": {
                     "type": "array",
                     "items": {
                       "type": "string",

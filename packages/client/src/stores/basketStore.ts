@@ -1,4 +1,4 @@
-import type { FuriToken } from "@sentence-bank/types";
+import type { FuriToken, SentenceKind } from "@sentence-bank/types";
 
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
@@ -37,8 +37,13 @@ export function isDurableKind(kind: BasketKind): boolean {
   return DURABLE_KINDS.has(kind);
 }
 
-/** Which table a snapshot came from, so an item can be acted on without guessing. */
-export type BasketSource = "bank" | "ai-lesson";
+/**
+ * Where a sentence snapshot came from, so an item can be acted on without guessing.
+ *
+ * Reuses the unified {@link SentenceKind} contract (`bank` / `mine` / `practice`) and adds the one
+ * source that isn't a `sentences` row at all: an AI lesson's own source sentences.
+ */
+export type BasketSource = SentenceKind | "ai-lesson";
 
 /** A model sentence kept in the basket (standalone bank sentence or AI-lesson source sentence). */
 export interface BasketSentence {

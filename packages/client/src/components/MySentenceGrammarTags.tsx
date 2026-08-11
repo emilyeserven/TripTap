@@ -1,7 +1,7 @@
-import type { MySentence } from "@sentence-bank/types";
+import type { Sentence } from "@sentence-bank/types";
 
 import { GrammarTagsEditor } from "@/components/GrammarTagsEditor";
-import { useUpdateMySentence } from "@/hooks/useMySentences";
+import { useUpdateSentence } from "@/hooks/useSentences";
 import { replaceCategory, termCategory } from "@/lib/terms";
 
 /**
@@ -13,9 +13,9 @@ import { replaceCategory, termCategory } from "@/lib/terms";
 export function MySentenceGrammarTags({
   mySentence: ms,
 }: {
-  mySentence: MySentence;
+  mySentence: Sentence;
 }) {
-  const update = useUpdateMySentence();
+  const update = useUpdateSentence();
   const grammarTerms = (ms.terms ?? []).filter(t => termCategory(t) === "grammar");
 
   return (

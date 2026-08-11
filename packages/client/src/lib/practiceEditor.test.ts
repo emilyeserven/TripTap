@@ -1,13 +1,14 @@
 // @vitest-environment node
-import type { PracticeSentence } from "@sentence-bank/types";
+import type { Sentence } from "@sentence-bank/types";
 
 import { describe, expect, it } from "vitest";
 
 import { NONE, toDraft, toInput } from "./practiceEditor";
 
-function practiceSentence(over: Partial<PracticeSentence>): PracticeSentence {
+function practiceSentence(over: Partial<Sentence>): Sentence {
   return {
     id: "ps-1",
+    kind: "practice",
     text: "頭が痛い",
     readingNote: null,
     translation: null,
@@ -26,11 +27,11 @@ function practiceSentence(over: Partial<PracticeSentence>): PracticeSentence {
     sourceId: null,
     page: null,
     captureId: null,
-    sentenceId: null,
+    derivedFromId: null,
     needsCorrection: true,
     createdAt: "2026-01-01T00:00:00Z",
     ...over,
-  } as PracticeSentence;
+  } as Sentence;
 }
 
 describe("toDraft", () => {

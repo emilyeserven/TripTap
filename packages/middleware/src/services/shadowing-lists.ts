@@ -14,7 +14,6 @@ function toShadowingList(row: ShadowingListRow): ShadowingList {
     name: row.name,
     notes: row.notes,
     sentenceIds: row.sentenceIds ?? [],
-    mySentenceIds: row.mySentenceIds ?? [],
     createdAt: toIso(row.createdAt),
     updatedAt: toIso(row.updatedAt),
   };
@@ -26,7 +25,6 @@ function toInsert(input: CreateShadowingListInput) {
     name: input.name,
     notes: input.notes ?? null,
     sentenceIds: input.sentenceIds ?? [],
-    mySentenceIds: input.mySentenceIds ?? [],
   };
 }
 

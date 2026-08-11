@@ -19,7 +19,9 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
 import { useBasketItems, useBasketToggle, useClearBasket } from "@/hooks/useBasket";
-import { useCreatePracticeSentencesMany } from "@/hooks/usePracticeSentences";
+// `useSentences` is deliberately not imported: the shadowing-list door reads each snapshot's own
+// `source` instead of intersecting against the whole bank to guess where a sentence came from.
+import { useCreateSentencesMany } from "@/hooks/useSentences";
 import { useShadowingLists, useUpdateShadowingList } from "@/hooks/useShadowingLists";
 import { basketKey, useBasketStore } from "@/stores/basketStore";
 import { useDisplayStore } from "@/stores/displayStore";
@@ -188,7 +190,7 @@ function SentenceSendActions({
   sentences: BasketSentence[];
 }) {
   const remove = useBasketStore(s => s.remove);
-  const createPractice = useCreatePracticeSentencesMany();
+  const createPractice = useCreateSentencesMany();
   const {
     data: lists,
   } = useShadowingLists();
@@ -201,6 +203,7 @@ function SentenceSendActions({
     createPractice.mutate(
       // Basket snapshots don't carry a language; default to the app-wide form default.
       sentences.map(s => ({
+        kind: "practice" as const,
         text: s.text,
         translation: s.translation,
         language: "Japanese",
@@ -214,13 +217,13 @@ function SentenceSendActions({
   };
 
   const addToList = (list: ShadowingList) => {
-    // AI-lesson source sentences share the basket "sentence" kind but aren't bank rows; storing
-    // their ids on a list would leave entries that never resolve. Items added before the basket
-    // carried a `source` have an unknown provenance, so they're skipped too.
-    const resolvable = sentences.filter(s => s.source === "bank");
+    // A list holds `Sentence` ids of any kind, so bank / mine / practice all qualify. AI-lesson source
+    // sentences don't — they aren't `sentences` rows, and their ids would never resolve. Items added
+    // before the basket carried a `source` have unknown provenance, so they're skipped too.
+    const resolvable = sentences.filter(s => s.source != null && s.source !== "ai-lesson");
     const skipped = sentences.length - resolvable.length;
     if (resolvable.length === 0) {
-      toast.error("None of these are bank sentences, so they can't join a shadowing list.");
+      toast.error("None of these are saved sentences, so they can't join a shadowing list.");
       return;
     }
     updateList.mutate(
@@ -236,7 +239,7 @@ function SentenceSendActions({
           for (const s of resolvable) remove(basketKey("sentence", s.id));
           toast.success(
             `Added ${resolvable.length} to “${list.name}”${
-              skipped > 0 ? ` (${skipped} skipped — not bank sentences)` : ""
+              skipped > 0 ? ` (${skipped} skipped — not saved sentences)` : ""
             }`,
           );
         },

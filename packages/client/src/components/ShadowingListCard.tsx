@@ -11,7 +11,7 @@ export function ShadowingListCard({
 }: {
   list: ShadowingList;
 }) {
-  const count = list.sentenceIds.length + list.mySentenceIds.length;
+  const count = list.sentenceIds.length;
   return (
     <Card>
       <CardContent className="space-y-2 p-4">

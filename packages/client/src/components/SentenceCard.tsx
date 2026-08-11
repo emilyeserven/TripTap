@@ -88,7 +88,6 @@ export function SentenceCard({
                 {sentence.shadowingCandidate
                   ? (
                     <AddToShadowingListButton
-                      kind="sentence"
                       id={sentence.id}
                     />
                   )
@@ -100,7 +99,7 @@ export function SentenceCard({
                     text: sentence.text,
                     translation: sentence.translation,
                     reading: sentence.reading,
-                    source: "bank",
+                    source: sentence.kind,
                   }}
                 />
                 {onEdit

@@ -6,9 +6,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { ExportPanel } from "@/components/ExportPanel";
 import { Button } from "@/components/ui/button";
-import { useMySentences } from "@/hooks/useMySentences";
 import { usePageTitle } from "@/hooks/usePageTitle";
-import { usePracticeSentences } from "@/hooks/usePracticeSentences";
 import { useRuleGroups, useChunkCards } from "@/hooks/useRuleGroups";
 import { useSentences } from "@/hooks/useSentences";
 import { useSources } from "@/hooks/useSources";
@@ -49,16 +47,22 @@ function AnkiPage() {
   } = Route.useSearch();
   const {
     data: sentences,
-  } = useSentences();
+  } = useSentences({
+    kind: "bank",
+  });
   const {
     data: vocab,
   } = useVocab();
   const {
     data: practiceSentences,
-  } = usePracticeSentences();
+  } = useSentences({
+    kind: "practice",
+  });
   const {
     data: mySentences,
-  } = useMySentences();
+  } = useSentences({
+    kind: "mine",
+  });
   const {
     data: sources,
   } = useSources();

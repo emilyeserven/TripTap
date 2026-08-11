@@ -7,13 +7,13 @@ import type {
 } from "@sentence-bank/types";
 import { grammarTermsOf, splitSentences } from "@sentence-bank/types";
 import { db } from "@/db";
+import { eq } from "drizzle-orm";
 import {
   answerSheets,
   corrections,
-  mySentences,
-  practiceSentences,
   questionSheets,
   readingSessions,
+  sentences,
   writings,
 } from "@/db/schema";
 import { createCorrection } from "@/services/corrections";
@@ -79,7 +79,9 @@ export function offerMySentence(row: { text: string | null;
 }
 
 async function mySentenceCandidates(): Promise<CorrectionImportCandidate[]> {
-  const rows = await db.select().from(mySentences);
+  // The `my_sentence` ref kind predates the sentence-table merge and is persisted in
+  // `corrections.importedFrom`, so it stays; only the query moved to the unified table.
+  const rows = await db.select().from(sentences).where(eq(sentences.kind, "mine"));
   const out: CorrectionImportCandidate[] = [];
   for (const row of rows) {
     if (!offerMySentence(row)) continue;
@@ -219,7 +221,7 @@ async function readingSessionCandidates(): Promise<CorrectionImportCandidate[]> 
 }
 
 async function practiceSentenceCandidates(): Promise<CorrectionImportCandidate[]> {
-  const rows = await db.select().from(practiceSentences);
+  const rows = await db.select().from(sentences).where(eq(sentences.kind, "practice"));
   const out: CorrectionImportCandidate[] = [];
   for (const row of rows) {
     if (!row.text?.trim()) continue;

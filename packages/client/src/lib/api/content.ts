@@ -1,22 +1,17 @@
-/** Bank-content APIs: sentences, practice sentences, my sentences, vocab, sources, and shadowing lists. */
+/** Bank-content APIs: sentences (all kinds), vocab, sources, and shadowing lists. */
 import type {
-  CreatePracticeSentenceInput,
   CreateSentenceInput,
   CreateShadowingListInput,
   CreateSourceInput,
   CreateVocabInput,
-  CreateMySentenceInput,
   KanjiDetail,
   KanjiListQuery,
   KanjiSummary,
-  MySentence,
-  PracticeSentence,
-  PracticeSentenceImportInput,
   Sentence,
+  SentenceImportInput,
+  SentenceKind,
   ShadowingList,
   Source,
-  UpdateMySentenceInput,
-  UpdatePracticeSentenceInput,
   UpdateSentenceInput,
   UpdateShadowingListInput,
   UpdateKanjiStatusInput,
@@ -28,25 +23,38 @@ import type {
 import { crudApi } from "./crud";
 import { BASE, request, uploadFile } from "./request";
 
-/**
- * The shared `getVocab`/`setVocab` endpoints for a resource that links vocab via
- * `/<resource>/:id/vocab` (sentences and practice sentences expose the identical pair).
- */
-function vocabEndpoints(resource: string) {
-  return {
-    getVocab: (id: string) => request<Vocab[]>(`/${resource}/${id}/vocab`),
-    setVocab: (id: string, vocabIds: string[]) =>
-      request<Vocab[]>(`/${resource}/${id}/vocab`, {
-        method: "PUT",
-        body: JSON.stringify({
-          vocabIds,
-        }),
-      }),
-  };
+/** Optional narrowing for the sentence list; every field is a query param, all combine with AND. */
+export interface SentenceListFilters {
+  /** One kind or several; omitted = all kinds. */
+  kind?: SentenceKind | SentenceKind[];
+  /** Rows derived from this sentence (a practice card's outputs, a bank sentence's cards). */
+  derivedFromId?: string;
+  lessonId?: string;
+  writingId?: string;
+  captureId?: string;
+  needsCorrection?: boolean;
+  shadowingCandidate?: boolean;
+}
+
+/** The query string for a filtered sentence list ("" when unfiltered). */
+function sentenceListQuery(filters: SentenceListFilters = {}): string {
+  const params = new URLSearchParams();
+  const kinds = filters.kind == null ? [] : Array.isArray(filters.kind) ? filters.kind : [filters.kind];
+  if (kinds.length > 0) params.set("kind", kinds.join(","));
+  if (filters.derivedFromId) params.set("derivedFromId", filters.derivedFromId);
+  if (filters.lessonId) params.set("lessonId", filters.lessonId);
+  if (filters.writingId) params.set("writingId", filters.writingId);
+  if (filters.captureId) params.set("captureId", filters.captureId);
+  if (filters.needsCorrection !== undefined) params.set("needsCorrection", String(filters.needsCorrection));
+  if (filters.shadowingCandidate !== undefined) params.set("shadowingCandidate", String(filters.shadowingCandidate));
+  const qs = params.toString();
+  return qs ? `?${qs}` : "";
 }
 
 export const sentencesApi = {
-  list: () => request<Sentence[]>("/sentences"),
+  list: (filters: SentenceListFilters = {}) =>
+    request<Sentence[]>(`/sentences${sentenceListQuery(filters)}`),
+  get: (id: string) => request<Sentence>(`/sentences/${id}`),
   create: (input: CreateSentenceInput) =>
     request<Sentence>("/sentences", {
       method: "POST",
@@ -67,7 +75,26 @@ export const sentencesApi = {
   remove: (id: string) => request<undefined>(`/sentences/${id}`, {
     method: "DELETE",
   }),
-  ...vocabEndpoints("sentences"),
+  /** Import a pasted AI breakdown as one practice-kind sentence. */
+  import: (input: SentenceImportInput) =>
+    request<Sentence>("/sentences/import", {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+  getVocab: (id: string) => request<Vocab[]>(`/sentences/${id}/vocab`),
+  setVocab: (id: string, vocabIds: string[]) =>
+    request<Vocab[]>(`/sentences/${id}/vocab`, {
+      method: "PUT",
+      body: JSON.stringify({
+        vocabIds,
+      }),
+    }),
+  /** Upload (or replace) the inline context screenshot. */
+  uploadImage: (id: string, file: File) =>
+    uploadFile<Sentence>(`/sentences/${id}/image`, file),
+  removeImage: (id: string) => request<undefined>(`/sentences/${id}/image`, {
+    method: "DELETE",
+  }),
   backfillFurigana: () =>
     request<{ updated: number;
       errors: number; }>("/sentences/furigana/backfill", {
@@ -80,74 +107,6 @@ export const sentencesApi = {
   /** Absolute path to a sentence's stored audio/image (present only when `hasAudio`/`hasImage`). */
   audioUrl: (id: string) => `${BASE}/sentences/${id}/audio`,
   imageUrl: (id: string) => `${BASE}/sentences/${id}/image`,
-};
-
-export const practiceSentencesApi = {
-  list: () => request<PracticeSentence[]>("/practice-sentences"),
-  get: (id: string) => request<PracticeSentence>(`/practice-sentences/${id}`),
-  create: (input: CreatePracticeSentenceInput) =>
-    request<PracticeSentence>("/practice-sentences", {
-      method: "POST",
-      body: JSON.stringify(input),
-    }),
-  createMany: (inputs: CreatePracticeSentenceInput[]) =>
-    request<PracticeSentence[]>("/practice-sentences/bulk", {
-      method: "POST",
-      body: JSON.stringify({
-        practiceSentences: inputs,
-      }),
-    }),
-  update: (id: string, input: UpdatePracticeSentenceInput) =>
-    request<PracticeSentence>(`/practice-sentences/${id}`, {
-      method: "PATCH",
-      body: JSON.stringify(input),
-    }),
-  import: (input: PracticeSentenceImportInput) =>
-    request<PracticeSentence>("/practice-sentences/import", {
-      method: "POST",
-      body: JSON.stringify(input),
-    }),
-  uploadImage: (id: string, file: File) =>
-    uploadFile<PracticeSentence>(`/practice-sentences/${id}/image`, file),
-  removeImage: (id: string) => request<undefined>(`/practice-sentences/${id}/image`, {
-    method: "DELETE",
-  }),
-  remove: (id: string) => request<undefined>(`/practice-sentences/${id}`, {
-    method: "DELETE",
-  }),
-  ...vocabEndpoints("practice-sentences"),
-};
-
-export const mySentencesApi = {
-  list: (filters?: { practiceSentenceId?: string;
-    lessonId?: string; }) => {
-    const params = new URLSearchParams();
-    if (filters?.practiceSentenceId) params.set("practiceSentenceId", filters.practiceSentenceId);
-    if (filters?.lessonId) params.set("lessonId", filters.lessonId);
-    const qs = params.toString();
-    return request<MySentence[]>(qs ? `/my-sentences?${qs}` : "/my-sentences");
-  },
-  get: (id: string) => request<MySentence>(`/my-sentences/${id}`),
-  create: (input: CreateMySentenceInput) =>
-    request<MySentence>("/my-sentences", {
-      method: "POST",
-      body: JSON.stringify(input),
-    }),
-  createMany: (inputs: CreateMySentenceInput[]) =>
-    request<MySentence[]>("/my-sentences/bulk", {
-      method: "POST",
-      body: JSON.stringify({
-        mySentences: inputs,
-      }),
-    }),
-  update: (id: string, input: UpdateMySentenceInput) =>
-    request<MySentence>(`/my-sentences/${id}`, {
-      method: "PATCH",
-      body: JSON.stringify(input),
-    }),
-  remove: (id: string) => request<undefined>(`/my-sentences/${id}`, {
-    method: "DELETE",
-  }),
 };
 
 export const vocabApi = {
