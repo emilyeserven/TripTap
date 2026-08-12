@@ -12,11 +12,13 @@ import { useEffect, useMemo, useState } from "react";
 
 import { BookmarkPicker } from "@/components/BookmarkPicker";
 import { BookmarkSectionMultiSelect } from "@/components/BookmarkSectionMultiSelect";
+import { CollapsibleSection } from "@/components/CollapsibleSection";
 import { LearningAreaMultiSelect } from "@/components/LearningAreaMultiSelect";
 import { QuestionGridEditor } from "@/components/QuestionGridEditor";
 import { QuestionListEditor } from "@/components/QuestionListEditor";
 import { TermPicker } from "@/components/TermPicker";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -171,156 +173,183 @@ export function QuestionSheetForm({
         void submit();
       }}
     >
-      <div
-        className="
-          grid gap-4
-          sm:grid-cols-[1fr_auto_auto]
-        "
-      >
-        <BookmarkPicker
-          category="resource"
-          label="Resources"
-          selectedBookmarkId={bookmarkId}
-          selectedBookmarkTitle={bookmarkTitle}
-          onPick={(record) => {
-            setBookmarkId(record?.id ?? null);
-            setBookmarkTitle(record?.title ?? null);
-            setBookmarkUrl(record?.url ?? null);
-          }}
-        />
-        <div className="space-y-1.5">
-          <Label htmlFor="qs-page">Page</Label>
-          <Input
-            id="qs-page"
-            value={page}
-            onChange={(e) => {
-              setPage(e.target.value);
-              setPageTouched(true);
-            }}
-            placeholder="p. 12–13"
-            className="sm:w-32"
-          />
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="qs-due-date">Due date</Label>
-          <Input
-            id="qs-due-date"
-            type="date"
-            value={dueDate}
-            onChange={e => setDueDate(e.target.value)}
-            className="sm:w-40"
-          />
-        </div>
-      </div>
+      <Card>
+        <CardContent>
+          <CollapsibleSection
+            title="Source"
+            description="Where these questions come from and when they're due."
+          >
+            <div
+              className="
+                grid gap-4
+                sm:grid-cols-[1fr_auto_auto]
+              "
+            >
+              <BookmarkPicker
+                category="resource"
+                label="Resources"
+                selectedBookmarkId={bookmarkId}
+                selectedBookmarkTitle={bookmarkTitle}
+                onPick={(record) => {
+                  setBookmarkId(record?.id ?? null);
+                  setBookmarkTitle(record?.title ?? null);
+                  setBookmarkUrl(record?.url ?? null);
+                }}
+              />
+              <div className="space-y-1.5">
+                <Label htmlFor="qs-page">Page</Label>
+                <Input
+                  id="qs-page"
+                  value={page}
+                  onChange={(e) => {
+                    setPage(e.target.value);
+                    setPageTouched(true);
+                  }}
+                  placeholder="p. 12–13"
+                  className="sm:w-32"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="qs-due-date">Due date</Label>
+                <Input
+                  id="qs-due-date"
+                  type="date"
+                  value={dueDate}
+                  onChange={e => setDueDate(e.target.value)}
+                  className="sm:w-40"
+                />
+              </div>
+            </div>
 
-      {bookmarkId && sectionTree.length > 0
-        ? (
-          <div className="space-y-2">
-            <Label>Sections</Label>
-            <BookmarkSectionMultiSelect
-              nodes={sectionTree}
-              value={sections}
-              onChange={changeSections}
-              usedSectionIds={usedSectionIds}
-              className="w-full max-w-sm"
-            />
-            <p className="text-xs text-muted-foreground">
-              Attach one or more sections of this resource (optional). Search and check as many as you
-              like. Sections that already have a sheet are dimmed.
-            </p>
-          </div>
-        )
-        : null}
+            {bookmarkId && sectionTree.length > 0
+              ? (
+                <div className="space-y-2">
+                  <Label>Sections</Label>
+                  <BookmarkSectionMultiSelect
+                    nodes={sectionTree}
+                    value={sections}
+                    onChange={changeSections}
+                    usedSectionIds={usedSectionIds}
+                    className="w-full max-w-sm"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Attach one or more sections of this resource (optional). Search and check as many
+                    as you like. Sections that already have a sheet are dimmed.
+                  </p>
+                </div>
+              )
+              : null}
+          </CollapsibleSection>
+        </CardContent>
+      </Card>
 
-      <div className="space-y-1.5">
-        <Label htmlFor="qs-title">Title</Label>
-        <Input
-          id="qs-title"
-          value={title}
-          onChange={(e) => {
-            setTitle(e.target.value);
-            setTitleTouched(true);
-          }}
-          placeholder="Genki I — Lesson 3 workbook"
-        />
-      </div>
-
-      <div className="space-y-1.5">
-        <Label htmlFor="qs-notes">Notes</Label>
-        <Textarea
-          id="qs-notes"
-          value={notes}
-          onChange={e => setNotes(e.target.value)}
-          placeholder="Anything to remember about this exercise set (optional)"
-          rows={2}
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label>Learning areas</Label>
-        <LearningAreaMultiSelect
-          value={learningAreas}
-          onChange={setLearningAreas}
-        />
-        <p className="text-xs text-muted-foreground">
-          Tag the skills this sheet practises (optional). Answer sheets inherit these, and XP from
-          answering is split evenly across the areas you pick.
-        </p>
-      </div>
-
-      <TermPicker
-        category="grammar"
-        label="Grammar tags"
-        value={grammarTerms}
-        onChange={setGrammarTerms}
-      />
-
-      <div className="space-y-2">
-        <Label>Layout</Label>
-        <Tabs
-          value={layout}
-          onValueChange={v => setLayout(v as QuestionSheetLayout)}
-        >
-          <TabsList>
-            <TabsTrigger value="list">List of questions</TabsTrigger>
-            <TabsTrigger value="grid">Grid / table</TabsTrigger>
-          </TabsList>
-        </Tabs>
-      </div>
-
-      {layout === "list"
-        ? (
-          <div className="space-y-4">
+      <Card>
+        <CardContent>
+          <CollapsibleSection
+            title="Details"
+            description="Title, notes, and the tags this sheet is filed under."
+          >
             <div className="space-y-1.5">
-              <Label htmlFor="qs-first-number">First question number</Label>
+              <Label htmlFor="qs-title">Title</Label>
               <Input
-                id="qs-first-number"
-                type="number"
-                min={1}
-                value={firstQuestionNumber}
-                onChange={e => setFirstQuestionNumber(e.target.value)}
-                className="w-24"
+                id="qs-title"
+                value={title}
+                onChange={(e) => {
+                  setTitle(e.target.value);
+                  setTitleTouched(true);
+                }}
+                placeholder="Genki I — Lesson 3 workbook"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="qs-notes">Notes</Label>
+              <Textarea
+                id="qs-notes"
+                value={notes}
+                onChange={e => setNotes(e.target.value)}
+                placeholder="Anything to remember about this exercise set (optional)"
+                rows={2}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Learning areas</Label>
+              <LearningAreaMultiSelect
+                value={learningAreas}
+                onChange={setLearningAreas}
               />
               <p className="text-xs text-muted-foreground">
-                If this section starts partway through a worksheet (e.g. Question 8), set the starting
-                number — the slots number up from there.
+                Tag the skills this sheet practises (optional). Answer sheets inherit these, and XP
+                from answering is split evenly across the areas you pick.
               </p>
             </div>
-            <QuestionListEditor
-              questions={questions}
-              onChange={setQuestions}
-              firstNumber={firstNumber}
+
+            <TermPicker
+              category="grammar"
+              label="Grammar tags"
+              value={grammarTerms}
+              onChange={setGrammarTerms}
             />
-          </div>
-        )
-        : (
-          <QuestionGridEditor
-            columns={columns}
-            rows={rows}
-            onColumnsChange={setColumns}
-            onRowsChange={setRows}
-          />
-        )}
+          </CollapsibleSection>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent>
+          <CollapsibleSection
+            title="Questions"
+            description="The questions themselves — a numbered list or a grid/table."
+          >
+            <div className="space-y-2">
+              <Label>Layout</Label>
+              <Tabs
+                value={layout}
+                onValueChange={v => setLayout(v as QuestionSheetLayout)}
+              >
+                <TabsList>
+                  <TabsTrigger value="list">List of questions</TabsTrigger>
+                  <TabsTrigger value="grid">Grid / table</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+
+            {layout === "list"
+              ? (
+                <div className="space-y-4">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="qs-first-number">First question number</Label>
+                    <Input
+                      id="qs-first-number"
+                      type="number"
+                      min={1}
+                      value={firstQuestionNumber}
+                      onChange={e => setFirstQuestionNumber(e.target.value)}
+                      className="w-24"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      If this section starts partway through a worksheet (e.g. Question 8), set the
+                      starting number — the slots number up from there.
+                    </p>
+                  </div>
+                  <QuestionListEditor
+                    questions={questions}
+                    onChange={setQuestions}
+                    firstNumber={firstNumber}
+                  />
+                </div>
+              )
+              : (
+                <QuestionGridEditor
+                  columns={columns}
+                  rows={rows}
+                  onColumnsChange={setColumns}
+                  onRowsChange={setRows}
+                />
+              )}
+          </CollapsibleSection>
+        </CardContent>
+      </Card>
 
       <div className="flex items-center gap-2">
         <Button
