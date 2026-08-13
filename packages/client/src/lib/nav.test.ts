@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 import { allNavSections, navFooterItems, navSections, sectionTiles } from "./nav";
+import { filterNavSections } from "./nav-search";
 
 const SRC_DIR = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -161,6 +162,20 @@ describe("nav sections", () => {
       .map(child => child.to);
     expect(repeated).toEqual([]);
   });
+
+  // Driven off the section list rather than literal labels, so renaming a section can't quietly
+  // leave a search test asserting on a heading that no longer exists (which is how the "Library"
+  // case in nav-search.test.ts went stale).
+  it.each(allNavSections.map(s => [s.label] as const))(
+    "searching the %s heading returns that section whole",
+    (label) => {
+      const shown = filterNavSections(allNavSections, label);
+      const match = shown.find(s => s.section.label === label);
+      expect(match, `searching "${label}" did not return its own section`).toBeDefined();
+      expect(match?.tiles.map(t => t.to))
+        .toEqual(sectionTiles(allNavSections.find(s => s.label === label)!).map(t => t.to));
+    },
+  );
 
   it("shows fewer sidebar rows than the homepage shows tiles", () => {
     // The point of folding children into their hub: the sidebar is a map, the homepage is the index.

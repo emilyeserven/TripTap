@@ -38,18 +38,18 @@ describe("filterNavSections", () => {
   });
 
   it("keeps every tile of a section whose heading matches", () => {
-    const shown = filterNavSections(allNavSections, "Library");
+    const shown = filterNavSections(allNavSections, "Knowledge");
     expect(shown).toHaveLength(1);
-    expect(shown[0]?.section.label).toBe("Library");
+    expect(shown[0]?.section.label).toBe("Knowledge");
     expect(shown[0]?.tiles.map(t => t.title)).toEqual(
-      sectionTiles(allNavSections.find(s => s.label === "Library")!).map(t => t.title),
+      sectionTiles(allNavSections.find(s => s.label === "Knowledge")!).map(t => t.title),
     );
   });
 
   it("drops sections left with no matching tiles", () => {
     const shown = filterNavSections(allNavSections, "Kanji");
     expect(shown.every(s => s.tiles.length > 0)).toBe(true);
-    expect(shown.map(s => s.section.label)).not.toContain("Action");
+    expect(shown.map(s => s.section.label)).not.toContain("Practice");
   });
 
   it("returns nothing when the query matches nothing", () => {
