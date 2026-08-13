@@ -7,6 +7,7 @@
 
 export * from "./activity.js";
 export * from "./answer-sheet.js";
+export * from "./attention.js";
 export * from "./ai-lesson.js";
 export * from "./chunk-card.js";
 export * from "./correction.js";

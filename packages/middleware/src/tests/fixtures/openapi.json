@@ -13647,6 +13647,104 @@
         }
       }
     },
+    "/api/settings/attention": {
+      "get": {
+        "tags": [
+          "settings"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "settings"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "hiddenKinds": {
+                    "type": [
+                      "array",
+                      "null"
+                    ],
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "sentence-correction",
+                        "ungraded-sheet",
+                        "word-note-sentence",
+                        "flashcard-pending",
+                        "recurring-drill",
+                        "rule-group-ready",
+                        "rewrite-ready",
+                        "sheet-due"
+                      ]
+                    }
+                  },
+                  "hiddenItems": {
+                    "type": [
+                      "array",
+                      "null"
+                    ],
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "kind",
+                        "id",
+                        "title",
+                        "hiddenAt"
+                      ],
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "sentence-correction",
+                            "ungraded-sheet",
+                            "word-note-sentence",
+                            "flashcard-pending",
+                            "recurring-drill",
+                            "rule-group-ready",
+                            "rewrite-ready",
+                            "sheet-due"
+                          ]
+                        },
+                        "id": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "title": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "hiddenAt": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
     "/api/settings/xp": {
       "get": {
         "tags": [

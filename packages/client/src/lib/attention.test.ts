@@ -1,8 +1,10 @@
 import type {
   AnswerSheet,
+  AttentionKind,
   CorrectionLog,
   CorrectionRuleGapGroup,
   DrillSession,
+  HiddenAttentionItem,
   Lesson,
   Sentence,
   QuestionSheet,
@@ -19,10 +21,12 @@ import {
   buildAttention,
   dueSheets,
   flashcardsPending,
+  hiddenItemKey,
   recurringDrills,
   rewriteReady,
   ruleGroupsReady,
   sentencesToCorrect,
+  toHiddenItem,
   ungradedSheets,
   wordNotesToBank,
 } from "./attention";
@@ -43,6 +47,16 @@ const emptyInputs = {
   writings: [],
   now: NOW,
 };
+
+/** A hide-list entry for a row, as the inbox page stores it. */
+function hiddenItem(kind: AttentionKind, id: string): HiddenAttentionItem {
+  return {
+    kind,
+    id,
+    title: id,
+    hiddenAt: "2026-08-08T00:00:00Z",
+  };
+}
 
 function mySentence(over: Partial<Sentence>): Sentence {
   return makeSentence({
@@ -499,5 +513,83 @@ describe("buildAttention", () => {
     });
     expect(group.items).toHaveLength(ATTENTION_GROUP_DISPLAY_LIMIT);
     expect(group.count).toBe(8);
+  });
+
+  it("drops hidden rows from their group before the cap, and from the count", () => {
+    const many = Array.from({
+      length: 8,
+    }, (_, i) => mySentence({
+      id: `ms${i}`,
+    }));
+    const [group] = buildAttention({
+      ...emptyInputs,
+      mySentences: many,
+      hidden: {
+        hiddenKinds: [],
+        hiddenItems: [
+          hiddenItem("sentence-correction", "ms0"),
+          hiddenItem("sentence-correction", "ms1"),
+        ],
+      },
+    });
+    expect(group.count).toBe(6);
+    expect(group.items.map(i => i.id)).not.toContain("ms0");
+    expect(group.items).toHaveLength(ATTENTION_GROUP_DISPLAY_LIMIT);
+  });
+
+  it("only hides a row within its own kind (ids are unique per kind, not globally)", () => {
+    const groups = buildAttention({
+      ...emptyInputs,
+      mySentences: [mySentence({
+        id: "shared-id",
+      })],
+      hidden: {
+        hiddenKinds: [],
+        hiddenItems: [hiddenItem("rewrite-ready", "shared-id")],
+      },
+    });
+    expect(groups.map(g => g.kind)).toEqual(["sentence-correction"]);
+  });
+
+  it("drops a hidden kind entirely, however many items it has", () => {
+    const groups = buildAttention({
+      ...emptyInputs,
+      mySentences: [mySentence({}), mySentence({
+        id: "ms2",
+      })],
+      hidden: {
+        hiddenKinds: ["sentence-correction"],
+        hiddenItems: [],
+      },
+    });
+    expect(groups).toEqual([]);
+  });
+});
+
+describe("hiddenItemKey", () => {
+  it("keys by kind and id together", () => {
+    expect(hiddenItemKey({
+      kind: "rewrite-ready",
+      id: "wr1",
+    })).toBe("rewrite-ready:wr1");
+    expect(hiddenItemKey({
+      kind: "sentence-correction",
+      id: "wr1",
+    })).not.toBe(hiddenItemKey({
+      kind: "rewrite-ready",
+      id: "wr1",
+    }));
+  });
+});
+
+describe("toHiddenItem", () => {
+  it("snapshots the row's kind, id, title and the time it was hidden", () => {
+    const [item] = sentencesToCorrect([mySentence({})], NOW);
+    expect(toHiddenItem(item, NOW)).toEqual({
+      kind: "sentence-correction",
+      id: "ms1",
+      title: "日本語で書いた文",
+      hiddenAt: NOW.toISOString(),
+    });
   });
 });
