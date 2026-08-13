@@ -1,5 +1,7 @@
 import { eq, inArray } from "drizzle-orm";
 import type {
+  AttentionKind,
+  AttentionSettings,
   BookmarksSettings,
   BookmarksSource,
   BookmarkSectionRef,
@@ -10,6 +12,7 @@ import type {
   DictionaryProvider,
   DictionarySettings,
   DrillTag,
+  HiddenAttentionItem,
   LearnerGoal,
   LearnerProfile,
   LearningArea,
@@ -24,6 +27,7 @@ import type {
   StartSettings,
   StartSuggestionKind,
   TheoryTag,
+  UpdateAttentionSettingsInput,
   UpdateBookmarksSettingsInput,
   UpdateDictionarySettingsInput,
   UpdateLearnerProfileInput,
@@ -36,6 +40,7 @@ import type {
   XpSettings,
 } from "@sentence-bank/types";
 import {
+  ATTENTION_KINDS,
   DEFAULT_XP_RATES,
   DRILL_TAGS,
   LEARNING_AREAS,
@@ -688,6 +693,83 @@ export async function updateStartSettings(input: UpdateStartSettingsInput): Prom
     await setSetting(START_KEYS.scheduledTasks, tasks.length > 0 ? JSON.stringify(tasks) : null);
   }
   return getStartSettings();
+}
+
+/** Settings keys for the "needs your attention" inbox's hide list. Not secrets. */
+const ATTENTION_KEYS = {
+  hiddenKinds: "attention.hiddenKinds",
+  hiddenItems: "attention.hiddenItems",
+} as const;
+
+/** Parse the stored hidden kinds: a JSON array filtered to known kinds; corrupt → empty. */
+export function parseHiddenAttentionKinds(raw: string | null): AttentionKind[] {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((k): k is AttentionKind =>
+      (ATTENTION_KINDS as readonly string[]).includes(k as string));
+  }
+  catch {
+    return [];
+  }
+}
+
+/** Parse the stored hidden rows, dropping entries without a known kind and a string id. */
+export function parseHiddenAttentionItems(raw: string | null): HiddenAttentionItem[] {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter((item): item is Record<string, unknown> => Boolean(item) && typeof item === "object")
+      .filter(item => typeof item.id === "string"
+        && (ATTENTION_KINDS as readonly string[]).includes(item.kind as string))
+      .map(item => ({
+        kind: item.kind as AttentionKind,
+        id: item.id as string,
+        title: typeof item.title === "string" ? item.title : null,
+        hiddenAt: typeof item.hiddenAt === "string" ? item.hiddenAt : new Date(0).toISOString(),
+      }));
+  }
+  catch {
+    return [];
+  }
+}
+
+/** The inbox hide list stored in the DB. */
+export async function getAttentionSettings(): Promise<AttentionSettings> {
+  const stored = await getSettings(Object.values(ATTENTION_KEYS));
+  return {
+    hiddenKinds: parseHiddenAttentionKinds(stored[ATTENTION_KEYS.hiddenKinds] ?? null),
+    hiddenItems: parseHiddenAttentionItems(stored[ATTENTION_KEYS.hiddenItems] ?? null),
+  };
+}
+
+/**
+ * Apply a partial update to the hide list. Tri-state per field: `undefined` leaves a value
+ * unchanged, `null`/`[]` clears it ("show everything again"), and an array replaces it whole — the
+ * client always sends the full list.
+ */
+export async function updateAttentionSettings(
+  input: UpdateAttentionSettingsInput,
+): Promise<AttentionSettings> {
+  if (input.hiddenKinds !== undefined) {
+    // Dedupe: the client sends the whole list, and a double-hide would otherwise stack up.
+    const kinds = [...new Set(input.hiddenKinds ?? [])];
+    await setSetting(ATTENTION_KEYS.hiddenKinds, kinds.length > 0 ? JSON.stringify(kinds) : null);
+  }
+  if (input.hiddenItems !== undefined) {
+    const seen = new Set<string>();
+    const items = (input.hiddenItems ?? []).filter((item) => {
+      const key = `${item.kind}:${item.id}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+    await setSetting(ATTENTION_KEYS.hiddenItems, items.length > 0 ? JSON.stringify(items) : null);
+  }
+  return getAttentionSettings();
 }
 
 /** Settings key holding the learner's XP-rate overrides as one JSON object. Not a secret. */

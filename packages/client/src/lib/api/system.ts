@@ -1,5 +1,6 @@
 /** Settings and external-proxy APIs: settings, bookmarks host, and dictionary lookup. */
 import type {
+  AttentionSettings,
   BookmarkRecord,
   BookmarkResource,
   BookmarkResourceList,
@@ -12,6 +13,7 @@ import type {
   LearnerProfile,
   RecognizeHandwritingInput,
   StartSettings,
+  UpdateAttentionSettingsInput,
   UpdateLearnerProfileInput,
   UpdateStartSettingsInput,
   UpdateXpSettingsInput,
@@ -38,6 +40,12 @@ export const settingsApi = {
   getStart: () => request<StartSettings>("/settings/start"),
   updateStart: (input: UpdateStartSettingsInput) =>
     request<StartSettings>("/settings/start", {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    }),
+  getAttention: () => request<AttentionSettings>("/settings/attention"),
+  updateAttention: (input: UpdateAttentionSettingsInput) =>
+    request<AttentionSettings>("/settings/attention", {
       method: "PATCH",
       body: JSON.stringify(input),
     }),

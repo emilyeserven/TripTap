@@ -1,5 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import type {
+  UpdateAttentionSettingsInput,
   UpdateBookmarksSettingsInput,
   UpdateDictionarySettingsInput,
   UpdateLearnerProfileInput,
@@ -8,8 +9,9 @@ import type {
   UpdateStartSettingsInput,
   UpdateXpSettingsInput,
 } from "@sentence-bank/types";
-import { XP_RATE_KEYS } from "@sentence-bank/types";
+import { ATTENTION_KINDS, XP_RATE_KEYS } from "@sentence-bank/types";
 import {
+  getAttentionSettings,
   getBookmarksSettings,
   getDictionarySettings,
   getLearnerProfile,
@@ -17,6 +19,7 @@ import {
   getRenshuuSettings,
   getStartSettings,
   getXpSettings,
+  updateAttentionSettings,
   updateBookmarksSettings,
   updateDictionarySettings,
   updateLearnerProfile,
@@ -438,6 +441,47 @@ const updateXpSettingsBody = {
   },
 } as const;
 
+/** One hidden inbox row: its kind + id, plus the title snapshot the hidden list displays. */
+const hiddenAttentionItemSchema = {
+  type: "object",
+  additionalProperties: false,
+  required: ["kind", "id", "title", "hiddenAt"],
+  properties: {
+    kind: {
+      type: "string",
+      enum: [...ATTENTION_KINDS],
+    },
+    id: {
+      type: "string",
+      minLength: 1,
+    },
+    title: {
+      type: ["string", "null"],
+    },
+    hiddenAt: {
+      type: "string",
+    },
+  },
+} as const;
+
+const updateAttentionSettingsBody = {
+  type: "object",
+  additionalProperties: false,
+  properties: {
+    hiddenKinds: {
+      type: ["array", "null"],
+      items: {
+        type: "string",
+        enum: [...ATTENTION_KINDS],
+      },
+    },
+    hiddenItems: {
+      type: ["array", "null"],
+      items: hiddenAttentionItemSchema,
+    },
+  },
+} as const;
+
 const updateDictionarySettingsBody = {
   type: "object",
   additionalProperties: false,
@@ -530,6 +574,21 @@ export async function settingsRoutes(app: FastifyInstance): Promise<void> {
     },
   }, async (req) => {
     return updateStartSettings(req.body as UpdateStartSettingsInput);
+  });
+
+  app.get("/api/settings/attention", {
+    schema: {
+      tags: ["settings"],
+    },
+  }, async () => getAttentionSettings());
+
+  app.patch("/api/settings/attention", {
+    schema: {
+      tags: ["settings"],
+      body: updateAttentionSettingsBody,
+    },
+  }, async (req) => {
+    return updateAttentionSettings(req.body as UpdateAttentionSettingsInput);
   });
 
   app.get("/api/settings/xp", {
