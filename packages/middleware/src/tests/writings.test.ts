@@ -31,6 +31,23 @@ test("POST /api/writings rejects a payload missing date", async () => {
   await app.close();
 });
 
+test("POST /api/writings accepts an optional title", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/writings",
+    payload: {
+      text: "今日は寒いです。",
+      language: "Japanese",
+      date: "2026-07-20",
+      title: "冬の日記",
+    },
+  });
+  // Valid payload — 201 with a DB, or a 5xx without one, but never a 400.
+  assert.notEqual(res.statusCode, 400);
+  await app.close();
+});
+
 test("POST /api/writings rejects a terms entry with an unknown category", async () => {
   const app = await buildApp();
   const res = await app.inject({

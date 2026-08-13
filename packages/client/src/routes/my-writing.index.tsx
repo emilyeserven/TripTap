@@ -39,6 +39,7 @@ function MyWritingPage() {
       if (onlyReady && !w.readyToReview) return false;
       if (!q) return true;
       return w.text.toLowerCase().includes(q)
+        || (w.title ?? "").toLowerCase().includes(q)
         || (w.meaning ?? "").toLowerCase().includes(q)
         || (w.comments ?? "").toLowerCase().includes(q);
     });
@@ -54,6 +55,9 @@ function MyWritingPage() {
         language: "Japanese",
         date: todayDateString(new Date()),
         readyToReview: false,
+        // Seed the entry's name from the prompt it came from; freeform entries stay untitled and
+        // list under their date until the learner names them.
+        title: seed?.promptTitle ?? null,
         promptTitle: seed?.promptTitle ?? null,
         promptText: seed?.promptText ?? null,
       },

@@ -158,6 +158,7 @@ function CollectionsPage() {
         language: "Japanese",
         date: todayDateString(new Date()),
         readyToReview: false,
+        title,
         promptTitle: title,
         promptText: null,
       },

@@ -1,10 +1,14 @@
 import type { NavDestination } from "@/lib/nav";
 
+import { useMemo, useState } from "react";
+
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { AttentionCard } from "@/components/AttentionCard";
+import { Input } from "@/components/ui/input";
 import { usePageTitle } from "@/hooks/usePageTitle";
-import { allNavSections, sectionTiles } from "@/lib/nav";
+import { allNavSections } from "@/lib/nav";
+import { filterNavSections } from "@/lib/nav-search";
 
 export const Route = createFileRoute("/")({
   component: HomePage,
@@ -46,6 +50,10 @@ function TileCard({
 
 function HomePage() {
   usePageTitle("Build your sentence bank");
+  const [search, setSearch] = useState("");
+
+  const shown = useMemo(() => filterNavSections(allNavSections, search), [search]);
+
   return (
     <div className="space-y-8">
       {/* The exhaustive index of the app — every destination, including the ones the sidebar folds
@@ -67,7 +75,28 @@ function HomePage() {
 
       <AttentionCard />
 
-      {allNavSections.map(section => (
+      <Input
+        type="search"
+        value={search}
+        onChange={e => setSearch(e.target.value)}
+        placeholder="Search the app…"
+        aria-label="Search homepage sections"
+        className="max-w-sm"
+      />
+
+      {shown.length === 0
+        ? (
+          <p className="text-muted-foreground">
+            Nothing matches “
+            {search.trim()}
+            ”.
+          </p>
+        )
+        : null}
+
+      {shown.map(({
+        section, tiles,
+      }) => (
         <section
           key={section.label}
           className="space-y-3"
@@ -83,9 +112,9 @@ function HomePage() {
               lg:grid-cols-3
             "
           >
-            {sectionTiles(section).map(tile => (
+            {tiles.map(tile => (
               <TileCard
-                key={tile.title}
+                key={`${tile.title}-${tile.to}`}
                 tile={tile}
               />
             ))}

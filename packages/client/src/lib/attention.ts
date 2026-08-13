@@ -1,7 +1,10 @@
 import type {
   AnswerSheet,
+  AttentionKind,
+  AttentionSettings,
   CorrectionLog,
   DrillSession,
+  HiddenAttentionItem,
   Lesson,
   QuestionSheet,
   ReadingSession,
@@ -18,6 +21,7 @@ import {
 } from "@/lib/answer-sheets";
 import { flaggedRecurringQuestions } from "@/lib/drill-recurring";
 import { formatDueDate, isDueSoon, isOverdue } from "@/lib/due-date";
+import { writingLabel } from "@/lib/writing-label";
 
 /**
  * The unified "needs your attention" inbox: one pure assembly over the lists the app already
@@ -25,21 +29,14 @@ import { formatDueDate, isDueSoon, isOverdue } from "@/lib/due-date";
  * (needs-correction sentences, ungraded sheets, unbanked word notes, unmade flashcards, recurring
  * drill mistakes, build-ready rule groups, rewrite-ready writings, due question sheets).
  *
- * There is deliberately no dismissal/snooze state: every kind except `rewrite-ready` clears itself
- * when acted on (the action mutates the row the filter reads), and recurring drill mistakes age out
- * of their 7-day window. Rewrite-ready items linger until rewritten — accepted for now; a snooze in
- * the Start settings blob is the v2 escape hatch if it grates.
+ * Nothing here is stored: every kind except `rewrite-ready` clears itself when acted on (the action
+ * mutates the row the filter reads), and recurring drill mistakes age out of their 7-day window. The
+ * one exception is the learner's hide list ({@link AttentionSettings}, stored server-side under
+ * `attention.*`), applied at the end of {@link buildAttention} — for rows that will never be acted on
+ * and kinds that aren't worth watching.
  */
 
-export type AttentionKind
-  = | "sentence-correction"
-    | "ungraded-sheet"
-    | "word-note-sentence"
-    | "flashcard-pending"
-    | "recurring-drill"
-    | "rule-group-ready"
-    | "rewrite-ready"
-    | "sheet-due";
+export type { AttentionKind, HiddenAttentionItem } from "@sentence-bank/types";
 
 /** One actionable row of the inbox, deep-linked to the exact place to act. */
 export interface AttentionItem {
@@ -83,6 +80,8 @@ export interface AttentionInputs {
   ruleGroups: RuleGroup[];
   writings: Writing[];
   now: Date;
+  /** The learner's hide list; absent means nothing is hidden. */
+  hidden?: AttentionSettings;
 }
 
 /** Cap on rows shown per group; the group's `count` still reports the uncapped total. */
@@ -265,7 +264,7 @@ export function rewriteReady(writings: Writing[], now: Date): AttentionItem[] {
       return {
         kind: "rewrite-ready" as const,
         id: w.id,
-        title: w.promptTitle ?? (truncate(w.text, 40) || "Untitled"),
+        title: writingLabel(w),
         detail: `${ageLabel(w.createdAt, now)} · ${corrections} correction${corrections === 1 ? "" : "s"}`,
         to: "/my-writing/rewrite",
         urgency: daysSince(w.createdAt, now),
@@ -304,80 +303,95 @@ export function dueSheets(
     .sort((a, b) => b.urgency - a.urgency);
 }
 
+/**
+ * The hide-list key for a row. An item's `id` is only unique within its kind (a rule-tag key and an
+ * entity id can collide), so both halves are part of the key.
+ */
+export function hiddenItemKey(entry: Pick<HiddenAttentionItem, "kind" | "id">): string {
+  return `${entry.kind}:${entry.id}`;
+}
+
+/** A row's hide-list entry, snapshotting the title so the hidden list can still name it. */
+export function toHiddenItem(item: AttentionItem, now: Date): HiddenAttentionItem {
+  return {
+    kind: item.kind,
+    id: item.id,
+    title: item.title,
+    hiddenAt: now.toISOString(),
+  };
+}
+
+/**
+ * Display label per kind. Lives outside {@link buildAttention} because the hidden list has to name a
+ * kind that, being hidden, produces no group to read a label off.
+ */
+export const ATTENTION_KIND_LABELS: Record<AttentionKind, string> = {
+  "sheet-due": "Question sheets due soon",
+  "sentence-correction": "Sentences to correct",
+  "ungraded-sheet": "Answer sheets to grade",
+  "word-note-sentence": "Words to bank",
+  "flashcard-pending": "Flashcards to make",
+  "recurring-drill": "Recurring drill mistakes",
+  "rule-group-ready": "Rule groups ready to build",
+  "rewrite-ready": "Ready to rewrite blind",
+};
+
 /** Cap a kind's items for display, keeping the uncapped total on the group. */
 function toGroup(
   kind: AttentionKind,
-  label: string,
   items: AttentionItem[],
   link?: Pick<AttentionGroup, "to" | "search">,
 ): AttentionGroup {
   return {
     kind,
-    label,
+    label: ATTENTION_KIND_LABELS[kind],
     items: items.slice(0, ATTENTION_GROUP_DISPLAY_LIMIT),
     count: items.length,
     ...link,
   };
 }
 
-/** Assemble the inbox: one group per kind with any items, in a fixed display order. */
+/**
+ * Assemble the inbox: one group per kind with any items, in a fixed display order. Hidden rows are
+ * dropped before the per-group cap, so a group's `count` (and the homepage badge) reflects only what
+ * the learner can still see; hidden kinds drop out entirely.
+ */
 export function buildAttention(inputs: AttentionInputs): AttentionGroup[] {
+  const hiddenKinds = new Set<AttentionKind>(inputs.hidden?.hiddenKinds ?? []);
+  const hiddenIds = new Set((inputs.hidden?.hiddenItems ?? []).map(hiddenItemKey));
+  const visible = (items: AttentionItem[]) => items.filter(i => !hiddenIds.has(hiddenItemKey(i)));
+
   const groups: AttentionGroup[] = [
     toGroup(
       "sheet-due",
-      "Question sheets due soon",
-      dueSheets(inputs.questionSheets, inputs.answerSheets, inputs.now),
+      visible(dueSheets(inputs.questionSheets, inputs.answerSheets, inputs.now)),
       {
         to: "/question-sheets",
       },
     ),
-    toGroup(
-      "sentence-correction",
-      "Sentences to correct",
-      sentencesToCorrect(inputs.mySentences, inputs.now),
-      {
-        to: "/sentences",
-        search: {
-          view: "mine",
-          needsCorrection: true,
-        },
+    toGroup("sentence-correction", visible(sentencesToCorrect(inputs.mySentences, inputs.now)), {
+      to: "/sentences",
+      search: {
+        view: "mine",
+        needsCorrection: true,
       },
-    ),
-    toGroup(
-      "ungraded-sheet",
-      "Answer sheets to grade",
-      ungradedSheets(inputs.questionSheets, inputs.answerSheets),
-      {
-        to: "/answer-sheets",
-      },
-    ),
-    toGroup("word-note-sentence", "Words to bank", wordNotesToBank(inputs.readingSessions), {
+    }),
+    toGroup("ungraded-sheet", visible(ungradedSheets(inputs.questionSheets, inputs.answerSheets)), {
+      to: "/answer-sheets",
+    }),
+    toGroup("word-note-sentence", visible(wordNotesToBank(inputs.readingSessions)), {
       to: "/reading-sessions",
     }),
-    toGroup(
-      "flashcard-pending",
-      "Flashcards to make",
-      flashcardsPending(inputs.readingSessions, inputs.lessons),
-    ),
-    toGroup(
-      "recurring-drill",
-      "Recurring drill mistakes",
-      recurringDrills(inputs.drillSessions, inputs.now),
-      {
-        to: "/drill-sessions/stats",
-      },
-    ),
-    toGroup(
-      "rule-group-ready",
-      "Rule groups ready to build",
-      ruleGroupsReady(inputs.correctionLog, inputs.ruleGroups),
-      {
-        to: "/corrections/groups",
-      },
-    ),
-    toGroup("rewrite-ready", "Ready to rewrite blind", rewriteReady(inputs.writings, inputs.now), {
+    toGroup("flashcard-pending", visible(flashcardsPending(inputs.readingSessions, inputs.lessons))),
+    toGroup("recurring-drill", visible(recurringDrills(inputs.drillSessions, inputs.now)), {
+      to: "/drill-sessions/stats",
+    }),
+    toGroup("rule-group-ready", visible(ruleGroupsReady(inputs.correctionLog, inputs.ruleGroups)), {
+      to: "/corrections/groups",
+    }),
+    toGroup("rewrite-ready", visible(rewriteReady(inputs.writings, inputs.now)), {
       to: "/my-writing/rewrite",
     }),
   ];
-  return groups.filter(g => g.count > 0);
+  return groups.filter(g => g.count > 0 && !hiddenKinds.has(g.kind));
 }

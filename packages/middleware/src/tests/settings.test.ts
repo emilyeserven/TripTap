@@ -9,6 +9,8 @@ import {
   parseDailyTasks,
   parseDeferredItems,
   parseFavoriteResourceIds,
+  parseHiddenAttentionItems,
+  parseHiddenAttentionKinds,
   parseScheduledTasks,
   serializeSource,
   serializeTagMap,
@@ -725,6 +727,95 @@ test("parseDailyLineup and parseFavoriteResourceIds tolerate corrupt values", ()
   })), null);
   assert.deepEqual(parseFavoriteResourceIds("not json"), []);
   assert.deepEqual(parseFavoriteResourceIds(JSON.stringify(["a", 2, "b"])), ["a", "b"]);
+});
+
+test("PATCH /api/settings/attention rejects an unknown attention kind", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "PATCH",
+    url: "/api/settings/attention",
+    payload: {
+      hiddenKinds: ["sentence-correction", "not-a-kind"],
+    },
+  });
+  assert.equal(res.statusCode, 400);
+  await app.close();
+});
+
+test("PATCH /api/settings/attention rejects a hidden item missing its id", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "PATCH",
+    url: "/api/settings/attention",
+    payload: {
+      hiddenItems: [{
+        kind: "rewrite-ready",
+        title: "Untitled",
+        hiddenAt: "2026-08-09T12:00:00Z",
+      }],
+    },
+  });
+  assert.equal(res.statusCode, 400);
+  await app.close();
+});
+
+test("PATCH /api/settings/attention accepts hidden kinds and rows", async () => {
+  const app = await buildApp();
+  // No database needed: this asserts only that a valid payload passes schema validation.
+  const res = await app.inject({
+    method: "PATCH",
+    url: "/api/settings/attention",
+    payload: {
+      hiddenKinds: ["flashcard-pending"],
+      hiddenItems: [{
+        kind: "rewrite-ready",
+        id: "wr1",
+        title: "映画について",
+        hiddenAt: "2026-08-09T12:00:00Z",
+      }],
+    },
+  });
+  assert.notEqual(res.statusCode, 400);
+  await app.close();
+});
+
+test("parseHiddenAttentionKinds keeps known kinds and tolerates corrupt values", () => {
+  assert.deepEqual(
+    parseHiddenAttentionKinds(JSON.stringify(["rewrite-ready", "made-up", 7])),
+    ["rewrite-ready"],
+  );
+  assert.deepEqual(parseHiddenAttentionKinds("not json"), []);
+  assert.deepEqual(parseHiddenAttentionKinds(null), []);
+});
+
+test("parseHiddenAttentionItems drops entries without a known kind and a string id", () => {
+  const items = parseHiddenAttentionItems(JSON.stringify([
+    {
+      kind: "rewrite-ready",
+      id: "wr1",
+      title: "映画について",
+      hiddenAt: "2026-08-09T12:00:00Z",
+    },
+    // Kept, with the missing title/timestamp defaulted rather than the row dropped.
+    {
+      kind: "sheet-due",
+      id: "qs1",
+    },
+    {
+      kind: "made-up",
+      id: "x1",
+    },
+    {
+      kind: "sheet-due",
+      id: 12,
+    },
+    null,
+  ]));
+  assert.deepEqual(items.map(i => i.id), ["wr1", "qs1"]);
+  assert.equal(items[0].title, "映画について");
+  assert.equal(items[1].title, null);
+  assert.equal(items[1].hiddenAt, new Date(0).toISOString());
+  assert.deepEqual(parseHiddenAttentionItems("not json"), []);
 });
 
 test("serializeSource stringifies a source and nulls an absent one", () => {

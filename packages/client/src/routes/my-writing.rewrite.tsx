@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useWritings } from "@/hooks/useWritings";
 import { rewriteReadyWritings } from "@/lib/attention";
+import { writingLabel } from "@/lib/writing-label";
 
 export const Route = createFileRoute("/my-writing/rewrite")({
   component: RewriteBlindPage,
@@ -66,7 +67,7 @@ function RewriteBlindPage() {
                 >
                   <div className="min-w-0">
                     <p className="truncate font-medium">
-                      {w.promptTitle ?? (w.text.slice(0, 40) || "Untitled")}
+                      {writingLabel(w)}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {w.date} · {w.corrections?.length ?? 0} corrections

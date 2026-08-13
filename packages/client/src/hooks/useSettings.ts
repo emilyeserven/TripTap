@@ -1,4 +1,5 @@
 import type {
+  UpdateAttentionSettingsInput,
   UpdateBookmarksSettingsInput,
   UpdateDictionarySettingsInput,
   UpdateLearnerProfileInput,
@@ -29,6 +30,23 @@ export function useLearnerProfile() {
 
 const XP_SETTINGS_KEY = ["settings", "xp"] as const;
 const START_SETTINGS_KEY = ["settings", "start"] as const;
+const ATTENTION_SETTINGS_KEY = ["settings", "attention"] as const;
+
+/** The inbox hide list: kinds and individual rows the learner chose not to see. */
+export function useAttentionSettings() {
+  return useQuery({
+    queryKey: ATTENTION_SETTINGS_KEY,
+    queryFn: settingsApi.getAttention,
+  });
+}
+
+export function useUpdateAttentionSettings() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: UpdateAttentionSettingsInput) => settingsApi.updateAttention(input),
+    onSuccess: data => queryClient.setQueryData(ATTENTION_SETTINGS_KEY, data),
+  });
+}
 
 /** The Start Something settings: local resource favorites + the (possibly stale) daily lineup. */
 export function useStartSettings() {
