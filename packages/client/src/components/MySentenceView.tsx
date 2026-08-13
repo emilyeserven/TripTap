@@ -26,8 +26,10 @@ export function MySentenceView({
   const categories = categoriesQuery.data ?? [];
   const corrected = ms.correction?.trim() ? ms.correction : null;
   const update = useUpdateSentence();
-  // Un-reviewed = still flagged and not yet corrected → offer the inline corrector.
-  const unreviewed = !corrected && ms.needsCorrection;
+  // No saved correction → offer the inline corrector, whether or not the sentence is still flagged.
+  // Rows created un-flagged (from a drill mistake, a reading line, a writing) otherwise had no way to
+  // be corrected from this page at all.
+  const uncorrected = !corrected;
   const [showOriginal, setShowOriginal] = useState(false);
   // Hovering a note below highlights the phrase it refers to in the sentence above.
   const [hoveredSnippet, setHoveredSnippet] = useState<string | null>(null);
@@ -37,10 +39,11 @@ export function MySentenceView({
 
   return (
     <div className="space-y-4">
-      {unreviewed
+      {uncorrected
         ? (
           <SentenceCorrector
             text={ms.text}
+            marks={ms.marks}
             reasoning={ms.explanation}
             onSave={r => update.mutate({
               id: ms.id,
@@ -88,7 +91,9 @@ export function MySentenceView({
         )
         : null}
 
-      {ms.explanation
+      {/* While the corrector is up it already exposes the explanation as an editable field, so the
+          read-only copy would just duplicate it. */}
+      {!uncorrected && ms.explanation
         ? (
           <div className="space-y-1">
             <Label className="text-sm">Explanation</Label>
