@@ -26,17 +26,22 @@ export function MySentenceMetaBadges({
       "
     >
       <Badge variant="secondary">{ms.language}</Badge>
-      {!corrected && ms.needsCorrection
-        ? (
-          <Badge
-            variant="outline"
-            className="gap-1 border-destructive/40 text-destructive"
-          >
-            <TriangleAlert className="size-3" />
-            Needs correction
-          </Badge>
-        )
-        : <Badge variant="outline">Corrected</Badge>}
+      {/* Three states, not two: flagged for review, corrected, or neither — an un-flagged sentence
+          with no saved correction isn't "Corrected", and saying so contradicts the corrector that the
+          detail view offers it. */}
+      {corrected
+        ? <Badge variant="outline">Corrected</Badge>
+        : ms.needsCorrection
+          ? (
+            <Badge
+              variant="outline"
+              className="gap-1 border-destructive/40 text-destructive"
+            >
+              <TriangleAlert className="size-3" />
+              Needs correction
+            </Badge>
+          )
+          : <Badge variant="outline">No correction</Badge>}
       {ms.derivedFromId
         ? (
           <Link
