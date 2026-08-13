@@ -21,6 +21,7 @@ import {
 } from "@/lib/answer-sheets";
 import { flaggedRecurringQuestions } from "@/lib/drill-recurring";
 import { formatDueDate, isDueSoon, isOverdue } from "@/lib/due-date";
+import { writingLabel } from "@/lib/writing-label";
 
 /**
  * The unified "needs your attention" inbox: one pure assembly over the lists the app already
@@ -263,7 +264,7 @@ export function rewriteReady(writings: Writing[], now: Date): AttentionItem[] {
       return {
         kind: "rewrite-ready" as const,
         id: w.id,
-        title: w.promptTitle ?? (truncate(w.text, 40) || "Untitled"),
+        title: writingLabel(w),
         detail: `${ageLabel(w.createdAt, now)} · ${corrections} correction${corrections === 1 ? "" : "s"}`,
         to: "/my-writing/rewrite",
         urgency: daysSince(w.createdAt, now),

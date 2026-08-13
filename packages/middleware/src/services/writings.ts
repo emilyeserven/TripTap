@@ -11,6 +11,7 @@ import { toIso } from "@/services/rows";
 function toWriting(row: WritingRow): Writing {
   return {
     id: row.id,
+    title: row.title ?? null,
     date: row.date,
     text: row.text,
     meaning: row.meaning,
@@ -30,6 +31,7 @@ function toWriting(row: WritingRow): Writing {
 function toInsert(input: CreateWritingInput) {
   return {
     date: input.date,
+    title: input.title ?? null,
     text: input.text,
     meaning: input.meaning ?? null,
     comments: input.comments ?? null,

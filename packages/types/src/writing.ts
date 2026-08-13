@@ -49,6 +49,11 @@ export interface WritingCorrection {
 /** A free-form writing entry. */
 export interface Writing {
   id: string;
+  /**
+   * Optional learner-given name for the entry; null if unnamed. The UI falls back to {@link date}
+   * so every writing still lists under a readable label instead of a slab of its own body text.
+   */
+  title: string | null;
   /** ISO date (YYYY-MM-DD) the writing was worked on, for grouping activity by day. */
   date: string;
   /** The free-write body — may hold multiple sentences and line breaks. */
@@ -90,6 +95,8 @@ export const createWritingSchema = z.object({
   language: z.string().min(1),
   /** ISO date (YYYY-MM-DD) the writing was worked on. */
   date: isoDateString(),
+  /** Optional name for the entry; null/omitted falls back to the date in the UI. */
+  title: z.string().nullable().optional(),
   meaning: z.string().nullable().optional(),
   comments: z.string().nullable().optional(),
   /** Defaults to false server-side when omitted. */

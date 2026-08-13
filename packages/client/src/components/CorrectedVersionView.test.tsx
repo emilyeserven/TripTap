@@ -20,6 +20,7 @@ function correction(over: Partial<WritingCorrection> = {}): WritingCorrection {
 function writing(over: Partial<Writing> = {}): Writing {
   return {
     id: "w1",
+    title: null,
     date: "2026-08-04",
     // Two lines: the first is corrected (with a note), the second was left untouched.
     text: "猫がいる。\n私は学生です。",

@@ -2392,6 +2392,12 @@
                     "type": "string",
                     "format": "date"
                   },
+                  "title": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
                   "meaning": {
                     "type": [
                       "string",
@@ -2592,6 +2598,12 @@
                   "date": {
                     "type": "string",
                     "format": "date"
+                  },
+                  "title": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
                   },
                   "meaning": {
                     "type": [

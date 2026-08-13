@@ -14,6 +14,7 @@ import { useSentences } from "@/hooks/useSentences";
 import { useBookmarksSettings } from "@/hooks/useSettings";
 import { useWritings } from "@/hooks/useWritings";
 import { resourceLearningAreas } from "@/lib/collections";
+import { writingLabel } from "@/lib/writing-label";
 
 export const Route = createFileRoute("/reading-writing/")({
   component: ReadingWritingPage,
@@ -180,7 +181,7 @@ function ReadingWritingPage() {
                       hover:underline
                     "
                   >
-                    {w.text.trim() || w.promptTitle || "(untitled)"}
+                    {writingLabel(w)}
                   </Link>
                 </li>
               ))}

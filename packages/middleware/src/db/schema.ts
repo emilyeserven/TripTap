@@ -284,6 +284,8 @@ export const writings = pgTable("writings", {
   date: date("date", {
     mode: "string",
   }).notNull(),
+  /** Optional learner-given name; null falls back to the date as the entry's label. */
+  title: text("title"),
   text: text("text").notNull(),
   /** What the learner intended to say; null if none. */
   meaning: text("meaning"),
