@@ -1,0 +1,1 @@
+ALTER TABLE "writings" ADD COLUMN "title" text;

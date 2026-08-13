@@ -17,9 +17,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { formatWritingDate } from "@/lib/writing-label";
 
 /** The autosaved fields of a writing (corrections are managed separately in correction mode). */
 interface Draft {
+  title: string;
   date: string;
   text: string;
   meaning: string;
@@ -31,6 +33,7 @@ interface Draft {
 
 function toDraft(w: Writing): Draft {
   return {
+    title: w.title ?? "",
     date: w.date,
     text: w.text,
     meaning: w.meaning ?? "",
@@ -43,6 +46,7 @@ function toDraft(w: Writing): Draft {
 
 function toInput(draft: Draft): UpdateWritingInput {
   return {
+    title: draft.title.trim() || null,
     date: draft.date,
     text: draft.text,
     meaning: draft.meaning || null,
@@ -156,16 +160,38 @@ export function WritingEditor({
 
       <div
         className="
-          space-y-1.5
-          sm:max-w-xs
+          grid gap-4
+          sm:grid-cols-[1fr_auto]
         "
       >
-        <Label className="text-sm">Date</Label>
-        <Input
-          type="date"
-          value={draft.date}
-          onChange={e => set("date", e.target.value)}
-        />
+        <div className="space-y-1.5">
+          <Label
+            className="text-sm"
+            htmlFor="writing-title"
+          >
+            Title
+          </Label>
+          <Input
+            id="writing-title"
+            value={draft.title}
+            onChange={e => set("title", e.target.value)}
+            placeholder={`Optional — defaults to ${formatWritingDate(draft.date)}`}
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label
+            className="text-sm"
+            htmlFor="writing-date"
+          >
+            Date
+          </Label>
+          <Input
+            id="writing-date"
+            type="date"
+            value={draft.date}
+            onChange={e => set("date", e.target.value)}
+          />
+        </div>
       </div>
 
       {correcting

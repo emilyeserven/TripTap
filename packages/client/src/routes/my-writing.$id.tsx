@@ -3,7 +3,9 @@ import { ArrowLeft } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { WritingEditor } from "@/components/WritingEditor";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { useDeleteWriting, useWriting } from "@/hooks/useWritings";
+import { writingLabel } from "@/lib/writing-label";
 
 export const Route = createFileRoute("/my-writing/$id")({
   component: WritingEntryPage,
@@ -18,6 +20,7 @@ function WritingEntryPage() {
     data, isLoading, error,
   } = useWriting(id);
   const deleteWriting = useDeleteWriting();
+  usePageTitle(data ? writingLabel(data) : "");
 
   return (
     <section className="max-w-3xl space-y-6">
