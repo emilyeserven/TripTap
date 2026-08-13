@@ -12,6 +12,7 @@ import { useDialogues } from "@/hooks/useDialogues";
 import { useListeningSessions } from "@/hooks/useListeningSessions";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useBookmarksSettings } from "@/hooks/useSettings";
+import { useShadowingLists } from "@/hooks/useShadowingLists";
 import { useShadowingSessions } from "@/hooks/useShadowingSessions";
 import { matchesMediaKind, resourceLearningAreas } from "@/lib/collections";
 
@@ -43,6 +44,7 @@ function SpeakingListeningPage() {
   const settings = useBookmarksSettings();
   const listeningSessions = useListeningSessions();
   const shadowingSessions = useShadowingSessions();
+  const shadowingLists = useShadowingLists();
   const dialogues = useDialogues();
 
   const [mediaKind, setMediaKind] = useState<ResourceMediaKind>("all");
@@ -115,6 +117,14 @@ function SpeakingListeningPage() {
       View all →
     </Link>
   );
+  const shadowingListsViewAll = (
+    <Link
+      to="/shadowing-lists"
+      className={VIEW_ALL_CLASS}
+    >
+      View all →
+    </Link>
+  );
   const dialoguesViewAll = (
     <Link
       to="/dialogues"
@@ -129,7 +139,8 @@ function SpeakingListeningPage() {
       <div>
         <h1 className="text-2xl font-semibold">Speaking &amp; Listening</h1>
         <p className="text-sm text-muted-foreground">
-          Resources tagged Listening or Speaking, plus your listening and shadowing sessions.
+          Resources tagged Listening or Speaking, plus your listening and shadowing sessions,
+          shadowing lists, and dialogues.
         </p>
       </div>
 
@@ -199,6 +210,34 @@ function SpeakingListeningPage() {
                     "
                   >
                     {ss.title}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+      </HubSection>
+
+      <HubSection
+        title="Shadowing Lists"
+        action={shadowingListsViewAll}
+      >
+        {(shadowingLists.data ?? []).length === 0
+          ? <p className="text-sm text-muted-foreground">No shadowing lists yet.</p>
+          : (
+            <ul className="space-y-1.5">
+              {(shadowingLists.data ?? []).slice(0, PREVIEW_LIMIT).map(sl => (
+                <li key={sl.id}>
+                  <Link
+                    to="/shadowing-lists/$id"
+                    params={{
+                      id: sl.id,
+                    }}
+                    className="
+                      block truncate text-sm
+                      hover:underline
+                    "
+                  >
+                    {sl.name}
                   </Link>
                 </li>
               ))}
