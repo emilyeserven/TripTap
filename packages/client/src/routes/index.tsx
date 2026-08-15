@@ -20,7 +20,6 @@ function TileCard({
   return (
     <Link
       to={tile.to}
-      search={tile.search}
       className="
         group flex flex-col gap-2 rounded-xl border bg-card p-4
         text-card-foreground shadow-sm transition-colors
@@ -57,9 +56,21 @@ function HomePage() {
 
   return (
     <div className="space-y-8">
+      {/* The exhaustive index of the app — every destination, including the ones the sidebar folds
+          into their hub page. For what to actually do today, that's the Start Something page. */}
       <p className="text-muted-foreground">
-        sentence-bank is a self-deployable app for building your personal bank of example
-        sentences. Jump into any section below to get started.
+        Every part of the app, grouped by what you&rsquo;d be doing. For today&rsquo;s plan, head to
+        {" "}
+        <Link
+          to="/start"
+          className="
+            text-primary
+            hover:underline
+          "
+        >
+          Start Something
+        </Link>
+        .
       </p>
 
       <AttentionCard />

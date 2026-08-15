@@ -18,7 +18,6 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
-  SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
@@ -37,11 +36,12 @@ function isItemActive(pathname: string, to: string) {
   return pathname === to || pathname.startsWith(`${to}/`);
 }
 
+/** A single sidebar row. Page-backed parents render through here too, as a plain link. */
 function NavItem({
   item,
   pathname,
 }: {
-  item: NavDestination;
+  item: Pick<NavDestination, "title" | "to" | "icon">;
   pathname: string;
 }) {
   return (
@@ -51,10 +51,7 @@ function NavItem({
         isActive={isItemActive(pathname, item.to)}
         tooltip={item.title}
       >
-        <Link
-          to={item.to}
-          search={item.search}
-        >
+        <Link to={item.to}>
           <item.icon />
           <span>{item.title}</span>
         </Link>
@@ -63,6 +60,10 @@ function NavItem({
   );
 }
 
+/**
+ * A grouping-only parent (no page of its own), which is the only kind the sidebar expands — a
+ * parent that has a page lists its children there instead. See the rule in `lib/nav.ts`.
+ */
 function NavNestedItem({
   item,
   pathname,
@@ -78,49 +79,18 @@ function NavNestedItem({
       className="group/collapsible"
     >
       <SidebarMenuItem>
-        {item.to
-          ? (
-            <>
-              <SidebarMenuButton
-                asChild
-                isActive={isItemActive(pathname, item.to)}
-                tooltip={item.title}
-              >
-                <Link to={item.to}>
-                  <item.icon />
-                  <span>{item.title}</span>
-                </Link>
-              </SidebarMenuButton>
-              <CollapsibleTrigger asChild>
-                <SidebarMenuAction
-                  className="
-                    transition-transform
-                    group-data-[state=open]/collapsible:rotate-90
-                  "
-                >
-                  <ChevronRightIcon />
-                  <span className="sr-only">
-                    Toggle
-                    {item.title}
-                  </span>
-                </SidebarMenuAction>
-              </CollapsibleTrigger>
-            </>
-          )
-          : (
-            <CollapsibleTrigger asChild>
-              <SidebarMenuButton tooltip={item.title}>
-                <item.icon />
-                <span>{item.title}</span>
-                <ChevronRightIcon
-                  className="
-                    ml-auto transition-transform
-                    group-data-[state=open]/collapsible:rotate-90
-                  "
-                />
-              </SidebarMenuButton>
-            </CollapsibleTrigger>
-          )}
+        <CollapsibleTrigger asChild>
+          <SidebarMenuButton tooltip={item.title}>
+            <item.icon />
+            <span>{item.title}</span>
+            <ChevronRightIcon
+              className="
+                ml-auto transition-transform
+                group-data-[state=open]/collapsible:rotate-90
+              "
+            />
+          </SidebarMenuButton>
+        </CollapsibleTrigger>
         <CollapsibleContent>
           <SidebarMenuSub>
             {item.children.map(child => (
@@ -129,10 +99,7 @@ function NavNestedItem({
                   asChild
                   isActive={isItemActive(pathname, child.to)}
                 >
-                  <Link
-                    to={child.to}
-                    search={child.search}
-                  >
+                  <Link to={child.to}>
                     <child.icon />
                     <span>{child.title}</span>
                   </Link>
@@ -277,29 +244,45 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
           </SidebarMenu>
         </SidebarGroup>
 
-        {/* Action first — the "start a task" entry points sit directly below Start Something. */}
+        {/* Today first — the backlogs waiting on you sit directly below Start Something. */}
         {navSections.map(section => (
           <NavSection
             key={section.label}
             label={section.label}
           >
             <SidebarMenu>
-              {section.items.map(item =>
-                "children" in item
-                  ? (
-                    <NavNestedItem
-                      key={item.title}
-                      item={item}
-                      pathname={pathname}
-                    />
-                  )
-                  : (
-                    <NavItem
-                      key={item.to}
-                      item={item}
-                      pathname={pathname}
-                    />
-                  ))}
+              {section.items.map((item) => {
+                // A parent with its own page is one plain row: its hub page is where the children
+                // live. Only grouping-only parents, which have no page to link from, expand here.
+                if ("children" in item) {
+                  return item.to
+                    ? (
+                      <NavItem
+                        key={item.to}
+                        item={{
+                          title: item.title,
+                          to: item.to,
+                          icon: item.icon,
+                        }}
+                        pathname={pathname}
+                      />
+                    )
+                    : (
+                      <NavNestedItem
+                        key={item.title}
+                        item={item}
+                        pathname={pathname}
+                      />
+                    );
+                }
+                return (
+                  <NavItem
+                    key={item.to}
+                    item={item}
+                    pathname={pathname}
+                  />
+                );
+              })}
             </SidebarMenu>
           </NavSection>
         ))}

@@ -25,7 +25,7 @@ import {
   MessagesSquareIcon,
   MicIcon,
   NotebookPenIcon,
-  PencilRulerIcon,
+  PackageOpenIcon,
   PenLineIcon,
   Repeat2Icon,
   ScrollTextIcon,
@@ -43,8 +43,17 @@ import {
  * The single source of truth for app navigation: the sidebar and the homepage tile grid are both
  * derived from the sections below, so a new feature is added in exactly one place.
  *
- * Grouping follows the sidebar. The homepage renders the same sections as tile grids, flattening
- * nested children into tiles alongside their parent.
+ * The sections answer "what am I doing?", not "what table is this?":
+ *   Today     — the queue waiting on you right now.
+ *   Practice  — sitting down and doing the work (everything that earns XP).
+ *   Knowledge — the reference bank the practice builds up.
+ *   Material  — where the study material comes from.
+ *   Setup     — moving data in and out, and how the app is wired up.
+ *
+ * **A parent that has its own page must list its children on that page, because the sidebar will
+ * not.** The sidebar renders a page-backed parent as a single plain link and only expands
+ * grouping-only parents (the ones with no `to`), so a hub page is the way in to its children. The
+ * homepage is the exhaustive index and still tiles every child alongside its parent.
  */
 
 /** A place you can navigate to — a sidebar link and a homepage tile. */
@@ -52,18 +61,20 @@ export interface NavDestination {
   /** Sidebar label and tile title. */
   title: string;
   to: string;
-  /** Search params the link carries (e.g. a view of the unified Sentences page). */
-  search?: Record<string, string>;
   icon: LucideIcon;
   /** One-line, second-person blurb shown on the homepage tile. */
   description: string;
 }
 
-/** A destination that also nests children under it in the sidebar. */
+/** A destination that also nests children under it. */
 export interface NavParent {
   title: string;
   icon: LucideIcon;
-  /** Omitted for grouping-only entries (e.g. Import & Export) that exist only to hold children. */
+  /**
+   * Omitted for grouping-only entries (e.g. Import & Export) that exist only to hold children —
+   * those are the only parents the sidebar expands. A parent that sets `to` renders as a plain
+   * sidebar link, so its page has to link to each child itself.
+   */
   to?: string;
   /** Omitted alongside `to` — a grouping-only entry gets no tile of its own. */
   description?: string;
@@ -88,9 +99,10 @@ export const startSomething: NavDestination = {
     "See your XP per learning area and get a recommendation for what to practice next.",
 };
 
-const startSomethingSection: NavSection = {
-  label: "Start Something",
-  description: "Get a quick, contained task picked from your XP and goals.",
+/** The backlogs that are waiting on you — the first thing to look at when you sit down. */
+const todaySection: NavSection = {
+  label: "Today",
+  description: "What's waiting on you right now.",
   items: [
     startSomething,
     {
@@ -99,13 +111,39 @@ const startSomethingSection: NavSection = {
       icon: InboxIcon,
       description: "Everything you flagged for later — corrections, grading, words, flashcards.",
     },
+    {
+      title: "Corrections",
+      to: "/corrections",
+      icon: ListChecksIcon,
+      description: "Work through the corrections you've been given.",
+      children: [
+        {
+          title: "Triage",
+          to: "/corrections/triage",
+          icon: SpellCheckIcon,
+          description: "Sort new corrections into the rules you want to fix.",
+        },
+        {
+          title: "Error Log",
+          to: "/corrections/log",
+          icon: ScrollTextIcon,
+          description: "Every correction you've logged, in one place.",
+        },
+        {
+          title: "Rule Groups",
+          to: "/corrections/groups",
+          icon: LayersIcon,
+          description: "Group related mistakes into rules to study.",
+        },
+      ],
+    },
   ],
 };
 
-/** Quick starts for the handful of things you do most often. */
-const actionSection: NavSection = {
-  label: "Action",
-  description: "Jump straight into the task you sat down to do.",
+/** Sitting down and doing the work — every activity that earns XP, grouped by skill. */
+const practiceSection: NavSection = {
+  label: "Practice",
+  description: "Sit down and do the work.",
   items: [
     {
       title: "Capture",
@@ -114,46 +152,11 @@ const actionSection: NavSection = {
       description: "Snap or paste text and run it through OCR to mine sentences.",
     },
     {
-      title: "Start Lesson",
-      to: "/lessons/new",
-      icon: BookAIcon,
-      description: "Write up a tutoring lesson while it's still fresh.",
-    },
-    {
-      title: "Start Drills",
-      to: "/drill-sessions/new",
-      icon: DrillIcon,
-      description: "Run a timed drill and log the mistakes you make.",
-    },
-  ],
-};
-
-/** Everything you practise with, plus the import/export tools that act on the bank. */
-const inputOutputSection: NavSection = {
-  label: "Input & Output",
-  description: "Study and work with the sentences you've collected.",
-  items: [
-    {
-      title: "Grammar",
-      to: "/grammar-notes",
-      icon: SpellCheckIcon,
-      description: "Your own notes on grammar points, with the sheets that practise them.",
-    },
-    {
       title: "Reading & Writing",
       to: "/reading-writing",
       icon: BookOpenTextIcon,
       description: "Pick a reading or writing task to sit down with.",
       children: [
-        {
-          title: "Study Sentences",
-          to: "/sentences",
-          search: {
-            view: "practice",
-          },
-          icon: NotebookPenIcon,
-          description: "Drill your saved sentences in focused practice sessions.",
-        },
         {
           title: "My Writing",
           to: "/my-writing",
@@ -161,27 +164,18 @@ const inputOutputSection: NavSection = {
           description: "Compose and track your own writing.",
         },
         {
-          title: "My Sentences",
-          to: "/sentences",
-          search: {
-            view: "mine",
-          },
-          icon: PencilRulerIcon,
-          description: "The sentences you've written yourself.",
-        },
-        {
-          title: "Reading Session",
+          title: "Reading Sessions",
           to: "/reading-sessions",
           icon: BookOpenIcon,
           description: "Track what you read and what you pull from it.",
         },
+        {
+          title: "Writing Prompts",
+          to: "/writing-prompts",
+          icon: LightbulbIcon,
+          description: "Prompts to spark your own writing.",
+        },
       ],
-    },
-    {
-      title: "Exercises",
-      to: "/exercises",
-      icon: BookMarkedIcon,
-      description: "Work through textbook and worksheet exercises, questions and answers in one place.",
     },
     {
       title: "Speaking & Listening",
@@ -216,11 +210,23 @@ const inputOutputSection: NavSection = {
       ],
     },
     {
-      title: "Drill Sessions",
+      title: "Exercises",
+      to: "/exercises",
+      icon: BookMarkedIcon,
+      description: "Work through textbook and worksheet exercises, questions and answers in one place.",
+    },
+    {
+      title: "Drills",
       to: "/drill-sessions",
       icon: TargetIcon,
       description: "Review your timed drills and what they turned up.",
       children: [
+        {
+          title: "Start Drills",
+          to: "/drill-sessions/new",
+          icon: DrillIcon,
+          description: "Run a timed drill and log the mistakes you make.",
+        },
         {
           title: "Mistake Reasons",
           to: "/drill-sessions/reasons",
@@ -236,114 +242,44 @@ const inputOutputSection: NavSection = {
       ],
     },
     {
-      title: "Correction Triage",
-      to: "/corrections",
-      icon: ListChecksIcon,
-      description: "Work through the corrections you've been given.",
-      children: [
-        {
-          title: "Triage",
-          to: "/corrections/triage",
-          icon: SpellCheckIcon,
-          description: "Sort new corrections into the rules you want to fix.",
-        },
-        {
-          title: "Error Log",
-          to: "/corrections/log",
-          icon: ScrollTextIcon,
-          description: "Every correction you've logged, in one place.",
-        },
-        {
-          title: "Rule Groups",
-          to: "/corrections/groups",
-          icon: LayersIcon,
-          description: "Group related mistakes into rules to study.",
-        },
-      ],
-    },
-    {
       title: "Theory Study",
       to: "/theory-sessions",
       icon: BrainIcon,
       description: "Sit down with a grammar or theory topic and take notes.",
     },
-    {
-      title: "Import & Export",
-      icon: ArrowDownUpIcon,
-      children: [
-        {
-          title: "Migaku import",
-          to: "/migaku-import",
-          icon: LayersIcon,
-          description: "Bring in a Migaku or Anki deck and pick what to keep.",
-        },
-        {
-          title: "Renshuu export",
-          to: "/renshuu",
-          icon: SendIcon,
-          description: "Export sentences to Renshuu for drilling.",
-        },
-        {
-          title: "Anki export",
-          to: "/anki",
-          icon: LayersIcon,
-          description: "Export sentences to Anki flashcards.",
-        },
-      ],
-    },
   ],
 };
 
-/** { Resources, Lessons, AI Lessons, Captures, … } — source material to mine from. */
-const collectionsSection: NavSection = {
-  label: "Collections",
-  description: "The source material you mine sentences from.",
+/** The reference bank the practice builds up — one entry per thing you accumulate. */
+const knowledgeSection: NavSection = {
+  label: "Knowledge",
+  description: "Everything you've learned, in one bank.",
   items: [
     {
-      title: "Resources",
-      to: "/collections",
-      icon: TelescopeIcon,
-      description: "The books, shows, and articles you're working through.",
+      // One entry for the whole unified page — bank / mine / study / all are its `?view=` tabs, so
+      // extra sidebar shortcuts would only light up together (the active check ignores search).
+      title: "Sentences",
+      to: "/sentences",
+      icon: ScrollTextIcon,
+      description: "Every sentence you've banked, written, or set aside to study.",
     },
     {
-      title: "Lessons",
-      to: "/lessons",
-      icon: BookAIcon,
-      description: "Records of your tutoring lessons.",
+      title: "Vocabulary",
+      to: "/vocabulary",
+      icon: BookOpenIcon,
+      description: "Words you're building fluency with.",
     },
     {
-      title: "AI Lessons",
-      to: "/ai-lessons",
-      icon: GraduationCapIcon,
-      description: "AI Lesson notes and material to draw from.",
+      title: "Kanji",
+      to: "/kanji",
+      icon: LanguagesIcon,
+      description: "Every character you've met, how often, and where.",
     },
     {
-      title: "Captures",
-      to: "/captures",
-      icon: ImagesIcon,
-      description: "Everything you've captured, ready to process.",
-    },
-    {
-      // Renamed from "Sources" to stop colliding with the bookmarks "Resources" entry above — this
-      // is the local free-text provenance table for sentences, not the remote study-material channel.
-      title: "Sentence Origins",
-      to: "/sources",
-      icon: DatabaseIcon,
-      description: "Where your sentences come from — books, shows, articles.",
-    },
-  ],
-};
-
-/** The study bank itself. */
-const librarySection: NavSection = {
-  label: "Library",
-  description: "Your personal study bank.",
-  items: [
-    {
-      title: "Tutors",
-      to: "/tutors",
-      icon: UserRoundIcon,
-      description: "The tutors you take lessons with.",
+      title: "Grammar",
+      to: "/grammar-notes",
+      icon: SpellCheckIcon,
+      description: "Your own notes on grammar points, with the sheets that practise them.",
     },
     {
       title: "Culture",
@@ -359,29 +295,92 @@ const librarySection: NavSection = {
         },
       ],
     },
+  ],
+};
+
+/** Where the material comes from: the shelves you mine, and the people and captures behind them. */
+const materialSection: NavSection = {
+  label: "Material",
+  description: "Where your study material comes from.",
+  items: [
     {
-      title: "Vocabulary",
-      to: "/vocabulary",
-      icon: BookOpenIcon,
-      description: "Words you're building fluency with.",
+      title: "Resources",
+      to: "/collections",
+      icon: TelescopeIcon,
+      description: "The books, shows, and articles you're working through.",
     },
     {
-      title: "Sentences",
-      to: "/sentences",
-      icon: ScrollTextIcon,
-      description: "Your bank of example sentences.",
+      // The local free-text provenance table for sentences, kept a sibling of Resources rather than
+      // nested under it: /collections is the bookmarks-backed browser and never links here, and a
+      // hub may only own children it actually surfaces. The rename off "Sources" separates the two.
+      title: "Sentence Origins",
+      to: "/sources",
+      icon: DatabaseIcon,
+      description: "Where your sentences come from — books, shows, articles.",
     },
     {
-      title: "Kanji",
-      to: "/kanji",
-      icon: LanguagesIcon,
-      description: "Every character you've met, how often, and where.",
+      title: "Lessons",
+      to: "/lessons",
+      icon: BookAIcon,
+      description: "Records of your tutoring lessons.",
+      children: [
+        {
+          title: "Start Lesson",
+          to: "/lessons/new",
+          icon: NotebookPenIcon,
+          description: "Write up a tutoring lesson while it's still fresh.",
+        },
+      ],
     },
     {
-      title: "Writing Prompts",
-      to: "/writing-prompts",
-      icon: LightbulbIcon,
-      description: "Prompts to spark your own writing.",
+      title: "AI Lessons",
+      to: "/ai-lessons",
+      icon: GraduationCapIcon,
+      description: "AI Lesson notes and material to draw from.",
+    },
+    {
+      title: "Tutors",
+      to: "/tutors",
+      icon: UserRoundIcon,
+      description: "The tutors you take lessons with.",
+    },
+    {
+      title: "Captures",
+      to: "/captures",
+      icon: ImagesIcon,
+      description: "Everything you've captured, ready to process.",
+    },
+  ],
+};
+
+/** Moving the bank in and out, plus the two footer items the sidebar pins to the bottom. */
+const setupSection: NavSection = {
+  label: "Setup",
+  description: "Import, export, and how the app is wired up.",
+  items: [
+    {
+      title: "Import & Export",
+      icon: ArrowDownUpIcon,
+      children: [
+        {
+          title: "Migaku import",
+          to: "/migaku-import",
+          icon: PackageOpenIcon,
+          description: "Bring in a Migaku or Anki deck and pick what to keep.",
+        },
+        {
+          title: "Renshuu export",
+          to: "/renshuu",
+          icon: SendIcon,
+          description: "Export sentences to Renshuu for drilling.",
+        },
+        {
+          title: "Anki export",
+          to: "/anki",
+          icon: LayersIcon,
+          description: "Export sentences to Anki flashcards.",
+        },
+      ],
     },
   ],
 };
@@ -402,26 +401,25 @@ export const navFooterItems: readonly NavDestination[] = [
   },
 ];
 
-/** The same footer items as a plain section at the end of the homepage. */
-export const navFooterSection: NavSection = {
-  label: "Profile & Settings",
-  description: "Your goals, and how the app is wired up.",
-  items: navFooterItems,
-};
-
 /** The sections the sidebar lists below its Start Something button, in order. */
 export const navSections: readonly NavSection[] = [
-  actionSection,
-  inputOutputSection,
-  collectionsSection,
-  librarySection,
+  todaySection,
+  practiceSection,
+  knowledgeSection,
+  materialSection,
+  setupSection,
 ];
 
-/** Every section, including the ones the sidebar renders specially. Drives the homepage tiles. */
+/**
+ * Every section as the homepage renders them. The footer items join Setup there, so the homepage
+ * stays the exhaustive index while the sidebar keeps them pinned to its bottom edge.
+ */
 export const allNavSections: readonly NavSection[] = [
-  startSomethingSection,
-  ...navSections,
-  navFooterSection,
+  ...navSections.slice(0, -1),
+  {
+    ...setupSection,
+    items: [...setupSection.items, ...navFooterItems],
+  },
 ];
 
 /** Flatten a section into homepage tiles: nested children sit alongside their parent. */

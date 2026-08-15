@@ -12,6 +12,7 @@ import { usePageTitle } from "@/hooks/usePageTitle";
 import { useReadingSessions } from "@/hooks/useReadingSessions";
 import { useSentences } from "@/hooks/useSentences";
 import { useBookmarksSettings } from "@/hooks/useSettings";
+import { useWritingPrompts } from "@/hooks/useWritingPrompts";
 import { useWritings } from "@/hooks/useWritings";
 import { resourceLearningAreas } from "@/lib/collections";
 import { writingLabel } from "@/lib/writing-label";
@@ -49,6 +50,7 @@ function ReadingWritingPage() {
     kind: "mine",
   });
   const readingSessions = useReadingSessions();
+  const writingPrompts = useWritingPrompts();
 
   const [areaFilter, setAreaFilter] = useState<AreaFilter>("all");
 
@@ -134,13 +136,22 @@ function ReadingWritingPage() {
       View all →
     </Link>
   );
+  const promptsViewAll = (
+    <Link
+      to="/writing-prompts"
+      className={VIEW_ALL_CLASS}
+    >
+      View all →
+    </Link>
+  );
 
   return (
     <section className="max-w-4xl space-y-10">
       <div>
         <h1 className="text-2xl font-semibold">Reading &amp; Writing</h1>
         <p className="text-sm text-muted-foreground">
-          Resources tagged Reading or Writing, plus your writing, sentences, and reading sessions.
+          Resources tagged Reading or Writing, plus your writing, sentences, reading sessions, and
+          the prompts you write from.
         </p>
       </div>
 
@@ -238,6 +249,34 @@ function ReadingWritingPage() {
                     "
                   >
                     {rs.title}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+      </HubSection>
+
+      <HubSection
+        title="Writing Prompts"
+        action={promptsViewAll}
+      >
+        {(writingPrompts.data ?? []).length === 0
+          ? <p className="text-sm text-muted-foreground">No writing prompts yet.</p>
+          : (
+            <ul className="space-y-1.5">
+              {(writingPrompts.data ?? []).slice(0, PREVIEW_LIMIT).map(p => (
+                <li key={p.id}>
+                  <Link
+                    to="/writing-prompts/$id"
+                    params={{
+                      id: p.id,
+                    }}
+                    className="
+                      block truncate text-sm
+                      hover:underline
+                    "
+                  >
+                    {p.title ?? p.text}
                   </Link>
                 </li>
               ))}

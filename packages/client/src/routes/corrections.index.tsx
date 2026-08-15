@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ListChecks, ScrollText } from "lucide-react";
+import { Layers, ListChecks, ScrollText } from "lucide-react";
 
 import { CorrectionCaptureForm } from "@/components/CorrectionCaptureForm";
 import { CorrectionImportDialog } from "@/components/CorrectionImportDialog";
@@ -38,6 +38,15 @@ function CorrectionsInboxPage() {
             <Link to="/corrections/log">
               <ScrollText className="size-4" />
               Log
+            </Link>
+          </Button>
+          <Button
+            asChild
+            variant="outline"
+          >
+            <Link to="/corrections/groups">
+              <Layers className="size-4" />
+              Rule groups
             </Link>
           </Button>
           <Button
