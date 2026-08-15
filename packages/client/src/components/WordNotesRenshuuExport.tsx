@@ -1,6 +1,6 @@
 import { useRef } from "react";
 
-import { Copy } from "lucide-react";
+import { Copy, ExternalLink } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -20,9 +20,13 @@ export interface ExportableWordNote {
   flashcard: boolean;
 }
 
+/** Where the copied terms get pasted — Renshuu's study page, opened alongside the copy button. */
+const RENSHUU_STUDY_URL = "https://www.renshuu.org/study";
+
 /**
- * A "Copy for Renshuu" popover for a session's word notes, shown in the Word notes section header.
- * Only flashcard-marked notes are exported — mapped to Renshuu's bulk vocab format (one
+ * A "Copy for Renshuu" popover for a session's word notes, shown in the Word notes section header,
+ * paired with an "Open Renshuu" link to {@link RENSHUU_STUDY_URL} so the copied terms have somewhere
+ * to go. Only flashcard-marked notes are exported — mapped to Renshuu's bulk vocab format (one
  * `term/reading` per line via {@link toRenshuuVocabText}, which drops notes with no term). Renders
  * nothing when there is nothing to export, so the caller can gate the section action on the same
  * condition. After a successful copy, `onExported` receives the exported notes' ids so the caller
@@ -58,40 +62,56 @@ export function WordNotesRenshuuExport({
   };
 
   return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
+    <div className="flex flex-wrap items-center gap-2">
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+          >
+            <Copy className="size-4" />
+            Copy for Renshuu
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent
+          align="end"
+          className="w-80 space-y-2"
         >
-          <Copy className="size-4" />
-          Copy for Renshuu
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent
-        align="end"
-        className="w-80 space-y-2"
+          <p className="text-xs text-muted-foreground">
+            Flashcard word notes, one term/reading per line. Paste into Renshuu&apos;s bulk vocab import.
+          </p>
+          <Textarea
+            ref={outputRef}
+            readOnly
+            value={output}
+            rows={8}
+            className="font-mono text-xs"
+            aria-label="Renshuu vocab export text"
+          />
+          <Button
+            type="button"
+            size="sm"
+            onClick={() => void copyAll()}
+          >
+            {copied ? "Copied!" : "Copy"}
+          </Button>
+        </PopoverContent>
+      </Popover>
+      <Button
+        asChild
+        variant="outline"
+        size="sm"
       >
-        <p className="text-xs text-muted-foreground">
-          Flashcard word notes, one term/reading per line. Paste into Renshuu&apos;s bulk vocab import.
-        </p>
-        <Textarea
-          ref={outputRef}
-          readOnly
-          value={output}
-          rows={8}
-          className="font-mono text-xs"
-          aria-label="Renshuu vocab export text"
-        />
-        <Button
-          type="button"
-          size="sm"
-          onClick={() => void copyAll()}
+        <a
+          href={RENSHUU_STUDY_URL}
+          target="_blank"
+          rel="noreferrer"
         >
-          {copied ? "Copied!" : "Copy"}
-        </Button>
-      </PopoverContent>
-    </Popover>
+          Open Renshuu
+          <ExternalLink className="size-4" />
+        </a>
+      </Button>
+    </div>
   );
 }

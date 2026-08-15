@@ -68,6 +68,23 @@ describe("WordNotesRenshuuExport", () => {
     expect(screen.getByRole("button", TRIGGER)).toBeInTheDocument();
   });
 
+  it("links out to the Renshuu study page next to the trigger", () => {
+    render(
+      <WordNotesRenshuuExport
+        wordNotes={[note({
+          word: "行く",
+          reading: "いく",
+          flashcard: true,
+        })]}
+      />,
+    );
+    const link = screen.getByRole("link", {
+      name: "Open Renshuu",
+    });
+    expect(link).toHaveAttribute("href", "https://www.renshuu.org/study");
+    expect(link).toHaveAttribute("target", "_blank");
+  });
+
   it("exports only flashcard-checked terms, as term/reading, excluding unchecked notes", () => {
     render(
       <WordNotesRenshuuExport
