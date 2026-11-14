@@ -24,6 +24,13 @@ export type LearningArea = (typeof LEARNING_AREAS)[number];
 export interface QuestionSheetPart {
   id: string;
   label: string;
+  /**
+   * The part's actual question as printed in the book (e.g. "東京＿＿行きます。"), so it can be answered
+   * without the textbook open — the daily question relies on it. On a heading part (one with
+   * sub-parts) it holds that group's instructions, shown as context above each sub-part. Optional:
+   * older sheets only have labels.
+   */
+  text?: string;
   parts?: QuestionSheetPart[];
 }
 

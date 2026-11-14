@@ -113,7 +113,7 @@ export function QuestionSheetView({
                   <span className="font-medium text-muted-foreground">
                     {(qs.firstQuestionNumber ?? 1) + index}.{" "}
                   </span>
-                  {q.prompt}
+                  <span className="whitespace-pre-wrap">{q.prompt}</span>
                 </p>
                 <PartList parts={q.parts ?? []} />
               </li>
@@ -140,6 +140,11 @@ function PartList({
       {parts.map(part => (
         <li key={part.id}>
           {part.label}
+          {part.text
+            ? (
+              <span className="ml-2 text-foreground">{part.text}</span>
+            )
+            : null}
           <PartList parts={part.parts ?? []} />
         </li>
       ))}

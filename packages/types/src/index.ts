@@ -26,6 +26,7 @@ export * from "./listening-session.js";
 export * from "./migaku-import.js";
 export * from "./tutor.js";
 export * from "./question-sheet.js";
+export * from "./question-sheet-import.js";
 export * from "./reading-session.js";
 export * from "./rule-tag.js";
 export * from "./sentence.js";

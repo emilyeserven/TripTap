@@ -300,6 +300,7 @@ export function AnswerSheetForm({
                   key={slot.id}
                   anchorId={`slot-${slot.id}`}
                   label={slot.label}
+                  text={slot.text}
                   choices={slot.choices}
                   entry={getEntry(slot.id)}
                   answerMode={isGrid ? "preview" : "edit"}
@@ -318,6 +319,7 @@ export function AnswerSheetForm({
 function SlotBlock({
   anchorId,
   label,
+  text,
   choices,
   entry,
   answerMode,
@@ -328,6 +330,8 @@ function SlotBlock({
   /** DOM id for scroll anchoring (a scheduled task's `?part` jumps to the part's first slot). */
   anchorId?: string;
   label: string;
+  /** The question itself as printed in the book, when the sheet records it. */
+  text?: string;
   /** Button-group options when the question has a T/F or multiple-choice answer type; null for free text. */
   choices: string[] | null;
   entry: AnswerSheetEntry;
@@ -346,6 +350,7 @@ function SlotBlock({
         ? (
           <div className="space-y-1.5">
             <Label>{label}</Label>
+            {text ? <p className="text-base whitespace-pre-wrap">{text}</p> : null}
             {choices && choices.length > 0
               ? (
                 <AnswerChoiceGroup
@@ -371,6 +376,7 @@ function SlotBlock({
         : (
           <div className="space-y-0.5">
             <p className="text-xs text-muted-foreground">{label}</p>
+            {text ? <p className="text-sm whitespace-pre-wrap">{text}</p> : null}
             <p className="text-lg font-semibold">
               {entry.value.trim() || (
                 <span

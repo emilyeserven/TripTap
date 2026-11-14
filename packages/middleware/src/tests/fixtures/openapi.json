@@ -20,6 +20,9 @@
           "label": {
             "type": "string"
           },
+          "text": {
+            "type": "string"
+          },
           "parts": {
             "type": "array",
             "items": {

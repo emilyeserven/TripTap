@@ -208,6 +208,64 @@ test("POST /api/question-sheets rejects a nested sub-part missing its label", as
   await app.close();
 });
 
+test("POST /api/question-sheets accepts question text on parts and heading parts", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/question-sheets",
+    payload: {
+      title: "Particles",
+      layout: "list",
+      questions: [{
+        id: "q1",
+        prompt: "Fill in the blank with the correct particle.",
+        parts: [{
+          id: "p1",
+          label: "(a)",
+          text: "東京＿＿行きます。",
+        }, {
+          id: "p2",
+          label: "(b)",
+          text: "Choose one:",
+          parts: [{
+            id: "p2i",
+            label: "(i)",
+            text: "私＿＿学生です。",
+          }],
+        }],
+      }],
+    },
+  });
+  // Valid payload — 201 with a DB, or a 5xx without one, but never a 400.
+  assert.notEqual(res.statusCode, 400);
+  await app.close();
+});
+
+test("POST /api/question-sheets rejects non-string part text", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/question-sheets",
+    payload: {
+      title: "Particles",
+      layout: "list",
+      questions: [{
+        id: "q1",
+        prompt: "Fill in the blank.",
+        parts: [{
+          id: "p1",
+          label: "(a)",
+          text: {
+            ja: "東京＿＿行きます。",
+          },
+        }],
+      }],
+    },
+  });
+  assert.equal(res.statusCode, 400);
+  await app.close();
+});
+
 test("POST /api/question-sheets accepts valid learning areas", async () => {
   const app = await buildApp();
   const res = await app.inject({

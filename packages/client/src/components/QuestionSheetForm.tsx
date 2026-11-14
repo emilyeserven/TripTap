@@ -2,6 +2,7 @@ import type {
   BookmarkSectionRef,
   LearningArea,
   QuestionSheet,
+  QuestionSheetImport,
   QuestionSheetGridRow,
   QuestionSheetLayout,
   QuestionSheetQuestion,
@@ -16,6 +17,7 @@ import { CollapsibleSection } from "@/components/CollapsibleSection";
 import { LearningAreaMultiSelect } from "@/components/LearningAreaMultiSelect";
 import { QuestionGridEditor } from "@/components/QuestionGridEditor";
 import { QuestionListEditor } from "@/components/QuestionListEditor";
+import { QuestionSheetImportCard } from "@/components/QuestionSheetImportCard";
 import { TermPicker } from "@/components/TermPicker";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -29,6 +31,7 @@ import {
   useQuestionSheets,
   useUpdateQuestionSheet,
 } from "@/hooks/useQuestionSheets";
+import { importedGridRows, importedLayout, importedQuestions } from "@/lib/question-sheet-import";
 import { resolveSectionPage, summarizeSectionRange } from "@/lib/sections";
 
 /**
@@ -124,6 +127,36 @@ export function QuestionSheetForm({
     if (pageTouched || next.length === 0) return;
     const derivedPage = resolveSectionPage(sectionTree, next[0].id);
     if (derivedPage) setPage(derivedPage);
+  };
+
+  /**
+   * Merge AI-read questions (from {@link QuestionSheetImportCard}) into the form. Questions/rows are
+   * appended so several photos can be imported one after another; the title, page, notes, and first
+   * number are only filled when still blank/default, so nothing the learner typed is overwritten.
+   */
+  const applyImport = (data: QuestionSheetImport) => {
+    const nextLayout = questions.length === 0 && rows.length === 0 ? importedLayout(data) : layout;
+    setLayout(nextLayout);
+    if (nextLayout === "list") {
+      setQuestions(prev => [...prev, ...importedQuestions(data)]);
+    }
+    else {
+      const cols = (data.grid?.columns ?? []).map(c => c.trim()).filter(Boolean);
+      if (cols.length > 0 && columns.every(c => !c.trim())) setColumns(cols);
+      setRows(prev => [...prev, ...importedGridRows(data)]);
+    }
+    if (data.title?.trim() && !title.trim()) {
+      setTitle(data.title.trim());
+      setTitleTouched(true);
+    }
+    if (data.page?.trim() && !page.trim()) {
+      setPage(data.page.trim());
+      setPageTouched(true);
+    }
+    if (data.notes?.trim() && !notes.trim()) setNotes(data.notes.trim());
+    if (data.firstQuestionNumber && questions.length === 0 && firstQuestionNumber === "1") {
+      setFirstQuestionNumber(String(data.firstQuestionNumber));
+    }
   };
 
   // The effective first-question number (≥ 1), shared by the submit payload and the editor labels.
@@ -301,6 +334,12 @@ export function QuestionSheetForm({
             title="Questions"
             description="The questions themselves — a numbered list or a grid/table."
           >
+            <QuestionSheetImportCard
+              resource={bookmarkTitle}
+              page={page}
+              onImport={applyImport}
+            />
+
             <div className="space-y-2">
               <Label>Layout</Label>
               <Tabs

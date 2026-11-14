@@ -220,7 +220,7 @@ export function QuestionListEditor({
                 onChange={e => updateQuestion(q.id, {
                   prompt: e.target.value,
                 })}
-                placeholder="Write the question or prompt…"
+                placeholder="The question as written, or the instructions its parts share…"
                 rows={2}
               />
             </div>

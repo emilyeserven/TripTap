@@ -29,6 +29,7 @@ import { AddScheduledTaskCard } from "@/components/AddScheduledTaskCard";
 import { AttentionCard } from "@/components/AttentionCard";
 import { DailyGoalProgress } from "@/components/DailyGoalProgress";
 import { DailyLineupCard } from "@/components/DailyLineupCard";
+import { DailyQuestionCard } from "@/components/DailyQuestionCard";
 import { DailyTasksCard } from "@/components/DailyTasksCard";
 import { GoalAchievementStrip } from "@/components/GoalAchievementStrip";
 import { LearningAreaBadges } from "@/components/LearningAreaBadges";
@@ -439,6 +440,11 @@ function StartPage() {
         doneIds={dailyTaskDoneIds}
         onToggle={toggleDailyTask}
         onRemove={removeDailyTask}
+      />
+
+      <DailyQuestionCard
+        questionSheets={questionSheets.data ?? []}
+        answerSheets={answerSheets.data ?? []}
       />
 
       <ScheduledTasksCard
