@@ -31,7 +31,7 @@ export function AnswerSheetListView({
     // slot, so its leaves ((1) → (i)…) are what carry answers and must be the ones rendered.
     const slots = questionLeafSlots(q).map(s => ({
       id: s.id,
-      label: (s.label || null) as string | null,
+      label: (s.label ? (s.text ? `${s.label} ${s.text}` : s.label) : null) as string | null,
     }));
     return {
       key: q.id || `q${i}`,

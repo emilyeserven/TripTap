@@ -40,6 +40,10 @@ const partSchema = {
     label: {
       type: "string",
     },
+    // The part's actual question text (or a heading part's instructions), so it reads without the book.
+    text: {
+      type: "string",
+    },
     parts: {
       type: "array",
       items: {

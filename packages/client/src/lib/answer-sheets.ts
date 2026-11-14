@@ -21,6 +21,12 @@ export interface QuestionSheetSlot {
    * free text. Every leaf slot of a question shares the question's options.
    */
   choices: string[] | null;
+  /**
+   * The leaf part's own question text as printed in the book ({@link QuestionSheetPart.text}), when it
+   * has one. Absent for parts without text, whole-question slots (their prompt is the label), and grid
+   * cells.
+   */
+  text?: string;
 }
 
 /**
@@ -41,10 +47,16 @@ function collectPartSlots(
       collectPartSlots(label, part.parts, choices, slots);
     }
     else {
+      const text = part.text?.trim();
       slots.push({
         id: part.id,
         label,
         choices,
+        ...(text
+          ? {
+            text,
+          }
+          : {}),
       });
     }
   }
@@ -104,6 +116,8 @@ export interface QuestionLeafSlot {
   id: string;
   /** The part-label chain, e.g. "(1) — (i)"; empty for a question with no parts (its own slot). */
   label: string;
+  /** The leaf part's printed question text, when recorded. */
+  text?: string;
 }
 
 /**
@@ -123,10 +137,16 @@ export function questionLeafSlots(question: QuestionSheet["questions"][number]):
     for (const node of nodes) {
       const label = prefix ? `${prefix} — ${node.label}` : node.label;
       const kids = node.parts ?? [];
+      const text = node.text?.trim();
       if (kids.length > 0) walk(kids, label);
       else out.push({
         id: node.id,
         label,
+        ...(text
+          ? {
+            text,
+          }
+          : {}),
       });
     }
   };

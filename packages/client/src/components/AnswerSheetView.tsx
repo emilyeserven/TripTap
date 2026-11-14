@@ -11,6 +11,7 @@ import { AnswerSheetListView } from "@/components/AnswerSheetListView";
 import { AnswerSheetPartScores } from "@/components/AnswerSheetPartScores";
 import { AnswerSheetPartsProgress } from "@/components/AnswerSheetPartsProgress";
 import { AnswerSheetScoreBadge } from "@/components/AnswerSheetScoreBadge";
+import { AnswerSheetShareDialog } from "@/components/AnswerSheetShareDialog";
 import { GrammarTermBadges } from "@/components/GrammarTermBadges";
 import { LearningAreaBadges } from "@/components/LearningAreaBadges";
 import { Badge } from "@/components/ui/badge";
@@ -151,7 +152,20 @@ export function AnswerSheetView({
   return (
     <div className="space-y-4">
       <div>
-        <p className="text-xl font-semibold">{as.title ?? "Answer sheet"}</p>
+        <div className="flex flex-wrap items-start justify-between gap-2">
+          <p className="text-xl font-semibold">{as.title ?? "Answer sheet"}</p>
+          {sheet
+            ? (
+              <AnswerSheetShareDialog
+                questionSheet={sheet}
+                answerSheet={{
+                  ...as,
+                  entries: Object.values(entries),
+                }}
+              />
+            )
+            : null}
+        </div>
         <div
           className="
             mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground

@@ -70,6 +70,19 @@ export function PartsEditor({
               })}
               placeholder={`${depth === 0 ? "Part" : "Sub-part"} label, e.g. (a)`}
               aria-label={depth === 0 ? "Part label" : "Sub-part label"}
+              className="w-28 shrink-0"
+            />
+            {/* The question itself, as printed — lets the daily question show it without the book. */}
+            <Input
+              value={part.text ?? ""}
+              onChange={e => updatePart(part.id, {
+                text: e.target.value || undefined,
+              })}
+              placeholder={(part.parts?.length ?? 0) > 0
+                ? "Instructions for these sub-parts (optional)"
+                : "The question as written, e.g. 東京＿＿行きます。"}
+              aria-label={depth === 0 ? "Part question" : "Sub-part question"}
+              className="flex-1"
             />
             <Button
               type="button"
