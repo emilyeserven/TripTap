@@ -337,6 +337,8 @@ export const questionSheets = pgTable("question_sheets", {
   // Grammar-channel bookmark tags this sheet drills (same SentenceTermRef shape as sentences.terms),
   // so tagged sheets surface on the Grammar page. Null until any are attached.
   grammarTerms: jsonb("grammar_terms").$type<SentenceTermRef[]>(),
+  // Opt-in for the Daily question: only sheets the learner has marked OK are served (default off).
+  dailyQuestionEnabled: boolean("daily_question_enabled").notNull().default(false),
   layout: text("layout").notNull().default("list"),
   questions: jsonb("questions").$type<QuestionSheetQuestion[]>(),
   grid: jsonb("grid").$type<QuestionSheetGrid>(),

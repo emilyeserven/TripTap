@@ -37,6 +37,7 @@ function sheet(overrides: Partial<QuestionSheet> = {}): QuestionSheet {
     firstQuestionNumber: 1,
     learningAreas: [],
     grammarTerms: [],
+    dailyQuestionEnabled: true,
     layout: "list",
     questions: [{
       id: "q1",
@@ -188,6 +189,20 @@ describe("dailyQuestionQueue", () => {
       hiddenPartIds: ["q1"],
     });
     expect(dailyQuestionQueue([qs], [hidden]).map(q => q.slotId)).toEqual(["q2"]);
+  });
+
+  it("only serves sheets marked OK for the daily question", () => {
+    const ok = sheet({
+      id: "ok",
+    });
+    const notOk = sheet({
+      id: "not-ok",
+      dailyQuestionEnabled: false,
+      dueDate: "2026-11-20T00:00:00.000Z",
+    });
+    const order = dailyQuestionQueue([notOk, ok], []).map(q => q.sheet.id);
+    expect([...new Set(order)]).toEqual(["ok"]);
+    expect(dailyQuestionQueue([notOk], [])).toEqual([]);
   });
 
   it("orders sheets by due date, then in-progress, then oldest", () => {

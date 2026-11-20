@@ -2979,6 +2979,9 @@
                       "additionalProperties": false
                     }
                   },
+                  "dailyQuestionEnabled": {
+                    "type": "boolean"
+                  },
                   "questions": {
                     "type": "array",
                     "items": {
@@ -3263,6 +3266,9 @@
                       ],
                       "additionalProperties": false
                     }
+                  },
+                  "dailyQuestionEnabled": {
+                    "type": "boolean"
                   },
                   "questions": {
                     "type": "array",

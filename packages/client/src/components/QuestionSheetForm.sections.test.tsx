@@ -90,6 +90,7 @@ const SHEET: QuestionSheet = {
   firstQuestionNumber: 1,
   learningAreas: [],
   grammarTerms: [],
+  dailyQuestionEnabled: false,
   layout: "list",
   questions: [],
   grid: null,

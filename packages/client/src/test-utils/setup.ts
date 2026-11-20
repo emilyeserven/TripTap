@@ -11,3 +11,22 @@ if (typeof Element !== "undefined" && !Element.prototype.scrollIntoView) {
     // Intentionally empty — there is nothing to scroll.
   };
 }
+
+// jsdom has no `ResizeObserver` either. Radix primitives that measure themselves on mount (Switch's
+// thumb, Popover/Tooltip anchors) construct one in a layout effect, so any form that renders them
+// throws without it. A no-op observer is enough: nothing ever resizes in a headless DOM.
+if (typeof window !== "undefined" && !("ResizeObserver" in globalThis)) {
+  globalThis.ResizeObserver = class ResizeObserver {
+    observe() {
+      // Intentionally empty — nothing resizes in a headless DOM.
+    }
+
+    unobserve() {
+      // Intentionally empty — nothing resizes in a headless DOM.
+    }
+
+    disconnect() {
+      // Intentionally empty — nothing resizes in a headless DOM.
+    }
+  };
+}

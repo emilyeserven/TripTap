@@ -30,6 +30,7 @@ const listSheet: QuestionSheet = {
   firstQuestionNumber: 3,
   learningAreas: [],
   grammarTerms: [],
+  dailyQuestionEnabled: false,
   layout: "list",
   questions: [{
     id: "q1",

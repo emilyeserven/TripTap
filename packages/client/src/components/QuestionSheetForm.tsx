@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useBookmarkRecord } from "@/hooks/useBookmarks";
@@ -84,6 +85,9 @@ export function QuestionSheetForm({
   );
   const [grammarTerms, setGrammarTerms] = useState<SentenceTermRef[]>(
     questionSheet?.grammarTerms ?? [],
+  );
+  const [dailyQuestionEnabled, setDailyQuestionEnabled] = useState(
+    questionSheet?.dailyQuestionEnabled ?? false,
   );
   const [layout, setLayout] = useState<QuestionSheetLayout>(questionSheet?.layout ?? "list");
   const [questions, setQuestions] = useState<QuestionSheetQuestion[]>(
@@ -181,6 +185,7 @@ export function QuestionSheetForm({
       dueDate: dueDate ? new Date(dueDate).toISOString() : null,
       learningAreas,
       grammarTerms,
+      dailyQuestionEnabled,
       questions: layout === "list" ? questions : [],
       grid: layout === "grid"
         ? {
@@ -386,6 +391,21 @@ export function QuestionSheetForm({
                   onRowsChange={setRows}
                 />
               )}
+
+            <div className="space-y-1.5 border-t pt-4">
+              <label className="flex items-center gap-2 text-sm font-medium">
+                <Switch
+                  checked={dailyQuestionEnabled}
+                  onCheckedChange={setDailyQuestionEnabled}
+                  aria-label="OK for daily question"
+                />
+                OK for daily question
+              </label>
+              <p className="text-xs text-muted-foreground">
+                Turn this on once you&apos;ve checked the questions above. Only sheets marked OK are
+                served one question at a time on the Start page.
+              </p>
+            </div>
           </CollapsibleSection>
         </CardContent>
       </Card>
