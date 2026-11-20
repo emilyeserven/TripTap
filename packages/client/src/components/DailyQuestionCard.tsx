@@ -156,7 +156,7 @@ export function DailyQuestionCard({
                     on a
                     {" "}
                     <Link
-                      to="/question-sheets/new"
+                      to="/question-sheets"
                       className="
                         text-primary
                         hover:underline
@@ -164,7 +164,11 @@ export function DailyQuestionCard({
                     >
                       question sheet
                     </Link>
-                    ) and they’ll show up here one at a time.
+                    ), then switch on
+                    {" "}
+                    <span className="font-medium">OK for daily question</span>
+                    {" "}
+                    and they’ll show up here one at a time.
                   </>
                 )}
             </p>

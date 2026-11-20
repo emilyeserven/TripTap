@@ -32,6 +32,7 @@ function sheet(overrides: Partial<QuestionSheet> = {}): QuestionSheet {
     firstQuestionNumber: 1,
     learningAreas: [],
     grammarTerms: [],
+    dailyQuestionEnabled: false,
     layout: "list",
     questions: [
       {

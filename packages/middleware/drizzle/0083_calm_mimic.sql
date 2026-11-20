@@ -1,0 +1,1 @@
+ALTER TABLE "question_sheets" ADD COLUMN "daily_question_enabled" boolean DEFAULT false NOT NULL;

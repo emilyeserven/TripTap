@@ -157,7 +157,8 @@ export function workingAnswerSheet(
 }
 
 /**
- * Every unanswered, self-contained slot across the learner's unfinished question sheets, in the order
+ * Every unanswered, self-contained slot across the learner's unfinished question sheets that are
+ * marked OK for the daily question ({@link QuestionSheet.dailyQuestionEnabled}), in the order
  * they should be served: sheets due soonest first (undated last), then sheets already in progress
  * (finish what's started), then the oldest sheet; within a sheet, in question order. Slots in parts
  * hidden for the attempt, and slots already answered in it, are skipped.
@@ -166,7 +167,7 @@ export function dailyQuestionQueue(
   sheets: QuestionSheet[],
   answerSheets: AnswerSheet[],
 ): DailyQuestion[] {
-  const pending = sheets.flatMap((sheet) => {
+  const pending = sheets.filter(sheet => sheet.dailyQuestionEnabled).flatMap((sheet) => {
     const answerSheet = workingAnswerSheet(sheet, answerSheets);
     if (answerSheet === undefined) return [];
     const hidden = answerSheet ? hiddenSlotIds(sheet, answerSheet) : new Set<string>();

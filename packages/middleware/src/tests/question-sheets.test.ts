@@ -266,6 +266,37 @@ test("POST /api/question-sheets rejects non-string part text", async () => {
   await app.close();
 });
 
+test("PATCH /api/question-sheets/:id accepts the daily-question flag", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "PATCH",
+    url: "/api/question-sheets/00000000-0000-0000-0000-000000000000",
+    payload: {
+      dailyQuestionEnabled: true,
+    },
+  });
+  // Valid payload — 200/404 with a DB, or a 5xx without one, but never a 400.
+  assert.notEqual(res.statusCode, 400);
+  await app.close();
+});
+
+test("POST /api/question-sheets rejects a non-boolean daily-question flag", async () => {
+  const app = await buildApp();
+  const res = await app.inject({
+    method: "POST",
+    url: "/api/question-sheets",
+    payload: {
+      title: "Particles",
+      layout: "list",
+      dailyQuestionEnabled: {
+        on: true,
+      },
+    },
+  });
+  assert.equal(res.statusCode, 400);
+  await app.close();
+});
+
 test("POST /api/question-sheets accepts valid learning areas", async () => {
   const app = await buildApp();
   const res = await app.inject({

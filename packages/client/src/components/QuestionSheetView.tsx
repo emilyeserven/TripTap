@@ -6,8 +6,10 @@ import { GrammarTermBadges } from "@/components/GrammarTermBadges";
 import { LearningAreaBadges } from "@/components/LearningAreaBadges";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { useAnswerSheetsForQuestionSheet } from "@/hooks/useAnswerSheets";
 import { useResolvedBookmarkTitle } from "@/hooks/useBookmarks";
+import { useUpdateQuestionSheet } from "@/hooks/useQuestionSheets";
 import { useBookmarksSettings } from "@/hooks/useSettings";
 import { dueDateMet, questionSheetDisplayTitle } from "@/lib/answer-sheets";
 import { bookmarkAppUrl } from "@/lib/bookmarks";
@@ -28,6 +30,7 @@ export function QuestionSheetView({
   // Show the bookmark's current name (live), not the title snapshotted when it was linked.
   const bookmarkTitle = useResolvedBookmarkTitle(qs.bookmarkId, qs.bookmarkTitle);
   const met = dueDateMet(qs, answerSheets ?? []);
+  const update = useUpdateQuestionSheet();
 
   return (
     <div className="space-y-4">
@@ -90,6 +93,20 @@ export function QuestionSheetView({
               )
             : null}
         </div>
+        <label className="mt-3 flex w-fit items-center gap-2 text-sm">
+          <Switch
+            checked={qs.dailyQuestionEnabled}
+            disabled={update.isPending}
+            onCheckedChange={checked => update.mutate({
+              id: qs.id,
+              input: {
+                dailyQuestionEnabled: checked,
+              },
+            })}
+            aria-label="OK for daily question"
+          />
+          OK for daily question
+        </label>
       </div>
 
       {qs.notes

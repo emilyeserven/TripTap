@@ -123,6 +123,12 @@ export interface QuestionSheet {
    * and grammar notes use. Lets the sheet surface on the Grammar page; empty when untagged.
    */
   grammarTerms: SentenceTermRef[];
+  /**
+   * Whether this sheet's questions may be served as the Daily question. Off by default: the learner
+   * flips it once the questions (often imported from photos) have been checked, so unreviewed or
+   * half-entered sheets never show up on the Start page.
+   */
+  dailyQuestionEnabled: boolean;
   layout: QuestionSheetLayout;
   /** Used when `layout === "list"`. */
   questions: QuestionSheetQuestion[];
@@ -145,6 +151,7 @@ export interface CreateQuestionSheetInput {
   firstQuestionNumber?: number;
   learningAreas?: LearningArea[];
   grammarTerms?: SentenceTermRef[] | null;
+  dailyQuestionEnabled?: boolean;
   questions?: QuestionSheetQuestion[];
   grid?: QuestionSheetGrid | null;
 }

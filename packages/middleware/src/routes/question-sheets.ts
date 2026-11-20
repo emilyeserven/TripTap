@@ -169,6 +169,9 @@ const createQuestionSheetBody = {
     grammarTerms: {
       ...termsSchema,
     },
+    dailyQuestionEnabled: {
+      type: "boolean",
+    },
     questions: questionsSchema,
     grid: gridSchema,
   },
